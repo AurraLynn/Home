@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyn's Home</title>
+
+    <!-- 网站图标 -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    <!-- 字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- Telegram/OG/Twitter Card -->
+    <meta property="og:title" content="Lyn's Homepage">
+    <meta property="og:description" content="记录美好生活，多看VLOG.">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aura.us.kg/">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Lyn's Homepage">
+    <meta name="twitter:description" content="记录美好生活">
+    <meta name="twitter:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 背景层 -->
+<div id="bgContainer">
+    <img id="bgImage" src="https://save.aura.us.kg/Picture/bg.jpg" alt="背景图片">
+    <div id="bgOverlay"></div>
+</div>
+<canvas id="particleCanvas"></canvas>
+
+<!-- 主要信息区域 -->
+<div class="main-container">
+    <h2 class="main-slogan">记录美好生活</h2>
+    <h2>现在时间</h2>
+    <div id="time-display"></div>
+    <p>该看 VLOG 了!</p>
+</div>
+
+<!-- 卡片信息 -->
+<div class="profile-card" id="profileCard">
+    <h1>Hello, I'm Lyn.</h1>
+    <p>loves to mess around</p>
+    <div class="quote-wrap">
+        <div id="poison-text">加载鸡汤中...</div>
+        <div id="poison-author">——</div>
+    </div>
+    <div class="like-tag" id="likeTag">
+        喜欢 <span class="like-num" id="likeNum">0</span>
+    </div>
+</div>
+
+<!-- 页脚 -->
+<div class="footer">© 2025 | Lyn's Homepage</div>
+
+<!-- JS -->
+<script src="script.js"></script>
+</body>
+</html>
