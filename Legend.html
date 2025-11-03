@@ -1,222 +1,583 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>传奇3 · 英雄再现</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>传奇3 — 炫酷官网</title>
+<meta name="description" content="传奇3 炫酷下载页，桌面端适配，包含下载模态与动效" />
+<!-- Google Font （可替换或删去以防墙）-->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-body {
-  margin: 0;
-  background: radial-gradient(circle at 50% 20%, #1a1a1a, #090909);
-  color: #f5deb3;
-  font-family: "Noto Serif SC", serif;
-  overflow-x: hidden;
-}
+  :root{
+    --bg1: #0f1724;
+    --bg2: #071126;
+    --accent: #ff416c;
+    --accent2: #7f00ff;
+    --glass: rgba(255,255,255,0.06);
+    --text: #e6eef8;
+    --muted: #9fb3cf;
+    --max-width: 1200px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: radial-gradient(1200px 600px at 10% 10%, rgba(127,0,255,0.08), transparent 8%),
+                radial-gradient(900px 400px at 90% 90%, rgba(255,65,108,0.06), transparent 6%),
+                linear-gradient(180deg,var(--bg1), var(--bg2));
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    padding:40px 24px;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    gap:24px;
+    min-height:100vh;
+  }
 
-.hero {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  text-align: center;
-  overflow: hidden;
-}
+  .container{
+    width:100%;
+    max-width:var(--max-width);
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:32px;
+    align-items:center;
+  }
 
-/* 背景发光龙纹 */
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: url('https://save.aura.us.kg/Picture/dragon-pattern.png') center/60% no-repeat;
-  opacity: 0.15;
-  filter: blur(2px);
-}
+  /* Desktop layout */
+  @media(min-width:1000px){
+    .container{
+      grid-template-columns: 1fr 520px;
+      align-items:center;
+    }
+  }
 
-.hero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 30%, rgba(255,215,0,0.12), transparent 70%);
-  animation: glow 6s ease-in-out infinite alternate;
-}
-@keyframes glow {
-  from { opacity: 0.2; }
-  to { opacity: 0.5; }
-}
+  /* Left hero card */
+  .hero{
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:20px;
+    padding:36px;
+    box-shadow: 0 10px 40px rgba(5,8,20,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
+    position:relative;
+    overflow:hidden;
+  }
+  /* animated streak */
+  .hero::after{
+    content:"";
+    position:absolute;
+    right:-30%;
+    top:-20%;
+    width:60%;
+    height:120%;
+    transform:rotate(-18deg);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.0));
+    filter: blur(40px);
+    animation: float 10s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes float{
+    from{transform:rotate(-18deg) translateY(0)}
+    50%{transform:rotate(-18deg) translateY(20px)}
+    to{transform:rotate(-18deg) translateY(0)}
+  }
 
-/* 标题 */
-h1 {
-  font-family: "Ma Shan Zheng", cursive;
-  font-size: 80px;
-  letter-spacing: 6px;
-  color: #ffcc66;
-  text-shadow: 0 0 20px rgba(255,215,0,0.6), 0 0 40px rgba(255,215,0,0.3);
-  z-index: 2;
-}
-h2 {
-  font-size: 24px;
-  color: #d8c299;
-  margin-top: 10px;
-  z-index: 2;
-}
+  .title{
+    display:flex;
+    gap:18px;
+    align-items:center;
+  }
+  .logo{
+    min-width:84px;
+    height:84px;
+    border-radius:14px;
+    background: linear-gradient(135deg,var(--accent),var(--accent2));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:800;
+    font-size:22px;
+    color:white;
+    box-shadow: 0 8px 30px rgba(127,0,255,0.18);
+  }
+  h1{
+    margin:0;
+    font-size:32px;
+    line-height:1.05;
+    letter-spacing: -0.02em;
+  }
+  p.lead{
+    margin:12px 0 20px;
+    color:var(--muted);
+    max-width:75%;
+  }
 
-/* 下载按钮 */
-.download-btn {
-  margin-top: 40px;
-  font-size: 22px;
-  padding: 16px 48px;
-  border: none;
-  border-radius: 50px;
-  background: linear-gradient(90deg, #ffd56b, #e6b645);
-  color: #3a2500;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 0 30px rgba(255,215,0,0.4);
-  transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
-  z-index: 2;
-}
-.download-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 50px rgba(255,215,0,0.7);
-}
-.download-btn:active {
-  transform: scale(0.97);
-}
+  .cta-row{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    margin-top:6px;
+  }
+  .btn{
+    appearance:none;
+    border:0;
+    padding:12px 18px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:600;
+    display:inline-flex;
+    gap:10px;
+    align-items:center;
+    user-select:none;
+  }
+  .btn-download{
+    background: linear-gradient(90deg,var(--accent),var(--accent2));
+    color:white;
+    box-shadow: 0 8px 30px rgba(255,65,108,0.12), 0 2px 0 rgba(255,255,255,0.02) inset;
+    transform:translateY(0);
+    transition:transform .15s ease, box-shadow .15s;
+  }
+  .btn-download:active{transform:translateY(1px)}
+  .btn-ghost{
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.06);
+    color:var(--text);
+    padding:10px 14px;
+  }
 
-/* 按钮波纹效果 */
-.download-btn::after {
-  content: "";
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  background: rgba(255,255,255,0.4);
-  border-radius: 50%;
-  transform: scale(1);
-  opacity: 0;
-  pointer-events: none;
-}
-.download-btn.clicked::after {
-  animation: ripple 0.6s linear;
-}
-@keyframes ripple {
-  0% { transform: scale(0); opacity: 0.8; }
-  100% { transform: scale(10); opacity: 0; }
-}
+  /* small info chips */
+  .chips{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .chip{
+    background:var(--glass);
+    padding:8px 10px;
+    border-radius:10px;
+    font-size:13px;
+    color:var(--muted);
+    display:inline-flex;
+    gap:8px;
+    align-items:center;
+  }
 
-/* 模态框 */
-.modal {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.7);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 99;
-}
+  /* right preview card (desktop) */
+  .preview{
+    border-radius:16px;
+    overflow:hidden;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    min-height:400px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    border:1px solid rgba(255,255,255,0.03);
+  }
+  .screenshot{
+    width:100%;
+    max-width:460px;
+    height:320px;
+    border-radius:12px;
+    background-image: url('https://save.aura.us.kg/Picture/IMG_4085.webp'); /* <-- 替换为你的封面图 */
+    background-size:cover;
+    background-position:center;
+    box-shadow: 0 30px 60px rgba(2,6,23,0.6);
+    position:relative;
+    transform:translateY(0);
+    transition:transform .4s cubic-bezier(.2,.9,.3,1);
+  }
+  .screenshot:hover{ transform: translateY(-8px) rotate(-1deg) }
 
-.modal-content {
-  background: #111;
-  border: 1px solid #d8b156;
-  border-radius: 12px;
-  padding: 40px 60px;
-  text-align: center;
-  color: #f5deb3;
-  box-shadow: 0 0 30px rgba(255,215,0,0.2);
-  animation: pop 0.3s ease-out;
-}
-@keyframes pop {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
+  /* features grid */
+  .features{
+    display:grid;
+    grid-template-columns: repeat(2,1fr);
+    gap:12px;
+    margin-top:22px;
+  }
+  @media(max-width:520px){ .features{grid-template-columns:1fr} }
 
-.progress-bar {
-  width: 300px;
-  height: 12px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 6px;
-  overflow: hidden;
-  margin-top: 20px;
-  position: relative;
-}
-.progress-bar-inner {
-  width: 0%;
-  height: 100%;
-  background: linear-gradient(90deg, #ffd56b, #e6b645);
-  transition: width 0.2s linear;
-}
-.close-btn {
-  margin-top: 24px;
-  background: none;
-  border: 1px solid #d8b156;
-  color: #d8b156;
-  padding: 8px 18px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.close-btn:hover {
-  background: #d8b156;
-  color: #111;
-}
+  .feature{
+    background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
+    padding:12px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.03);
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    color:var(--muted);
+    font-size:14px;
+  }
+  .feature .icon{
+    min-width:40px;
+    height:40px;
+    border-radius:10px;
+    background:rgba(255,255,255,0.03);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--accent);
+    font-weight:700;
+  }
+
+  footer{
+    margin-top:20px;
+    color:var(--muted);
+    font-size:13px;
+    text-align:center;
+    opacity:0.9;
+  }
+
+  /* Modal */
+  .modal-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(3,6,14,0.6);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:4000;
+    padding:24px;
+  }
+  .modal{
+    width:100%;
+    max-width:680px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:14px;
+    padding:20px;
+    border:1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 30px 80px rgba(2,6,23,0.7);
+    transform:translateY(30px) scale(.99);
+    opacity:0;
+    transition:all .18s ease;
+  }
+  .modal.show{ transform:translateY(0) scale(1); opacity:1; }
+  .modal-grid{
+    display:grid;
+    grid-template-columns: 1fr 220px;
+    gap:16px;
+  }
+  @media(max-width:720px){ .modal-grid{ grid-template-columns: 1fr; } }
+
+  .platform-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .tab{
+    padding:8px 10px;border-radius:9px;background:rgba(255,255,255,0.02);cursor:pointer;font-weight:600;color:var(--muted);
+    border:1px solid rgba(255,255,255,0.02);
+  }
+  .tab.active{ background:linear-gradient(90deg,var(--accent),var(--accent2)); color:white; box-shadow:0 8px 30px rgba(127,0,255,0.12); }
+
+  .qr{
+    width:100%;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:8px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    padding:14px;
+    border:1px dashed rgba(255,255,255,0.04);
+  }
+  .qr img{ width:160px; height:160px; object-fit:cover; }
+
+  .download-actions{display:flex;gap:8px;margin-top:12px}
+  .input-link{
+    width:100%;
+    padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted);font-size:13px;
+    outline:none;
+  }
+
+  .progress{
+    width:100%;
+    height:10px;
+    background: rgba(255,255,255,0.03);
+    border-radius:6px;
+    overflow:hidden;
+    margin-top:10px;
+  }
+  .progress > i{
+    display:block;height:100%;width:0%;
+    background: linear-gradient(90deg,var(--accent),var(--accent2));
+    transition: width .3s linear;
+  }
+
+  .small-muted{font-size:13px;color:var(--muted);margin-top:8px}
+
+  /* utility */
+  .row{display:flex;gap:8px;align-items:center}
+  .right{margin-left:auto}
 </style>
 </head>
 <body>
+  <div class="container">
+    <!-- 左侧 hero -->
+    <div class="hero">
+      <div class="title">
+        <div class="logo">传3</div>
+        <div>
+          <h1>传奇3 — 重返热血时代</h1>
+          <p class="lead">经典复刻·架构优化 · 热血PK · 全新地图与自由交易。立即下载，唤醒兄弟情怀。</p>
+        </div>
+      </div>
 
-<div class="hero">
-  <h1>传奇 Ⅲ</h1>
-  <h2>英雄再现 · 沙城热血重燃</h2>
-  <button class="download-btn" id="downloadBtn">立即下载</button>
-</div>
+      <div class="cta-row">
+        <button class="btn btn-download" id="openDownload">
+          ⬇️ 立即下载
+        </button>
+        <button class="btn btn-ghost" id="playTrailer">▶ 试玩预览</button>
+        <div style="margin-left:auto" class="chips">
+          <div class="chip">服务器：稳定节点</div>
+          <div class="chip">版本：v3.2.1</div>
+        </div>
+      </div>
 
-<!-- 模态框 -->
-<div class="modal" id="modal">
-  <div class="modal-content">
-    <h2>正在准备下载...</h2>
-    <div class="progress-bar"><div class="progress-bar-inner" id="progressBar"></div></div>
-    <button class="close-btn" id="cancelBtn">取消</button>
+      <div class="features" style="margin-top:26px;">
+        <div class="feature">
+          <div class="icon">1</div>
+          <div>
+            <div style="font-weight:700;color:var(--text)">实时PK</div>
+            <div style="color:var(--muted);margin-top:6px">千人同屏，万人攻城体验</div>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="icon">2</div>
+          <div>
+            <div style="font-weight:700;color:var(--text)">复古画风</div>
+            <div style="color:var(--muted);margin-top:6px">原汁原味的怀旧像素美学</div>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="icon">3</div>
+          <div>
+            <div style="font-weight:700;color:var(--text)">极速匹配</div>
+            <div style="color:var(--muted);margin-top:6px">智能匹配减少排队时间</div>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="icon">4</div>
+          <div>
+            <div style="font-weight:700;color:var(--text)">一键交易</div>
+            <div style="color:var(--muted);margin-top:6px">自由市场，公平定价</div>
+          </div>
+        </div>
+      </div>
+
+      <footer>© 传奇3 官方 — 本页面为演示模板，请替换实际下载链接与资源</footer>
+    </div>
+
+    <!-- 右侧 preview -->
+    <div class="preview" aria-hidden="true">
+      <div class="screenshot" role="img" aria-label="游戏预览"></div>
+    </div>
   </div>
-</div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div>
+          <div id="modalTitle" style="font-size:18px;font-weight:700">选择下载平台</div>
+          <div class="small-muted">请选择适合你的设备或扫码下载</div>
+        </div>
+        <button class="btn btn-ghost" id="closeModal">✕ 关闭</button>
+      </div>
+
+      <div class="modal-grid">
+        <div>
+          <div class="platform-tabs" id="platformTabs">
+            <div class="tab active" data-platform="windows">Windows</div>
+            <div class="tab" data-platform="android">Android</div>
+            <div class="tab" data-platform="ios">iOS</div>
+          </div>
+
+          <div id="platformContent">
+            <!-- Windows content -->
+            <div class="platform-panel" data-panel="windows">
+              <div style="font-weight:700">Windows 客户端</div>
+              <div class="small-muted">适用于 Windows 10 / 11</div>
+              <div style="margin-top:10px">
+                <input class="input-link" id="linkWin" readonly value="https://example.com/legend3/windows/setup.exe" />
+              </div>
+              <div class="download-actions">
+                <button class="btn btn-download" id="startWin">下载并保存 (exe)</button>
+                <button class="btn btn-ghost" id="copyWin">复制链接</button>
+              </div>
+              <div class="progress" id="progressWin" style="display:none"><i style="width:0%"></i></div>
+              <div class="small-muted" id="hintWin">如果下载未开始，请复制链接到浏览器。</div>
+            </div>
+
+            <!-- Android content -->
+            <div class="platform-panel" data-panel="android" style="display:none">
+              <div style="font-weight:700">Android APK</div>
+              <div class="small-muted">适配多数安卓机型</div>
+              <div style="margin-top:10px">
+                <input class="input-link" id="linkAndroid" readonly value="https://example.com/legend3/android.apk" />
+              </div>
+              <div class="download-actions">
+                <button class="btn btn-download" id="startAndroid">下载 APK</button>
+                <button class="btn btn-ghost" id="copyAndroid">复制链接</button>
+              </div>
+              <div class="progress" id="progressAndroid" style="display:none"><i style="width:0%"></i></div>
+              <div class="small-muted">安装前请允许“未知来源”安装权限。</div>
+            </div>
+
+            <!-- iOS content -->
+            <div class="platform-panel" data-panel="ios" style="display:none">
+              <div style="font-weight:700">iOS 试玩 / 辅助</div>
+              <div class="small-muted">iOS 不支持直接安装 APK，请扫码或访问网页试玩</div>
+              <div style="margin-top:10px">
+                <input class="input-link" id="linkIOS" readonly value="https://example.com/legend3/ios" />
+              </div>
+              <div class="download-actions">
+                <button class="btn btn-download" id="openBrowserIOS">在浏览器打开</button>
+                <button class="btn btn-ghost" id="copyIOS">复制链接</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-weight:700;margin-bottom:8px">扫码下载 / 分享</div>
+          <div class="qr">
+            <!-- 替换下面 src 为生成的二维码图片（不同平台可替换） -->
+            <img id="qrImg" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://example.com/legend3/windows/setup.exe" alt="下载二维码">
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="btn btn-ghost" id="saveQr">保存二维码</button>
+            <button class="btn btn-ghost right" id="shareBtn">分享</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <script>
-const btn = document.getElementById("downloadBtn");
-const modal = document.getElementById("modal");
-const progress = document.getElementById("progressBar");
-const cancelBtn = document.getElementById("cancelBtn");
+  // 元素
+  const openDownload = document.getElementById('openDownload');
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const modal = modalBackdrop.querySelector('.modal');
+  const closeModal = document.getElementById('closeModal');
+  const platformTabs = document.getElementById('platformTabs');
+  const platformPanels = document.querySelectorAll('.platform-panel');
+  const qrImg = document.getElementById('qrImg');
 
-const downloadURL = "https://example.com/legend3.zip"; // 替换为真实下载链接
+  // 打开模态
+  openDownload.addEventListener('click', ()=> {
+    modalBackdrop.style.display = 'flex';
+    // 强制触发动画效果
+    setTimeout(()=> modal.classList.add('show'), 20);
+  });
 
-btn.addEventListener("click", (e) => {
-  btn.classList.add("clicked");
-  setTimeout(() => btn.classList.remove("clicked"), 600);
-  modal.style.display = "flex";
-  progress.style.width = "0%";
-  
-  let percent = 0;
-  const timer = setInterval(() => {
-    percent += Math.random() * 8;
-    if (percent >= 100) {
-      percent = 100;
-      clearInterval(timer);
-      setTimeout(() => {
-        window.location.href = downloadURL; // 跳转下载
-        modal.style.display = "none";
-      }, 800);
+  // 关闭模态
+  function hideModal(){
+    modal.classList.remove('show');
+    setTimeout(()=> modalBackdrop.style.display = 'none', 160);
+  }
+  closeModal.addEventListener('click', hideModal);
+  modalBackdrop.addEventListener('click', (e)=> { if(e.target === modalBackdrop) hideModal() });
+  document.addEventListener('keydown', (e)=> { if(e.key === 'Escape') hideModal() });
+
+  // 平台切换
+  platformTabs.addEventListener('click', (e)=>{
+    const t = e.target.closest('.tab');
+    if(!t) return;
+    platformTabs.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    const p = t.dataset.platform;
+    platformPanels.forEach(panel=>{
+      if(panel.dataset.panel === p) panel.style.display = '';
+      else panel.style.display = 'none';
+    });
+    // 更新二维码为对应链接（演示）
+    const links = {
+      windows: document.getElementById('linkWin').value,
+      android: document.getElementById('linkAndroid').value,
+      ios: document.getElementById('linkIOS').value
+    };
+    qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(links[p]);
+  });
+
+  // 复制链接工具
+  function copyText(id){
+    const el = document.getElementById(id);
+    navigator.clipboard?.writeText(el.value).then(()=> {
+      alert('链接已复制到剪贴板');
+    }).catch(()=> {
+      el.select();
+      document.execCommand('copy');
+      alert('链接已复制（备用方法）');
+    });
+  }
+  document.getElementById('copyWin').addEventListener('click', ()=> copyText('linkWin'));
+  document.getElementById('copyAndroid').addEventListener('click', ()=> copyText('linkAndroid'));
+  document.getElementById('copyIOS').addEventListener('click', ()=> copyText('linkIOS'));
+
+  // 模拟下载进度（示例：真实场景下调用后端或直接跳转下载）
+  function simulateProgress(progressEl){
+    progressEl.style.display = 'block';
+    const bar = progressEl.querySelector('i');
+    let val = 0;
+    bar.style.width = '0%';
+    const t = setInterval(()=>{
+      val += Math.random()*18;
+      if(val >= 100){ val = 100; clearInterval(t); }
+      bar.style.width = val + '%';
+    }, 300);
+  }
+
+  document.getElementById('startWin').addEventListener('click', ()=>{
+    const p = document.getElementById('progressWin');
+    simulateProgress(p);
+    // 如果你有真实的下载地址并想直接跳转：
+    // window.location.href = document.getElementById('linkWin').value;
+  });
+  document.getElementById('startAndroid').addEventListener('click', ()=>{
+    const p = document.getElementById('progressAndroid');
+    simulateProgress(p);
+    // window.location.href = document.getElementById('linkAndroid').value;
+  });
+
+  // 打开 iOS 链接（示例）
+  document.getElementById('openBrowserIOS').addEventListener('click', ()=>{
+    const url = document.getElementById('linkIOS').value;
+    window.open(url, '_blank');
+  });
+
+  // 分享（简单示例：使用 Web Share API 在支持的设备上）
+  document.getElementById('shareBtn').addEventListener('click', async ()=>{
+    const active = platformTabs.querySelector('.tab.active').dataset.platform;
+    const urlMap = {
+      windows: document.getElementById('linkWin').value,
+      android: document.getElementById('linkAndroid').value,
+      ios: document.getElementById('linkIOS').value
+    };
+    const shareData = { title:'传奇3 - 立即下载', text:'一起来玩传奇3！', url: urlMap[active] };
+    if(navigator.share){
+      try { await navigator.share(shareData); }
+      catch(e){ alert('分享取消或不支持'); }
+    } else {
+      copyText(active==='windows'?'linkWin':(active==='android'?'linkAndroid':'linkIOS'));
     }
-    progress.style.width = percent + "%";
-  }, 200);
-});
+  });
 
-cancelBtn.addEventListener("click", () => {
-  modal.style.display = "none";
-});
+  // 保存二维码图片（在支持的情况下）
+  document.getElementById('saveQr').addEventListener('click', ()=>{
+    const a = document.createElement('a');
+    a.href = qrImg.src;
+    a.download = 'legend3-qrcode.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
+
+  // 试玩预览（示例弹窗/提示）
+  document.getElementById('playTrailer').addEventListener('click', ()=>{
+    alert('这是试玩预览按钮示例。你可以把这里改成打开演示视频或游戏试玩页。');
+  });
+
+  // 页面加载动画
+  window.addEventListener('load', ()=>{
+    document.querySelector('.screenshot').style.transform = 'translateY(-6px) rotate(-0.6deg)';
+    setTimeout(()=> document.querySelector('.screenshot').style.transform = 'translateY(0)', 1200);
+  });
 </script>
-
 </body>
 </html>
