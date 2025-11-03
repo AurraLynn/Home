@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyn's Home</title>
+
+    <!-- =======================
+         Telegram / Open Graph meta 标签
+    ======================= -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Lyn's Wonderland of Regret">
+    <meta property="og:description" content="明明很努力也有方法，你为什么还是没结果？因为你不是明明。">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:url" content="https://aura.us.kg">
+    <meta property="og:title" content="Lyn's Daily Disasters">
+    <meta property="og:description" content="失败也是成功的一部分，在哪里跌倒，就在哪里讹人。">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:url" content="https://aura.us.kg">
+    <meta property="og:title" content="The Art of Failing Gracefully">
+    <meta property="og:description" content="放心吧，只要你持续走下坡路，就永远不会处在人生最低谷。">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:url" content="https://aura.us.kg">
+    <meta property="og:title" content="Lyn’s Wonderland of Chaos">
+    <meta property="og:description" content="看见你我就放心了，我还以为，所有人都特别努力呢。">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:url" content="https://aura.us.kg">
+    <meta property="og:title" content="Laughing at Life’s Mess">
+    <meta property="og:description" content="人生就像打电话，不是你先挂就是我先挂。">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:url" content="https://aura.us.kg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Lyn's Wonderland">
+    <meta name="twitter:description" content="每天的郁郁寡欢，归根到底就是想得太多，做得太少。">
+    <meta name="twitter:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+
+    <!-- =======================
+         字体引入
+    ======================= -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- =======================
+         样式
+    ======================= -->
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;user-select:text;pointer-events:auto;}
+        html,body{width:100%;min-height:100%;background:#000;color:#fff;position:relative;overflow-x:hidden;overflow-y:auto;padding-bottom:40px;}
+        #bgContainer{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;overflow:hidden;background:#111;}
+        #bgContainer img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
+        #bgOverlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.35);pointer-events:none;z-index:1;}
+        #particleCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none;}
+        .main-container{margin-top:3vh;text-align:center;z-index:3;color:#ffd6aa;padding:0 10px;position:relative;margin-bottom:25vh;transform:translateY(32px);}
+        .main-slogan{font-size:clamp(1.5rem,5vw,28px);margin-bottom:10px;color:#ff9a76;}
+        #time-display{font-family:'Orbitron',sans-serif;font-size:clamp(3rem,10vw,80px);margin-bottom:8px;color:#fff;font-weight:700;}
+        .main-container p{font-size:clamp(0.9rem,3vw,16px);color:#ffc;}
+        .profile-card{position:relative;max-width:500px;width:90%;margin:0 auto 8px;padding:25px 20px;background-color:rgba(0,0,0,0.25);border-radius:16px;box-shadow:0 20px 40px rgba(255, 255, 255, 0.58);text-align:center;opacity:0;transform:translateY(50px);transition:opacity 2s ease,transform 2s ease;backdrop-filter:blur(8px);z-index:3;word-break:break-word;}
+        @media (min-width:768px){.main-container{margin-bottom:35vh;transform:translateY(32px);}.profile-card{margin:0 auto 12px;}}
+        .profile-card.visible{opacity:1;transform:translateY(0);animation:floatJump 2s ease-in-out infinite;}
+        @keyframes floatJump{0%{transform:translateY(0);}50%{transform:translateY(-3px);}100%{transform:translateY(0);}}
+        .profile-card h1{font-size:clamp(1.5rem,5vw,28px);margin-bottom:12px;color:#fff;}
+        .quote-wrap{min-height:80px;display:flex;flex-direction:column;justify-content:center;margin-bottom:20px;font-size:clamp(0.9rem,3vw,16px);line-height:1.8;}
+        .quote-text{color:#eee;margin-bottom:8px;}
+        .quote-author{color:#aaa;font-size:clamp(0.8rem,2.5vw,14px);}
+        .like-tag{display:inline-block;padding:8px 22px;border-radius:30px;background:linear-gradient(135deg,#ff7eb9,#ff65a3);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:clamp(0.9rem,2.5vw,15px);cursor:pointer;transition:all 0.3s ease;touch-action:manipulation;}
+        .like-tag:hover{background:linear-gradient(135deg,#ff99c8,#ff85b8);transform:translateY(-2px);box-shadow:0 4px 12px rgba(255,125,185,0.4);}
+        .like-tag.clicked{background:linear-gradient(135deg,#ffb0d1,#ff9ac4);}
+        .like-tag .like-num{font-weight:bold;margin-left:6px;}
+        .footer{width:100%;text-align:center;color:#aaa;font-size:clamp(0.7rem,2vw,12px);margin-top:8px;padding:8px 0 20px;position:relative;z-index:3;}
+        @keyframes quoteBreathe{0%,100%{opacity:0.7;filter:brightness(1);}50%{opacity:1;filter:brightness(1.3);}}
+        #quoteText{animation:quoteBreathe 4s ease-in-out infinite;}
+    </style>
+</head>
+<body>
+
+<div id="bgContainer">
+    <img id="bgImage" src="https://save.aura.us.kg/Picture/bg.jpg" alt="背景图片">
+    <div id="bgOverlay"></div>
+</div>
+
+<canvas id="particleCanvas"></canvas>
+
+<div class="main-container">
+    <h2 class="main-slogan">记录美好生活</h2>
+    <h2>现在时间</h2>
+    <div id="time-display"></div>
+    <p>该看 VLOG 了!</p>
+</div>
+
+<div class="profile-card" id="profileCard">
+    <h1>Hello, I'm Lyn.</h1>
+    <div class="quote-wrap">
+        <div class="quote-text" id="quoteText">正在熬鸡汤...</div>
+        <div class="quote-author" id="quoteAuthor">——</div>
+    </div>
+    <div class="like-tag" id="likeTag">喜欢 <span class="like-num" id="likeNum">0</span></div>
+</div>
+
+<div class="footer">© 2025 | Lyn's Homepage</div>
+
+<!-- =======================
+     JS 脚本（展开可读版）
+======================= -->
+<script>
+    /* -----------------------
+       背景淡入
+    ----------------------- */
+    const bgImage = document.getElementById('bgImage');
+    bgImage.onload = () => {
+        bgImage.style.opacity = 1;
+    };
+
+    /* -----------------------
+       卡片弹出
+    ----------------------- */
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            document.getElementById('profileCard').classList.add('visible');
+        }, 500);
+    });
+
+    /* -----------------------
+       点赞逻辑
+    ----------------------- */
+    let likeCount = Math.floor(Math.random() * 900000 + 999);
+    const likeTag = document.getElementById('likeTag');
+    const likeNum = document.getElementById('likeNum');
+    likeNum.textContent = likeCount;
+
+    likeTag.addEventListener('click', () => { likeAction(); });
+    likeTag.addEventListener('touchstart', e => {
+        e.preventDefault();
+        likeAction();
+    }, { passive: false });
+
+    /* -----------------------
+       伪作者库
+    ----------------------- */
+    const authors = [
+        "鲁迅（真没说过）","莎士比亚（编的）","尼采（梦里说的）","苏格拉底（猜他会说）",
+        "王阳明（穿越写的）","弗洛伊德（梦到的）","孔子（可能会笑）","庄子（飘着说）",
+        "李白（喝多了）","爱因斯坦（灵光一闪）"
+    ];
+    const quoteText = document.getElementById('quoteText');
+    const quoteAuthor = document.getElementById('quoteAuthor');
+    let gibberishTimer = null;
+
+    /* -----------------------
+       获取鸡汤
+    ----------------------- */
+    async function fetchQuoteData() {
+        try {
+            const res = await fetch('https://api.btstu.cn/yan/api.php?charset=utf-8&encode=json');
+            const data = await res.json();
+            return { text: data.text || "今日事今日毕，明日事明日盼" };
+        } catch (e) {
+            return { text: "鸡汤加载失败，请刷新试试。" };
+        }
+    }
+
+    /* -----------------------
+       获取随机字符（打字机效果）
+    ----------------------- */
+    function getRandomChar() {
+        const chars = 'āáǎàōóǒòēéěèīíǐìūúǔùǖǘǚǜñüýÿžźżçćčñđšșț¡¿¢£¥€§©®™←→↑↓<>{}[]()!@#$%^&*~`+-=,./;:"\'\\|丶一丨丿乙乛';
+        return chars[Math.floor(Math.random() * chars.length)];
+    }
+
+    /* -----------------------
+       生成鸡汤 + 乱码过渡
+    ----------------------- */
+    async function fetchQuoteWithGibberish() {
+        if (gibberishTimer) clearInterval(gibberishTimer);
+
+        quoteText.textContent = "加载中...";
+        quoteAuthor.textContent = "——";
+
+        const { text } = await fetchQuoteData();
+        const randomAuthor = authors[Math.floor(Math.random() * authors.length)];
+
+        quoteText.textContent = '';
+        const displayArray = new Array(text.length).fill('');
+        let currentIndex = 0;
+
+        function showRandomChars() {
+            if (currentIndex < text.length) {
+                displayArray[currentIndex] = getRandomChar();
+                quoteText.textContent = displayArray.join('');
+                currentIndex++;
+                setTimeout(showRandomChars, 100);
+            } else {
+                let revealIndex = 0;
+                gibberishTimer = setInterval(() => {
+                    if (revealIndex < text.length) {
+                        displayArray[revealIndex] = text[revealIndex];
+                        quoteText.textContent = displayArray.join('');
+                        revealIndex++;
+                    } else {
+                        clearInterval(gibberishTimer);
+                        quoteText.textContent = text;
+                        quoteAuthor.textContent = "—— " + randomAuthor;
+                    }
+                }, 50);
+            }
+        }
+
+        showRandomChars();
+    }
+
+    /* -----------------------
+       点赞触发鸡汤
+    ----------------------- */
+    function likeAction() {
+        likeCount++;
+        likeNum.textContent = likeCount;
+        likeTag.classList.add('clicked');
+        setTimeout(() => likeTag.classList.remove('clicked'), 300);
+        fetchQuoteWithGibberish();
+    }
+
+    /* -----------------------
+       初始化鸡汤
+    ----------------------- */
+    fetchQuoteWithGibberish();
+
+    /* -----------------------
+       更新时间
+    ----------------------- */
+    function updateTime() {
+        const now = new Date();
+        const h = now.getHours().toString().padStart(2, '0');
+        const m = now.getMinutes().toString().padStart(2, '0');
+        document.getElementById('time-display').textContent = `${h}:${m}`;
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    /* -----------------------
+       粒子效果
+    ----------------------- */
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let W = canvas.width = window.innerWidth;
+    let H = canvas.height = window.innerHeight;
+    let particles = [];
+
+    class Particle {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.r = 2 + Math.random() * 2;
+            this.alpha = 0.8 + Math.random() * 0.2;
+            this.speedX = (Math.random() - 0.5) * 1;
+            this.speedY = (Math.random() - 0.5) * 1;
+        }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            if (this.x < 0 || this.x > W) this.speedX *= -1;
+            if (this.y < 0 || this.y > H) this.speedY *= -1;
+            this.alpha *= 0.995;
+            return this.alpha < 0.05;
+        }
+        draw() {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255,255,255,${this.alpha})`;
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+
+    function createParticles(x, y) {
+        for (let i = 0; i < 15; i++) {
+            particles.push(new Particle(x, y));
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, W, H);
+        for (let i = particles.length - 1; i >= 0; i--) {
+            if (particles[i].update()) {
+                particles.splice(i, 1);
+            } else {
+                particles[i].draw();
+            }
+        }
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    function handleClick(e) {
+        if (!e.target.closest('.quote-wrap') &&
+            !e.target.closest('.like-tag') &&
+            !e.target.closest('#time-display')) {
+            createParticles(e.clientX, e.clientY);
+        }
+    }
+
+    function handleTouch(e) {
+        if (e.target.closest('.quote-wrap') ||
+            e.target.closest('.like-tag') ||
+            e.target.closest('#time-display')) return;
+        e.preventDefault();
+        createParticles(e.touches[0].clientX, e.touches[0].clientY);
+    }
+
+    document.body.addEventListener('click', handleClick);
+    document.body.addEventListener('touchstart', handleTouch, { passive: false });
+
+    window.addEventListener('resize', () => {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+    });
+</script>
+</body>
+</html>
