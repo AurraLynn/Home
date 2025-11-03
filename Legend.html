@@ -1,361 +1,222 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>传奇3 — 古风下载</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>传奇3 · 英雄再现</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg1: #0b1020;
-    --bg2: #0f1a2a;
-    --accent: #d8a14a;
-    --accent-2: #f5e0b9;
-    --glass: rgba(255,255,255,0.06);
-    --gold: linear-gradient(90deg,#e6b86a,#ffd57a);
-    --text: #f6ecd7;
-    --muted: rgba(246,236,215,0.65);
-    --shadow: 0 8px 30px rgba(0,0,0,0.6);
-    font-family: "Noto Serif SC", serif;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    background: radial-gradient(1200px 700px at 10% 10%, rgba(255,214,138,0.04), transparent),
-                linear-gradient(180deg,var(--bg1),var(--bg2));
-    color:var(--text);
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    overflow-x:hidden;
-  }
+body {
+  margin: 0;
+  background: radial-gradient(circle at 50% 20%, #1a1a1a, #090909);
+  color: #f5deb3;
+  font-family: "Noto Serif SC", serif;
+  overflow-x: hidden;
+}
 
-  /* 背景纹理与云层 */
-  .bg{
-    position:fixed; inset:0; z-index:0; pointer-events:none;
-  }
-  .bg::before{
-    content:"";
-    position:absolute; inset:0;
-    background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.02), transparent 15%),
-                      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><g fill="%23d8c29e" opacity="0.02"><circle cx="100" cy="100" r="50"/><circle cx="700" cy="500" r="80"/></g></svg>');
-    background-size:cover;
-    filter:blur(18px) saturate(1.2);
-    transform:translateZ(0);
-    mix-blend-mode:overlay;
-  }
-  .clouds{
-    position:absolute; left:50%; top:10%;
-    transform:translateX(-50%);
-    width:120%; height:40%;
-    background:
-      radial-gradient(closest-side, rgba(255,255,255,0.06), transparent 60%),
-      radial-gradient(closest-side, rgba(255,255,255,0.04), transparent 40%);
-    filter:blur(18px);
-    opacity:0.9;
-    animation: drift 30s linear infinite;
-    pointer-events:none;
-  }
-  @keyframes drift{ from{transform:translate(-55%,0)} to{transform:translate(-45%,0)} }
+.hero {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  text-align: center;
+  overflow: hidden;
+}
 
-  /* 主容器 */
-  .wrap{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:48px 20px;
-    position:relative;
-    z-index:2;
-  }
-  .card{
-    width:100%;
-    max-width:1100px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border-radius:20px;
-    padding:48px;
-    box-shadow:var(--shadow);
-    border: 1px solid rgba(255,255,255,0.03);
-    overflow:hidden;
-    display:grid;
-    grid-template-columns: 1fr 360px;
-    gap:28px;
-    align-items:center;
-  }
+/* 背景发光龙纹 */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url('https://save.aura.us.kg/Picture/dragon-pattern.png') center/60% no-repeat;
+  opacity: 0.15;
+  filter: blur(2px);
+}
 
-  /* 左侧：标题与介绍 */
-  .hero{
-    padding:6px 18px;
-  }
-  .logo{
-    display:flex; align-items:center; gap:12px;
-    margin-bottom:18px;
-  }
-  .seal{
-    width:72px; height:72px; border-radius:12px;
-    background:var(--gold);
-    display:flex; align-items:center; justify-content:center;
-    font-family:"Ma Shan Zheng", cursive;
-    font-size:26px;
-    color:#2b1700;
-    box-shadow:0 6px 18px rgba(0,0,0,0.45);
-    transform:rotate(-6deg);
-  }
-  h1{
-    margin:0;
-    font-size:44px;
-    line-height:1.05;
-    letter-spacing:2px;
-    text-shadow: 0 4px 22px rgba(0,0,0,0.7);
-  }
-  .sub{
-    color:var(--muted);
-    margin-top:8px;
-    font-size:15px;
-  }
-  .desc{
-    margin-top:18px;
-    color:var(--muted);
-    font-size:14px;
-    max-width:70ch;
-    line-height:1.8;
-  }
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 30%, rgba(255,215,0,0.12), transparent 70%);
+  animation: glow 6s ease-in-out infinite alternate;
+}
+@keyframes glow {
+  from { opacity: 0.2; }
+  to { opacity: 0.5; }
+}
 
-  /* 右侧：卡片与下载 */
-  .download-panel{
-    background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
-    border-radius:14px;
-    padding:22px;
-    text-align:center;
-    border:1px solid rgba(255,255,255,0.03);
-  }
-  .game-thumb{
-    height:170px;
-    border-radius:10px;
-    background:
-      radial-gradient(circle at 10% 10%, rgba(255,255,255,0.03), transparent 10%),
-      linear-gradient(135deg,#0f2333,#1b2a3a);
-    display:flex; align-items:center; justify-content:center;
-    font-size:18px; color:var(--muted);
-    box-shadow: inset 0 2px 25px rgba(0,0,0,0.4);
-  }
-  .meta{
-    margin-top:14px;
-  }
-  .meta .tag{ display:inline-block; padding:6px 10px; border-radius:8px; font-size:12px; background:rgba(255,255,255,0.02); color:var(--muted); margin-right:8px; }
-  .meta .ver{ color:var(--accent-2); font-weight:700; }
+/* 标题 */
+h1 {
+  font-family: "Ma Shan Zheng", cursive;
+  font-size: 80px;
+  letter-spacing: 6px;
+  color: #ffcc66;
+  text-shadow: 0 0 20px rgba(255,215,0,0.6), 0 0 40px rgba(255,215,0,0.3);
+  z-index: 2;
+}
+h2 {
+  font-size: 24px;
+  color: #d8c299;
+  margin-top: 10px;
+  z-index: 2;
+}
 
-  /* 下载按钮（印章风） */
-  .download-btn{
-    margin-top:20px;
-    display:inline-block;
-    cursor:pointer;
-    border-radius:999px;
-    padding:16px 34px;
-    font-size:18px;
-    font-weight:700;
-    letter-spacing:1px;
-    color:#2b1700;
-    background:var(--gold);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 6px rgba(216,161,74,0.06) inset;
-    border: none;
-    transition: transform .18s cubic-bezier(.2,.9,.3,1), box-shadow .18s;
-    position:relative;
-    user-select:none;
-  }
-  .download-btn:active{ transform:translateY(3px) scale(.995) }
-  .download-btn .ripple{
-    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) scale(0);
-    width:160%; height:160%; background:rgba(255,255,255,0.06); border-radius:50%;
-    transition: transform .45s cubic-bezier(.2,.9,.3,1), opacity .45s;
-    opacity:0;
-    pointer-events:none;
-  }
-  .download-btn.play .ripple{ transform:translate(-50%,-50%) scale(1); opacity:1 }
+/* 下载按钮 */
+.download-btn {
+  margin-top: 40px;
+  font-size: 22px;
+  padding: 16px 48px;
+  border: none;
+  border-radius: 50px;
+  background: linear-gradient(90deg, #ffd56b, #e6b645);
+  color: #3a2500;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 30px rgba(255,215,0,0.4);
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  z-index: 2;
+}
+.download-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 50px rgba(255,215,0,0.7);
+}
+.download-btn:active {
+  transform: scale(0.97);
+}
 
-  /* 升级: 小印章徽章 */
-  .stamp{
-    display:inline-block;
-    margin-left:12px;
-    font-family:"Ma Shan Zheng";
-    color:#2b1700;
-    background:rgba(0,0,0,0.06);
-    padding:8px 12px;
-    border-radius:8px;
-    font-size:16px;
-    transform:rotate(-4deg);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.45);
-  }
+/* 按钮波纹效果 */
+.download-btn::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: rgba(255,255,255,0.4);
+  border-radius: 50%;
+  transform: scale(1);
+  opacity: 0;
+  pointer-events: none;
+}
+.download-btn.clicked::after {
+  animation: ripple 0.6s linear;
+}
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 0.8; }
+  100% { transform: scale(10); opacity: 0; }
+}
 
-  /* 页脚装饰 */
-  .ornament{
-    margin-top:18px;
-    color:var(--muted);
-    font-size:13px;
-  }
+/* 模态框 */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 99;
+}
 
-  /* 下载弹窗 */
-  .modal{
-    position:fixed;
-    left:50%; top:50%;
-    transform:translate(-50%,-50%) scale(.96);
-    min-width:320px; max-width:420px;
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border-radius:12px;
-    padding:18px;
-    box-shadow:0 30px 70px rgba(0,0,0,0.6);
-    border:1px solid rgba(255,255,255,0.03);
-    z-index:999;
-    display:none;
-  }
-  .modal.show{ display:block; animation:pop .28s cubic-bezier(.2,.9,.3,1) both; transform:translate(-50%,-50%) scale(1); }
-  @keyframes pop{ from{opacity:0; transform:translate(-50%,-50%) scale(.96)} to{opacity:1; transform:translate(-50%,-50%) scale(1)} }
-  .progress{
-    height:12px; background: rgba(255,255,255,0.04); border-radius:8px; overflow:hidden; margin-top:12px;
-  }
-  .progress > i{ display:block; height:100%; width:0%; background: linear-gradient(90deg,#ffd57a,#e6b86a); transition: width .2s linear; }
+.modal-content {
+  background: #111;
+  border: 1px solid #d8b156;
+  border-radius: 12px;
+  padding: 40px 60px;
+  text-align: center;
+  color: #f5deb3;
+  box-shadow: 0 0 30px rgba(255,215,0,0.2);
+  animation: pop 0.3s ease-out;
+}
+@keyframes pop {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
 
-  .modal .title{ font-weight:700; font-size:16px; color:var(--text) }
-  .modal .hint{font-size:13px; color:var(--muted); margin-top:6px}
-
-  /* 响应式 */
-  @media (max-width:920px){
-    .card{ grid-template-columns: 1fr; padding:28px; gap:18px; }
-    h1{ font-size:36px }
-    .download-panel{ order:2 }
-  }
+.progress-bar {
+  width: 300px;
+  height: 12px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 20px;
+  position: relative;
+}
+.progress-bar-inner {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #ffd56b, #e6b645);
+  transition: width 0.2s linear;
+}
+.close-btn {
+  margin-top: 24px;
+  background: none;
+  border: 1px solid #d8b156;
+  color: #d8b156;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.close-btn:hover {
+  background: #d8b156;
+  color: #111;
+}
 </style>
 </head>
 <body>
-  <div class="bg">
-    <div class="clouds" aria-hidden="true"></div>
+
+<div class="hero">
+  <h1>传奇 Ⅲ</h1>
+  <h2>英雄再现 · 沙城热血重燃</h2>
+  <button class="download-btn" id="downloadBtn">立即下载</button>
+</div>
+
+<!-- 模态框 -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h2>正在准备下载...</h2>
+    <div class="progress-bar"><div class="progress-bar-inner" id="progressBar"></div></div>
+    <button class="close-btn" id="cancelBtn">取消</button>
   </div>
-
-  <main class="wrap" role="main">
-    <section class="card" aria-label="传奇3 下载页">
-      <div class="hero">
-        <div class="logo">
-          <div class="seal" aria-hidden="true">传</div>
-          <div>
-            <div style="font-size:13px; color:var(--muted);">古风重现 · 经典回归</div>
-            <h1>传奇<span style="color:var(--accent-2)">3</span></h1>
-          </div>
-        </div>
-
-        <p class="sub">千年一梦，刀光剑影——唤醒回忆中的沙城热血。</p>
-
-        <p class="desc">
-          《传奇3》——延续经典战法，新增自由交易与跨服激战。此页面为非官方风格下载页：特色古风界面、印章式下载按钮与下载进度提示。
-          点击下方“下载”按钮即可开始（或在链接地址替换为你的安装包、安装器或种子）。
-        </p>
-
-        <div class="ornament">版本：<span class="meta ver">v1.0.2</span> · 文件大小：<span class="meta tag">1.8 GB</span></div>
-      </div>
-
-      <aside class="download-panel" aria-label="下载面板">
-        <div class="game-thumb" aria-hidden="true">
-          <div>
-            <div style="font-size:20px; font-weight:700;">传奇3</div>
-            <div style="margin-top:8px; color:var(--muted); font-size:13px;">沙城再临 · 英雄集结</div>
-          </div>
-        </div>
-
-        <div class="meta" aria-hidden="true">
-          <span class="tag">多人在线</span>
-          <span class="tag">复古画风</span>
-        </div>
-
-        <button id="downloadBtn" class="download-btn" aria-label="下载 传奇3">
-          <span>立即下载</span>
-          <span class="stamp">印</span>
-          <span class="ripple" aria-hidden="true"></span>
-        </button>
-
-        <div style="margin-top:12px; color:var(--muted); font-size:13px;">或使用磁力/种子安装包（高级用户）</div>
-      </aside>
-    </section>
-  </main>
-
-  <!-- 下载进度模态 -->
-  <div class="modal" id="dlModal" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="title">正在准备下载…</div>
-    <div class="hint">连接服务器并校验文件。请稍候（模拟）</div>
-    <div class="progress" aria-hidden="true" style="margin-top:12px;"><i id="bar"></i></div>
-    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
-      <button id="cancelBtn" style="background:none;border:none;color:var(--muted);cursor:pointer;">取消</button>
-    </div>
-  </div>
+</div>
 
 <script>
-  (function(){
-    const btn = document.getElementById('downloadBtn');
-    const ripple = btn.querySelector('.ripple');
-    const modal = document.getElementById('dlModal');
-    const bar = document.getElementById('bar');
-    const cancelBtn = document.getElementById('cancelBtn');
+const btn = document.getElementById("downloadBtn");
+const modal = document.getElementById("modal");
+const progress = document.getElementById("progressBar");
+const cancelBtn = document.getElementById("cancelBtn");
 
-    // 替换成你的真实下载地址（或安装器）
-    const DOWNLOAD_URL = 'https://example.com/legend3.zip';
+const downloadURL = "https://example.com/legend3.zip"; // 替换为真实下载链接
 
-    let timer = null;
-
-    function startDownloadSimulation(){
-      // 显示波纹与模态
-      btn.classList.add('play');
-      modal.classList.add('show');
-      modal.setAttribute('aria-hidden','false');
-
-      let progress = 2;
-      bar.style.width = '0%';
-      // 模拟下载进度（实际项目中这里可替换为真实 fetch/下载逻辑）
-      timer = setInterval(()=>{
-        progress += Math.floor(Math.random()*8)+3; // 随机推进
-        if(progress > 98) progress = 98;
-        bar.style.width = progress + '%';
-      }, 400);
-
-      // 模拟短暂准备后开始真实跳转（此处延时可改，或直接开始真正的下载）
-      setTimeout(()=> {
-        // 完成进度条并跳转
-        clearInterval(timer);
-        bar.style.width = '100%';
-        setTimeout(()=> {
-          // 关闭模态
-          modal.classList.remove('show');
-          modal.setAttribute('aria-hidden','true');
-          btn.classList.remove('play');
-          // 跳转到真实下载链接（会触发浏览器下载或打开）
-          window.location.href = DOWNLOAD_URL;
-        }, 700);
-      }, 3000 + Math.random()*2200); // 3~5s 的准备时间（模拟）
+btn.addEventListener("click", (e) => {
+  btn.classList.add("clicked");
+  setTimeout(() => btn.classList.remove("clicked"), 600);
+  modal.style.display = "flex";
+  progress.style.width = "0%";
+  
+  let percent = 0;
+  const timer = setInterval(() => {
+    percent += Math.random() * 8;
+    if (percent >= 100) {
+      percent = 100;
+      clearInterval(timer);
+      setTimeout(() => {
+        window.location.href = downloadURL; // 跳转下载
+        modal.style.display = "none";
+      }, 800);
     }
+    progress.style.width = percent + "%";
+  }, 200);
+});
 
-    btn.addEventListener('click', function(){
-      // 播放波纹
-      ripple.style.transform = 'translate(-50%,-50%) scale(1)';
-      ripple.style.opacity = '1';
-      setTimeout(()=>{ ripple.style.transform = 'translate(-50%,-50%) scale(0)'; ripple.style.opacity = '0'; }, 520);
-
-      startDownloadSimulation();
-    });
-
-    cancelBtn.addEventListener('click', function(){
-      if(timer) clearInterval(timer);
-      modal.classList.remove('show');
-      modal.setAttribute('aria-hidden','true');
-      btn.classList.remove('play');
-      bar.style.width = '0%';
-    });
-
-    // 允许用户按 ESC 关闭模态
-    document.addEventListener('keydown', function(e){
-      if(e.key === 'Escape' && modal.classList.contains('show')){
-        cancelBtn.click();
-      }
-    });
-  })();
+cancelBtn.addEventListener("click", () => {
+  modal.style.display = "none";
+});
 </script>
+
 </body>
 </html>
