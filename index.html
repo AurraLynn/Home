@@ -5,38 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lyn's Home</title>
 
-    <!-- 网站图标 -->
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- =======================
+         Telegram / Open Graph meta 标签
+    ======================= -->
+    <meta property="og:type" content="website">
 
-    <!-- 字体 -->
+    <!-- 组合 1 -->
+    <meta property="og:title" content="Lyn's Wonderland of Regret">
+    <meta property="og:description" content="明明很努力也有方法，你为什么还是没结果？因为你不是明明。">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:url" content="https://aura.us.kg">
+
+    <!-- 组合 2 -->
+    <meta property="og:title" content="Lyn's Daily Disasters">
+    <meta property="og:description" content="失败也是成功的一部分，在哪里跌倒，就在哪里讹人。">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:url" content="https://aura.us.kg">
+
+    <!-- 组合 3 -->
+    <meta property="og:title" content="The Art of Failing Gracefully">
+    <meta property="og:description" content="放心吧，只要你持续走下坡路，就永远不会处在人生最低谷。">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:url" content="https://aura.us.kg">
+
+    <!-- 组合 4 -->
+    <meta property="og:title" content="Lyn’s Wonderland of Chaos">
+    <meta property="og:description" content="看见你我就放心了，我还以为，所有人都特别努力呢。">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:url" content="https://aura.us.kg">
+
+    <!-- 组合 5 -->
+    <meta property="og:title" content="Laughing at Life’s Mess">
+    <meta property="og:description" content="人生就像打电话，不是你先挂就是我先挂。">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:url" content="https://aura.us.kg">
+
+    <!-- Telegram / Twitter Card 支持 -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Lyn's Wonderland">
+    <meta name="twitter:description" content="每天的郁郁寡欢，归根到底就是想得太多，做得太少。">
+    <meta name="twitter:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+
+    <!-- =======================
+         字体引入
+    ======================= -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
 
-    <!-- Telegram/OG/Twitter Card -->
-    <meta property="og:title" content="Lyn's Homepage">
-    <meta property="og:description" content="记录美好生活，多看VLOG.">
-    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://aura.us.kg/">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Lyn's Homepage">
-    <meta name="twitter:description" content="记录美好生活">
-    <meta name="twitter:image" content="https://save.aura.us.kg/Picture/bg.jpg">
-
-    <!-- CSS -->
+    <!-- 样式 -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<!-- 背景层 -->
+<!-- =======================
+     背景容器
+======================= -->
 <div id="bgContainer">
     <img id="bgImage" src="https://save.aura.us.kg/Picture/bg.jpg" alt="背景图片">
     <div id="bgOverlay"></div>
 </div>
+
+<!-- 粒子画布 -->
 <canvas id="particleCanvas"></canvas>
 
-<!-- 主要信息区域 -->
+<!-- =======================
+     主内容容器
+======================= -->
 <div class="main-container">
     <h2 class="main-slogan">记录美好生活</h2>
     <h2>现在时间</h2>
@@ -44,23 +77,24 @@
     <p>该看 VLOG 了!</p>
 </div>
 
-<!-- 卡片信息 -->
+<!-- =======================
+     个人卡片
+======================= -->
 <div class="profile-card" id="profileCard">
     <h1>Hello, I'm Lyn.</h1>
-    <!-- <p>loves to mess around</p>先注释掉 -->
     <div class="quote-wrap">
-        <div id="poison-text">加载鸡汤中...</div>
-        <div id="poison-author">——</div>
+        <div class="quote-text" id="quoteText">正在熬鸡汤...</div>
+        <div class="quote-author" id="quoteAuthor">——</div>
     </div>
-    <div class="like-tag" id="likeTag">
-        喜欢 <span class="like-num" id="likeNum">0</span>
-    </div>
+    <div class="like-tag" id="likeTag">喜欢 <span class="like-num" id="likeNum">0</span></div>
 </div>
 
 <!-- 页脚 -->
 <div class="footer">© 2025 | Lyn's Homepage</div>
 
-<!-- JS -->
+<!-- =======================
+     脚本
+======================= -->
 <script src="script.js"></script>
 </body>
 </html>
