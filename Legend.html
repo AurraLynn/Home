@@ -1,323 +1,361 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>传奇3 - 玛法遗韵，热血重鸣</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Ma Shan Zheng", "Microsoft YaHei", sans-serif;
-        }
-        body {
-            background: #000;
-            color: #fff;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        /* 古风背景层 */
-        .bg-legacy {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url(https://picsum.photos/id/177/1920/1080) no-repeat center;
-            background-size: cover;
-            filter: brightness(0.3) sepia(0.2);
-            z-index: -2;
-        }
-        .bg-pattern {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
-            z-index: -1;
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>传奇3 — 古风下载</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg1: #0b1020;
+    --bg2: #0f1a2a;
+    --accent: #d8a14a;
+    --accent-2: #f5e0b9;
+    --glass: rgba(255,255,255,0.06);
+    --gold: linear-gradient(90deg,#e6b86a,#ffd57a);
+    --text: #f6ecd7;
+    --muted: rgba(246,236,215,0.65);
+    --shadow: 0 8px 30px rgba(0,0,0,0.6);
+    font-family: "Noto Serif SC", serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background: radial-gradient(1200px 700px at 10% 10%, rgba(255,214,138,0.04), transparent),
+                linear-gradient(180deg,var(--bg1),var(--bg2));
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    overflow-x:hidden;
+  }
 
-        /* 头部导航 - 古风形制 */
-        .header {
-            padding: 1.5rem 5%;
-            background: rgba(18,15,8,0.85);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid rgba(251,206,60,0.3);
-            position: sticky;
-            top: 0;
-            z-index: 999;
-        }
-        .header-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo {
-            font-size: 2.2rem;
-            color: #fbc63c;
-            text-shadow: 0 0 12px rgba(251,206,60,0.8), 2px 2px 4px rgba(0,0,0,0.5);
-            letter-spacing: 0.1rem;
-        }
-        .nav {
-            display: flex;
-            gap: 2.5rem;
-        }
-        .nav a {
-            color: #e8e0c7;
-            text-decoration: none;
-            font-size: 1.1rem;
-            position: relative;
-            transition: all 0.3s;
-        }
-        .nav a::after {
-            content: "";
-            position: absolute;
-            bottom: -0.3rem;
-            left: 0;
-            width: 0;
-            height: 1px;
-            background: #fbc63c;
-            transition: width 0.3s;
-        }
-        .nav a:hover {
-            color: #fbc63c;
-            text-shadow: 0 0 8px rgba(251,206,60,0.6);
-        }
-        .nav a:hover::after {
-            width: 100%;
-        }
-        .menu-btn {
-            display: none;
-            font-size: 1.5rem;
-            color: #fbc63c;
-            cursor: pointer;
-        }
+  /* 背景纹理与云层 */
+  .bg{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+  }
+  .bg::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.02), transparent 15%),
+                      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><g fill="%23d8c29e" opacity="0.02"><circle cx="100" cy="100" r="50"/><circle cx="700" cy="500" r="80"/></g></svg>');
+    background-size:cover;
+    filter:blur(18px) saturate(1.2);
+    transform:translateZ(0);
+    mix-blend-mode:overlay;
+  }
+  .clouds{
+    position:absolute; left:50%; top:10%;
+    transform:translateX(-50%);
+    width:120%; height:40%;
+    background:
+      radial-gradient(closest-side, rgba(255,255,255,0.06), transparent 60%),
+      radial-gradient(closest-side, rgba(255,255,255,0.04), transparent 40%);
+    filter:blur(18px);
+    opacity:0.9;
+    animation: drift 30s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes drift{ from{transform:translate(-55%,0)} to{transform:translate(-45%,0)} }
 
-        /* 英雄区 - 古风意境 */
-        .hero {
-            max-width: 1400px;
-            margin: 6rem auto 8rem;
-            padding: 0 5%;
-            text-align: center;
-            position: relative;
-        }
-        .hero::before {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background: linear-gradient(to right, transparent, rgba(251,206,60,0.5), transparent);
-            transform: translateY(-50%);
-            z-index: 1;
-        }
-        .hero-content {
-            position: relative;
-            z-index: 2;
-            background: rgba(18,15,8,0.7);
-            padding: 3rem 2rem;
-            border: 1px solid rgba(251,206,60,0.4);
-            border-radius: 2px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        .hero h1 {
-            font-size: 3.2rem;
-            color: #fbc63c;
-            margin-bottom: 1.5rem;
-            text-shadow: 0 0 15px rgba(251,206,60,0.7);
-            letter-spacing: 0.2rem;
-        }
-        .hero p {
-            font-size: 1.2rem;
-            color: #e8e0c7;
-            line-height: 1.8;
-            margin-bottom: 2.5rem;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+  /* 主容器 */
+  .wrap{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:48px 20px;
+    position:relative;
+    z-index:2;
+  }
+  .card{
+    width:100%;
+    max-width:1100px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:20px;
+    padding:48px;
+    box-shadow:var(--shadow);
+    border: 1px solid rgba(255,255,255,0.03);
+    overflow:hidden;
+    display:grid;
+    grid-template-columns: 1fr 360px;
+    gap:28px;
+    align-items:center;
+  }
 
-        /* 古风下载按钮 - 炫酷动效 */
-        .download-btn {
-            display: inline-block;
-            padding: 1.2rem 3rem;
-            background: linear-gradient(120deg, #d4a017, #fbc63c, #d4a017);
-            color: #120f08;
-            font-size: 1.3rem;
-            font-weight: bold;
-            text-decoration: none;
-            border: 1px solid #fbc63c;
-            border-radius: 2px;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.4s;
-            box-shadow: 0 0 15px rgba(251,206,60,0.5), inset 0 0 10px rgba(255,255,255,0.2);
-        }
-        .download-btn::before {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
-            transform: rotate(30deg);
-            animation: btnShine 3s infinite linear;
-        }
-        .download-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 25px rgba(251,206,60,0.7), inset 0 0 15px rgba(255,255,255,0.3);
-            color: #000;
-        }
-        .download-btn i {
-            margin-right: 0.8rem;
-            font-size: 1.4rem;
-        }
-        @keyframes btnShine {
-            0% {
-                transform: rotate(30deg) translateX(-100%);
-            }
-            100% {
-                transform: rotate(30deg) translateX(100%);
-            }
-        }
+  /* 左侧：标题与介绍 */
+  .hero{
+    padding:6px 18px;
+  }
+  .logo{
+    display:flex; align-items:center; gap:12px;
+    margin-bottom:18px;
+  }
+  .seal{
+    width:72px; height:72px; border-radius:12px;
+    background:var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    font-family:"Ma Shan Zheng", cursive;
+    font-size:26px;
+    color:#2b1700;
+    box-shadow:0 6px 18px rgba(0,0,0,0.45);
+    transform:rotate(-6deg);
+  }
+  h1{
+    margin:0;
+    font-size:44px;
+    line-height:1.05;
+    letter-spacing:2px;
+    text-shadow: 0 4px 22px rgba(0,0,0,0.7);
+  }
+  .sub{
+    color:var(--muted);
+    margin-top:8px;
+    font-size:15px;
+  }
+  .desc{
+    margin-top:18px;
+    color:var(--muted);
+    font-size:14px;
+    max-width:70ch;
+    line-height:1.8;
+  }
 
-        /* 古风特色区 */
-        .features {
-            max-width: 1400px;
-            margin: 0 auto 10rem;
-            padding: 0 5%;
-        }
-        .features h2 {
-            font-size: 2.2rem;
-            color: #fbc63c;
-            text-align: center;
-            margin-bottom: 4rem;
-            position: relative;
-            display: inline-block;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        .features h2::after {
-            content: "";
-            position: absolute;
-            bottom: -0.5rem;
-            left: 10%;
-            width: 80%;
-            height: 1px;
-            background: #fbc63c;
-        }
-        .feature-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2.5rem;
-        }
-        .feature-item {
-            background: rgba(18,15,8,0.7);
-            padding: 2.5rem;
-            border: 1px solid rgba(251,206,60,0.3);
-            border-radius: 2px;
-            transition: all 0.4s;
-        }
-        .feature-item:hover {
-            transform: translateY(-10px);
-            border-color: #fbc63c;
-            box-shadow: 0 0 20px rgba(251,206,60,0.4);
-        }
-        .feature-icon {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 1.5rem;
-            border: 1px solid #fbc63c;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fbc63c;
-            font-size: 1.8rem;
-            box-shadow: 0 0 10px rgba(251,206,60,0.5);
-        }
-        .feature-item h3 {
-            font-size: 1.5rem;
-            color: #fbc63c;
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-        .feature-item p {
-            font-size: 1rem;
-            color: #e8e0c7;
-            line-height: 1.6;
-            text-align: center;
-        }
+  /* 右侧：卡片与下载 */
+  .download-panel{
+    background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+    border-radius:14px;
+    padding:22px;
+    text-align:center;
+    border:1px solid rgba(255,255,255,0.03);
+  }
+  .game-thumb{
+    height:170px;
+    border-radius:10px;
+    background:
+      radial-gradient(circle at 10% 10%, rgba(255,255,255,0.03), transparent 10%),
+      linear-gradient(135deg,#0f2333,#1b2a3a);
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; color:var(--muted);
+    box-shadow: inset 0 2px 25px rgba(0,0,0,0.4);
+  }
+  .meta{
+    margin-top:14px;
+  }
+  .meta .tag{ display:inline-block; padding:6px 10px; border-radius:8px; font-size:12px; background:rgba(255,255,255,0.02); color:var(--muted); margin-right:8px; }
+  .meta .ver{ color:var(--accent-2); font-weight:700; }
 
-        /* 页脚 - 古风落款 */
-        .footer {
-            background: rgba(18,15,8,0.95);
-            padding: 3rem 5%;
-            border-top: 1px solid rgba(251,206,60,0.3);
-        }
-        .footer-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        .footer-desc {
-            font-size: 1rem;
-            color: #e8e0c7;
-            margin-bottom: 1.5rem;
-        }
-        .copyright {
-            font-size: 0.9rem;
-            color: #a09885;
-        }
+  /* 下载按钮（印章风） */
+  .download-btn{
+    margin-top:20px;
+    display:inline-block;
+    cursor:pointer;
+    border-radius:999px;
+    padding:16px 34px;
+    font-size:18px;
+    font-weight:700;
+    letter-spacing:1px;
+    color:#2b1700;
+    background:var(--gold);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 6px rgba(216,161,74,0.06) inset;
+    border: none;
+    transition: transform .18s cubic-bezier(.2,.9,.3,1), box-shadow .18s;
+    position:relative;
+    user-select:none;
+  }
+  .download-btn:active{ transform:translateY(3px) scale(.995) }
+  .download-btn .ripple{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) scale(0);
+    width:160%; height:160%; background:rgba(255,255,255,0.06); border-radius:50%;
+    transition: transform .45s cubic-bezier(.2,.9,.3,1), opacity .45s;
+    opacity:0;
+    pointer-events:none;
+  }
+  .download-btn.play .ripple{ transform:translate(-50%,-50%) scale(1); opacity:1 }
 
-        /* 移动端适配 - 保留古风质感 */
-        @media (max-width: 768px) {
-            .nav {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: rgba(18,15,8,0.98);
-                flex-direction: column;
-                padding: 1.5rem 5%;
-                gap: 1.2rem;
-                border-top: 1px solid rgba(251,206,60,0.2);
-            }
-            .nav.show {
-                display: flex;
-            }
-            .menu-btn {
-                display: block;
-            }
-            .hero h1 {
-                font-size: 2.2rem;
-            }
-            .hero p {
-                font-size: 1rem;
-            }
-            .download-btn {
-                padding: 1rem 2.5rem;
-                font-size: 1.1rem;
-                width: 100%;
-                max-width: 350px;
-            }
-            .features h2 {
-                font-size: 1.8rem;
-            }
-            .feature-item {
-                padding: 2rem;
-            }
-        }
-    </style>
-    <!-- 引入古风字体 -->
-    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
-    <!-- 引入图标库 -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome
+  /* 升级: 小印章徽章 */
+  .stamp{
+    display:inline-block;
+    margin-left:12px;
+    font-family:"Ma Shan Zheng";
+    color:#2b1700;
+    background:rgba(0,0,0,0.06);
+    padding:8px 12px;
+    border-radius:8px;
+    font-size:16px;
+    transform:rotate(-4deg);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+  }
+
+  /* 页脚装饰 */
+  .ornament{
+    margin-top:18px;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  /* 下载弹窗 */
+  .modal{
+    position:fixed;
+    left:50%; top:50%;
+    transform:translate(-50%,-50%) scale(.96);
+    min-width:320px; max-width:420px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:12px;
+    padding:18px;
+    box-shadow:0 30px 70px rgba(0,0,0,0.6);
+    border:1px solid rgba(255,255,255,0.03);
+    z-index:999;
+    display:none;
+  }
+  .modal.show{ display:block; animation:pop .28s cubic-bezier(.2,.9,.3,1) both; transform:translate(-50%,-50%) scale(1); }
+  @keyframes pop{ from{opacity:0; transform:translate(-50%,-50%) scale(.96)} to{opacity:1; transform:translate(-50%,-50%) scale(1)} }
+  .progress{
+    height:12px; background: rgba(255,255,255,0.04); border-radius:8px; overflow:hidden; margin-top:12px;
+  }
+  .progress > i{ display:block; height:100%; width:0%; background: linear-gradient(90deg,#ffd57a,#e6b86a); transition: width .2s linear; }
+
+  .modal .title{ font-weight:700; font-size:16px; color:var(--text) }
+  .modal .hint{font-size:13px; color:var(--muted); margin-top:6px}
+
+  /* 响应式 */
+  @media (max-width:920px){
+    .card{ grid-template-columns: 1fr; padding:28px; gap:18px; }
+    h1{ font-size:36px }
+    .download-panel{ order:2 }
+  }
+</style>
+</head>
+<body>
+  <div class="bg">
+    <div class="clouds" aria-hidden="true"></div>
+  </div>
+
+  <main class="wrap" role="main">
+    <section class="card" aria-label="传奇3 下载页">
+      <div class="hero">
+        <div class="logo">
+          <div class="seal" aria-hidden="true">传</div>
+          <div>
+            <div style="font-size:13px; color:var(--muted);">古风重现 · 经典回归</div>
+            <h1>传奇<span style="color:var(--accent-2)">3</span></h1>
+          </div>
+        </div>
+
+        <p class="sub">千年一梦，刀光剑影——唤醒回忆中的沙城热血。</p>
+
+        <p class="desc">
+          《传奇3》——延续经典战法，新增自由交易与跨服激战。此页面为非官方风格下载页：特色古风界面、印章式下载按钮与下载进度提示。
+          点击下方“下载”按钮即可开始（或在链接地址替换为你的安装包、安装器或种子）。
+        </p>
+
+        <div class="ornament">版本：<span class="meta ver">v1.0.2</span> · 文件大小：<span class="meta tag">1.8 GB</span></div>
+      </div>
+
+      <aside class="download-panel" aria-label="下载面板">
+        <div class="game-thumb" aria-hidden="true">
+          <div>
+            <div style="font-size:20px; font-weight:700;">传奇3</div>
+            <div style="margin-top:8px; color:var(--muted); font-size:13px;">沙城再临 · 英雄集结</div>
+          </div>
+        </div>
+
+        <div class="meta" aria-hidden="true">
+          <span class="tag">多人在线</span>
+          <span class="tag">复古画风</span>
+        </div>
+
+        <button id="downloadBtn" class="download-btn" aria-label="下载 传奇3">
+          <span>立即下载</span>
+          <span class="stamp">印</span>
+          <span class="ripple" aria-hidden="true"></span>
+        </button>
+
+        <div style="margin-top:12px; color:var(--muted); font-size:13px;">或使用磁力/种子安装包（高级用户）</div>
+      </aside>
+    </section>
+  </main>
+
+  <!-- 下载进度模态 -->
+  <div class="modal" id="dlModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="title">正在准备下载…</div>
+    <div class="hint">连接服务器并校验文件。请稍候（模拟）</div>
+    <div class="progress" aria-hidden="true" style="margin-top:12px;"><i id="bar"></i></div>
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+      <button id="cancelBtn" style="background:none;border:none;color:var(--muted);cursor:pointer;">取消</button>
+    </div>
+  </div>
+
+<script>
+  (function(){
+    const btn = document.getElementById('downloadBtn');
+    const ripple = btn.querySelector('.ripple');
+    const modal = document.getElementById('dlModal');
+    const bar = document.getElementById('bar');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+    // 替换成你的真实下载地址（或安装器）
+    const DOWNLOAD_URL = 'https://example.com/legend3.zip';
+
+    let timer = null;
+
+    function startDownloadSimulation(){
+      // 显示波纹与模态
+      btn.classList.add('play');
+      modal.classList.add('show');
+      modal.setAttribute('aria-hidden','false');
+
+      let progress = 2;
+      bar.style.width = '0%';
+      // 模拟下载进度（实际项目中这里可替换为真实 fetch/下载逻辑）
+      timer = setInterval(()=>{
+        progress += Math.floor(Math.random()*8)+3; // 随机推进
+        if(progress > 98) progress = 98;
+        bar.style.width = progress + '%';
+      }, 400);
+
+      // 模拟短暂准备后开始真实跳转（此处延时可改，或直接开始真正的下载）
+      setTimeout(()=> {
+        // 完成进度条并跳转
+        clearInterval(timer);
+        bar.style.width = '100%';
+        setTimeout(()=> {
+          // 关闭模态
+          modal.classList.remove('show');
+          modal.setAttribute('aria-hidden','true');
+          btn.classList.remove('play');
+          // 跳转到真实下载链接（会触发浏览器下载或打开）
+          window.location.href = DOWNLOAD_URL;
+        }, 700);
+      }, 3000 + Math.random()*2200); // 3~5s 的准备时间（模拟）
+    }
+
+    btn.addEventListener('click', function(){
+      // 播放波纹
+      ripple.style.transform = 'translate(-50%,-50%) scale(1)';
+      ripple.style.opacity = '1';
+      setTimeout(()=>{ ripple.style.transform = 'translate(-50%,-50%) scale(0)'; ripple.style.opacity = '0'; }, 520);
+
+      startDownloadSimulation();
+    });
+
+    cancelBtn.addEventListener('click', function(){
+      if(timer) clearInterval(timer);
+      modal.classList.remove('show');
+      modal.setAttribute('aria-hidden','true');
+      btn.classList.remove('play');
+      bar.style.width = '0%';
+    });
+
+    // 允许用户按 ESC 关闭模态
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && modal.classList.contains('show')){
+        cancelBtn.click();
+      }
+    });
+  })();
+</script>
+</body>
+</html>
