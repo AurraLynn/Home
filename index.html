@@ -89,20 +89,38 @@
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background-color: #f0f0f0;
-            background-image: url('https://save.aura.us.kg/Picture/bg.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            position: relative;
-            opacity: 0;
-            animation: bodyFadeIn 3.2s ease-out forwards;
-        }
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+
+    /* 整张图的背景底色，用接近图片边缘的深色，减少“分离感” */
+    background-color: #000000;
+
+    /* 你的背景图 */
+    background-image: url('https://save.aura.us.kg/Picture/bg.jpg');
+
+    /* 关键：整张图都显示，不裁切 */
+    background-size: contain;
+
+    /* 不平铺，只显示一张 */
+    background-repeat: no-repeat;
+
+    /* 水平垂直居中，你可以按图片主体调整 */
+    background-position: center center;
+    /* 如果你希望图更偏上一些，可以改成：
+       background-position: center top;
+    */
+
+    /* mobile 上 fixed 兼容很差，全局统一用 scroll 更稳 */
+    background-attachment: scroll;
+
+    /* 保留你的淡入动画 */
+    position: relative;
+    opacity: 0;
+    animation: bodyFadeIn 3.2s ease-out forwards;
+}
 
         body::before {
             content: '';
