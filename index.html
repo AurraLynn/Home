@@ -132,11 +132,20 @@
         }
 
         .month::after {
-            content: "▪";
+            content: "";
             position: absolute;
-            right: -30px;
-            bottom: -1px;
-            font-size: 3rem;
+            /* 小方块尺寸自己调，8px/10px都行 */
+            width: 8px;
+            height: 8px;
+            /* 跟月份字体同色：用 currentColor 就自动跟随 .month 的颜色 */
+            background-color: currentColor;
+            /* 位置微调到你原来差不多的位置 */
+            right: -18px;
+            bottom: 6px;
+            /* 想要方一点就 0，想要略圆就 2px */
+            border-radius: 2px;
+            /* 可选：轻微旋转一点点，看起来更像装饰 */
+            transform: rotate(15deg);
         }
 
         .right-group {
@@ -619,7 +628,7 @@
 
         const x = starRect.left + starRect.width / 2;
         const left = x - bottomRect.left;
-        const bubbleTop = nameRect.top - bottomRect.top - 50;
+        const bubbleTop = nameRect.top - bottomRect.top - 65;
 
         bubble.style.left = `${left}px`;
         bubble.style.top = `${bubbleTop}px`;
