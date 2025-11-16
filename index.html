@@ -102,23 +102,24 @@
             position: relative;
             opacity: 0;
             animation: bodyFadeIn 3.2s ease-out forwards;
-            /* 移动端单独处理背景，防止显示不全 / 被放大裁切 */
-            @media (max-width: 768px) {
-                body {
-                    /* 1. 关闭 fixed，手机上这个很容易出问题 */
-                    background-attachment: scroll;
+        }
+        /* 方案二：移动端优先保证整张图完整显示（可能会有上下 / 左右留空） */
+        @media (max-width: 768px) {
+            body {
+                /* fixed 在手机上问题很多，这里关掉 */
+                background-attachment: scroll;
 
-                    /* 2. 继续铺满屏幕（可能会裁一点点，但不会那么夸张） */
-                    background-size: cover;
+                /* contain：整张图完整显示，不会被裁剪 */
+                background-size: contain;
 
-                    /* 3. 可以稍微往上对齐一点，主视觉更居中 */
-                    background-position: center top;
-                    /* 如果你觉得还不够，可以试：
-                       background-position: 50% 20%;
-                       background-position: 50% 30%;
-                       这两个就是纵向再往上偏一点
-                    */
-                }
+                /* 不平铺，只显示一张 */
+                background-repeat: no-repeat;
+
+                /* 顶部居中，你也可以改成 center center / center bottom */
+                background-position: top center;
+
+                /* 图片外面的留白用什么颜色填充 */
+                background-color: #000000; /* 你也可以改成 #111 / #151515 等 */
             }
         }
 
