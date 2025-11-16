@@ -103,25 +103,6 @@
             opacity: 0;
             animation: bodyFadeIn 3.2s ease-out forwards;
         }
-        /* 方案二：移动端优先保证整张图完整显示（可能会有上下 / 左右留空） */
-        @media (max-width: 768px) {
-            body {
-                /* fixed 在手机上问题很多，这里关掉 */
-                background-attachment: scroll;
-
-                /* contain：整张图完整显示，不会被裁剪 */
-                background-size: contain;
-
-                /* 不平铺，只显示一张 */
-                background-repeat: no-repeat;
-
-                /* 顶部居中，你也可以改成 center center / center bottom */
-                background-position: top center;
-
-                /* 图片外面的留白用什么颜色填充 */
-                background-color: #000000; /* 你也可以改成 #111 / #151515 等 */
-            }
-        }
 
         body::before {
             content: '';
