@@ -102,6 +102,24 @@
             position: relative;
             opacity: 0;
             animation: bodyFadeIn 3.2s ease-out forwards;
+            /* 移动端单独处理背景，防止显示不全 / 被放大裁切 */
+            @media (max-width: 768px) {
+                body {
+                    /* 1. 关闭 fixed，手机上这个很容易出问题 */
+                    background-attachment: scroll;
+
+                    /* 2. 继续铺满屏幕（可能会裁一点点，但不会那么夸张） */
+                    background-size: cover;
+
+                    /* 3. 可以稍微往上对齐一点，主视觉更居中 */
+                    background-position: center top;
+                    /* 如果你觉得还不够，可以试：
+                       background-position: 50% 20%;
+                       background-position: 50% 30%;
+                       这两个就是纵向再往上偏一点
+                    */
+                }
+            }
         }
 
         body::before {
