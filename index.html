@@ -133,18 +133,13 @@
 
         .month::after {
             content: "";
-            position: absolute;
-            /* 小方块尺寸自己调，8px/10px都行 */
             width: 8px;
             height: 8px;
-            /* 跟月份字体同色：用 currentColor 就自动跟随 .month 的颜色 */
             background-color: currentColor;
-            /* 位置微调到你原来差不多的位置 */
             right: -18px;
             bottom: 6px;
-            /* 想要方一点就 0，想要略圆就 2px */
+            position: absolute;
             border-radius: 2px;
-            /* 可选：轻微旋转一点点，看起来更像装饰 */
             transform: rotate(15deg);
         }
 
@@ -371,6 +366,15 @@
             text-shadow: 0 0 4px rgba(255, 255, 255, 0.81);
         }
 
+        /* 页脚“今日已过”提示（仅移动端用） */
+        .day-progress-footer {
+            display: inline-block;
+            margin-left: 6px;
+            font-size: 0.72rem;
+            color: #f5f5f5;
+            opacity: 0.92;
+        }
+
         .progress-hint-bubble {
             position: absolute;
             z-index: 20;
@@ -426,6 +430,13 @@
             font-size: 0.7rem !important;
             line-height: 1.4;
         }
+
+        /* —— 移动端专属：隐藏名字上方的进度条 —— */
+        @media (max-width: 768px) {
+            .name-progress-track {
+                display: none;
+            }
+        }
     </style>
 </head>
 
@@ -443,7 +454,7 @@
 
 <!-- 底部内容 -->
 <div class="bottom">
-    <!-- 今日进度提示气泡 -->
+    <!-- 今日进度提示气泡（PC 使用，移动端隐藏逻辑交给 JS 控制） -->
     <div id="progressHintBubble" class="progress-hint-bubble">
         <div class="progress-hint-bubble-inner">
             <span class="bubble-emoji">🫧</span>
@@ -492,9 +503,11 @@
         </div>
     </div>
 
-    <!-- 底部版权 + 当前时间 -->
+    <!-- 底部版权 + 当前时间 + （移动端）今日已过 -->
     <div class="copyright">
-        © 2025 | Lyn' Homepage  <span id="currentTime" class="current-time"></span>
+        © 2025 | Lyn' Homepage
+        <span id="currentTime" class="current-time"></span>
+        <span id="dayProgressFooter" class="day-progress-footer"></span>
     </div>
 </div>
 
@@ -581,6 +594,11 @@
         [95,100,"今天即将过去，晚安，做个好梦"]
     ];
 
+    // 判断是否移动端（简单用宽度判断）
+    function isMobile() {
+        return window.innerWidth <= 768;
+    }
+
     // 音乐列表 & 播放控制
     const musicList = [
         "https://save.aura.us.kg/Music/%E8%AF%8D%E4%B8%8D%E8%BE%BE%E6%84%8F%20-%20%E6%9E%97%E5%BF%86%E8%8E%B2.mp3",
@@ -609,17 +627,46 @@
         return hints[hints.length - 1][2];
     }
 
+    // 移动端：把“今日已过”内容写到页脚
+    function updateFooterProgress(progress) {
+        const footerEl = document.getElementById('dayProgressFooter');
+        if (!footerEl) return;
+        const clamped = Math.max(0, Math.min(progress, 100));
+        const percentText = clamped.toFixed(1) + '%';
+        footerEl.textContent = ` · Today has passed ${percentText}. ${getHintText(clamped)}`;
+    }
+
+    // PC 端：更新顶部气泡
     function updateProgressHint(progress) {
         const bubble = document.getElementById('progressHintBubble');
         const bubbleText = document.getElementById('progressHintText');
         const star = document.getElementById('progressStar');
         const bottom = document.querySelector('.bottom');
         const nameBubble = document.querySelector('.name-bubble');
-
-        if (!bubble || !bubbleText || !star || !bottom || !nameBubble) return;
+        const footerEl = document.getElementById('dayProgressFooter');
 
         const clamped = Math.max(0, Math.min(progress, 100));
         const percentText = clamped.toFixed(1) + '%';
+
+        // 移动端：隐藏气泡，只在 footer 显示
+        if (isMobile()) {
+            if (bubble) {
+                bubble.style.opacity = 0;
+                bubble.style.transform = 'translate(-50%,10px)';
+            }
+            if (footerEl) {
+                updateFooterProgress(clamped);
+            }
+            return;
+        }
+
+        // PC：清空 footer 的今日已过，只用气泡
+        if (footerEl) {
+            footerEl.textContent = '';
+        }
+
+        if (!bubble || !bubbleText || !star || !bottom || !nameBubble) return;
+
         bubbleText.innerHTML = `Today has passed. ${percentText}<br>${getHintText(clamped)}`;
 
         const starRect = star.getBoundingClientRect();
@@ -652,10 +699,16 @@
         const star = document.getElementById('progressStar');
         const clamped = Math.max(0, Math.min(progress, 100));
 
+        // PC 上依然更新进度条的位置；移动端即使更新了，也被 CSS 隐藏掉
         if (fill) fill.style.width = clamped + '%';
         if (star) star.style.left = clamped + '%';
 
-        updateProgressHint(progress);
+        // 根据当前设备分发到 PC 气泡 / 移动端 footer
+        if (isMobile()) {
+            updateFooterProgress(clamped);
+        } else {
+            updateProgressHint(clamped);
+        }
     }
 
     function getRandomAuthor() {
@@ -776,8 +829,7 @@
         const now = new Date();
         const hours = now.getHours();
         const minutes = now.getMinutes();
-        const seconds = now.getSeconds();
-        const formatted = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+        const formatted = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}`;
         const currentTimeEl = document.getElementById('currentTime');
         if (currentTimeEl) {
             currentTimeEl.textContent = `Current time: ${formatted}`;
@@ -824,7 +876,8 @@
         }
 
         window.addEventListener('resize', function() {
-            updateProgressHint(lastProgress);
+            // 尺寸变化时，重新根据当前宽度选择气泡/页脚形式
+            updateDayProgress();
             positionSoundTip();
         });
 
