@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 适配移动端 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyn's Home</title>
+
+    <!-- Telegram / Open Graph 预览信息 -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Lyn's Home">
+    <meta property="og:description" content="Just someone who loves to mess around on the internet.">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:url" content="https://aura.us.kg">
+
+    <!-- 网站图标 -->
+    <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
+
+    <!-- Tailwind & Font Awesome（依然通过 CDN） -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- Tailwind 配置：主题色 + 默认字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#dd5656',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 外部样式表 -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- 外部脚本（defer 确保在 DOM 解析完成后再执行） -->
+    <script src="script.js" defer></script>
+</head>
+
+<body class="bg-gray-50">
+<!-- 顶部日期 -->
+<div class="top">
+    <div id="dateDisplay" class="date-display"></div>
+</div>
+
+<!-- 中部留白（撑开内容区，让底部不贴屏幕中间） -->
+<div class="middle">
+    <br><br><br><br><br><br><br><br><br><br>
+    <br><br><br><br><br>
+</div>
+
+<!-- 底部内容区域 -->
+<div class="bottom">
+    <!-- 今日进度提示气泡（跟随日进度条的小星星） -->
+    <div id="progressHintBubble" class="progress-hint-bubble">
+        <div class="progress-hint-bubble-inner">
+            <span class="bubble-emoji">🫧</span>
+            <span id="progressHintText">时间是海绵里的水，挤挤总会有的</span>
+        </div>
+    </div>
+
+    <div class="card-wrapper">
+        <!-- 姓名气泡 + 顶部进度条 -->
+        <div class="name-bubble">
+            <div class="name-progress-track">
+                <div class="name-progress-rail"></div>
+                <div id="nameProgressFill"></div>
+                <div id="progressStar"></div>
+            </div>
+            <span>Hey, I’m Lyn. I like messing around.</span>
+        </div>
+
+        <!-- 毒鸡汤卡片 -->
+        <div class="floating-card animate-float">
+            <div class="card-content">
+                <p id="quoteContent" class="mb-4 text-gray-100 card-breathe">熬制鸡汤中...</p>
+                <p id="quoteAuthor" class="text-right text-gray-300 mb-5 opacity-80"
+                   style="font-size: 0.9rem; letter-spacing: 0.5px;">——</p>
+
+                <div class="flex justify-between items-center">
+                    <!-- 红心按钮：点赞 + 随机播放音乐 -->
+                    <button id="likeButton" class="like-button">
+                        <i class="fa fa-heart"></i>
+                        <span class="like-count" id="likeCount">--</span>
+                    </button>
+
+                    <!-- 刷新按钮：换一条鸡汤 -->
+                    <button id="refreshButton" class="like-button">
+                        <i class="fa fa-refresh"></i>
+                        <span>Another one</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- “我可是有声音的哦” 气泡：在悬浮卡片外部（卡片下面），指向红心 -->
+    <div id="soundTip" class="sound-tip">
+        <div class="sound-tip-inner">
+            <span class="bubble-emoji">❤️</span>
+            <span>I actually have sound!</span>
+        </div>
+    </div>
+
+    <!-- 底部版权 + 当前时间 -->
+    <div class="copyright">
+        © 2025 | Lyn' Homepage  <span id="currentTime" class="current-time"></span>
+    </div>
+</div>
+</body>
+</html>
