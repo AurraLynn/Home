@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lyn's Home</title>
+    <!-- 标题英文字体：Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -83,8 +87,8 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            /* 用 vh + 安全区，解决 iOS Safari 底部漏视频的问题 */
-            height: calc(82vh + env(safe-area-inset-bottom, 0px));
+            /* 稍微设高一点 + 安全区，避免 iOS 底部露出视频 */
+            height: calc(86vh + env(safe-area-inset-bottom, 0px));
             background: linear-gradient(
                     180deg,
                     rgba(15, 23, 42, 0.96) 0%,
@@ -100,7 +104,7 @@
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
-        /* 收起时往下滑一点 */
+        /* 收起时往下滑一点，露出更多视频 */
         .item-layer.hide {
             transform: translateY(78%);
         }
@@ -139,25 +143,36 @@
             overflow-y: auto;
         }
 
-        /* 标题区域 - 调整字体样式更协调 */
+        /* 标题区域：更干净、重点突出名字 Lyn */
         .hero-title {
-            font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont,
+            font-family: "Poppins", -apple-system, BlinkMacSystemFont,
             "PingFang SC", system-ui, sans-serif;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            font-size: 1.25rem;
-            background: linear-gradient(120deg, #fbbf24, #f97316, #ec4899);
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: none;
+            line-height: 1.25;
+            color: #e5e7eb;
+        }
+
+        /* 名字单独高亮，带一点小渐变 */
+        .hero-name {
+            font-weight: 700;
+            background: linear-gradient(135deg, #f97316, #ec4899);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            text-shadow: 0 0 14px rgba(0, 0, 0, 0.7);
         }
 
+        /* 副标题：更细一点，更贴合暗色底 */
         .hero-subtitle {
-            font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont,
-            "PingFang SC", system-ui, sans-serif;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: #9ca3af;
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+            "Microsoft Yahei", system-ui, sans-serif;
+            font-size: 0.82rem;
+            line-height: 1.7;
+            color: #a1a1aa;
+            letter-spacing: 0.01em;
         }
 
         /* 毒鸡汤卡片 */
@@ -372,22 +387,6 @@
             color: #e5e7eb;
         }
 
-        .badge-me {
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 999px;
-            background: rgba(59, 130, 246, 0.15);
-            color: #60a5fa;
-        }
-
-        .badge-desc {
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 999px;
-            background: rgba(148, 163, 184, 0.2);
-            color: #cbd5f5;
-        }
-
         .comment-text {
             font-size: 13px;
             color: #d1d5db;
@@ -466,6 +465,18 @@
             margin-left: 4px;
         }
 
+        .mobile-day-progress {
+            margin-top: 4px;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #d1d5db;
+        }
+
+        .mobile-day-progress strong {
+            color: #facc15;
+            font-weight: 600;
+        }
+
         /* 防止 iOS 橡皮筋滚动太猛 */
         .item-content::-webkit-scrollbar {
             width: 4px;
@@ -496,7 +507,9 @@
     <div class="item-content">
         <!-- 标题 & 简介 -->
         <div class="text-center mb-4">
-            <h1 class="hero-title text-shadow">Hey, I'm Lyn</h1>
+            <h1 class="hero-title text-shadow">
+                Hey, I'm <span class="hero-name">Lyn</span>
+            </h1>
             <p class="hero-subtitle mt-2">
                 Just someone who loves to mess around on the internet.
             </p>
@@ -537,10 +550,14 @@
                     <p>暂无记录，可能大善人罢工了,先来一碗鸡汤吧～</p>
                 </div>
             </div>
-            <!-- 评论区底部版权 + 时间 -->
+            <!-- 评论区底部版权 + 时间 + 今日已过 -->
             <div class="mobile-footer">
                 © 2025 | Lyn' Homepage
                 <span id="mobileCurrentTime">Current time: --:--</span>
+                <div id="mobileDayProgress" class="mobile-day-progress">
+                    Today has passed: --.-%<br>
+                    时间是海绵里的水，挤挤总会有的
+                </div>
             </div>
         </div>
     </div>
@@ -562,8 +579,22 @@
     const HISTORY_API = "/api/history";
     const MAX_HISTORY = 1000;
 
+    // 今日已过提示文案
+    const DAY_HINTS = [
+        [0,10,"时间是海绵里的水，挤挤总会有的"],
+        [10,25,"一日之计在于晨，抓住早晨的时光"],
+        [25,40,"上午时光宝贵，专注当下最重要"],
+        [40,50,"不知不觉已过半，下午继续加油"],
+        [50,65,"下午时光，保持精力，效率翻倍"],
+        [65,75,"傍晚时分，总结一天的收获"],
+        [75,85,"夜晚是思考的好时机，整理思绪"],
+        [85,95,"今日即将结束，准备迎接新的一天"],
+        [95,100,"今天即将过去，晚安，做个好梦"]
+    ];
+
     // ------- DOM 元素 -------
     const videoPlayer = document.getElementById("videoPlayer");
+    const videoLayer = document.getElementById("videoLayer");
     const itemLayer = document.getElementById("itemLayer");
     const slideHit = document.getElementById("slideHit");
 
@@ -578,9 +609,12 @@
     const emptyState = document.getElementById("emptyState");
     const historySummary = document.getElementById("historySummary");
     const mobileCurrentTime = document.getElementById("mobileCurrentTime");
+    const mobileDayProgress = document.getElementById("mobileDayProgress");
 
     // 当前毒鸡汤数据
     let currentDujitang = null;
+    // 当前视频 index
+    let currentVideoIndex = 1;
 
     // 50 组搞笑作者
     const FUNNY_AUTHORS = [
@@ -649,15 +683,25 @@
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    function pickRandomVideo() {
-        const idx = Math.floor(Math.random() * VIDEO_TOTAL) + 1;
-        return getVideoUrl(idx);
-    }
-
-    function playRandomVideo() {
-        const src = pickRandomVideo();
+    function playVideoByIndex(index) {
+        if (index < 1) index = VIDEO_TOTAL;
+        if (index > VIDEO_TOTAL) index = VIDEO_TOTAL;
+        currentVideoIndex = index;
+        const src = getVideoUrl(currentVideoIndex);
         videoPlayer.src = src;
         videoPlayer.play().catch(() => {});
+    }
+
+    function playNextVideo() {
+        let next = currentVideoIndex + 1;
+        if (next > VIDEO_TOTAL) next = 1;
+        playVideoByIndex(next);
+    }
+
+    function playPrevVideo() {
+        let prev = currentVideoIndex - 1;
+        if (prev < 1) prev = VIDEO_TOTAL;
+        playVideoByIndex(prev);
     }
 
     // 鸡汤“乱码打字机”效果
@@ -719,14 +763,33 @@
         return `${y}-${m}-${day} ${hh}:${mm} (GMT+8)`;
     }
 
-    // 格式化时间：Current time: 16:04
-    function updateMobileTime() {
+    function getDayHint(progress) {
+        for (let i = 0; i < DAY_HINTS.length; i++) {
+            const [min, max, text] = DAY_HINTS[i];
+            if (progress >= min && progress < max) {
+                return text;
+            }
+        }
+        return DAY_HINTS[DAY_HINTS.length - 1][2];
+    }
+
+    // 更新时间 + 今日已过进度（统一按北京时间）
+    function updateMobileTimeAndProgress() {
         const now = new Date();
         const utc = now.getTime() + now.getTimezoneOffset() * 60000;
         const bj = new Date(utc + 8 * 3600000);
+
         const hh = String(bj.getHours()).padStart(2, "0");
         const mm = String(bj.getMinutes()).padStart(2, "0");
         mobileCurrentTime.textContent = `Current time: ${hh}:${mm}`;
+
+        const seconds = bj.getHours() * 3600 + bj.getMinutes() * 60 + bj.getSeconds();
+        const progress = (seconds / 86400) * 100;
+        const clamped = Math.max(0, Math.min(progress, 100));
+        const hint = getDayHint(clamped);
+
+        mobileDayProgress.innerHTML =
+            `Today has passed: <strong>${clamped.toFixed(1)}%</strong><br>🫧&nbsp;${hint}`;
     }
 
     // ------- 物品层收起 / 展开 -------
@@ -752,6 +815,32 @@
             { passive: false }
         );
     });
+
+    // ------- 视频上下滑切换 -------
+    let touchStartY = null;
+    videoLayer.addEventListener("touchstart", (e) => {
+        if (e.touches && e.touches.length > 0) {
+            touchStartY = e.touches[0].clientY;
+        }
+    }, { passive: true });
+
+    videoLayer.addEventListener("touchend", (e) => {
+        if (touchStartY === null) return;
+        const endY = e.changedTouches[0].clientY;
+        const diffY = endY - touchStartY;
+        const threshold = 40; // 滑动阈值
+
+        if (Math.abs(diffY) > threshold) {
+            if (diffY < 0) {
+                // 上滑：下一段视频
+                playNextVideo();
+            } else {
+                // 下滑：上一段视频
+                playPrevVideo();
+            }
+        }
+        touchStartY = null;
+    }, { passive: true });
 
     // ------- 历史记录（和 KV 通信） -------
 
@@ -834,10 +923,10 @@
             }">
                   <i class="fa ${liked ? "fa-heart" : "fa-heart-o"}"></i>
                   ${
-                      likeCount > 0
-                          ? `<span class="like-count">${likeCount}</span>`
-                          : ""
-                  }
+                likeCount > 0
+                    ? `<span class="like-count">${likeCount}</span>`
+                    : ""
+            }
                 </div>
               </div>
               <span class="comment-time">${timeText}</span>
@@ -960,14 +1049,19 @@
     // ------- 初始化 -------
 
     document.addEventListener("DOMContentLoaded", async () => {
-        // 初次播放随机视频（第二层默认展开，先静音）
-        videoPlayer.muted = true;
-        playRandomVideo();
-        videoPlayer.addEventListener("ended", playRandomVideo);
+        // 初次视频 index 随机一下
+        currentVideoIndex = Math.floor(Math.random() * VIDEO_TOTAL) + 1;
+        playVideoByIndex(currentVideoIndex);
 
-        // 更新时间（每 30 秒刷新一次分钟显示，北京时间）
-        updateMobileTime();
-        setInterval(updateMobileTime, 30 * 1000);
+        // 视频播完后自动下一段
+        videoPlayer.addEventListener("ended", playNextVideo);
+
+        // 第二层默认展开，先静音
+        videoPlayer.muted = true;
+
+        // 更新时间 & 今日已过（每 30 秒刷新一次，北京时间）
+        updateMobileTimeAndProgress();
+        setInterval(updateMobileTimeAndProgress, 30 * 1000);
 
         // 加载历史记录
         const history = await fetchHistoryFromServer();
