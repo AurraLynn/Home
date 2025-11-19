@@ -2,11 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8" />
-    <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    />
-    <title>Lyn Mobile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lyn's Home</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -28,28 +25,44 @@
                     },
                     fontFamily: {
                         sans: ["Inter", "system-ui", "sans-serif"],
-                        heading: ["Poppins", "system-ui", "sans-serif"],
                     },
                 },
             },
         };
     </script>
 
+    <!-- Tailwind 小工具 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.35);
+            }
+            .glass-effect {
+                background: rgba(255, 255, 255, 0.08);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.16);
+            }
+        }
+    </style>
+
+    <!-- 自定义样式 -->
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+            "PingFang SC", "Microsoft Yahei", system-ui, sans-serif;
         }
 
         body {
             background: #000;
             overflow: hidden;
             height: 100vh;
-            -webkit-tap-highlight-color: transparent;
         }
 
-        /* 视频播放层 */
+        /* 视频层：全屏铺满 */
         .video-layer {
             width: 100vw;
             height: 100vh;
@@ -64,127 +77,155 @@
             object-position: center;
         }
 
-        /* 物品层（底部抽屉） */
+        /* 第二层（下方卡片层） */
         .item-layer {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 78%;
-            background: linear-gradient(180deg, #f9fafb 0%, #f3e7ff 35%, #fde2ff 100%);
+            height: 80%;
+            background: linear-gradient(
+                    180deg,
+                    rgba(15, 23, 42, 0.96) 0%,
+                    rgba(24, 24, 35, 0.96) 45%,
+                    rgba(15, 23, 42, 0.98) 100%
+            );
             border-top-left-radius: 24px;
             border-top-right-radius: 24px;
             z-index: 3;
             transition: transform 0.3s ease;
             overflow: hidden;
-            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
         }
 
+        /* 收起时往下滑一点 */
         .item-layer.hide {
-            transform: translateY(80%);
+            transform: translateY(76%);
         }
 
-        .ios-slide-bar {
+        /* 顶部可点击区域（一直固定在第二层顶部） */
+        .ios-slide-hit-area {
             position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50px;
-            height: 5px;
-            background: rgba(0, 0, 0, 0.16);
-            border-radius: 999px;
-            cursor: pointer;
-        }
-
-        .item-content {
+            top: 6px;
+            left: 0;
             width: 100%;
-            height: 100%;
-            padding: 20px;
-            padding-top: 32px;
+            height: 40px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 4;
+        }
+
+        /* 中间那条小横条 */
+        .ios-slide-bar {
+            width: 58px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.24);
+            border-radius: 999px;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+        }
+
+        /* 里面内容区域可滚动 */
+        .item-content {
+            position: absolute;
+            top: 46px; /* 给顶部小条留位置 */
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 18px 16px 18px;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
         }
 
-        /* 顶部标题区 */
-        .lyn-title {
-            font-family: "Poppins", "system-ui", sans-serif;
-            letter-spacing: 2px;
+        /* 标题区域 */
+        .hero-title {
+            font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont,
+            "PingFang SC", system-ui, sans-serif;
+            letter-spacing: 0.18em;
             text-transform: uppercase;
-            color: #111827;
-            text-align: center;
-            font-weight: 700;
-            font-size: 1.5rem;
-            margin-bottom: 6px;
+            font-size: 1.15rem;
+            color: #e5e7eb;
         }
 
-        .lyn-subtitle {
-            font-family: "Inter", system-ui, sans-serif;
-            text-align: center;
+        .hero-subtitle {
+            font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont,
+            "PingFang SC", system-ui, sans-serif;
             font-size: 0.9rem;
             line-height: 1.6;
-            color: #4b5563;
+            color: #9ca3af;
         }
 
         /* 毒鸡汤卡片 */
         .dujitang-container {
-            margin-top: 20px;
-            padding: 18px 18px 46px;
+            margin-top: 18px;
+            padding: 20px 16px 40px;
             border-radius: 16px;
-            background: radial-gradient(circle at top left, #ffffffcc, #f5f3ff);
-            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
-            color: #111827;
+            background: radial-gradient(
+                    circle at top left,
+                    rgba(236, 72, 153, 0.16),
+                    transparent 60%
+            ),
+            radial-gradient(
+                    circle at bottom right,
+                    rgba(129, 140, 248, 0.22),
+                    transparent 60%
+            ),
+            rgba(15, 23, 42, 0.96);
+            color: white;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
             position: relative;
             overflow: hidden;
         }
 
+        /* 鸡汤文字呼吸效果 */
         #dujitangText {
             font-size: 17px;
             line-height: 1.7;
             text-align: center;
-            margin-bottom: 14px;
-            color: #111827;
-            opacity: 0.75;
-            animation: breatheText 4s ease-in-out infinite;
+            margin-bottom: 18px;
+            opacity: 0.8;
+            animation: breatheText 4.5s ease-in-out infinite;
         }
 
         @keyframes breatheText {
             0% {
-                opacity: 0.6;
-                filter: brightness(0.92);
+                opacity: 0.65;
+                filter: brightness(0.85);
             }
             50% {
                 opacity: 1;
-                filter: brightness(1.05);
+                filter: brightness(1.12);
             }
             100% {
-                opacity: 0.6;
-                filter: brightness(0.92);
+                opacity: 0.7;
+                filter: brightness(0.9);
             }
         }
 
+        /* 作者信息 */
         .author-info {
             margin-top: 8px;
-            font-style: normal;
             display: flex;
             justify-content: flex-end;
             align-items: center;
-            color: #6b7280;
+            color: rgba(249, 250, 251, 0.9);
             font-size: 13px;
+            gap: 4px;
         }
 
-        .author-prefix {
-            margin-right: 4px;
+        .author-info span:first-child {
+            opacity: 0.7;
         }
 
         .author-name {
             font-weight: 500;
         }
 
-        /* 点赞 + 下一条 按钮行 */
-        .dujitang-footer {
+        /* 点赞区域 + 按钮行 */
+        .action-row {
             position: absolute;
-            left: 18px;
-            right: 18px;
+            left: 16px;
+            right: 16px;
             bottom: 12px;
             display: flex;
             align-items: center;
@@ -197,102 +238,81 @@
             gap: 8px;
             padding: 6px 12px;
             border-radius: 999px;
-            background: rgba(248, 113, 113, 0.12);
-            color: #b91c1c;
-            cursor: pointer;
-            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            background: rgba(239, 68, 68, 0.16);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+            color: #fee2e2;
+            font-size: 13px;
         }
 
         .like-area i {
-            color: #ef4444;
-            font-size: 16px;
+            color: #f97373;
+            transition: transform 0.22s ease;
+        }
+
+        .like-area.active i {
+            transform: scale(1.25);
         }
 
         .like-count {
-            font-size: 14px;
             font-weight: 600;
+            font-size: 14px;
         }
 
-        .like-area.heart-bump {
-            transform: scale(1.08);
-            box-shadow: 0 6px 18px rgba(248, 113, 113, 0.35);
-        }
-
-        @keyframes heartBump {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.15);
-            }
-            100% {
-                transform: scale(1);
-            }
-        }
-
+        /* 下一条按钮 */
         .another-one-btn {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
+            padding: 7px 14px;
             border-radius: 999px;
             border: none;
-            background: linear-gradient(90deg, #8b5cf6, #ec4899);
-            color: #fff;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(6px);
+            color: #f9fafb;
             font-size: 13px;
-            font-weight: 500;
             cursor: pointer;
-            box-shadow: 0 6px 16px rgba(129, 140, 248, 0.35);
-            transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.2s ease;
-        }
-
-        .another-one-btn:disabled {
-            opacity: 0.7;
-            cursor: default;
-            box-shadow: none;
-        }
-
-        .another-one-btn:hover:not(:disabled) {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(129, 140, 248, 0.45);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+            transition: background 0.2s ease, transform 0.2s ease;
         }
 
         .another-one-btn i {
+            margin-right: 8px;
             font-size: 14px;
+            transition: transform 0.5s ease;
         }
 
-        .spin-once {
-            animation: spinOnce 0.6s linear;
+        .another-one-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateY(-1px);
         }
 
-        @keyframes spinOnce {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
+        .spin {
+            transform: rotate(360deg) !important;
         }
 
-        /* 评论区整体 */
-        #historyContainer {
-            background: linear-gradient(
-                    180deg,
-                    #f3f4ff 0%,
-                    #fef9c3 35%,
-                    #fee2e2 100%
-            );
+        /* 评论区整体容器 */
+        .history-wrapper {
+            margin-top: 22px;
+            background: radial-gradient(
+                    circle at top left,
+                    rgba(251, 191, 36, 0.18),
+                    transparent 55%
+            ),
+            radial-gradient(
+                    circle at bottom right,
+                    rgba(59, 130, 246, 0.22),
+                    transparent 55%
+            ),
+            #020617;
             border-radius: 16px;
-            padding: 14px;
-            margin-top: 14px;
-            box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
+            padding: 14px 12px 4px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
         }
 
         .history-title {
             font-size: 15px;
             font-weight: 600;
-            color: #111827;
-            margin-bottom: 6px;
+            color: #e5e7eb;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -300,24 +320,30 @@
 
         .history-title span {
             font-size: 11px;
-            color: #6b7280;
-            font-weight: 400;
+            color: #9ca3af;
         }
 
+        /* 新增：副标题样式 */
+        .history-subtitle {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        #historyContainer {
+            margin-top: 4px;
+        }
+
+        /* 评论条目（抖音风） */
         .comment-item {
             display: flex;
-            padding: 10px 0;
-            border-bottom: 1px dashed rgba(148, 163, 184, 0.4);
-        }
-
-        .comment-item:last-child {
-            border-bottom: none;
+            padding: 10px 4px;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.8);
         }
 
         .avatar-container {
             margin-right: 10px;
             position: relative;
-            flex-shrink: 0;
         }
 
         .avatar {
@@ -325,175 +351,247 @@
             height: 38px;
             border-radius: 50%;
             object-fit: cover;
-            background-color: #e5e7eb;
-            box-shadow: 0 2px 6px rgba(148, 163, 184, 0.7);
+            background-color: #111827;
+            border: 2px solid rgba(148, 163, 184, 0.7);
         }
 
         .comment-content {
             flex: 1;
-            min-width: 0;
         }
 
         .user-info {
             display: flex;
             align-items: center;
             margin-bottom: 4px;
-            flex-wrap: wrap;
-            gap: 4px;
+            gap: 6px;
         }
 
         .username {
-            font-weight: 600;
+            font-weight: 500;
             font-size: 13px;
-            color: #1f2933;
+            color: #e5e7eb;
+        }
+
+        .badge-me {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        .badge-desc {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.2);
+            color: #cbd5f5;
         }
 
         .comment-text {
-            font-size: 14px;
-            color: #111827;
+            font-size: 13px;
+            color: #d1d5db;
             line-height: 1.4;
-            margin-bottom: 5px;
-            word-break: break-word;
+            margin-bottom: 6px;
         }
 
         .comment-actions {
             display: flex;
             align-items: center;
             font-size: 11px;
-            color: #6b7280;
+            color: #9ca3af;
             justify-content: space-between;
         }
 
-        .like-btn {
-            display: inline-flex;
+        .comment-actions-left {
+            display: flex;
             align-items: center;
-            gap: 3px;
+            gap: 14px;
+        }
+
+        .like-btn {
+            display: flex;
+            align-items: center;
             cursor: pointer;
-            padding: 2px 6px;
-            border-radius: 999px;
-            background: rgba(248, 250, 252, 0.7);
         }
 
         .like-btn i {
-            font-size: 13px;
-            color: #9ca3af;
+            margin-right: 4px;
+            font-size: 14px;
+            color: #6b7280;
+            transition: color 0.18s ease, transform 0.18s ease;
         }
 
         .like-btn.active i {
             color: #f97373;
+            transform: scale(1.2);
         }
 
         .like-btn .like-count {
             font-size: 11px;
-            margin-left: 2px;
-            color: #4b5563;
+            color: #e5e7eb;
         }
 
         .comment-time {
-            font-size: 11px;
-            color: #9ca3af;
+            font-size: 10px;
+            color: #6b7280;
         }
 
         .empty-state {
             text-align: center;
-            padding: 18px 10px;
+            padding: 30px 10px;
             color: #6b7280;
             font-size: 13px;
         }
 
         .empty-state i {
-            font-size: 28px;
+            font-size: 36px;
             margin-bottom: 8px;
-            color: #cbd5f5;
+            color: #4b5563;
         }
 
-        .hidden {
-            display: none;
+        /* 评论区底部版权 */
+        .mobile-footer {
+            border-top: 1px solid rgba(31, 41, 55, 0.8);
+            margin-top: 6px;
+            padding: 8px 4px 2px;
+            font-size: 11px;
+            color: #9ca3af;
+            text-align: center;
+        }
+
+        .mobile-footer span {
+            color: #e5e7eb;
+            font-weight: 500;
+            margin-left: 4px;
+        }
+
+        /* 今日进度文本 */
+        .mobile-day-progress {
+            margin-top: 4px;
+            font-size: 11px;
+            color: #d1d5db;
+        }
+
+        /* 防止 iOS 橡皮筋滚动太猛 */
+        .item-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        .item-content::-webkit-scrollbar-thumb {
+            background-color: rgba(148, 163, 184, 0.7);
+            border-radius: 999px;
         }
     </style>
 </head>
-
 <body>
-<!-- 视频层 -->
+<!-- 背景视频 -->
 <div class="video-layer" id="videoLayer">
-    <video
-            class="video-player"
-            id="videoPlayer"
-            autoplay
-            loop
-            muted
-            playsinline
-    >
-        <source
-                src="https://save.aura.us.kg/Mobile/a.MP4"
-                type="video/mp4"
-        />
+    <video class="video-player" id="videoPlayer" autoplay loop playsinline muted>
+        <source src="https://save.aura.us.kg/Mobile/a.MP4" type="video/mp4" />
     </video>
 </div>
 
-<!-- 底部内容层 -->
+<!-- 下方卡片层（第二层） -->
 <div class="item-layer" id="itemLayer">
-    <div class="ios-slide-bar" id="slideBar"></div>
+    <!-- 顶部小横条：一直固定在第二层顶部 -->
+    <div class="ios-slide-hit-area" id="slideHit">
+        <div class="ios-slide-bar"></div>
+    </div>
+
+    <!-- 内容区域（可滚动） -->
     <div class="item-content">
-        <!-- 标题与简介 -->
-        <div class="text-center mb-5">
-            <h1 class="lyn-title">HEY, I'M LYN</h1>
-            <p class="lyn-subtitle">
+        <!-- 标题 & 简介 -->
+        <div class="text-center mb-4">
+            <h1 class="hero-title text-shadow">Hey, I'm Lyn</h1>
+            <p class="hero-subtitle mt-2">
                 Just someone who loves to mess around on the internet.
             </p>
         </div>
 
         <!-- 毒鸡汤卡片 -->
         <div class="dujitang-container" id="dujitangContainer">
-            <p id="dujitangText">正在加载毒鸡汤...</p>
+            <p id="dujitangText">正在加载鸡汤...</p>
 
+            <!-- 作者（先用 —— 占位） -->
             <div class="author-info" id="authorInfo">
-                <span class="author-prefix">——</span>
+                <span>——</span>
                 <span class="author-name" id="authorName"></span>
             </div>
 
-            <!-- 底部：红心 + 下一条 -->
-            <div class="dujitang-footer">
+            <!-- 底部操作（点赞 + 下一条） -->
+            <div class="action-row">
                 <div class="like-area" id="likeArea">
                     <i class="fa fa-heart"></i>
                     <span class="like-count" id="dujitangLikeCount">0</span>
                 </div>
-
                 <button class="another-one-btn" id="anotherOneBtn">
-                    <i class="fa fa-refresh" id="refreshIcon"></i>
+                    <i class="fa fa-refresh"></i>
                     <span>Another one</span>
                 </button>
             </div>
         </div>
 
-        <!-- 历史记录 -->
-        <div id="historyContainer">
+        <!-- 历史记录（评论区） -->
+        <div class="history-wrapper mt-6">
             <div class="history-title">
-                <div>历史记录</div>
-                <span>最多保留最近 100 条</span>
+                <div>
+                    <div>灵魂挨打记录册</div>
+                    <div class="history-subtitle">今天又被生活教育了多少次？</div>
+                </div>
+                <span id="historySummary">载入中...</span>
             </div>
-            <div class="empty-state" id="emptyState">
-                <i class="fa fa-history"></i>
-                <p>还没有历史记录，再等等看。</p>
+            <div id="historyContainer">
+                <div class="empty-state" id="emptyState">
+                    <i class="fa fa-history"></i>
+                    <p>暂无记录，可能大善人罢工了,先来一碗鸡汤吧～</p>
+                </div>
+            </div>
+            <!-- 评论区底部版权 + 时间 + 今日进度 -->
+            <div class="mobile-footer">
+                © 2025 | Lyn' Homepage<br>
+                <span id="mobileCurrentTime">Current time: --:--</span>
+                <div id="mobileDayProgress" class="mobile-day-progress"></div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // ---------- 配置 ----------
+    // ------- 基本配置 -------
     const videoList = [
         "https://save.aura.us.kg/Mobile/a.MP4",
         "https://save.aura.us.kg/Mobile/b.MP4",
     ];
-
     const DUJITANG_API_LIST = [
         "https://api.btstu.cn/yan/api.php?charset=utf-8&encode=json",
         "https://apis.tianapi.com/dujitang/index?key=a2d8a53cf5636e81dd87e373065fdc6c",
     ];
+    const HISTORY_API = "/api/history";
+    const MAX_HISTORY = 1000;
+
+    // ------- DOM 元素 -------
+    const videoPlayer = document.getElementById("videoPlayer");
+    const itemLayer = document.getElementById("itemLayer");
+    const slideHit = document.getElementById("slideHit");
+
+    const dujitangText = document.getElementById("dujitangText");
+    const authorInfo = document.getElementById("authorInfo");
+    const authorNameEl = document.getElementById("authorName");
+    const dujitangLikeCount = document.getElementById("dujitangLikeCount");
+    const likeArea = document.getElementById("likeArea");
+    const anotherOneBtn = document.getElementById("anotherOneBtn");
+
+    const historyContainer = document.getElementById("historyContainer");
+    const emptyState = document.getElementById("emptyState");
+    const historySummary = document.getElementById("historySummary");
+    const mobileCurrentTime = document.getElementById("mobileCurrentTime");
+    const mobileDayProgress = document.getElementById("mobileDayProgress");
+
+    // 当前毒鸡汤数据
+    let currentDujitang = null;
 
     // 50 组搞笑作者
-    const AUTHORS = [
+    const FUNNY_AUTHORS = [
         "甄姬（宫里传出来的）",
         "鲁迅（根本没说过）",
         "诸葛亮（事后诸葛）",
@@ -545,202 +643,54 @@
         "学校广播站台长（爱讲大道理）",
     ];
 
-    const HISTORY_API = "/api/history"; // 同域下 Worker 路径
+    // 今日已过文案
+    const DAY_HINTS = [
+        [0,10,"时间是海绵里的水，挤挤总会有的"],
+        [10,25,"一日之计在于晨，抓住早晨的时光"],
+        [25,40,"上午时光宝贵，专注当下最重要"],
+        [40,50,"不知不觉已过半，下午继续加油"],
+        [50,65,"下午时光，保持精力，效率翻倍"],
+        [65,75,"傍晚时分，总结一天的收获"],
+        [75,85,"夜晚是思考的好时机，整理思绪"],
+        [85,95,"今日即将结束，准备迎接新的一天"],
+        [95,100,"今天即将过去，晚安，做个好梦"]
+    ];
 
-    // ---------- DOM ----------
-    const videoPlayer = document.getElementById("videoPlayer");
-    const itemLayer = document.getElementById("itemLayer");
-    const slideBar = document.getElementById("slideBar");
+    // ------- 工具函数 -------
 
-    const dujitangText = document.getElementById("dujitangText");
-    const authorInfo = document.getElementById("authorInfo");
-    const authorName = document.getElementById("authorName");
-    const dujitangLikeCount = document.getElementById("dujitangLikeCount");
-    const anotherOneBtn = document.getElementById("anotherOneBtn");
-    const refreshIcon = document.getElementById("refreshIcon");
-    const likeArea = document.getElementById("likeArea");
+    function getRandomAuthorName() {
+        const idx = Math.floor(Math.random() * FUNNY_AUTHORS.length);
+        return FUNNY_AUTHORS[idx];
+    }
 
-    const historyContainer = document.getElementById("historyContainer");
-    const emptyState = document.getElementById("emptyState");
+    function getRandomLikeCount() {
+        // 555 ~ 999999 之间
+        const min = 555;
+        const max = 999999;
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
 
-    let currentDujitang = null;
+    function pickRandomVideo() {
+        const idx = Math.floor(Math.random() * videoList.length);
+        return videoList[idx];
+    }
 
-    // ---------- 视频逻辑 ----------
     function playRandomVideo() {
-        const randomIndex = Math.floor(Math.random() * videoList.length);
-        videoPlayer.src = videoList[randomIndex];
+        const src = pickRandomVideo();
+        videoPlayer.src = src;
         videoPlayer.play().catch(() => {});
     }
 
-    videoPlayer.addEventListener("ended", playRandomVideo);
-
-    // 切换抽屉层 + 控制静音
-    function toggleItemLayer() {
-        itemLayer.classList.toggle("hide");
-        if (itemLayer.classList.contains("hide")) {
-            // 抽屉隐藏：打开视频声音
-            videoPlayer.muted = false;
-        } else {
-            // 抽屉显示：静音
-            videoPlayer.muted = true;
-        }
-    }
-
-    slideBar.addEventListener("click", toggleItemLayer);
-
-    // ---------- KV 相关 ----------
-    async function getHistoryFromKV() {
-        try {
-            const res = await fetch(HISTORY_API);
-            if (!res.ok) return [];
-            const data = await res.json();
-            return Array.isArray(data) ? data : [];
-        } catch (e) {
-            console.error("加载 KV 历史失败:", e);
-            return [];
-        }
-    }
-
-    async function saveToHistoryKV(content, author, isUserComment = false, likeCount = 0) {
-        try {
-            const body = { content, author, isUserComment, likeCount };
-            const res = await fetch(HISTORY_API, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
-            });
-            if (!res.ok) {
-                console.error("写入 KV 历史失败:", await res.text());
-                return null;
-            }
-            const newItem = await res.json();
-            return newItem;
-        } catch (e) {
-            console.error("写入 KV 历史出错:", e);
-            return null;
-        }
-    }
-
-    // 如果历史为空，填充一些种子记录，让评论区不空
-    async function ensureHistoryNotEmpty() {
-        const history = await getHistoryFromKV();
-        if (history && history.length > 0) return;
-
-        const seedTexts = [
-            "别担心，努力不会白费，只是会白费在别的地方。",
-            "你以为的柳暗花明，其实是山穷水尽的前一秒。",
-            "万事开头难，然后中间难，最后结局也难。",
-            "做梦是好事，说明你还有睡觉的时间。",
-            "凡事只要笑一笑，就找不到方向了。",
-            "你只是看起来很努力，实际上连截图都懒得截。",
-            "没有人能随随便便成功，但你可以随随便便放弃。",
-            "失败也是成功的一部分，只是你拿到的那一大部分。",
-            "生活不止眼前的苟且，还有永远也实现不了的远方。",
-            "别怕失败，反正越努力，越明白自己的不行。",
-        ];
-
-        for (const text of seedTexts) {
-            const randomAuthor = AUTHORS[Math.floor(Math.random() * AUTHORS.length)];
-            const randomLikeCount = Math.floor(Math.random() * 200) + 1;
-            await saveToHistoryKV(text, randomAuthor, false, randomLikeCount);
-        }
-    }
-
-    // ---------- 渲染历史记录 ----------
-    async function renderHistory() {
-        const history = await getHistoryFromKV();
-
-        if (!history || history.length === 0) {
-            emptyState.classList.remove("hidden");
-            return;
-        }
-
-        emptyState.classList.add("hidden");
-
-        // 保留标题，清空后面的内容
-        const children = Array.from(historyContainer.children).filter(
-            (el) => !el.classList.contains("history-title")
-        );
-        children.forEach((el) => el.remove());
-
-        history.forEach((item) => {
-            const commentItem = document.createElement("div");
-            commentItem.className = "comment-item";
-
-            const username = item.author || "匿名用户";
-            const avatarIndex = item.avatarIndex || 1;
-            const avatarUrl = `https://save.aura.us.kg/Mobile/tx${avatarIndex}.jpg`;
-
-            const likedClass = item.liked ? "active" : "";
-            const likeIcon = item.liked ? "fa-heart" : "fa-heart-o";
-            const likeCount = item.likeCount || 0;
-            const likeCountHtml =
-                likeCount > 0 ? `<span class="like-count">${likeCount}</span>` : "";
-            const userCommentBadge = item.isUserComment
-                ? '<span class="text-xs bg-blue-100 text-blue-500 px-2 py-0.5 rounded ml-1">你</span>'
-                : "";
-
-            commentItem.innerHTML = `
-          <div class="avatar-container">
-            <img src="${avatarUrl}" alt="${username}" class="avatar" />
-            ${
-                item.isUserComment
-                    ? '<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-white flex items-center justify-center"><i class="fa fa-check text-white text-xs"></i></div>'
-                    : ""
-            }
-          </div>
-          <div class="comment-content">
-            <div class="user-info">
-              <span class="username">${username}</span>
-              ${userCommentBadge}
-            </div>
-            <p class="comment-text">${item.content}</p>
-            <div class="comment-actions">
-              <div class="like-btn ${likedClass}" data-id="${item.id}">
-                <i class="fa ${likeIcon}"></i>
-                ${likeCountHtml}
-              </div>
-              <span class="comment-time">${item.timestamp || ""}</span>
-            </div>
-          </div>
-        `;
-
-            historyContainer.appendChild(commentItem);
-        });
-
-        // 点赞（仅前端效果，不回写 KV，想回写可以再加一个接口）
-        historyContainer.querySelectorAll(".like-btn").forEach((btn) => {
-            btn.addEventListener("click", function () {
-                const icon = this.querySelector("i");
-                const countEl = this.querySelector(".like-count");
-
-                const active = this.classList.toggle("active");
-                icon.className = active ? "fa fa-heart" : "fa fa-heart-o";
-
-                if (countEl) {
-                    let n = parseInt(countEl.textContent || "0", 10) || 0;
-                    n = active ? n + 1 : Math.max(0, n - 1);
-                    countEl.textContent = n;
-                } else if (active) {
-                    const newSpan = document.createElement("span");
-                    newSpan.className = "like-count";
-                    newSpan.textContent = "1";
-                    this.appendChild(newSpan);
-                }
-            });
-        });
-    }
-
-    // ---------- 乱码打字机 ----------
+    // 鸡汤“乱码打字机”效果
     function randChar() {
         const chars =
-            "!@#&*%$^&*()_+}{|:?><~`12-=+*/[];',./，。？！……≈";
+            "!@#￥%*…6#¥…&*()_-+=<>?{}[]~|ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         return chars[Math.floor(Math.random() * chars.length)];
     }
 
     function animateGibberishToText(element, text) {
-        const gibSpeed = 55;
-        const resolveSpeed = 70;
+        const gibSpeed = 45;
+        const resolveSpeed = 55;
 
         element.textContent = "";
         let display = "";
@@ -770,127 +720,318 @@
         }
 
         typeGib();
-        const totalDuration = text.length * (gibSpeed + resolveSpeed) + 400;
-        return totalDuration;
+        return text.length * (gibSpeed + resolveSpeed) + 400;
     }
 
-    // ---------- 获取毒鸡汤 ----------
-    async function fetchDujitang() {
+    // 根据进度获取中文提示
+    function getDayHintText(progress) {
+        for (let i = 0; i < DAY_HINTS.length; i++) {
+            const [min, max, text] = DAY_HINTS[i];
+            if (progress >= min && progress < max) {
+                return text;
+            }
+        }
+        return DAY_HINTS[DAY_HINTS.length - 1][2];
+    }
+
+    // 底部时间
+    function updateMobileTime() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, "0");
+        const mm = String(now.getMinutes()).padStart(2, "0");
+        mobileCurrentTime.textContent = `Current time: ${hh}:${mm}`;
+    }
+
+    // 计算今日已过进度，并更新底部文案（英文 + 中文提示）
+    function updateDayProgressFooter() {
+        const now = new Date();
+        const h = now.getHours();
+        const m = now.getMinutes();
+        const s = now.getSeconds();
+        const currentSeconds = h * 3600 + m * 60 + s;
+        const totalSeconds = 24 * 3600;
+        const progress = (currentSeconds / totalSeconds) * 100;
+        const clamped = Math.max(0, Math.min(progress, 100));
+        const percentText = clamped.toFixed(1) + "%";
+        const hint = getDayHintText(clamped);
+
+        if (mobileDayProgress) {
+            mobileDayProgress.textContent = `Today has passed ${percentText}. ${hint}`;
+        }
+    }
+
+    function updateMobileTimeAndProgress() {
+        updateMobileTime();
+        updateDayProgressFooter();
+    }
+
+    // ------- 物品层收起 / 展开 -------
+
+    function toggleItemLayer() {
+        itemLayer.classList.toggle("hide");
+        if (itemLayer.classList.contains("hide")) {
+            // 收起：视频有声音
+            videoPlayer.muted = false;
+        } else {
+            // 展开：静音
+            videoPlayer.muted = true;
+        }
+    }
+
+    ["click", "touchstart"].forEach((evt) => {
+        slideHit.addEventListener(
+            evt,
+            function (e) {
+                e.preventDefault();
+                toggleItemLayer();
+            },
+            { passive: false }
+        );
+    });
+
+    // ------- 历史记录（和 KV 通信） -------
+
+    async function fetchHistoryFromServer() {
         try {
-            dujitangText.textContent = "正在加载毒鸡汤...";
-            authorName.textContent = "";
-            // 作者用 —— 占位
-            if (anotherOneBtn) anotherOneBtn.disabled = true;
+            const res = await fetch(HISTORY_API);
+            if (!res.ok) throw new Error("history api error");
+            const data = await res.json();
+            if (!Array.isArray(data)) return [];
+            return data;
+        } catch (e) {
+            console.error("获取历史记录失败", e);
+            return [];
+        }
+    }
 
-            const randomIndex = Math.floor(Math.random() * DUJITANG_API_LIST.length);
-            const apiUrl = DUJITANG_API_LIST[randomIndex];
+    async function appendHistoryToServer(content, author, likeCount) {
+        try {
+            const body = {
+                content,
+                author,
+                likeCount,
+                isUserComment: false,
+            };
+            await fetch(HISTORY_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
+        } catch (e) {
+            console.error("写入历史记录失败", e);
+        }
+    }
 
-            const response = await fetch(apiUrl);
-            const data = await response.json();
+    function renderHistory(history) {
+        if (!Array.isArray(history) || history.length === 0) {
+            historyContainer.innerHTML = "";
+            historyContainer.appendChild(emptyState);
+            emptyState.style.display = "block";
+            historySummary.textContent = "没有发现更多...";
+            return;
+        }
 
-            let content = "";
+        emptyState.style.display = "none";
+        historyContainer.innerHTML = "";
 
-            if (apiUrl.includes("api.btstu.cn")) {
-                if (data && data.text) content = data.text;
-            } else if (apiUrl.includes("apis.tianapi.com")) {
-                if (data && data.code === 200 && data.result && data.result.content) {
-                    content = data.result.content;
+        historySummary.textContent = `共 ${history.length} 条（当前只保留 ${MAX_HISTORY} 条）`;
+
+        history.forEach((item) => {
+            const commentItem = document.createElement("div");
+            commentItem.className = "comment-item";
+
+            const authorString = item.author || "路过的灵魂打工人";
+            const username = authorString;
+
+            // 头像 index
+            const idx =
+                typeof item.avatarIndex === "number"
+                    ? item.avatarIndex
+                    : Math.floor(Math.random() * 41) + 1;
+            const avatarUrl = `https://save.aura.us.kg/Mobile/tx${idx}.jpg`;
+
+            const liked = !!item.liked;
+            const likeCount = item.likeCount || 0;
+
+            commentItem.innerHTML = `
+          <div class="avatar-container">
+            <img src="${avatarUrl}" alt="${username}" class="avatar" />
+          </div>
+          <div class="comment-content">
+            <div class="user-info">
+              <span class="username">${username}</span>
+            </div>
+            <p class="comment-text">${item.content}</p>
+            <div class="comment-actions">
+              <div class="comment-actions-left">
+                <div class="like-btn ${liked ? "active" : ""}" data-id="${
+                item.id
+            }">
+                  <i class="fa ${liked ? "fa-heart" : "fa-heart-o"}"></i>
+                  ${
+                likeCount > 0
+                    ? `<span class="like-count">${likeCount}</span>`
+                    : ""
+            }
+                </div>
+              </div>
+              <span class="comment-time">${
+                item.timestamp || ""
+            }</span>
+            </div>
+          </div>
+        `;
+
+            historyContainer.appendChild(commentItem);
+        });
+
+        // 绑定点赞事件
+        historyContainer.querySelectorAll(".like-btn").forEach((btn) => {
+            btn.addEventListener("click", function () {
+                this.classList.toggle("active");
+                const icon = this.querySelector("i");
+                const countSpan = this.querySelector(".like-count");
+                let count = countSpan ? parseInt(countSpan.textContent) || 0 : 0;
+
+                if (this.classList.contains("active")) {
+                    icon.className = "fa fa-heart";
+                    count++;
+                } else {
+                    icon.className = "fa fa-heart-o";
+                    count = Math.max(0, count - 1);
                 }
-            }
 
-            if (!content) {
-                dujitangText.textContent = "获取失败，请稍后重试。";
-                return;
-            }
+                if (countSpan) {
+                    if (count > 0) {
+                        countSpan.textContent = count;
+                    } else {
+                        countSpan.remove();
+                    }
+                } else if (count > 0) {
+                    const newSpan = document.createElement("span");
+                    newSpan.className = "like-count";
+                    newSpan.textContent = count;
+                    this.appendChild(newSpan);
+                }
+            });
+        });
+    }
 
-            // 乱码打字机 + 呼吸效果（CSS 已经一直在动）
-            dujitangText.style.transition = "none";
-            const totalDuration = animateGibberishToText(dujitangText, content);
+    // ------- 获取毒鸡汤 + 更新卡片 -------
 
-            // 网页标题使用这条鸡汤
+    async function fetchDujitangText() {
+        // 随机先选一个 API，失败再换另一个
+        const firstIsBt = Math.random() < 0.5;
+        const apis = firstIsBt
+            ? [DUJITANG_API_LIST[0], DUJITANG_API_LIST[1]]
+            : [DUJITANG_API_LIST[1], DUJITANG_API_LIST[0]];
+
+        for (const apiUrl of apis) {
             try {
-                const maxLen = 30;
-                let shortQuote = content;
-                if (content.length > maxLen) {
-                    shortQuote = content.substring(0, maxLen).trim() + "…";
+                const res = await fetch(apiUrl);
+                const data = await res.json();
+                if (apiUrl.includes("api.btstu.cn")) {
+                    if (data && data.text) return data.text;
+                } else if (apiUrl.includes("apis.tianapi.com")) {
+                    if (data && data.code === 200 && data.result && data.result.content) {
+                        return data.result.content;
+                    }
                 }
-                document.title = `Lyn Mobile - ${shortQuote}`;
+            } catch (e) {
+                console.warn("某个鸡汤 API 失败，尝试下一个", e);
+            }
+        }
+
+        return "锅烂了啦！暂时无法熬制鸡汤 😭";
+    }
+
+    async function updateDujitangCard() {
+        dujitangText.textContent = "正在加加加载...";
+        authorNameEl.textContent = "";
+        // 作者用 —— 占位
+        authorInfo.querySelector("span").textContent = "——";
+
+        anotherOneBtn.disabled = true;
+
+        try {
+            const text = await fetchDujitangText();
+            const authorName = getRandomAuthorName();
+            const likes = getRandomLikeCount();
+
+            // document.title 使用短鸡汤
+            try {
+                const maxTitleLength = 22;
+                let shortQuote = text;
+                if (text.length > maxTitleLength) {
+                    shortQuote = text.substring(0, maxTitleLength).trim() + "…";
+                }
+                document.title = `Lyn's Home - ${shortQuote}`;
             } catch (e) {}
 
-            // 随机作者，等文字跑完再显示
-            const randomAuthor =
-                AUTHORS[Math.floor(Math.random() * AUTHORS.length)];
-            setTimeout(() => {
-                authorName.textContent = randomAuthor;
-            }, totalDuration);
+            const duration = animateGibberishToText(dujitangText, text);
+            dujitangLikeCount.textContent = likes.toLocaleString();
 
-            // 随机点赞数
-            const randomLikeCount = Math.floor(Math.random() * 1000000);
-            dujitangLikeCount.textContent = randomLikeCount.toLocaleString();
+            // 一段时间后再显示作者
+            setTimeout(() => {
+                authorNameEl.textContent = authorName;
+                authorInfo.querySelector("span").textContent = "——";
+            }, duration);
 
             currentDujitang = {
-                content,
-                author: randomAuthor,
-                likeCount: randomLikeCount,
+                content: text,
+                author: authorName,
+                likeCount: likes,
             };
 
-            // 写入 KV（新记录覆盖旧的逻辑由 Worker 控制）
-            await saveToHistoryKV(content, randomAuthor, false, randomLikeCount);
-
-            // 再渲染一下历史记录
-            renderHistory();
+            // 写入 KV 历史
+            appendHistoryToServer(text, authorName, likes);
         } catch (e) {
-            console.error("获取毒鸡汤失败:", e);
-            dujitangText.textContent = "网络错误，请稍后再试。";
+            console.error("更新鸡汤失败", e);
+            dujitangText.textContent = "获取失败，请点击下方按钮重试";
+            authorNameEl.textContent = "系统提示（来自 502 的关怀）";
         } finally {
-            if (anotherOneBtn) anotherOneBtn.disabled = false;
+            anotherOneBtn.disabled = false;
         }
     }
 
-    // ---------- 初始化 ----------
-    document.addEventListener("DOMContentLoaded", () => {
-        // 初始：静音 & 随机一条视频
+    // ------- 初始化 -------
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        // 初次播放随机视频（第二层默认展开，先静音）
         videoPlayer.muted = true;
         playRandomVideo();
+        videoPlayer.addEventListener("ended", playRandomVideo);
 
-        (async () => {
-            // 确保评论区不空
-            await ensureHistoryNotEmpty();
-            await renderHistory();
-            await fetchDujitang();
-        })();
+        // 更新时间 + 今日进度（每 30 秒刷新一次）
+        updateMobileTimeAndProgress();
+        setInterval(updateMobileTimeAndProgress, 30 * 1000);
 
-        // “Another one” 按钮
-        if (anotherOneBtn) {
-            anotherOneBtn.addEventListener("click", () => {
-                if (refreshIcon) {
-                    refreshIcon.classList.remove("spin-once");
-                    void refreshIcon.offsetWidth; // 触发重绘
-                    refreshIcon.classList.add("spin-once");
-                }
-                fetchDujitang();
-            });
-        }
+        // 加载历史记录
+        const history = await fetchHistoryFromServer();
+        renderHistory(history);
 
-        // 红心点赞当前毒鸡汤
-        if (likeArea) {
-            likeArea.addEventListener("click", () => {
-                if (currentDujitang) {
-                    currentDujitang.likeCount =
-                        (currentDujitang.likeCount || 0) + 1;
-                    dujitangLikeCount.textContent =
-                        currentDujitang.likeCount.toLocaleString();
-                }
+        // 加载毒鸡汤
+        updateDujitangCard();
 
-                likeArea.classList.remove("heart-bump");
-                void likeArea.offsetWidth;
-                likeArea.classList.add("heart-bump");
-                setTimeout(
-                    () => likeArea.classList.remove("heart-bump"),
-                    260
-                );
-            });
-        }
+        // “下一条”按钮
+        anotherOneBtn.addEventListener("click", () => {
+            const icon = anotherOneBtn.querySelector("i");
+            icon.classList.add("spin");
+            setTimeout(() => icon.classList.remove("spin"), 550);
+            updateDujitangCard();
+        });
+
+        // 点赞效果（卡片上的红心）
+        likeArea.addEventListener("click", () => {
+            likeArea.classList.add("active");
+            let count = parseInt(
+                dujitangLikeCount.textContent.replace(/,/g, "") || "0",
+                10
+            );
+            count++;
+            dujitangLikeCount.textContent = count.toLocaleString();
+            setTimeout(() => likeArea.classList.remove("active"), 220);
+        });
     });
 </script>
 </body>
