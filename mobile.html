@@ -112,7 +112,7 @@
             left: 0;
             width: 100%;
             /* 稍微设高一点 + 安全区，避免 iOS 底部露出视频 */
-            height: calc(86vh + env(safe-area-inset-bottom, 0px));
+            height: calc(50vh + env(safe-area-inset-bottom, 0px));
             background: linear-gradient(
                     180deg,
                     rgba(15, 23, 42, 0.96) 0%,
@@ -605,7 +605,7 @@
 <script>
     // ------- 基本配置 -------
     // 背景视频：像头像一样从 1 到 N 定义
-    const VIDEO_TOTAL = 3; // 有多少个视频就改多少
+    const VIDEO_TOTAL = 7; // 有多少个视频就改多少
     function getVideoUrl(index) {
         return `https://save.aura.us.kg/Mobile/bg${index}.MP4`;
     }
