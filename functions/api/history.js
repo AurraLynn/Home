@@ -1,5 +1,5 @@
 const KV_KEY = "history";
-const MAX_HISTORY = 100;
+const MAX_HISTORY = 1000;
 
 // Cloudflare Pages Functions 入口
 export async function onRequest(context) {
