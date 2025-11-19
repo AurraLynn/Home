@@ -81,39 +81,28 @@
             object-position: center;
         }
 
-        /* 上下滑动提示（只用图标，不用文字） */
+        /* ✅ 上下滑动提示（放在视频上方，滑动一次后隐藏） */
         .swipe-hint {
             position: absolute;
-            bottom: 18px;
+            top: 16px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 2px;
-            color: rgba(249, 250, 251, 0.85);
+            color: rgba(249, 250, 251, 0.9);
             font-size: 18px;
-            pointer-events: none;
+            pointer-events: none; /* 不挡住滑动事件 */
             animation: swipeHintFloat 2.2s ease-in-out infinite;
         }
-
         .swipe-hint i {
-            text-shadow: 0 0 8px rgba(15, 23, 42, 0.8);
+            text-shadow: 0 0 10px rgba(15, 23, 42, 0.8);
         }
-
         @keyframes swipeHintFloat {
-            0% {
-                transform: translate(-50%, 2px);
-                opacity: 0.25;
-            }
-            40% {
-                transform: translate(-50%, -6px);
-                opacity: 0.9;
-            }
-            100% {
-                transform: translate(-50%, 2px);
-                opacity: 0.25;
-            }
+            0%   { transform: translate(-50%, 0);   opacity: 0.2; }
+            50%  { transform: translate(-50%, 6px); opacity: 1;   }
+            100% { transform: translate(-50%, 0);   opacity: 0.2; }
         }
 
         /* 第二层（下方卡片层） */
@@ -122,9 +111,8 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            /* 默认占屏幕的一半左右，使用 vh + dvh + safe-area 兼容 iOS Safari */
-            height: calc(55vh + env(safe-area-inset-bottom, 0px));
-            height: calc(55dvh + env(safe-area-inset-bottom, 0px));
+            /* 稍微设高一点 + 安全区，避免 iOS 底部露出视频 */
+            height: calc(86vh + env(safe-area-inset-bottom, 0px));
             background: linear-gradient(
                     180deg,
                     rgba(15, 23, 42, 0.96) 0%,
@@ -140,7 +128,7 @@
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
-        /* 收起时往下滑一些，露出更多视频，但依然从底部开始铺，不会露出空白 */
+        /* 收起时往下滑一点，露出更多视频 */
         .item-layer.hide {
             transform: translateY(78%);
         }
@@ -159,13 +147,13 @@
             z-index: 4;
         }
 
-        /* 中间那条小横条（提亮一点不要模糊） */
+        /* 中间那条小横条（提亮一点） */
         .ios-slide-bar {
             width: 60px;
             height: 6px;
-            background: rgba(248, 250, 252, 0.95);
+            background: rgba(248, 250, 252, 0.9);
             border-radius: 999px;
-            box-shadow: 0 0 10px rgba(148, 163, 184, 0.95);
+            box-shadow: 0 0 8px rgba(148, 163, 184, 0.9);
         }
 
         /* 里面内容区域可滚动 */
@@ -179,7 +167,7 @@
             overflow-y: auto;
         }
 
-        /* 标题区域 */
+        /* 标题区域：更干净、重点突出名字 Lyn */
         .hero-title {
             font-family: "Poppins", -apple-system, BlinkMacSystemFont,
             "PingFang SC", system-ui, sans-serif;
@@ -191,6 +179,7 @@
             color: #e5e7eb;
         }
 
+        /* 名字单独高亮，带一点小渐变 */
         .hero-name {
             font-weight: 700;
             background: linear-gradient(135deg, #f97316, #ec4899);
@@ -200,6 +189,7 @@
             text-shadow: 0 0 14px rgba(0, 0, 0, 0.7);
         }
 
+        /* 副标题：更细一点，更贴合暗色底 */
         .hero-subtitle {
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
             "Microsoft Yahei", system-ui, sans-serif;
@@ -256,10 +246,10 @@
             }
         }
 
-        /* 作者信息：与按钮之间留一点距离，避免遮挡 */
+        /* 作者信息 */
         .author-info {
             margin-top: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 10px; /* 和下方按钮空一行出来，避免遮挡 */
             display: flex;
             justify-content: flex-end;
             align-items: center;
@@ -297,7 +287,7 @@
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
             color: #fee2e2;
             font-size: 13px;
-            cursor: pointer; /* 悬停有小手 */
+            cursor: pointer; /* 鼠标悬停显示小手 */
         }
 
         .like-area i {
@@ -365,27 +355,19 @@
         }
 
         .history-title {
-            margin-bottom: 8px;
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-        }
-
-        .history-title-left {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .history-main {
             font-size: 15px;
             font-weight: 600;
             color: #e5e7eb;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .history-sub {
+        .history-subtitle {
             font-size: 11px;
             color: #9ca3af;
+            margin-bottom: 6px;
         }
 
         .history-title span {
@@ -459,7 +441,7 @@
         .like-btn {
             display: flex;
             align-items: center;
-            cursor: pointer; /* 评论点赞也有小手 */
+            cursor: pointer; /* 评论区点赞也显示小手 */
         }
 
         .like-btn i {
@@ -539,9 +521,11 @@
 <!-- 背景视频 -->
 <div class="video-layer" id="videoLayer">
     <video class="video-player" id="videoPlayer" autoplay loop playsinline muted>
+        <!-- 视频地址会在 JS 里按 1~N 随机替换 -->
         <source src="https://save.aura.us.kg/Mobile/bg1.MP4" type="video/mp4" />
     </video>
-    <!-- 上下滑提示（纯图标） -->
+
+    <!-- ✅ 上下滑动提示（放在视频上方） -->
     <div class="swipe-hint" id="swipeHint">
         <i class="fa fa-angle-up"></i>
         <i class="fa fa-angle-down"></i>
@@ -593,11 +577,11 @@
         <!-- 历史记录（评论区） -->
         <div class="history-wrapper mt-6">
             <div class="history-title">
-                <div class="history-title-left">
-                    <div class="history-main">灵魂挨打记录册</div>
-                    <div class="history-sub">今天又被生活教育了多少次？</div>
-                </div>
+                <div>灵魂挨打记录册</div>
                 <span id="historySummary">载入中...</span>
+            </div>
+            <div class="history-subtitle">
+                今天又被生活教育了多少次？
             </div>
             <div id="historyContainer">
                 <div class="empty-state" id="emptyState">
@@ -611,7 +595,7 @@
                 <span id="mobileCurrentTime">Current time: --:--</span>
                 <div id="mobileDayProgress" class="mobile-day-progress">
                     Today has passed: --.-%<br>
-                    🫧&nbsp;时间是海绵里的水，挤挤总会有的
+                    🫧 时间是海绵里的水，挤挤总会有的
                 </div>
             </div>
         </div>
@@ -651,6 +635,7 @@
     const videoLayer = document.getElementById("videoLayer");
     const itemLayer = document.getElementById("itemLayer");
     const slideHit = document.getElementById("slideHit");
+    const swipeHint = document.getElementById("swipeHint");
 
     const dujitangText = document.getElementById("dujitangText");
     const authorInfo = document.getElementById("authorInfo");
@@ -731,6 +716,7 @@
     }
 
     function getRandomLikeCount() {
+        // 555 ~ 999999 之间
         const min = 555;
         const max = 999999;
         return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -845,13 +831,22 @@
             `Today has passed: <strong>${clamped.toFixed(1)}%</strong><br>🫧&nbsp;${hint}`;
     }
 
+    // ✅ 隐藏上下滑动提示
+    function hideSwipeHint() {
+        if (swipeHint) {
+            swipeHint.style.display = "none";
+        }
+    }
+
     // ------- 物品层收起 / 展开 -------
 
     function toggleItemLayer() {
         itemLayer.classList.toggle("hide");
         if (itemLayer.classList.contains("hide")) {
+            // 收起：视频有声音
             videoPlayer.muted = false;
         } else {
+            // 展开：静音
             videoPlayer.muted = true;
         }
     }
@@ -867,70 +862,54 @@
         );
     });
 
-    // ------- 视频上下滑 / PC 鼠标切换 -------
-    let swipeStartY = null;
-    const SWIPE_THRESHOLD = 40;
-
-    function handleTouchStart(e) {
-        const t = e.touches && e.touches[0];
-        if (!t) return;
-        swipeStartY = t.clientY;
-    }
-
-    function handleTouchEnd(e) {
-        if (swipeStartY === null) return;
-        const t = e.changedTouches && e.changedTouches[0];
-        if (!t) {
-            swipeStartY = null;
-            return;
+    // ------- 视频上下滑切换（移动端） -------
+    let touchStartY = null;
+    videoLayer.addEventListener("touchstart", (e) => {
+        if (e.touches && e.touches.length > 0) {
+            touchStartY = e.touches[0].clientY;
         }
-        const diffY = t.clientY - swipeStartY;
-        if (Math.abs(diffY) > SWIPE_THRESHOLD) {
+    }, { passive: true });
+
+    videoLayer.addEventListener("touchend", (e) => {
+        if (touchStartY === null) return;
+        const endY = e.changedTouches[0].clientY;
+        const diffY = endY - touchStartY;
+        const threshold = 40; // 滑动阈值
+
+        if (Math.abs(diffY) > threshold) {
+            hideSwipeHint();  // ✅ 成功滑动后隐藏提示
             if (diffY < 0) {
-                playNextVideo(); // 上滑：下一段
+                // 上滑：下一段视频
+                playNextVideo();
             } else {
-                playPrevVideo(); // 下滑：上一段
+                // 下滑：上一段视频
+                playPrevVideo();
             }
         }
-        swipeStartY = null;
-    }
+        touchStartY = null;
+    }, { passive: true });
 
-    videoLayer.addEventListener("touchstart", handleTouchStart, { passive: true });
-    videoLayer.addEventListener("touchend", handleTouchEnd, { passive: true });
-    videoPlayer.addEventListener("touchstart", handleTouchStart, { passive: true });
-    videoPlayer.addEventListener("touchend", handleTouchEnd, { passive: true });
-
-    // PC 鼠标拖动
-    let mouseStartY = null;
-    videoLayer.addEventListener("mousedown", (e) => {
-        mouseStartY = e.clientY;
-    });
-    videoLayer.addEventListener("mouseup", (e) => {
-        if (mouseStartY === null) return;
-        const diffY = e.clientY - mouseStartY;
-        if (Math.abs(diffY) > SWIPE_THRESHOLD) {
-            if (diffY < 0) playNextVideo();
-            else playPrevVideo();
+    // ------- PC：滚轮 / 键盘切换视频 -------
+    videoLayer.addEventListener("wheel", (e) => {
+        const delta = e.deltaY;
+        if (Math.abs(delta) < 20) return;
+        hideSwipeHint();
+        if (delta > 0) {
+            playNextVideo();
+        } else {
+            playPrevVideo();
         }
-        mouseStartY = null;
     });
 
-    // PC 滚轮切换（轻微节流）
-    let lastWheelTime = 0;
-    videoLayer.addEventListener(
-        "wheel",
-        (e) => {
-            const now = Date.now();
-            if (now - lastWheelTime < 600) return;
-            lastWheelTime = now;
-            if (e.deltaY > 0) playNextVideo();
-            else if (e.deltaY < 0) playPrevVideo();
-        },
-        { passive: true }
-    );
-
-    // 视频播放结束自动下一条
-    videoPlayer.addEventListener("ended", playNextVideo);
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowUp") {
+            hideSwipeHint();
+            playPrevVideo();
+        } else if (e.key === "ArrowDown") {
+            hideSwipeHint();
+            playNextVideo();
+        }
+    });
 
     // ------- 历史记录（和 KV 通信） -------
 
@@ -986,6 +965,7 @@
             const authorString = item.author || "路过的灵魂打工人";
             const username = authorString;
 
+            // 头像 index
             const idx =
                 typeof item.avatarIndex === "number"
                     ? item.avatarIndex
@@ -1026,7 +1006,7 @@
             historyContainer.appendChild(commentItem);
         });
 
-        // 绑定点赞事件（前端本地效果）
+        // 绑定点赞事件（前端本地效果，不回写 KV）
         historyContainer.querySelectorAll(".like-btn").forEach((btn) => {
             btn.addEventListener("click", function () {
                 this.classList.toggle("active");
@@ -1061,6 +1041,7 @@
     // ------- 获取毒鸡汤 + 更新卡片 -------
 
     async function fetchDujitangText() {
+        // 随机先选一个 API，失败再换另一个
         const firstIsBt = Math.random() < 0.5;
         const apis = firstIsBt
             ? [DUJITANG_API_LIST[0], DUJITANG_API_LIST[1]]
@@ -1088,7 +1069,9 @@
     async function updateDujitangCard() {
         dujitangText.textContent = "正在加加加载...";
         authorNameEl.textContent = "";
+        // 作者用 —— 占位
         authorInfo.querySelector("span").textContent = "——";
+
         anotherOneBtn.disabled = true;
 
         try {
@@ -1096,6 +1079,7 @@
             const authorName = getRandomAuthorName();
             const likes = getRandomLikeCount();
 
+            // document.title 使用短鸡汤
             try {
                 const maxTitleLength = 22;
                 let shortQuote = text;
@@ -1108,6 +1092,7 @@
             const duration = animateGibberishToText(dujitangText, text);
             dujitangLikeCount.textContent = likes.toLocaleString();
 
+            // 一段时间后再显示作者
             setTimeout(() => {
                 authorNameEl.textContent = authorName;
                 authorInfo.querySelector("span").textContent = "——";
@@ -1119,6 +1104,7 @@
                 likeCount: likes,
             };
 
+            // 写入 KV 历史
             appendHistoryToServer(text, authorName, likes);
         } catch (e) {
             console.error("更新鸡汤失败", e);
@@ -1135,6 +1121,9 @@
         // 初次视频 index 随机一下
         currentVideoIndex = Math.floor(Math.random() * VIDEO_TOTAL) + 1;
         playVideoByIndex(currentVideoIndex);
+
+        // 视频播完后自动下一段
+        videoPlayer.addEventListener("ended", playNextVideo);
 
         // 第二层默认展开，先静音
         videoPlayer.muted = true;
