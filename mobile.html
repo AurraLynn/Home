@@ -105,28 +105,32 @@
             100% { transform: translate(-50%, 0);   opacity: 0.2; }
         }
 
-        /* 第二层（下方卡片层） */
-        .item-layer {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            /* 稍微设高一点 + 安全区，避免 iOS 底部露出视频 */
-            height: calc(55vh + env(safe-area-inset-bottom, 0px));
-            background: linear-gradient(
-                    180deg,
-                    rgba(15, 23, 42, 0.96) 0%,
-                    rgba(24, 24, 35, 0.96) 45%,
-                    rgba(15, 23, 42, 0.98) 100%
-            );
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-            z-index: 3;
-            transition: transform 0.3s ease;
-            overflow: hidden;
-            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-        }
+       /* 第二层（下方卡片层） */
+.item-layer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+
+    /* ✅ 改这里：让它占 60% 屏幕高度，并始终贴底 */
+    height: 55vh;              /* 想更矮就改成 50vh，想更高改成 70vh  */
+
+    background: linear-gradient(
+            180deg,
+            rgba(15, 23, 42, 0.96) 0%,
+            rgba(24, 24, 35, 0.96) 45%,
+            rgba(15, 23, 42, 0.98) 100%
+    );
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    z-index: 3;
+    transition: transform 0.3s ease;
+    overflow: hidden;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+
+    /* 可以保留安全区内边距，避免内容被 iOS 底部栏挡住 */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
 
         /* 收起时往下滑一点，露出更多视频 */
         .item-layer.hide {
