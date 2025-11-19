@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Lyn Mobile</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link
+            href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"
+            rel="stylesheet"
+    />
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#8B5CF6",
+                        secondary: "#EC4899",
+                        dark: "#111827",
+                        light: "#F9FAFB",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "system-ui", "sans-serif"],
+                        heading: ["Poppins", "system-ui", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+            height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 视频播放层 */
+        .video-layer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .video-player {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        /* 物品层（底部抽屉） */
+        .item-layer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 78%;
+            background: linear-gradient(180deg, #f9fafb 0%, #f3e7ff 35%, #fde2ff 100%);
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            z-index: 3;
+            transition: transform 0.3s ease;
+            overflow: hidden;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .item-layer.hide {
+            transform: translateY(80%);
+        }
+
+        .ios-slide-bar {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 5px;
+            background: rgba(0, 0, 0, 0.16);
+            border-radius: 999px;
+            cursor: pointer;
+        }
+
+        .item-content {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            padding-top: 32px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* 顶部标题区 */
+        .lyn-title {
+            font-family: "Poppins", "system-ui", sans-serif;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #111827;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 6px;
+        }
+
+        .lyn-subtitle {
+            font-family: "Inter", system-ui, sans-serif;
+            text-align: center;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #4b5563;
+        }
+
+        /* 毒鸡汤卡片 */
+        .dujitang-container {
+            margin-top: 20px;
+            padding: 18px 18px 46px;
+            border-radius: 16px;
+            background: radial-gradient(circle at top left, #ffffffcc, #f5f3ff);
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
+            color: #111827;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #dujitangText {
+            font-size: 17px;
+            line-height: 1.7;
+            text-align: center;
+            margin-bottom: 14px;
+            color: #111827;
+            opacity: 0.75;
+            animation: breatheText 4s ease-in-out infinite;
+        }
+
+        @keyframes breatheText {
+            0% {
+                opacity: 0.6;
+                filter: brightness(0.92);
+            }
+            50% {
+                opacity: 1;
+                filter: brightness(1.05);
+            }
+            100% {
+                opacity: 0.6;
+                filter: brightness(0.92);
+            }
+        }
+
+        .author-info {
+            margin-top: 8px;
+            font-style: normal;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .author-prefix {
+            margin-right: 4px;
+        }
+
+        .author-name {
+            font-weight: 500;
+        }
+
+        /* 点赞 + 下一条 按钮行 */
+        .dujitang-footer {
+            position: absolute;
+            left: 18px;
+            right: 18px;
+            bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .like-area {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(248, 113, 113, 0.12);
+            color: #b91c1c;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .like-area i {
+            color: #ef4444;
+            font-size: 16px;
+        }
+
+        .like-count {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .like-area.heart-bump {
+            transform: scale(1.08);
+            box-shadow: 0 6px 18px rgba(248, 113, 113, 0.35);
+        }
+
+        @keyframes heartBump {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.15);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .another-one-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(90deg, #8b5cf6, #ec4899);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(129, 140, 248, 0.35);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.2s ease;
+        }
+
+        .another-one-btn:disabled {
+            opacity: 0.7;
+            cursor: default;
+            box-shadow: none;
+        }
+
+        .another-one-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(129, 140, 248, 0.45);
+        }
+
+        .another-one-btn i {
+            font-size: 14px;
+        }
+
+        .spin-once {
+            animation: spinOnce 0.6s linear;
+        }
+
+        @keyframes spinOnce {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 评论区整体 */
+        #historyContainer {
+            background: linear-gradient(
+                    180deg,
+                    #f3f4ff 0%,
+                    #fef9c3 35%,
+                    #fee2e2 100%
+            );
+            border-radius: 16px;
+            padding: 14px;
+            margin-top: 14px;
+            box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
+        }
+
+        .history-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .history-title span {
+            font-size: 11px;
+            color: #6b7280;
+            font-weight: 400;
+        }
+
+        .comment-item {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px dashed rgba(148, 163, 184, 0.4);
+        }
+
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+
+        .avatar-container {
+            margin-right: 10px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #e5e7eb;
+            box-shadow: 0 2px 6px rgba(148, 163, 184, 0.7);
+        }
+
+        .comment-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .username {
+            font-weight: 600;
+            font-size: 13px;
+            color: #1f2933;
+        }
+
+        .comment-text {
+            font-size: 14px;
+            color: #111827;
+            line-height: 1.4;
+            margin-bottom: 5px;
+            word-break: break-word;
+        }
+
+        .comment-actions {
+            display: flex;
+            align-items: center;
+            font-size: 11px;
+            color: #6b7280;
+            justify-content: space-between;
+        }
+
+        .like-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: rgba(248, 250, 252, 0.7);
+        }
+
+        .like-btn i {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .like-btn.active i {
+            color: #f97373;
+        }
+
+        .like-btn .like-count {
+            font-size: 11px;
+            margin-left: 2px;
+            color: #4b5563;
+        }
+
+        .comment-time {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 18px 10px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .empty-state i {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #cbd5f5;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+<!-- 视频层 -->
+<div class="video-layer" id="videoLayer">
+    <video
+            class="video-player"
+            id="videoPlayer"
+            autoplay
+            loop
+            muted
+            playsinline
+    >
+        <source
+                src="https://save.aura.us.kg/Mobile/a.MP4"
+                type="video/mp4"
+        />
+    </video>
+</div>
+
+<!-- 底部内容层 -->
+<div class="item-layer" id="itemLayer">
+    <div class="ios-slide-bar" id="slideBar"></div>
+    <div class="item-content">
+        <!-- 标题与简介 -->
+        <div class="text-center mb-5">
+            <h1 class="lyn-title">HEY, I'M LYN</h1>
+            <p class="lyn-subtitle">
+                Just someone who loves to mess around on the internet.
+            </p>
+        </div>
+
+        <!-- 毒鸡汤卡片 -->
+        <div class="dujitang-container" id="dujitangContainer">
+            <p id="dujitangText">正在加载毒鸡汤...</p>
+
+            <div class="author-info" id="authorInfo">
+                <span class="author-prefix">——</span>
+                <span class="author-name" id="authorName"></span>
+            </div>
+
+            <!-- 底部：红心 + 下一条 -->
+            <div class="dujitang-footer">
+                <div class="like-area" id="likeArea">
+                    <i class="fa fa-heart"></i>
+                    <span class="like-count" id="dujitangLikeCount">0</span>
+                </div>
+
+                <button class="another-one-btn" id="anotherOneBtn">
+                    <i class="fa fa-refresh" id="refreshIcon"></i>
+                    <span>Another one</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 历史记录 -->
+        <div id="historyContainer">
+            <div class="history-title">
+                <div>历史记录</div>
+                <span>最多保留最近 100 条</span>
+            </div>
+            <div class="empty-state" id="emptyState">
+                <i class="fa fa-history"></i>
+                <p>还没有历史记录，再等等看。</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- 配置 ----------
+    const videoList = [
+        "https://save.aura.us.kg/Mobile/a.MP4",
+        "https://save.aura.us.kg/Mobile/b.MP4",
+    ];
+
+    const DUJITANG_API_LIST = [
+        "https://api.btstu.cn/yan/api.php?charset=utf-8&encode=json",
+        "https://apis.tianapi.com/dujitang/index?key=a2d8a53cf5636e81dd87e373065fdc6c",
+    ];
+
+    // 50 组搞笑作者
+    const AUTHORS = [
+        "甄姬（宫里传出来的）",
+        "鲁迅（根本没说过）",
+        "诸葛亮（事后诸葛）",
+        "爱因斯坦（相对来说）",
+        "匿名网友（已注销）",
+        "程序员（写 BUG 的时候）",
+        "系统提示（来自未来）",
+        "键盘侠（在线发疯中）",
+        "客服小姐姐（工号已停用）",
+        "宿舍楼下烧烤摊老板",
+        "旁边那桌的吃瓜群众",
+        "地铁广播（下一站焦虑）",
+        "朋友圈文案供应商",
+        "摸鱼办主任",
+        "AI（但不负责任）",
+        "张三（据说是内测用户）",
+        "李四（已被移出群聊）",
+        "王主任（正在开会中）",
+        "隔壁工位的同事（不愿透露姓名）",
+        "楼下奶茶店店员（加糖加料版）",
+        "外卖小哥（风里雨里都在路上）",
+        "保安大叔（看了很多却什么都没说）",
+        "清洁阿姨（见过太多垃圾）",
+        "体检中心医生（建议多喝热水）",
+        "小学同桌（作业从来没自己写）",
+        "隔壁小孩（被迫早熟）",
+        "游戏匹配到的队友（精神状态稳定）",
+        "网吧前排大神（从不回头看你一眼）",
+        "聊天室房管（一键禁言了解一下）",
+        "公司 HR（正在考虑中…）",
+        "加班的保洁阿姨（最晚走的那位）",
+        "凌晨两点的便利店店员",
+        "用脚投票的用户（已经卸载）",
+        "评论区首楼网友（已编辑）",
+        "路人甲（镜头一闪而过）",
+        "小区喇叭（天天重复那几句）",
+        "手机电量 1% 时的你",
+        "早八的闹钟（从未被善待过）",
+        "退群前最后一句话的人",
+        "工位上的盆栽（听完全部八卦）",
+        "猫猫（但牠选择保持沉默）",
+        "狗狗（只发表了汪汪汪声明）",
+        "无名之辈（却话很多）",
+        "理发店 Tony（整顿你的发型）",
+        "KTV 麦霸（跑调但很自信）",
+        "公交车司机（见证无数社死现场）",
+        "电梯里的监控（什么都看在眼里）",
+        "朋友圈仅三天可见那位朋友",
+        "学校广播站台长（爱讲大道理）",
+    ];
+
+    const HISTORY_API = "/api/history"; // 同域下 Worker 路径
+
+    // ---------- DOM ----------
+    const videoPlayer = document.getElementById("videoPlayer");
+    const itemLayer = document.getElementById("itemLayer");
+    const slideBar = document.getElementById("slideBar");
+
+    const dujitangText = document.getElementById("dujitangText");
+    const authorInfo = document.getElementById("authorInfo");
+    const authorName = document.getElementById("authorName");
+    const dujitangLikeCount = document.getElementById("dujitangLikeCount");
+    const anotherOneBtn = document.getElementById("anotherOneBtn");
+    const refreshIcon = document.getElementById("refreshIcon");
+    const likeArea = document.getElementById("likeArea");
+
+    const historyContainer = document.getElementById("historyContainer");
+    const emptyState = document.getElementById("emptyState");
+
+    let currentDujitang = null;
+
+    // ---------- 视频逻辑 ----------
+    function playRandomVideo() {
+        const randomIndex = Math.floor(Math.random() * videoList.length);
+        videoPlayer.src = videoList[randomIndex];
+        videoPlayer.play().catch(() => {});
+    }
+
+    videoPlayer.addEventListener("ended", playRandomVideo);
+
+    // 切换抽屉层 + 控制静音
+    function toggleItemLayer() {
+        itemLayer.classList.toggle("hide");
+        if (itemLayer.classList.contains("hide")) {
+            // 抽屉隐藏：打开视频声音
+            videoPlayer.muted = false;
+        } else {
+            // 抽屉显示：静音
+            videoPlayer.muted = true;
+        }
+    }
+
+    slideBar.addEventListener("click", toggleItemLayer);
+
+    // ---------- KV 相关 ----------
+    async function getHistoryFromKV() {
+        try {
+            const res = await fetch(HISTORY_API);
+            if (!res.ok) return [];
+            const data = await res.json();
+            return Array.isArray(data) ? data : [];
+        } catch (e) {
+            console.error("加载 KV 历史失败:", e);
+            return [];
+        }
+    }
+
+    async function saveToHistoryKV(content, author, isUserComment = false, likeCount = 0) {
+        try {
+            const body = { content, author, isUserComment, likeCount };
+            const res = await fetch(HISTORY_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
+            if (!res.ok) {
+                console.error("写入 KV 历史失败:", await res.text());
+                return null;
+            }
+            const newItem = await res.json();
+            return newItem;
+        } catch (e) {
+            console.error("写入 KV 历史出错:", e);
+            return null;
+        }
+    }
+
+    // 如果历史为空，填充一些种子记录，让评论区不空
+    async function ensureHistoryNotEmpty() {
+        const history = await getHistoryFromKV();
+        if (history && history.length > 0) return;
+
+        const seedTexts = [
+            "别担心，努力不会白费，只是会白费在别的地方。",
+            "你以为的柳暗花明，其实是山穷水尽的前一秒。",
+            "万事开头难，然后中间难，最后结局也难。",
+            "做梦是好事，说明你还有睡觉的时间。",
+            "凡事只要笑一笑，就找不到方向了。",
+            "你只是看起来很努力，实际上连截图都懒得截。",
+            "没有人能随随便便成功，但你可以随随便便放弃。",
+            "失败也是成功的一部分，只是你拿到的那一大部分。",
+            "生活不止眼前的苟且，还有永远也实现不了的远方。",
+            "别怕失败，反正越努力，越明白自己的不行。",
+        ];
+
+        for (const text of seedTexts) {
+            const randomAuthor = AUTHORS[Math.floor(Math.random() * AUTHORS.length)];
+            const randomLikeCount = Math.floor(Math.random() * 200) + 1;
+            await saveToHistoryKV(text, randomAuthor, false, randomLikeCount);
+        }
+    }
+
+    // ---------- 渲染历史记录 ----------
+    async function renderHistory() {
+        const history = await getHistoryFromKV();
+
+        if (!history || history.length === 0) {
+            emptyState.classList.remove("hidden");
+            return;
+        }
+
+        emptyState.classList.add("hidden");
+
+        // 保留标题，清空后面的内容
+        const children = Array.from(historyContainer.children).filter(
+            (el) => !el.classList.contains("history-title")
+        );
+        children.forEach((el) => el.remove());
+
+        history.forEach((item) => {
+            const commentItem = document.createElement("div");
+            commentItem.className = "comment-item";
+
+            const username = item.author || "匿名用户";
+            const avatarIndex = item.avatarIndex || 1;
+            const avatarUrl = `https://save.aura.us.kg/Mobile/tx${avatarIndex}.jpg`;
+
+            const likedClass = item.liked ? "active" : "";
+            const likeIcon = item.liked ? "fa-heart" : "fa-heart-o";
+            const likeCount = item.likeCount || 0;
+            const likeCountHtml =
+                likeCount > 0 ? `<span class="like-count">${likeCount}</span>` : "";
+            const userCommentBadge = item.isUserComment
+                ? '<span class="text-xs bg-blue-100 text-blue-500 px-2 py-0.5 rounded ml-1">你</span>'
+                : "";
+
+            commentItem.innerHTML = `
+          <div class="avatar-container">
+            <img src="${avatarUrl}" alt="${username}" class="avatar" />
+            ${
+                item.isUserComment
+                    ? '<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-white flex items-center justify-center"><i class="fa fa-check text-white text-xs"></i></div>'
+                    : ""
+            }
+          </div>
+          <div class="comment-content">
+            <div class="user-info">
+              <span class="username">${username}</span>
+              ${userCommentBadge}
+            </div>
+            <p class="comment-text">${item.content}</p>
+            <div class="comment-actions">
+              <div class="like-btn ${likedClass}" data-id="${item.id}">
+                <i class="fa ${likeIcon}"></i>
+                ${likeCountHtml}
+              </div>
+              <span class="comment-time">${item.timestamp || ""}</span>
+            </div>
+          </div>
+        `;
+
+            historyContainer.appendChild(commentItem);
+        });
+
+        // 点赞（仅前端效果，不回写 KV，想回写可以再加一个接口）
+        historyContainer.querySelectorAll(".like-btn").forEach((btn) => {
+            btn.addEventListener("click", function () {
+                const icon = this.querySelector("i");
+                const countEl = this.querySelector(".like-count");
+
+                const active = this.classList.toggle("active");
+                icon.className = active ? "fa fa-heart" : "fa fa-heart-o";
+
+                if (countEl) {
+                    let n = parseInt(countEl.textContent || "0", 10) || 0;
+                    n = active ? n + 1 : Math.max(0, n - 1);
+                    countEl.textContent = n;
+                } else if (active) {
+                    const newSpan = document.createElement("span");
+                    newSpan.className = "like-count";
+                    newSpan.textContent = "1";
+                    this.appendChild(newSpan);
+                }
+            });
+        });
+    }
+
+    // ---------- 乱码打字机 ----------
+    function randChar() {
+        const chars =
+            "!@#&*%$^&*()_+}{|:?><~`12-=+*/[];',./，。？！……≈";
+        return chars[Math.floor(Math.random() * chars.length)];
+    }
+
+    function animateGibberishToText(element, text) {
+        const gibSpeed = 55;
+        const resolveSpeed = 70;
+
+        element.textContent = "";
+        let display = "";
+        let index = 0;
+
+        function typeGib() {
+            if (index < text.length) {
+                display += randChar();
+                element.textContent = display;
+                index++;
+                setTimeout(typeGib, gibSpeed);
+            } else {
+                let resolveIndex = 0;
+                let chars = element.textContent.split("");
+
+                function resolveNext() {
+                    if (resolveIndex < text.length) {
+                        chars[resolveIndex] = text.charAt(resolveIndex);
+                        chars.length = Math.max(chars.length, text.length);
+                        element.textContent = chars.join("");
+                        resolveIndex++;
+                        setTimeout(resolveNext, resolveSpeed);
+                    }
+                }
+                resolveNext();
+            }
+        }
+
+        typeGib();
+        const totalDuration = text.length * (gibSpeed + resolveSpeed) + 400;
+        return totalDuration;
+    }
+
+    // ---------- 获取毒鸡汤 ----------
+    async function fetchDujitang() {
+        try {
+            dujitangText.textContent = "正在加载毒鸡汤...";
+            authorName.textContent = "";
+            // 作者用 —— 占位
+            if (anotherOneBtn) anotherOneBtn.disabled = true;
+
+            const randomIndex = Math.floor(Math.random() * DUJITANG_API_LIST.length);
+            const apiUrl = DUJITANG_API_LIST[randomIndex];
+
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+            let content = "";
+
+            if (apiUrl.includes("api.btstu.cn")) {
+                if (data && data.text) content = data.text;
+            } else if (apiUrl.includes("apis.tianapi.com")) {
+                if (data && data.code === 200 && data.result && data.result.content) {
+                    content = data.result.content;
+                }
+            }
+
+            if (!content) {
+                dujitangText.textContent = "获取失败，请稍后重试。";
+                return;
+            }
+
+            // 乱码打字机 + 呼吸效果（CSS 已经一直在动）
+            dujitangText.style.transition = "none";
+            const totalDuration = animateGibberishToText(dujitangText, content);
+
+            // 网页标题使用这条鸡汤
+            try {
+                const maxLen = 30;
+                let shortQuote = content;
+                if (content.length > maxLen) {
+                    shortQuote = content.substring(0, maxLen).trim() + "…";
+                }
+                document.title = `Lyn Mobile - ${shortQuote}`;
+            } catch (e) {}
+
+            // 随机作者，等文字跑完再显示
+            const randomAuthor =
+                AUTHORS[Math.floor(Math.random() * AUTHORS.length)];
+            setTimeout(() => {
+                authorName.textContent = randomAuthor;
+            }, totalDuration);
+
+            // 随机点赞数
+            const randomLikeCount = Math.floor(Math.random() * 1000000);
+            dujitangLikeCount.textContent = randomLikeCount.toLocaleString();
+
+            currentDujitang = {
+                content,
+                author: randomAuthor,
+                likeCount: randomLikeCount,
+            };
+
+            // 写入 KV（新记录覆盖旧的逻辑由 Worker 控制）
+            await saveToHistoryKV(content, randomAuthor, false, randomLikeCount);
+
+            // 再渲染一下历史记录
+            renderHistory();
+        } catch (e) {
+            console.error("获取毒鸡汤失败:", e);
+            dujitangText.textContent = "网络错误，请稍后再试。";
+        } finally {
+            if (anotherOneBtn) anotherOneBtn.disabled = false;
+        }
+    }
+
+    // ---------- 初始化 ----------
+    document.addEventListener("DOMContentLoaded", () => {
+        // 初始：静音 & 随机一条视频
+        videoPlayer.muted = true;
+        playRandomVideo();
+
+        (async () => {
+            // 确保评论区不空
+            await ensureHistoryNotEmpty();
+            await renderHistory();
+            await fetchDujitang();
+        })();
+
+        // “Another one” 按钮
+        if (anotherOneBtn) {
+            anotherOneBtn.addEventListener("click", () => {
+                if (refreshIcon) {
+                    refreshIcon.classList.remove("spin-once");
+                    void refreshIcon.offsetWidth; // 触发重绘
+                    refreshIcon.classList.add("spin-once");
+                }
+                fetchDujitang();
+            });
+        }
+
+        // 红心点赞当前毒鸡汤
+        if (likeArea) {
+            likeArea.addEventListener("click", () => {
+                if (currentDujitang) {
+                    currentDujitang.likeCount =
+                        (currentDujitang.likeCount || 0) + 1;
+                    dujitangLikeCount.textContent =
+                        currentDujitang.likeCount.toLocaleString();
+                }
+
+                likeArea.classList.remove("heart-bump");
+                void likeArea.offsetWidth;
+                likeArea.classList.add("heart-bump");
+                setTimeout(
+                    () => likeArea.classList.remove("heart-bump"),
+                    260
+                );
+            });
+        }
+    });
+</script>
+</body>
+</html>
