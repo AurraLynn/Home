@@ -1,48 +1,43 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <!-- ================== 基础编码与视口 ================== -->
+    <!-- 基础编码与视口 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- ================== 页面标题（浏览器标签） ================== -->
-    <title>Lynn - </title>
+    <!-- 页面标题（浏览器标签显示） -->
+    <title>Lynn</title>
 
-    <!-- ========== 国内：微信 / QQ / 抖音 / 微博 等 Open Graph 预览 ========== -->
+    <!-- ===== 国内：微信、QQ、抖音、微博等通用卡片（Open Graph） ===== -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Lynn">
     <meta property="og:title" content="Lynn">
     <meta property="og:description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
     <meta property="og:image" content="https://save.aura.us.kg/Picture/Fm2.png">
     <meta property="og:url" content="https://aura.us.kg">
+
+    <!-- 基础 SEO + 微信兼容 -->
     <meta name="description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
     <meta itemprop="image" content="https://save.aura.us.kg/Picture/Fm2.png">
-    <title>Lynn</title>
-    <!-- ========== 国外：Twitter / X 预览（英文 + bg.jpg） ========== -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Lynn">
-    <meta name="twitter:description" content="Just someone who loves to mess around on the internet.">
-    <meta name="twitter:image" content="https://save.aura.us.kg/Picture/bg.jpg">
-    <meta name="twitter:url" content="https://aura.us.kg">
-    <meta name="twitter:site" content="@wsm_Lyn">
-    <meta name="twitter:creator" content="@wsm_Lyn">
 
     <!-- 浏览器标签图标 -->
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
 
-    <!-- 标题英文字体（Poppins，用于 Hey, I'm Lyn） -->
+    <!-- 标题英文字体：Poppins，用于“Hey, I'm Lyn”等 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS（只用一些基础工具类） -->
+    <!-- Tailwind CSS（主要用于少量工具类） -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Font Awesome 图标 -->
+    <!-- Font Awesome 图标（心、刷新、小历史等） -->
     <link
-        href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"
-        rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"
+            rel="stylesheet"
     />
 
-    <!-- Tailwind 主题扩展 -->
+    <!-- Tailwind 主题扩展（可选） -->
     <script>
         tailwind.config = {
             theme: {
@@ -61,7 +56,7 @@
         };
     </script>
 
-    <!-- Tailwind 自定义工具类 -->
+    <!-- Tailwind 自定义工具类（暂时没大量用到） -->
     <style type="text/tailwindcss">
         @layer utilities {
             .text-shadow {
@@ -76,7 +71,7 @@
         }
     </style>
 
-    <!-- ================== 页面自定义样式 ================== -->
+    <!-- 页面自定义样式 -->
     <style>
         /* 全局基础设置 */
         * {
@@ -89,11 +84,11 @@
 
         body {
             background: #000;
-            overflow: hidden;   /* 禁止整个页面滚动，只让底部内容区滚动 */
+            overflow: hidden;   /* 禁止整体滚动，底部卡片自己滚 */
             height: 100vh;
         }
 
-        /* ================== 顶层：全屏视频 ================== */
+        /* ==================== 顶层：全屏视频 ==================== */
         .video-layer {
             width: 100vw;
             height: 100vh;
@@ -108,9 +103,9 @@
             object-position: center;
         }
 
-        /* ===== 顶部滑动提示（三个点 + “滑动切换视频” 文案） ===== */
+        /* ===== 滑动提示：顶部三点 + 文案 “滑动切换视频” ===== */
         .swipe-indicator {
-            position: absolute;          /* 贴在视频层上方 */
+            position: absolute;          /* 粘在视频层上面 */
             top: 16px;
             left: 50%;
             transform: translateX(-50%);
@@ -120,7 +115,7 @@
             align-items: center;
             gap: 4px;
             opacity: 0.85;
-            pointer-events: none;        /* 不阻挡点击和手势 */
+            pointer-events: none;        /* 不挡手势和点击 */
             transition: opacity 0.3s ease;
         }
 
@@ -159,13 +154,13 @@
             100% { transform: scale(1); }
         }
 
-        /* ================== 第二层：底部卡片面板 ================== */
+        /* ==================== 第二层：底部卡片面板 ==================== */
         .item-layer {
-            position: fixed;   /* 永远贴着浏览器底部 */
+            position: fixed;
             left: 0;
             right: 0;
             bottom: 0;
-            height: 45vh;      /* 初始高度：JS 里会用比例重算，这里只是占位 */
+            height: 45vh;  /* 初始高度 45%，实际加载后由 JS 重算 */
             background: linear-gradient(
                     180deg,
                     rgba(15, 23, 42, 0.96) 0%,
@@ -177,41 +172,18 @@
             z-index: 3;
             overflow: hidden;
             box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
-            padding-bottom: env(safe-area-inset-bottom, 0px); /* iOS 底部安全区 */
-            transition: height 0.25s ease;  /* 高度变化加过渡动画 */
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            transition: height 0.25s ease;
         }
 
         .item-layer.collapsed {
-            /* 折叠状态样式（高度由 JS 设置为最小高度 10%） */
+            /* 折叠状态的高度由 JS 控制为 MIN_HEIGHT（10%） */
         }
 
-        /* ===== 固定在第二层顶部的小白条容器 ===== */
-        .slide-bar-wrapper {
-            position: absolute;
-            top: 6px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            z-index: 4;
-            pointer-events: none;   /* 容器不吃事件，只把事件交给里面的小白条 */
-        }
-
-        /* 小白条本体：可点击 / 可拖动 */
-        .ios-slide-bar {
-            width: 60px;
-            height: 6px;
-            background: rgba(248, 250, 252, 0.9);
-            border-radius: 999px;
-            box-shadow: 0 0 8px rgba(148, 163, 184, 0.9);
-            cursor: pointer;
-            pointer-events: auto;   /* 真正接收点击 / 拖动事件的是这个元素 */
-        }
-
-        /* 面板内容区域：自己滚动（顶部留出空位给小白条） */
+        /* 面板内部内容区域：自己滚动 */
         .item-content {
             position: absolute;
-            top: 40px;      /* 顶部空出约 40px 给小白条 */
+            top: 0;
             left: 0;
             right: 0;
             bottom: 0;
@@ -219,7 +191,24 @@
             overflow-y: auto;
         }
 
-        /* ================== 标题区域：Hey, I'm Lyn ================== */
+        /* 小白条容器（跟着内容一起滚） */
+        .slide-bar-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        /* 小白条本体：可点、可拖动 */
+        .ios-slide-bar {
+            width: 60px;
+            height: 6px;
+            background: rgba(248, 250, 252, 0.9);
+            border-radius: 999px;
+            box-shadow: 0 0 8px rgba(148, 163, 184, 0.9);
+            cursor: pointer;
+        }
+
+        /* ==================== 标题区域：Hey, I'm Lyn ==================== */
         .hero-title {
             font-family: "Poppins", -apple-system, BlinkMacSystemFont,
             "PingFang SC", system-ui, sans-serif;
@@ -248,11 +237,12 @@
             letter-spacing: 0.01em;
         }
 
-        /* ================== 毒鸡汤卡片 ================== */
+        /* ==================== 毒鸡汤卡片 ==================== */
         .dujitang-container {
             margin-top: 18px;
-            padding: 20px 16px 52px; /* 底部多留空间放按钮 */
+            padding: 20px 16px 52px;
             border-radius: 16px;
+            /* 你已经改成几乎透明，我保留你的设定 */
             background: radial-gradient(
                     circle at top left,
                     rgba(255, 255, 255, 0),
@@ -270,7 +260,7 @@
             overflow: hidden;
         }
 
-        /* 鸡汤文字 + 呼吸效果 */
+        /* 鸡汤文字的“呼吸”动画 */
         #dujitangText {
             font-size: 17px;
             line-height: 1.7;
@@ -295,7 +285,7 @@
             }
         }
 
-        /* 作者信息区域 */
+        /* 鸡汤作者信息区域 */
         .author-info {
             margin-top: 8px;
             margin-bottom: 10px;
@@ -315,7 +305,7 @@
             font-weight: 500;
         }
 
-        /* 鸡汤操作区：左边红心，右边 Another one */
+        /* 鸡汤卡片底部操作区：左边红心，右边 “Another one” */
         .action-row {
             position: absolute;
             left: 16px;
@@ -326,46 +316,50 @@
             justify-content: space-between;
         }
 
-        /* ===== 红心区域：背景风格改成跟 Another one 类似玻璃风 ===== */
+        /* ========== 红心点赞区域（已改成和“换一条”同风格） ========== */
         .like-area {
             display: inline-flex;
             align-items: center;
             gap: 8px;
             padding: 7px 14px;
             border-radius: 999px;
-            border: none;
-            background: rgba(255, 255, 255, 0.12); /* 同 Another one 的背景风格 */
+            /* 背景与“Another one”一致 */
+            background: rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(6px);
-            color: #f9fafb;
+            color: rgba(255, 255, 255, 0.76);
             font-size: 13px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
-            transition: background 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0);
+            transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
         }
 
-        /* 红心图标：默认红色，点击时放大 */
         .like-area i {
-            color: rgba(218, 6, 6, 0.84);
-            transition: transform 0.22s ease;
+            color: rgba(218, 6, 6, 0.84);  /* 红色心形图标 */
+            transition: transform 0.22s ease, color 0.2s ease;
         }
 
         .like-area.active i {
             transform: scale(1.25);
         }
 
-        /* 红心数字：改细一点，不再超粗 */
+        /* 红心数字：改细一点、稍微小一号 */
         .like-count {
-            font-weight: 500;  /* 原来 600/700，这里变细一点 */
-            font-size: 13px;
+            font-weight: 400;   /* 从 600 改为 400，更细一点 */
+            font-size: 13px;    /* 从 14px 改为 13px */
         }
 
-        /* 鼠标经过红心：背景变亮、略微上浮 */
+        /* 鼠标 / 手指悬浮在红心区域：背景变红，略微上移，文字更亮 */
         .like-area:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgb(159, 14, 14);   /* 和按钮 hover 一样的红色 */
             transform: translateY(-1px);
+            color: #ffffff;
         }
 
-        /* “Another one” 按钮，与红心风格统一 */
+        .like-area:hover i {
+            color: #fee2e2; /* 悬浮时心再亮一点 */
+        }
+
+        /* “换一条 / Another one” 按钮 */
         .another-one-btn {
             display: inline-flex;
             align-items: center;
@@ -377,7 +371,7 @@
             color: #f9fafb;
             font-size: 13px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0);
             transition: background 0.2s ease, transform 0.2s ease;
         }
 
@@ -388,7 +382,7 @@
         }
 
         .another-one-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgb(159, 14, 14);
             transform: translateY(-1px);
         }
 
@@ -396,7 +390,7 @@
             transform: rotate(360deg) !important;
         }
 
-        /* ================== 历史记录（类似评论区） ================== */
+        /* ==================== 历史记录 / 评论区 ==================== */
         .history-wrapper {
             margin-top: 22px;
             background: radial-gradient(
@@ -566,7 +560,7 @@
             font-weight: 600;
         }
 
-        /* 底部内容滚动条美化 */
+        /* 底部卡片内部滚动条样式（窄一点，美化一下） */
         .item-content::-webkit-scrollbar {
             width: 4px;
         }
@@ -577,14 +571,14 @@
     </style>
 </head>
 <body>
-<!-- ================== 背景视频层 ================== -->
+<!-- ==================== 顶层：背景视频 & 滑动提示 ==================== -->
 <div class="video-layer" id="videoLayer">
     <video class="video-player" id="videoPlayer" autoplay loop playsinline muted>
-        <!-- 视频地址会在 JS 里按 1~N 随机替换 -->
+        <!-- 视频地址后面会被 JS 替换为随机 bg1~bgN -->
         <source src="https://save.aura.us.kg/Mobile/bg1.MP4" type="video/mp4" />
     </video>
 
-    <!-- 顶部滑动提示：三点 + 文案 -->
+    <!-- 顶部滑动提示：三个点 + “滑动切换视频” -->
     <div class="swipe-indicator" id="swipeHint">
         <div class="swipe-dots">
             <div class="swipe-dot"></div>
@@ -595,15 +589,14 @@
     </div>
 </div>
 
-<!-- ================== 下方卡片层（第二层） ================== -->
+<!-- ==================== 第二层：底部卡片（面板） ==================== -->
 <div class="item-layer" id="itemLayer">
-    <!-- 小白条：固定在第二层顶部，不随内容滚动 -->
-    <div class="slide-bar-wrapper">
-        <div class="ios-slide-bar"></div>
-    </div>
-
-    <!-- 内容区域：可滚动 -->
     <div class="item-content">
+        <!-- 小白条：拖动 / 点击控制面板高度 -->
+        <div class="slide-bar-wrapper">
+            <div class="ios-slide-bar"></div>
+        </div>
+
         <!-- 标题 & 简介 -->
         <div class="text-center mb-4">
             <h1 class="hero-title text-shadow">
@@ -618,13 +611,12 @@
         <div class="dujitang-container" id="dujitangContainer">
             <p id="dujitangText">正在加载鸡汤...</p>
 
-            <!-- 作者 -->
             <div class="author-info" id="authorInfo">
                 <span>——</span>
                 <span class="author-name" id="authorName"></span>
             </div>
 
-            <!-- 鸡汤操作区：左红心右刷新 -->
+            <!-- 底部操作：左红心 + 右“Another one”按钮 -->
             <div class="action-row">
                 <div class="like-area" id="likeArea">
                     <i class="fa fa-heart"></i>
@@ -652,7 +644,6 @@
                     <p>暂无记录，可能大善人罢工了,先来一碗鸡汤吧～</p>
                 </div>
             </div>
-            <!-- 底部版权 + 当前时间 + 今日已过 -->
             <div class="mobile-footer">
                 © 2025 | Lyn' Homepage
                 <span id="mobileCurrentTime">Current time: --:--</span>
@@ -665,24 +656,26 @@
     </div>
 </div>
 
-<!-- ================== 功能脚本 ================== -->
 <script>
-    // ------- 基本配置 -------
-    const VIDEO_TOTAL = 52;  // 背景视频总数量（bg1 ~ bg52）
+    // ==================== 全局配置 ====================
+
+    // 可用背景视频总数：会随机播放 bg1~bgN
+    const VIDEO_TOTAL = 52;
     function getVideoUrl(index) {
         return `https://save.aura.us.kg/Mobile/bg${index}.MP4`;
     }
 
-    // 毒鸡汤接口列表（随机选一个，失败再切换）
+    // 毒鸡汤 API 列表（随机优先其中一个，失败再换）
     const DUJITANG_API_LIST = [
         "https://api.btstu.cn/yan/api.php?charset=utf-8&encode=json",
         "https://apis.tianapi.com/dujitang/index?key=a2d8a53cf5636e81dd87e373065fdc6c",
     ];
 
-    const HISTORY_API = "/api/history";  // 你自己的历史记录 API
+    // 历史记录接口（你 Worker 侧自己实现）
+    const HISTORY_API = "/api/history";
     const MAX_HISTORY = 100;
 
-    // 今日已过提示文案
+    // “今日已过”进度条提示文案
     const DAY_HINTS = [
         [0,10,"时间是海绵里的水，挤挤总会有的"],
         [10,25,"一日之计在于晨，抓住早晨的时光"],
@@ -695,16 +688,17 @@
         [95,100,"今天即将过去，晚安，做个好梦"]
     ];
 
-    // ====== 底部面板高度比例：最矮 10%，最高 95%，初始 35% ======
-    const MIN_RATIO = 0.10;   // 最矮：10% 屏幕高度
-    const MAX_RATIO = 0.95;   // 最高：95% 屏幕高度
-    const DEFAULT_RATIO = 0.35; // 初始：35% 屏幕高度
+    // 底部面板高度比例：最矮 10%，最高 95%，默认 25%
+    const MIN_RATIO = 0.1;   // 面板最小高度占屏幕 10%
+    const MAX_RATIO = 0.95;  // 面板最大高度占屏幕 95%
+    const DEFAULT_RATIO = 0.35; // 初始高度 35%
 
-    // DOM 元素缓存
+    // ==================== DOM 引用 ====================
     const videoPlayer = document.getElementById("videoPlayer");
     const videoLayer = document.getElementById("videoLayer");
     const itemLayer = document.getElementById("itemLayer");
     const swipeHint = document.getElementById("swipeHint");
+
     const slideBar = document.querySelector(".ios-slide-bar");
 
     const dujitangText = document.getElementById("dujitangText");
@@ -720,28 +714,28 @@
     const mobileCurrentTime = document.getElementById("mobileCurrentTime");
     const mobileDayProgress = document.getElementById("mobileDayProgress");
 
-    let currentDujitang = null;
-    let currentVideoIndex = 1;
+    let currentDujitang = null;   // 当前毒鸡汤信息
+    let currentVideoIndex = 1;    // 当前视频编号
 
-    // 面板高度（像素）缓存
+    // ==================== 底部面板：拖动逻辑 ====================
+
     let MIN_HEIGHT = 0;
     let MAX_HEIGHT = 0;
     let DEFAULT_HEIGHT = 0;
 
-    // 拖动相关状态
     let isDraggingPanel = false;
     let dragStartY = 0;
     let dragStartHeight = 0;
     let dragMoved = false;
 
-    // ====== 重新计算最小/最大/默认高度（随窗口大小变化） ======
+    // 根据屏幕高度计算三个状态对应的真实 px 高度
     function recalcHeights() {
         const vh = window.innerHeight || 800;
         MIN_HEIGHT = vh * MIN_RATIO;
         MAX_HEIGHT = vh * MAX_RATIO;
         DEFAULT_HEIGHT = vh * DEFAULT_RATIO;
 
-        if (!itemLayer) return;
+        // 如果已经有高度，则把当前高度夹在新范围内
         const rect = itemLayer.getBoundingClientRect();
         let h = rect.height || DEFAULT_HEIGHT;
         if (h < MIN_HEIGHT) h = MIN_HEIGHT;
@@ -751,69 +745,69 @@
 
     window.addEventListener("resize", recalcHeights);
 
-    // ====== 开始拖动面板（按下小白条） ======
+    // 开始拖动（记录起点）
     function startPanelDrag(startY) {
         if (!itemLayer) return;
         isDraggingPanel = true;
         dragMoved = false;
         dragStartY = startY;
         dragStartHeight = itemLayer.getBoundingClientRect().height;
-        itemLayer.style.transition = "none";      // 拖动时取消过渡
+        itemLayer.style.transition = "none";
         itemLayer.classList.remove("collapsed");
     }
 
-    // ====== 拖动中：根据手指/鼠标位置改变高度 ======
+    // 拖动过程中根据手指 / 鼠标位置更新高度
     function movePanelDrag(currentY) {
         if (!isDraggingPanel) return;
         const dy = currentY - dragStartY;
-        if (Math.abs(dy) > 3) dragMoved = true;  // 判断是否是真拖动（而不是误触）
+        if (Math.abs(dy) > 3) dragMoved = true;
 
-        // 上拉（dy<0） → 高度变大； 下拉（dy>0） → 高度变小
+        // 上拉 dy<0 → 高度增大；下拉 dy>0 → 高度减小
         let newHeight = dragStartHeight - dy;
         if (newHeight < MIN_HEIGHT) newHeight = MIN_HEIGHT;
         if (newHeight > MAX_HEIGHT) newHeight = MAX_HEIGHT;
 
         itemLayer.style.height = newHeight + "px";
 
-        // 根据面板高度决定是否静音视频
+        // ratio 用于控制是否静音（当前阈值设成 1.0，相当于拖动不影响静音）
         const ratio = newHeight / (window.innerHeight || 1);
-        // ratio > 0.35 表示卡片占屏高度较多 → 静音，避免和内容抢注意力
-        videoPlayer.muted = ratio > 0.35;
+        videoPlayer.muted = ratio > 1.0; // 如果以后要恢复拖动控制静音，改成 ratio > 0.35 之类
     }
 
-    // ====== 结束拖动 ======
+    // 结束拖动，恢复平滑过渡效果
     function endPanelDrag() {
         if (!isDraggingPanel) return;
         isDraggingPanel = false;
         itemLayer.style.transition = "height 0.25s ease";
         setTimeout(() => {
-            itemLayer.style.transition = "";   // 还原由 CSS 控制
+            itemLayer.style.transition = "";
         }, 260);
     }
 
-    // ====== 小白条单击：在折叠（10%）和默认（35%）之间切换 ======
+    // 点击小白条：在“较低”和“默认高度”之间切换
     function togglePanelByClick() {
         const h = itemLayer.getBoundingClientRect().height;
         const mid = (MIN_HEIGHT + DEFAULT_HEIGHT) / 2;
 
         if (h <= mid) {
-            // 当前比较矮 → 展开到默认高度 35%
+            // 从低位（接近最小） → 回到默认高度（35%）
             itemLayer.style.height = DEFAULT_HEIGHT + "px";
             itemLayer.classList.remove("collapsed");
             videoPlayer.muted = true;
         } else {
-            // 当前已经偏高 → 收回到最小高度 10%
+            // 从较高 → 收到最低高度（10%）
             itemLayer.style.height = MIN_HEIGHT + "px";
             itemLayer.classList.add("collapsed");
             videoPlayer.muted = false;
         }
     }
 
-    // ====== 小白条事件绑定（点击 + 拖动） ======
+    // 绑定小白条点击 & 拖动事件
     if (slideBar) {
-        // 点击：切换折叠/展开（如果刚刚是拖动，则不触发点击切换）
+        // 点击：折叠 / 展开
         slideBar.addEventListener("click", function () {
             if (dragMoved) {
+                // 如果刚刚是拖动，就不再触发点击折叠逻辑
                 dragMoved = false;
                 return;
             }
@@ -856,7 +850,7 @@
         });
     }
 
-    // ====== 作者列表（古风又怪 50 组） ======
+    // ==================== 作者列表（古风又怪 50 组） ====================
     const FUNNY_AUTHORS = [
         "甄姬（宫里传出来的）",
         "曹阿瞒（夜里偷笑版）",
@@ -915,13 +909,14 @@
         return FUNNY_AUTHORS[idx];
     }
 
+    // 随机点赞量：555 ~ 999999
     function getRandomLikeCount() {
         const min = 555;
         const max = 999999;
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    // ====== 视频切换相关 ======
+    // ==================== 视频切换逻辑 ====================
     function playVideoByIndex(index) {
         if (index < 1) index = VIDEO_TOTAL;
         if (index > VIDEO_TOTAL) index = VIDEO_TOTAL;
@@ -943,7 +938,7 @@
         playVideoByIndex(prev);
     }
 
-    // ====== 鸡汤“乱码打字机”效果 ======
+    // ==================== 鸡汤文字“乱码打字机”效果 ====================
     function randChar() {
         const chars =
             "!@#￥%*…6#¥…&*()_-+=<>?{}[]~|ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -951,13 +946,14 @@
     }
 
     function animateGibberishToText(element, text) {
-        const gibSpeed = 45;     // 乱码出现速度
-        const resolveSpeed = 55; // 逐字还原速度
+        const gibSpeed = 45;     // 打乱码速度
+        const resolveSpeed = 55; // 把乱码逐个还原为真字符的速度
 
         element.textContent = "";
         let display = "";
         let index = 0;
 
+        // 先打一遍乱码
         function typeGib() {
             if (index < text.length) {
                 display += randChar();
@@ -965,6 +961,7 @@
                 index++;
                 setTimeout(typeGib, gibSpeed);
             } else {
+                // 再一位一位替换成真实文本
                 let resolveIndex = 0;
                 let chars = element.textContent.split("");
 
@@ -982,11 +979,11 @@
         }
 
         typeGib();
-        // 返回一个大致持续时间，给后面“作者出现延迟”用
+        // 返回整个动画大致时长（用于控制作者延迟出现）
         return text.length * (gibSpeed + resolveSpeed) + 400;
     }
 
-    // ====== 时间格式化（转为北京时间） ======
+    // 北京时间格式化（显示为 YYYY-MM-DD HH:mm (GMT+8)）
     function formatBeijingTime(ts) {
         if (!ts) return "";
         const d = new Date(ts);
@@ -1013,7 +1010,7 @@
         return DAY_HINTS[DAY_HINTS.length - 1][2];
     }
 
-    // ====== 更新底部当前时间 + 今日已过百分比 ======
+    // 更新底部时间 + 今日已过进度（统一按北京时间）
     function updateMobileTimeAndProgress() {
         const now = new Date();
         const utc = now.getTime() + now.getTimezoneOffset() * 60000;
@@ -1032,14 +1029,14 @@
             `Today has passed: <strong>${clamped.toFixed(1)}%</strong><br>🫧&nbsp;${hint}`;
     }
 
-    // 隐藏顶部滑动提示（用户滑动/滚轮后）
+    // 隐藏“滑动切换视频”提示
     function hideSwipeHint() {
         if (swipeHint) {
             swipeHint.style.display = "none";
         }
     }
 
-    // ====== 视频：上下滑切换（移动端） ======
+    // ========== 移动端：上下滑切换视频 ==========
     let touchStartY = null;
     videoLayer.addEventListener("touchstart", (e) => {
         if (e.touches && e.touches.length > 0) {
@@ -1051,20 +1048,22 @@
         if (touchStartY === null) return;
         const endY = e.changedTouches[0].clientY;
         const diffY = endY - touchStartY;
-        const threshold = 40; // 滑动阈值（太小会误触）
+        const threshold = 40; // 滑动阈值
 
         if (Math.abs(diffY) > threshold) {
             hideSwipeHint();
             if (diffY < 0) {
+                // 上滑：下一段视频
                 playNextVideo();
             } else {
+                // 下滑：上一段视频
                 playPrevVideo();
             }
         }
         touchStartY = null;
     }, { passive: true });
 
-    // ====== PC：滚轮 / 键盘切换视频 ======
+    // ========== PC：滚轮 / 键盘切换视频 ==========
     videoLayer.addEventListener("wheel", (e) => {
         const delta = e.deltaY;
         if (Math.abs(delta) < 20) return;
@@ -1086,7 +1085,7 @@
         }
     });
 
-    // ====== 历史记录：从服务端拉取并渲染 ======
+    // ==================== 历史记录（从 KV 拉 & 渲染） ====================
     async function fetchHistoryFromServer() {
         try {
             const res = await fetch(HISTORY_API);
@@ -1139,6 +1138,7 @@
             const authorString = item.author || "路过的灵魂打工人";
             const username = authorString;
 
+            // 随机头像：tx1~tx41
             const idx =
                 typeof item.avatarIndex === "number"
                     ? item.avatarIndex
@@ -1177,7 +1177,7 @@
             historyContainer.appendChild(commentItem);
         });
 
-        // 评论区里的小心心只做前端动效，不回写服务端
+        // 评论里的点赞只做前端特效，不回写 KV
         historyContainer.querySelectorAll(".like-btn").forEach((btn) => {
             btn.addEventListener("click", function () {
                 this.classList.toggle("active");
@@ -1209,9 +1209,9 @@
         });
     }
 
-    // ====== 获取毒鸡汤文本 ======
+    // ==================== 获取毒鸡汤 & 更新卡片 ====================
     async function fetchDujitangText() {
-        // 随机决定哪个 API 先请求
+        // 随机决定先尝试哪个 API
         const firstIsBt = Math.random() < 0.5;
         const apis = firstIsBt
             ? [DUJITANG_API_LIST[0], DUJITANG_API_LIST[1]]
@@ -1221,8 +1221,10 @@
             try {
                 const res = await fetch(apiUrl);
                 const data = await res.json();
+                // btstu 格式
                 if (apiUrl.includes("api.btstu.cn")) {
                     if (data && data.text) return data.text;
+                    // tianapi 格式
                 } else if (apiUrl.includes("apis.tianapi.com")) {
                     if (data && data.code === 200 && data.result && data.result.content) {
                         return data.result.content;
@@ -1233,11 +1235,12 @@
             }
         }
 
+        // 所有 API 都挂了
         return "锅烂了啦！暂时无法熬制鸡汤 😭";
     }
 
-    // ====== 更新毒鸡汤卡片 ======
     async function updateDujitangCard() {
+        // 初始化文案
         dujitangText.textContent = "正在加加加载...";
         authorNameEl.textContent = "";
         authorInfo.querySelector("span").textContent = "——";
@@ -1249,7 +1252,7 @@
             const authorName = getRandomAuthorName();
             const likes = getRandomLikeCount();
 
-            // 页面标题也跟着换成短鸡汤
+            // 把当前鸡汤的前半句写进 <title>，方便浏览器标签显示
             try {
                 const maxTitleLength = 22;
                 let shortQuote = text;
@@ -1259,10 +1262,10 @@
                 document.title = `Lynn - ${shortQuote}`;
             } catch (e) {}
 
-            // 先播放乱码打字机，然后再显示作者
             const duration = animateGibberishToText(dujitangText, text);
             dujitangLikeCount.textContent = likes.toLocaleString();
 
+            // 等打字动画跑完再显示作者
             setTimeout(() => {
                 authorNameEl.textContent = authorName;
                 authorInfo.querySelector("span").textContent = "——";
@@ -1274,7 +1277,7 @@
                 likeCount: likes,
             };
 
-            // 写入历史记录（后端 KV）
+            // 将本次鸡汤写入 KV 历史
             appendHistoryToServer(text, authorName, likes);
         } catch (e) {
             console.error("更新鸡汤失败", e);
@@ -1285,22 +1288,26 @@
         }
     }
 
-    // ====== 初始化 ======
+    // ==================== 初始化 ====================
     document.addEventListener("DOMContentLoaded", async () => {
-        // 根据当前窗口计算面板高度区间
+        // 计算面板高度对应的 px 值
         recalcHeights();
 
-        // 设置初始高度为 DEFAULT_HEIGHT（35%）
-        itemLayer.style.height = DEFAULT_HEIGHT + "px";
-        itemLayer.classList.remove("collapsed");
-        videoPlayer.muted = true;
-
-        // 背景视频初始随机一段
+        // 随机选择一个起始视频
         currentVideoIndex = Math.floor(Math.random() * VIDEO_TOTAL) + 1;
         playVideoByIndex(currentVideoIndex);
+
+        // 视频自然结束后自动播放下一段
         videoPlayer.addEventListener("ended", playNextVideo);
 
-        // 时间 & 今日已过（每 30 秒刷新一次）
+        // 面板初始高度：默认高度（25%）
+        itemLayer.style.height = DEFAULT_HEIGHT + "px";
+        itemLayer.classList.remove("collapsed");
+
+        // 初始设置：视频静音（避免一进页面就响）
+        videoPlayer.muted = true;
+
+        // 底部时间 & 今日已过进度（每 30 秒更新一次）
         updateMobileTimeAndProgress();
         setInterval(updateMobileTimeAndProgress, 30 * 1000);
 
@@ -1311,7 +1318,7 @@
         // 加载第一碗鸡汤
         updateDujitangCard();
 
-        // “Another one” 按钮：旋转图标 + 换一条
+        // “Another one” 按钮：旋转图标 + 刷新鸡汤
         anotherOneBtn.addEventListener("click", () => {
             const icon = anotherOneBtn.querySelector("i");
             icon.classList.add("spin");
@@ -1319,7 +1326,7 @@
             updateDujitangCard();
         });
 
-        // 红心点赞：简单的本地 +1 动画（不与后台统计同步）
+        // 红心点赞：只在前端本地累加一下数字 + 动画
         likeArea.addEventListener("click", () => {
             likeArea.classList.add("active");
             let count = parseInt(
