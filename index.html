@@ -2,27 +2,23 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 保留也没问题 -->
+    <!-- 适配移动端 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lyn's Home</title>
 
-    <!-- Telegram / Open Graph 预览信息 -->
+    <!-- 页面初始标题（会在获取到毒鸡汤后被 JS 动态改掉） -->
+    <title>Lynn - </title>
+
+    <!-- 🌍 国外网站 / 通用 Open Graph 预览（Telegram、X 等） -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Lyn's Home">
+    <meta property="og:title" content="Lynn">
     <meta property="og:description" content="Just someone who loves to mess around on the internet.">
-    <meta property="og:image" content="https://save.aura.us.kg/Picture/%E3%80%90%E5%93%B2%E9%A3%8E%E5%A3%81%E7%BA%B8%E3%80%91%E4%BC%B8%E6%89%8B-%E6%">
-    <meta property="og:url" content="https://aura.us.kg">
-   
-    
-     <!-- 微信 /QQ/微博 预览信息 -->
-    <meta property="og:title" content="Aura Lyn">
-    <meta property="og:description" content="一个喜欢在互联网上瞎折腾的人罢了。">
-    <meta property="og:image" content="https://save.aura.us.kg/Picture/Fm2.png">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
     <meta property="og:url" content="https://aura.us.kg">
 
-    <meta name="description" content="一个喜欢在互联网上瞎折腾的人罢了。">
+    <!-- 🇨🇳 国内网站 / 微信 / QQ / 微博 使用的描述和图片 -->
+    <meta name="description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
+    <meta itemprop="name" content="Lynn">
     <meta itemprop="image" content="https://save.aura.us.kg/Picture/Fm2.png">
-    <title>Aura - Lyn</title>
 
     <!-- 网站图标 -->
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
@@ -538,55 +534,56 @@
     setInterval(updateDate, 86400000);
 
     const funnyAuthors = [
-        "甄姬（宫里传出来的）",
-        "鲁迅（根本没说过）",
-        "诸葛亮（事后诸葛）",
-        "爱因斯坦（相对来说）",
-        "匿名网友（已注销）",
-        "程序员（写 BUG 的时候）",
-        "系统提示（来自未来）",
-        "键盘侠（在线发疯中）",
-        "客服小姐姐（工号已停用）",
-        "宿舍楼下烧烤摊老板",
-        "旁边那桌的吃瓜群众",
-        "地铁广播（下一站焦虑）",
-        "朋友圈文案供应商",
-        "摸鱼办主任",
-        "AI（但不负责任）",
-        "张三（据说是内测用户）",
-        "李四（已被移出群聊）",
-        "王主任（正在开会中）",
-        "隔壁工位的同事（不愿透露姓名）",
-        "楼下奶茶店店员（加糖加料版）",
-        "外卖小哥（风里雨里都在路上）",
-        "保安大叔（看了很多却什么都没说）",
-        "清洁阿姨（见过太多垃圾）",
-        "体检中心医生（建议多喝热水）",
-        "小学同桌（作业从来没自己写）",
-        "隔壁小孩（被迫早熟）",
-        "游戏匹配到的队友（精神状态稳定）",
-        "网吧前排大神（从不回头看你一眼）",
-        "聊天室房管（一键禁言了解一下）",
-        "公司 HR（正在考虑中…）",
-        "加班的保洁阿姨（最晚走的那位）",
-        "凌晨两点的便利店店员",
-        "用脚投票的用户（已经卸载）",
-        "评论区首楼网友（已编辑）",
-        "路人甲（镜头一闪而过）",
-        "小区喇叭（天天重复那几句）",
-        "手机电量 1% 时的你",
-        "早八的闹钟（从未被善待过）",
-        "退群前最后一句话的人",
-        "工位上的盆栽（听完全部八卦）",
-        "猫猫（但牠选择保持沉默）",
-        "狗狗（只发表了汪汪汪声明）",
-        "无名之辈（却话很多）",
-        "理发店 Tony（整顿你的发型）",
-        "KTV 麦霸（跑调但很自信）",
-        "公交车司机（见证无数社死现场）",
-        "电梯里的监控（什么都看在眼里）",
-        "朋友圈仅三天可见那位朋友",
-        "学校广播站台长（爱讲大道理）"
+        "甄姬(公里传出来的)",
+        "貂蝉（帷幕后小声说的）",
+        "小乔（东风里飘来的）",
+        "王昭君（出塞路上感叹的）",
+        "西施（浣纱时顺口一说）",
+        "杨玉环（长生殿里叹气的）",
+        "上古算命先生（卦摊边上念叨的）",
+        "城门守夜人（三更半夜敲锣时说的）",
+        "茶馆说书人（拍案之前憋出来的）",
+        "江湖游侠（路过酒馆随口的）",
+        "落第书生（科场门口哭着讲的）",
+        "庙前石狮子（听多了自己悟的）",
+        "村口王大娘（晒谷时顺嘴一提）",
+        "河边洗衣妇（拍衣裳时骂出来的）",
+        "戏台跑龙套（后台换戏时编的）",
+        "说书老先生（翻错笔记时看到的）",
+        "城隍庙小鬼（值夜无聊写的）",
+        "月老（打结的时候手滑写的）",
+        "孟婆（汤里多放了一勺时说的）",
+        "判官（翻错生死簿时感叹的）",
+        "土地公（巡视田地时嘀咕的）",
+        "山里老狐（成精未满时练手的）",
+        "河神（退潮时闲得发慌写的）",
+        "驿站伙计（趁客人睡着时记下的）",
+        "路边石碑（风吹雨打后悟出来的）",
+        "城西老槐树（被雷劈之前想通的）",
+        "酒肆掌柜（兑水时突然醒悟的）",
+        "桥头卖糖葫芦的（边串山楂边编的）",
+        "说亲媒婆（翻车之后总结的）",
+        "边关老兵（守城无聊时刻下的）",
+        "道观扫地童子（偷听课后记的）",
+        "佛前供灯人（添油时想到的）",
+        "画中仕女（困在画里憋出的）",
+        "破庙里那尊断臂石佛",
+        "祠堂门口的歪脖子香炉",
+        "城东算命摊上那只破罗盘",
+        "千年古井里的回声",
+        "纸鸢线头那点风声",
+        "楼船夜雨中的残灯",
+        "梁上蹲着听书的老鼠",
+        "灯下磨墨的寒门学子",
+        "篝火旁烤鱼的渔夫",
+        "廊下数珠的老妪",
+        "墙角晒书的穷秀才",
+        "船头望月的舟子",
+        "雪夜围炉的猎户",
+        "驿路吹角的更夫",
+        "河堤放牛的牧童",
+        "村口对弈的老棋手",
+        "油纸伞下走神的闺秀"
     ];
 
     const hints = [
@@ -609,9 +606,6 @@
     ];
     let currentAudio = null;
     let soundTipTimer = null;
-    let soundTipInterval = null;
-
-    let lastProgress = 0;
 
     function generateRandomLikes() {
         const min = 1299;
@@ -669,8 +663,6 @@
         const totalSeconds = 24 * 3600;
 
         const progress = (currentSeconds / totalSeconds) * 100;
-        lastProgress = progress;
-
         const fill = document.getElementById('nameProgressFill');
         const star = document.getElementById('progressStar');
         const clamped = Math.max(0, Math.min(progress, 100));
@@ -733,7 +725,8 @@
     }
 
     async function fetchFromTianapi() {
-        const res = await fetch("https://apis.tianapi.com/dujitang/index?key=KEYa2d8a53cf5636e81dd87e373065fdc6c");
+        // 使用你之前正常的 key（去掉错误的 KEY 前缀）
+        const res = await fetch("https://apis.tianapi.com/dujitang/index?key=a2d8a53cf5636e81dd87e373065fdc6c");
         const data = await res.json();
 
         if (data && data.code === 200 && data.result && data.result.content) {
@@ -770,13 +763,14 @@
             const author = getRandomAuthor();
             const likes = generateRandomLikes();
 
+            // ✅ 浏览器标签标题继续根据毒鸡汤内容动态更新
             try {
                 const maxTitleLength = 40;
                 let shortQuote = quoteText;
                 if (quoteText.length > maxTitleLength) {
                     shortQuote = quoteText.substring(0, maxTitleLength).trim() + '…';
                 }
-                document.title = `Lyn's Home - ${shortQuote}`;
+                document.title = `Lynn - ${shortQuote}`;
             } catch (err) {}
 
             contentElement.style.transition = "none";
@@ -906,8 +900,8 @@
         // --- 声音气泡逻辑 ---
         // 进入页面先提示一次
         showSoundTip();
-        // 之后每 30 秒弹出一次
-        soundTipInterval = setInterval(showSoundTip, 30000);
+        // 之后每 30 秒弹出一次（不用存变量了，简单调用即可）
+        setInterval(showSoundTip, 30000);
     });
 </script>
 </body>
