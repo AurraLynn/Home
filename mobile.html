@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- 页面标题（浏览器标签显示） -->
+    <!-- 页面标题（浏览器标签显示，后面会被鸡汤动态覆盖） -->
     <title>Lynn</title>
 
     <!-- ===== 国内：微信、QQ、抖音、微博等通用卡片（Open Graph） ===== -->
@@ -13,12 +13,29 @@
     <meta property="og:site_name" content="Lynn">
     <meta property="og:title" content="Lynn">
     <meta property="og:description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
-    <meta property="og:image" content="https://save.aura.us.kg/Picture/Fm3.png">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/Fm2.png">
     <meta property="og:url" content="https://aura.us.kg">
+
+    <!-- WeChat / QQ 等预览补充：明确图片信息，增加被识别概率 -->
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <!-- 备用字段：部分国内应用会读取 -->
+    <meta name="image" content="https://save.aura.us.kg/Picture/Fm2.png">
+    <link rel="image_src" href="https://save.aura.us.kg/Picture/Fm2.png">
 
     <!-- 基础 SEO + 微信兼容 -->
     <meta name="description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
-    <meta itemprop="image" content="https://save.aura.us.kg/Picture/Fm3.png">
+    <meta itemprop="image" content="https://save.aura.us.kg/Picture/Fm2.png">
+
+    <!-- ===== 国外：Twitter / X 专用（英文预览 + bg.jpg） ===== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Lynn">
+    <meta name="twitter:description" content="Just someone who loves to mess around on the internet.">
+    <meta name="twitter:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta name="twitter:url" content="https://aura.us.kg">
+    <meta name="twitter:site" content="@wsm_Lyn">
+    <meta name="twitter:creator" content="@wsm_Lyn">
 
     <!-- 浏览器标签图标 -->
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
@@ -160,7 +177,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            height: 45vh;  /* 初始高度 45%，实际加载后由 JS 重算 */
+            height: 45vh;  /* 初始高度会在 JS 中被 DEFAULT_RATIO 覆盖 */
             background: linear-gradient(
                     180deg,
                     rgba(15, 23, 42, 0.96) 0%,
@@ -177,7 +194,7 @@
         }
 
         .item-layer.collapsed {
-            /* 折叠状态的高度由 JS 控制为 MIN_HEIGHT（10%） */
+            /* 折叠状态的高度由 JS 控制为 MIN_HEIGHT */
         }
 
         /* 面板内部内容区域：自己滚动 */
@@ -187,21 +204,27 @@
             left: 0;
             right: 0;
             bottom: 0;
-            padding: 12px 16px 18px;
+            /* 顶部留的空间减小一点，让内容整体上去 */
+            padding: 7px 16px 18px;
             overflow-y: auto;
         }
 
-        /* 小白条容器（跟着内容一起滚） */
+        /* 小白条容器再往上“顶一格”，几乎贴着第二层圆角边缘 */
         .slide-bar-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 10;
             display: flex;
             justify-content: center;
-            margin-bottom: 10px;
+            padding-top: 0;
+            padding-bottom: 6px;
+            transform: translateY(-6px);   /* 关键：整体往上抬 6px */
         }
 
-        /* 小白条本体：可点、可拖动 */
+        /* 小白条本体，稍微缩小一点 */
         .ios-slide-bar {
-            width: 60px;
-            height: 6px;
+            width: 44px;   /* 原来 60px -> 缩短一点 */
+            height: 4px;   /* 原来 6px -> 更细一点 */
             background: rgba(248, 250, 252, 0.9);
             border-radius: 999px;
             box-shadow: 0 0 8px rgba(148, 163, 184, 0.9);
@@ -242,7 +265,6 @@
             margin-top: 18px;
             padding: 20px 16px 52px;
             border-radius: 16px;
-            /* 你已经改成几乎透明，我保留你的设定 */
             background: radial-gradient(
                     circle at top left,
                     rgba(255, 255, 255, 0),
@@ -316,14 +338,13 @@
             justify-content: space-between;
         }
 
-        /* ========== 红心点赞区域（已改成和“换一条”同风格） ========== */
+        /* ========== 红心点赞区域（与“换一条”同风格） ========== */
         .like-area {
             display: inline-flex;
             align-items: center;
             gap: 8px;
             padding: 7px 14px;
             border-radius: 999px;
-            /* 背景与“Another one”一致 */
             background: rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(6px);
             color: rgba(255, 255, 255, 0.76);
@@ -342,21 +363,21 @@
             transform: scale(1.25);
         }
 
-        /* 红心数字：改细一点、稍微小一号 */
+        /* 红心数字：细一点、稍微小一号 */
         .like-count {
-            font-weight: 400;   /* 从 600 改为 400，更细一点 */
-            font-size: 13px;    /* 从 14px 改为 13px */
+            font-weight: 400;
+            font-size: 13px;
         }
 
-        /* 鼠标 / 手指悬浮在红心区域：背景变红，略微上移，文字更亮 */
+        /* 悬浮在红心区域：背景变红，略微上移，文字更亮 */
         .like-area:hover {
-            background: rgb(159, 14, 14);   /* 和按钮 hover 一样的红色 */
+            background: rgb(159, 14, 14);
             transform: translateY(-1px);
             color: #ffffff;
         }
 
         .like-area:hover i {
-            color: #fee2e2; /* 悬浮时心再亮一点 */
+            color: #fee2e2;
         }
 
         /* “换一条 / Another one” 按钮 */
@@ -592,7 +613,7 @@
 <!-- ==================== 第二层：底部卡片（面板） ==================== -->
 <div class="item-layer" id="itemLayer">
     <div class="item-content">
-        <!-- 小白条：拖动 / 点击控制面板高度 -->
+        <!-- 小白条：拖动 / 点击控制面板高度（本身粘在顶部） -->
         <div class="slide-bar-wrapper">
             <div class="ios-slide-bar"></div>
         </div>
@@ -688,10 +709,10 @@
         [95,100,"今天即将过去，晚安，做个好梦"]
     ];
 
-    // 底部面板高度比例：最矮 10%，最高 95%，默认 25%
-    const MIN_RATIO = 0.15;   // 面板最小高度占屏幕 10%
-    const MAX_RATIO = 0.95;  // 面板最大高度占屏幕 95%
-    const DEFAULT_RATIO = 0.40; // 初始高度 40%
+    // 底部面板高度比例：最矮 13%，最高 95%，默认 40%
+    const MIN_RATIO = 0.13;   // 面板最小高度占屏幕 13%
+    const MAX_RATIO = 0.95;   // 面板最大高度占屏幕 95%
+    const DEFAULT_RATIO = 0.40; // 初始高度 35%
 
     // ==================== DOM 引用 ====================
     const videoPlayer = document.getElementById("videoPlayer");
@@ -790,12 +811,12 @@
         const mid = (MIN_HEIGHT + DEFAULT_HEIGHT) / 2;
 
         if (h <= mid) {
-            // 从低位（接近最小） → 回到默认高度（35%）
+            // 从低位（接近最小） → 回到默认高度（40%）
             itemLayer.style.height = DEFAULT_HEIGHT + "px";
             itemLayer.classList.remove("collapsed");
             videoPlayer.muted = true;
         } else {
-            // 从较高 → 收到最低高度（10%）
+            // 从较高 → 收到最低高度（13%）
             itemLayer.style.height = MIN_HEIGHT + "px";
             itemLayer.classList.add("collapsed");
             videoPlayer.muted = false;
@@ -1300,7 +1321,7 @@
         // 视频自然结束后自动播放下一段
         videoPlayer.addEventListener("ended", playNextVideo);
 
-        // 面板初始高度：默认高度（25%）
+        // 面板初始高度：默认高度（35%）
         itemLayer.style.height = DEFAULT_HEIGHT + "px";
         itemLayer.classList.remove("collapsed");
 
