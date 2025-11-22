@@ -710,9 +710,9 @@
     ];
 
     // 底部面板高度比例：最矮 13%，最高 95%，默认 40%
-    const MIN_RATIO = 0.13;   // 面板最小高度占屏幕 13%
+    const MIN_RATIO = 0.15;   // 面板最小高度占屏幕 15%
     const MAX_RATIO = 0.95;   // 面板最大高度占屏幕 95%
-    const DEFAULT_RATIO = 0.40; // 初始高度 35%
+    const DEFAULT_RATIO = 0.40; // 初始高度 40%
 
     // ==================== DOM 引用 ====================
     const videoPlayer = document.getElementById("videoPlayer");
@@ -817,7 +817,7 @@
             itemLayer.classList.remove("collapsed");
             videoPlayer.muted = true;
         } else {
-            // 从较高 → 收到最低高度（13%）
+            // 从较高 → 收到最低高度（15%）
             itemLayer.style.height = MIN_HEIGHT + "px";
             itemLayer.classList.add("collapsed");
             videoPlayer.muted = false;
@@ -852,8 +852,18 @@
             movePanelDrag(e.touches[0].clientY);
         }
 
-        function handleTouchEndOnBar() {
+        // 👇 就是这个函数改了，手机上“点击小白条”也会生效
+        function handleTouchEndOnBar(e) {
+            // 先结束拖动
             endPanelDrag();
+
+            // 如果几乎没有移动，就当成点击：收起 / 展开
+            if (!dragMoved) {
+                togglePanelByClick();
+            }
+
+            // 重置标记，避免影响下一次手势
+            dragMoved = false;
         }
 
 // 用整个 slideBarWrapper 当“手势区域”，比细小白条更好点中
