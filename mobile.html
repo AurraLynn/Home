@@ -1,25 +1,34 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <!-- Telegram / Open Graph 预览信息 -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Lyn's Home">
-    <meta property="og:description" content="一个喜欢在互联网上瞎折腾的人罢了。">
-    <meta property="og:image" content="https://save.aura.us.kg/Picture/%E3%80%90%E5%93%B2%E9%A3%8E%E5%A3%81%E7%BA%B8%E3%80%91%E4%BC%B8%E6%89%8B-%E6%89%8B%E6%9C%BA%E5%A3%81%E7%BA%B8-%E6%9A%97%E8%B0%83.png">
-    <meta property="og:url" content="https://aura.us.kg">
-    <!-- 微信 /QQ/微博 预览信息 -->
-    <meta property="og:title" content="Aura Lyn">
-    <meta property="og:description" content="一个喜欢在互联网上瞎折腾的人罢了。">
-    <meta property="og:image" content="https://save.aura.us.kg/Picture/Fm2.png">
-    <meta property="og:url" content="https://aura.us.kg">
-
-    <meta name="description" content="一个喜欢在互联网上瞎折腾的人罢了。">
-    <meta itemprop="image" content="https://save.aura.us.kg/Picture/Fm2.png">
-    <title>Aura - Lyn</title>
-    
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lyn's Home</title>
+
+    <!-- 浏览器标签标题 -->
+    <title>Lynn</title>
+
+    <!-- 站点图标 -->
+    <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon" />
+
+    <!-- ========= 国外网站 / 社交平台预览（OG + Twitter，用英文 & bg.jpg） ========= -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Lynn">
+    <meta property="og:title" content="Lynn">
+    <meta property="og:description" content="Just someone who loves to mess around on the internet.">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:url" content="https://aura.us.kg">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Lynn">
+    <meta name="twitter:description" content="Just someone who loves to mess around on the internet.">
+    <meta name="twitter:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+
+    <!-- ========= 国内网站 / 社交平台预览（描述 + 图片，用中文 & Fm2.png） ========= -->
+    <meta name="description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
+    <meta itemprop="name" content="Lynn">
+    <meta itemprop="description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
+    <meta itemprop="image" content="https://save.aura.us.kg/Picture/Fm2.png">
+
     <!-- 标题英文字体：Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,8 +38,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link
-            href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"
-            rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"
+        rel="stylesheet"
     />
 
     <script>
@@ -97,7 +106,7 @@
             object-position: center;
         }
 
-        /* ✅ 上下滑动提示（放在视频上方，滑动一次后隐藏） */
+        /* 上下滑动提示（放在视频上方，滑动一次后隐藏） */
         .swipe-hint {
             position: absolute;
             top: 16px;
@@ -109,7 +118,7 @@
             gap: 2px;
             color: rgba(249, 250, 251, 0.9);
             font-size: 18px;
-            pointer-events: none; /* 不挡住滑动事件 */
+            pointer-events: none;
             animation: swipeHintFloat 2.2s ease-in-out infinite;
         }
         .swipe-hint i {
@@ -121,39 +130,34 @@
             100% { transform: translate(-50%, 0);   opacity: 0.2; }
         }
 
-       /* 第二层（下方卡片层） */
-.item-layer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-
-    /* ✅ 改这里：让它占 60% 屏幕高度，并始终贴底 */
-    height: 55vh;              /* 想更矮就改成 50vh，想更高改成 70vh  */
-
-    background: linear-gradient(
-            180deg,
-            rgba(15, 23, 42, 0.96) 0%,
-            rgba(24, 24, 35, 0.96) 45%,
-            rgba(15, 23, 42, 0.98) 100%
-    );
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
-    z-index: 3;
-    transition: transform 0.3s ease;
-    overflow: hidden;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
-
-    /* 可以保留安全区内边距，避免内容被 iOS 底部栏挡住 */
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-        /* 收起时往下滑一点，露出更多视频 */
-        .item-layer.hide {
-            transform: translateY(78%);
+        /* 第二层（下方卡片层）—— 底部永远贴底，通过「高度」折叠/展开/拖动 */
+        .item-layer {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 40vh;         /* 初始高度 40%（JS 会再精确设置一遍） */
+            background: linear-gradient(
+                180deg,
+                rgba(15, 23, 42, 0.96) 0%,
+                rgba(24, 24, 35, 0.96) 45%,
+                rgba(15, 23, 42, 0.98) 100%
+            );
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            z-index: 3;
+            overflow: hidden;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            transition: height 0.25s ease;
         }
 
-        /* 顶部可点击区域（一直固定在第二层顶部） */
+        /* 折叠状态：用 class 标记，但底层还是 height 控制 */
+        .item-layer.collapsed {
+            /* 具体高度由 JS 设置为 30% */
+        }
+
+        /* 顶部可点击区域：本身不接收事件，只让中间小白条可点/拖 */
         .ios-slide-hit-area {
             position: absolute;
             top: 6px;
@@ -163,17 +167,19 @@
             display: flex;
             align-items: flex-start;
             justify-content: center;
-            cursor: pointer;
             z-index: 4;
+            pointer-events: none;
         }
 
-        /* 中间那条小横条（提亮一点） */
+        /* 中间那条小横条（唯一可点 / 可拖拽区域） */
         .ios-slide-bar {
             width: 60px;
             height: 6px;
             background: rgba(248, 250, 252, 0.9);
             border-radius: 999px;
             box-shadow: 0 0 8px rgba(148, 163, 184, 0.9);
+            pointer-events: auto;
+            cursor: pointer;
         }
 
         /* 里面内容区域可滚动 */
@@ -187,19 +193,17 @@
             overflow-y: auto;
         }
 
-        /* 标题区域：更干净、重点突出名字 Lyn */
+        /* 标题区域 */
         .hero-title {
             font-family: "Poppins", -apple-system, BlinkMacSystemFont,
             "PingFang SC", system-ui, sans-serif;
             font-size: 1.5rem;
             font-weight: 600;
             letter-spacing: 0.06em;
-            text-transform: none;
             line-height: 1.25;
             color: #e5e7eb;
         }
 
-        /* 名字单独高亮，带一点小渐变 */
         .hero-name {
             font-weight: 700;
             background: linear-gradient(135deg, #f97316, #ec4899);
@@ -209,7 +213,6 @@
             text-shadow: 0 0 14px rgba(0, 0, 0, 0.7);
         }
 
-        /* 副标题：更细一点，更贴合暗色底 */
         .hero-subtitle {
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
             "Microsoft Yahei", system-ui, sans-serif;
@@ -222,26 +225,25 @@
         /* 毒鸡汤卡片 */
         .dujitang-container {
             margin-top: 18px;
-            padding: 20px 16px 52px; /* 底部多一点 padding，避免跟按钮挤在一起 */
+            padding: 20px 16px 52px;
             border-radius: 16px;
             background: radial-gradient(
                     circle at top left,
                     rgba(236, 72, 153, 0.16),
                     transparent 60%
-            ),
-            radial-gradient(
+                ),
+                radial-gradient(
                     circle at bottom right,
                     rgba(129, 140, 248, 0.22),
                     transparent 60%
-            ),
-            rgba(15, 23, 42, 0.96);
+                ),
+                rgba(15, 23, 42, 0.96);
             color: white;
             box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
             position: relative;
             overflow: hidden;
         }
 
-        /* 鸡汤文字呼吸效果 */
         #dujitangText {
             font-size: 17px;
             line-height: 1.7;
@@ -266,10 +268,9 @@
             }
         }
 
-        /* 作者信息 */
         .author-info {
             margin-top: 8px;
-            margin-bottom: 10px; /* 和下方按钮空一行出来，避免遮挡 */
+            margin-bottom: 10px;
             display: flex;
             justify-content: flex-end;
             align-items: center;
@@ -286,7 +287,6 @@
             font-weight: 500;
         }
 
-        /* 点赞区域 + 按钮行 */
         .action-row {
             position: absolute;
             left: 16px;
@@ -307,7 +307,7 @@
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
             color: #fee2e2;
             font-size: 13px;
-            cursor: pointer; /* 鼠标悬停显示小手 */
+            cursor: pointer;
         }
 
         .like-area i {
@@ -324,7 +324,6 @@
             font-size: 14px;
         }
 
-        /* 下一条按钮 */
         .another-one-btn {
             display: inline-flex;
             align-items: center;
@@ -355,20 +354,19 @@
             transform: rotate(360deg) !important;
         }
 
-        /* 评论区整体容器 */
         .history-wrapper {
             margin-top: 22px;
             background: radial-gradient(
                     circle at top left,
                     rgba(251, 191, 36, 0.18),
                     transparent 55%
-            ),
-            radial-gradient(
+                ),
+                radial-gradient(
                     circle at bottom right,
                     rgba(59, 130, 246, 0.22),
                     transparent 55%
-            ),
-            #020617;
+                ),
+                #020617;
             border-radius: 16px;
             padding: 14px 12px 4px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
@@ -399,7 +397,6 @@
             margin-top: 4px;
         }
 
-        /* 评论条目（抖音风） */
         .comment-item {
             display: flex;
             padding: 10px 4px;
@@ -461,7 +458,7 @@
         .like-btn {
             display: flex;
             align-items: center;
-            cursor: pointer; /* 评论区点赞也显示小手 */
+            cursor: pointer;
         }
 
         .like-btn i {
@@ -499,7 +496,6 @@
             color: #4b5563;
         }
 
-        /* 评论区底部版权 */
         .mobile-footer {
             border-top: 1px solid rgba(31, 41, 55, 0.8);
             margin-top: 6px;
@@ -527,7 +523,6 @@
             font-weight: 600;
         }
 
-        /* 防止 iOS 橡皮筋滚动太猛 */
         .item-content::-webkit-scrollbar {
             width: 4px;
         }
@@ -541,11 +536,10 @@
 <!-- 背景视频 -->
 <div class="video-layer" id="videoLayer">
     <video class="video-player" id="videoPlayer" autoplay loop playsinline muted>
-        <!-- 视频地址会在 JS 里按 1~N 随机替换 -->
         <source src="https://save.aura.us.kg/Mobile/bg1.MP4" type="video/mp4" />
     </video>
 
-    <!-- ✅ 上下滑动提示（放在视频上方） -->
+    <!-- 上下滑动提示 -->
     <div class="swipe-hint" id="swipeHint">
         <i class="fa fa-angle-up"></i>
         <i class="fa fa-angle-down"></i>
@@ -554,14 +548,11 @@
 
 <!-- 下方卡片层（第二层） -->
 <div class="item-layer" id="itemLayer">
-    <!-- 顶部小横条：一直固定在第二层顶部 -->
     <div class="ios-slide-hit-area" id="slideHit">
         <div class="ios-slide-bar"></div>
     </div>
 
-    <!-- 内容区域（可滚动） -->
     <div class="item-content">
-        <!-- 标题 & 简介 -->
         <div class="text-center mb-4">
             <h1 class="hero-title text-shadow">
                 Hey, I'm <span class="hero-name">Lyn</span>
@@ -575,13 +566,11 @@
         <div class="dujitang-container" id="dujitangContainer">
             <p id="dujitangText">正在加载鸡汤...</p>
 
-            <!-- 作者（先用 —— 占位） -->
             <div class="author-info" id="authorInfo">
                 <span>——</span>
                 <span class="author-name" id="authorName"></span>
             </div>
 
-            <!-- 底部操作（点赞 + 下一条） -->
             <div class="action-row">
                 <div class="like-area" id="likeArea">
                     <i class="fa fa-heart"></i>
@@ -609,7 +598,6 @@
                     <p>暂无记录，可能大善人罢工了,先来一碗鸡汤吧～</p>
                 </div>
             </div>
-            <!-- 评论区底部版权 + 时间 + 今日已过 -->
             <div class="mobile-footer">
                 © 2025 | Lyn' Homepage
                 <span id="mobileCurrentTime">Current time: --:--</span>
@@ -624,8 +612,7 @@
 
 <script>
     // ------- 基本配置 -------
-    // 背景视频：像头像一样从 1 到 N 定义
-    const VIDEO_TOTAL = 52; // 有多少个视频就改多少
+    const VIDEO_TOTAL = 52;
     function getVideoUrl(index) {
         return `https://save.aura.us.kg/Mobile/bg${index}.MP4`;
     }
@@ -637,7 +624,6 @@
     const HISTORY_API = "/api/history";
     const MAX_HISTORY = 100;
 
-    // 今日已过提示文案
     const DAY_HINTS = [
         [0,10,"时间是海绵里的水，挤挤总会有的"],
         [10,25,"一日之计在于晨，抓住早晨的时光"],
@@ -650,11 +636,17 @@
         [95,100,"今天即将过去，晚安，做个好梦"]
     ];
 
-    // ------- DOM 元素 -------
+    // 底部面板高度的比例配置
+    const MIN_RATIO = 0.3;   // 最矮 30%
+    const MAX_RATIO = 0.9;   // 最高 90%
+    const DEFAULT_RATIO = 0.4; // 初始 40%
+
+    // DOM
     const videoPlayer = document.getElementById("videoPlayer");
     const videoLayer = document.getElementById("videoLayer");
     const itemLayer = document.getElementById("itemLayer");
     const slideHit = document.getElementById("slideHit");
+    const slideBar = slideHit ? slideHit.querySelector(".ios-slide-bar") : null;
     const swipeHint = document.getElementById("swipeHint");
 
     const dujitangText = document.getElementById("dujitangText");
@@ -670,65 +662,188 @@
     const mobileCurrentTime = document.getElementById("mobileCurrentTime");
     const mobileDayProgress = document.getElementById("mobileDayProgress");
 
-    // 当前毒鸡汤数据
     let currentDujitang = null;
-    // 当前视频 index
     let currentVideoIndex = 1;
 
-    // 50 组搞笑作者
+    // ===== 底部面板拖动：高度区间在 [30%, 90%] 之间 =====
+    let MIN_HEIGHT = 0;  // px
+    let MAX_HEIGHT = 0;  // px
+    let DEFAULT_HEIGHT = 0; // px
+
+    let isDraggingPanel = false;
+    let dragStartY = 0;
+    let dragStartHeight = 0;
+    let dragMoved = false;
+
+    function recalcHeights() {
+        const vh = window.innerHeight || 800;
+        MIN_HEIGHT = vh * MIN_RATIO;
+        MAX_HEIGHT = vh * MAX_RATIO;
+        DEFAULT_HEIGHT = vh * DEFAULT_RATIO;
+
+        const rect = itemLayer.getBoundingClientRect();
+        let h = rect.height;
+        if (!h) {
+            h = DEFAULT_HEIGHT;
+        }
+        if (h < MIN_HEIGHT) h = MIN_HEIGHT;
+        if (h > MAX_HEIGHT) h = MAX_HEIGHT;
+        itemLayer.style.height = h + "px";
+    }
+
+    window.addEventListener("resize", recalcHeights);
+
+    function startPanelDrag(startY) {
+        if (!itemLayer) return;
+        isDraggingPanel = true;
+        dragMoved = false;
+        dragStartY = startY;
+        dragStartHeight = itemLayer.getBoundingClientRect().height;
+        itemLayer.style.transition = "none";
+        itemLayer.classList.remove("collapsed");
+    }
+
+    function movePanelDrag(currentY) {
+        if (!isDraggingPanel) return;
+        const dy = currentY - dragStartY;
+        if (Math.abs(dy) > 3) dragMoved = true;
+
+        // 上拉 dy<0，高度变大；下拉 dy>0，高度变小
+        let newHeight = dragStartHeight - dy;
+        if (newHeight < MIN_HEIGHT) newHeight = MIN_HEIGHT;
+        if (newHeight > MAX_HEIGHT) newHeight = MAX_HEIGHT;
+
+        itemLayer.style.height = newHeight + "px";
+
+        const ratio = newHeight / (window.innerHeight || 1);
+        videoPlayer.muted = ratio > 0.35;
+    }
+
+    function endPanelDrag() {
+        if (!isDraggingPanel) return;
+        isDraggingPanel = false;
+        itemLayer.style.transition = "height 0.25s ease";
+        setTimeout(() => {
+            itemLayer.style.transition = "";
+        }, 260);
+    }
+
+    function togglePanelByClick() {
+        const h = itemLayer.getBoundingClientRect().height;
+        const mid = (MIN_HEIGHT + DEFAULT_HEIGHT) / 2;
+
+        if (h <= mid) {
+            // 低位 → 展开到 40%
+            itemLayer.style.height = DEFAULT_HEIGHT + "px";
+            itemLayer.classList.remove("collapsed");
+            videoPlayer.muted = true;
+        } else {
+            // 高位 → 折叠到 30%
+            itemLayer.style.height = MIN_HEIGHT + "px";
+            itemLayer.classList.add("collapsed");
+            videoPlayer.muted = false;
+        }
+    }
+
+    // 小白条：拖动 + 点击
+    if (slideBar) {
+        slideBar.addEventListener("click", function () {
+            if (dragMoved) {
+                dragMoved = false;
+                return;
+            }
+            togglePanelByClick();
+        });
+
+        // 触摸拖动（移动端）
+        slideBar.addEventListener("touchstart", function (e) {
+            if (e.touches && e.touches.length > 0) {
+                startPanelDrag(e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        slideBar.addEventListener("touchmove", function (e) {
+            if (!isDraggingPanel || !e.touches || e.touches.length === 0) return;
+            movePanelDrag(e.touches[0].clientY);
+        }, { passive: true });
+
+        ["touchend", "touchcancel"].forEach(evt => {
+            slideBar.addEventListener(evt, function () {
+                endPanelDrag();
+            }, { passive: true });
+        });
+
+        // 鼠标拖动（PC 调试）
+        slideBar.addEventListener("mousedown", function (e) {
+            e.preventDefault();
+            startPanelDrag(e.clientY);
+
+            function onMove(ev) {
+                movePanelDrag(ev.clientY);
+            }
+            function onUp() {
+                endPanelDrag();
+                document.removeEventListener("mousemove", onMove);
+                document.removeEventListener("mouseup", onUp);
+            }
+            document.addEventListener("mousemove", onMove);
+            document.addEventListener("mouseup", onUp);
+        });
+    }
+
+    // ===== 作者列表：古风又怪 50 组 =====
     const FUNNY_AUTHORS = [
         "甄姬（宫里传出来的）",
-        "鲁迅（根本没说过）",
-        "诸葛亮（事后诸葛）",
-        "爱因斯坦（相对来说）",
-        "匿名网友（已注销）",
-        "程序员（写 BUG 的时候）",
-        "系统提示（来自未来）",
-        "键盘侠（在线发疯中）",
-        "客服小姐姐（工号已停用）",
-        "宿舍楼下烧烤摊老板",
-        "旁边那桌的吃瓜群众",
-        "地铁广播（下一站焦虑）",
-        "朋友圈文案供应商",
-        "摸鱼办主任",
-        "AI（但不负责任）",
-        "张三（据说是内测用户）",
-        "李四（已被移出群聊）",
-        "王主任（正在开会中）",
-        "隔壁工位的同事（不愿透露姓名）",
-        "楼下奶茶店店员（加糖加料版）",
-        "外卖小哥（风里雨里都在路上）",
-        "保安大叔（看了很多却什么都没说）",
-        "清洁阿姨（见过太多垃圾）",
-        "体检中心医生（建议多喝热水）",
-        "小学同桌（作业从来没自己写）",
-        "隔壁小孩（被迫早熟）",
-        "游戏匹配到的队友（精神状态稳定）",
-        "网吧前排大神（从不回头看你一眼）",
-        "聊天室房管（一键禁言了解一下）",
-        "公司 HR（正在考虑中…）",
-        "加班的保洁阿姨（最晚走的那位）",
-        "凌晨两点的便利店店员",
-        "用脚投票的用户（已经卸载）",
-        "评论区首楼网友（已编辑）",
-        "路人甲（镜头一闪而过）",
-        "小区喇叭（天天重复那几句）",
-        "手机电量 1% 时的你",
-        "早八的闹钟（从未被善待过）",
-        "退群前最后一句话的人",
-        "工位上的盆栽（听完全部八卦）",
-        "猫猫（但牠选择保持沉默）",
-        "狗狗（只发表了汪汪汪声明）",
-        "无名之辈（却话很多）",
-        "理发店 Tony（整顿你的发型）",
-        "KTV 麦霸（跑调但很自信）",
-        "公交车司机（见证无数社死现场）",
-        "电梯里的监控（什么都看在眼里）",
-        "朋友圈仅三天可见那位朋友",
-        "学校广播站台长（爱讲大道理）",
+        "曹阿瞒（夜里偷笑版）",
+        "荀令君（酒后乱评版）",
+        "司马懿（装病躺平中）",
+        "貂蝉（小窗悄悄写的）",
+        "吕奉先（温柔乡里写的）",
+        "诸葛村夫（草庐手抄稿）",
+        "王右丞（河畔摸鱼时）",
+        "李太白（醉后乱题一通）",
+        "杜二甫（饭后散步随口说）",
+        "白乐天（泡茶等水开时）",
+        "韩退之（骂人前先写好）",
+        "东坡居士（卷土重来版）",
+        "苏小妹（在旁边偷偷改）",
+        "程咬金（三板斧写完）",
+        "包黑子（升堂前随手记）",
+        "展小楼（路过顺手签名）",
+        "黄药师（桃花岛闲得慌）",
+        "老顽童（忘了第几版）",
+        "一灯大师（灯下瞎写的）",
+        "周伯通（左右互搏写成）",
+        "段公子（练六脉时乱刻）",
+        "扫地僧（打扫到一半写）",
+        "少林后厨大勺（菜没翻完）",
+        "武当山道童（偷懒偷写）",
+        "全真小师叔（闭关偷开门）",
+        "瑶池值班仙女（加班手记）",
+        "月老（红线打结时写的）",
+        "城隍爷（夜巡顺手批注）",
+        "判官甲（生死簿边角料）",
+        "孟婆（汤里多加一勺时）",
+        "土地公（晒谷场上瞎写）",
+        "河神（打水漂时感叹）",
+        "龙王三太子（被罚抄写版）",
+        "哪吒（三头六臂一起写）",
+        "太上老君（炼丹走火版）",
+        "玉皇大帝（批公文打瞌睡）",
+        "皇城脚下说书人（加戏中）",
+        "茶楼掌柜（找零找错时）",
+        "酒肆跑堂小二（偷听八卦）",
+        "胭脂铺掌柜娘子（边画眉边写）",
+        "说书老先生（敲醒木时编的）",
+        "江南摆渡翁（半渡半睡时）",
+        "驿站打更人（三更困成狗）",
+        "城门守夜兵（数星星写的）",
+        "破庙里那尊石像（久坐生花）",
+        "路边卦摊先生（抓阄选字）",
+        "桥头卖糖葫芦的（手黏上纸）",
+        "乡下老黄牛（蹄印盖章版）",
+        "隔壁村的无名高人（不肯署名）"
     ];
-
-    // ------- 工具函数 -------
 
     function getRandomAuthorName() {
         const idx = Math.floor(Math.random() * FUNNY_AUTHORS.length);
@@ -736,7 +851,6 @@
     }
 
     function getRandomLikeCount() {
-        // 555 ~ 999999 之间
         const min = 555;
         const max = 999999;
         return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -805,7 +919,6 @@
         return text.length * (gibSpeed + resolveSpeed) + 400;
     }
 
-    // 北京时间格式化：显示为 "YYYY-MM-DD HH:mm (GMT+8)"
     function formatBeijingTime(ts) {
         if (!ts) return "";
         const d = new Date(ts);
@@ -832,7 +945,6 @@
         return DAY_HINTS[DAY_HINTS.length - 1][2];
     }
 
-    // 更新时间 + 今日已过进度（统一按北京时间）
     function updateMobileTimeAndProgress() {
         const now = new Date();
         const utc = now.getTime() + now.getTimezoneOffset() * 60000;
@@ -851,38 +963,13 @@
             `Today has passed: <strong>${clamped.toFixed(1)}%</strong><br>🫧&nbsp;${hint}`;
     }
 
-    // ✅ 隐藏上下滑动提示
     function hideSwipeHint() {
         if (swipeHint) {
             swipeHint.style.display = "none";
         }
     }
 
-    // ------- 物品层收起 / 展开 -------
-
-    function toggleItemLayer() {
-        itemLayer.classList.toggle("hide");
-        if (itemLayer.classList.contains("hide")) {
-            // 收起：视频有声音
-            videoPlayer.muted = false;
-        } else {
-            // 展开：静音
-            videoPlayer.muted = true;
-        }
-    }
-
-    ["click", "touchstart"].forEach((evt) => {
-        slideHit.addEventListener(
-            evt,
-            function (e) {
-                e.preventDefault();
-                toggleItemLayer();
-            },
-            { passive: false }
-        );
-    });
-
-    // ------- 视频上下滑切换（移动端） -------
+    // 视频上下滑切换（移动端）
     let touchStartY = null;
     videoLayer.addEventListener("touchstart", (e) => {
         if (e.touches && e.touches.length > 0) {
@@ -894,22 +981,20 @@
         if (touchStartY === null) return;
         const endY = e.changedTouches[0].clientY;
         const diffY = endY - touchStartY;
-        const threshold = 40; // 滑动阈值
+        const threshold = 40;
 
         if (Math.abs(diffY) > threshold) {
-            hideSwipeHint();  // ✅ 成功滑动后隐藏提示
+            hideSwipeHint();
             if (diffY < 0) {
-                // 上滑：下一段视频
                 playNextVideo();
             } else {
-                // 下滑：上一段视频
                 playPrevVideo();
             }
         }
         touchStartY = null;
     }, { passive: true });
 
-    // ------- PC：滚轮 / 键盘切换视频 -------
+    // PC：滚轮 / 键盘切换视频
     videoLayer.addEventListener("wheel", (e) => {
         const delta = e.deltaY;
         if (Math.abs(delta) < 20) return;
@@ -931,8 +1016,7 @@
         }
     });
 
-    // ------- 历史记录（和 KV 通信） -------
-
+    // 历史记录
     async function fetchHistoryFromServer() {
         try {
             const res = await fetch(HISTORY_API);
@@ -985,7 +1069,6 @@
             const authorString = item.author || "路过的灵魂打工人";
             const username = authorString;
 
-            // 头像 index
             const idx =
                 typeof item.avatarIndex === "number"
                     ? item.avatarIndex
@@ -1007,15 +1090,13 @@
             <p class="comment-text">${item.content}</p>
             <div class="comment-actions">
               <div class="comment-actions-left">
-                <div class="like-btn ${liked ? "active" : ""}" data-id="${
-                item.id
-            }">
+                <div class="like-btn ${liked ? "active" : ""}" data-id="${item.id}">
                   <i class="fa ${liked ? "fa-heart" : "fa-heart-o"}"></i>
                   ${
-                likeCount > 0
-                    ? `<span class="like-count">${likeCount}</span>`
-                    : ""
-            }
+                    likeCount > 0
+                        ? `<span class="like-count">${likeCount}</span>`
+                        : ""
+                }
                 </div>
               </div>
               <span class="comment-time">${timeText}</span>
@@ -1026,7 +1107,6 @@
             historyContainer.appendChild(commentItem);
         });
 
-        // 绑定点赞事件（前端本地效果，不回写 KV）
         historyContainer.querySelectorAll(".like-btn").forEach((btn) => {
             btn.addEventListener("click", function () {
                 this.classList.toggle("active");
@@ -1058,10 +1138,8 @@
         });
     }
 
-    // ------- 获取毒鸡汤 + 更新卡片 -------
-
+    // 获取毒鸡汤 + 更新卡片
     async function fetchDujitangText() {
-        // 随机先选一个 API，失败再换另一个
         const firstIsBt = Math.random() < 0.5;
         const apis = firstIsBt
             ? [DUJITANG_API_LIST[0], DUJITANG_API_LIST[1]]
@@ -1089,7 +1167,6 @@
     async function updateDujitangCard() {
         dujitangText.textContent = "正在加加加载...";
         authorNameEl.textContent = "";
-        // 作者用 —— 占位
         authorInfo.querySelector("span").textContent = "——";
 
         anotherOneBtn.disabled = true;
@@ -1099,20 +1176,18 @@
             const authorName = getRandomAuthorName();
             const likes = getRandomLikeCount();
 
-            // document.title 使用短鸡汤
             try {
                 const maxTitleLength = 22;
                 let shortQuote = text;
                 if (text.length > maxTitleLength) {
                     shortQuote = text.substring(0, maxTitleLength).trim() + "…";
                 }
-                document.title = `Lyn's Home - ${shortQuote}`;
+                document.title = `Lynn - ${shortQuote}`;
             } catch (e) {}
 
             const duration = animateGibberishToText(dujitangText, text);
             dujitangLikeCount.textContent = likes.toLocaleString();
 
-            // 一段时间后再显示作者
             setTimeout(() => {
                 authorNameEl.textContent = authorName;
                 authorInfo.querySelector("span").textContent = "——";
@@ -1124,7 +1199,6 @@
                 likeCount: likes,
             };
 
-            // 写入 KV 历史
             appendHistoryToServer(text, authorName, likes);
         } catch (e) {
             console.error("更新鸡汤失败", e);
@@ -1135,31 +1209,29 @@
         }
     }
 
-    // ------- 初始化 -------
-
+    // 初始化
     document.addEventListener("DOMContentLoaded", async () => {
-        // 初次视频 index 随机一下
+        // 先算一次高度：30%(min)、90%(max)、40%(default)
+        recalcHeights();
+
         currentVideoIndex = Math.floor(Math.random() * VIDEO_TOTAL) + 1;
         playVideoByIndex(currentVideoIndex);
 
-        // 视频播完后自动下一段
         videoPlayer.addEventListener("ended", playNextVideo);
 
-        // 第二层默认展开，先静音
+        // 初始高度：40%（DEFAULT_HEIGHT），并静音
+        itemLayer.style.height = DEFAULT_HEIGHT + "px";
+        itemLayer.classList.remove("collapsed");
         videoPlayer.muted = true;
 
-        // 更新时间 & 今日已过（每 30 秒刷新一次，北京时间）
         updateMobileTimeAndProgress();
         setInterval(updateMobileTimeAndProgress, 30 * 1000);
 
-        // 加载历史记录
         const history = await fetchHistoryFromServer();
         renderHistory(history);
 
-        // 加载毒鸡汤
         updateDujitangCard();
 
-        // “下一条”按钮
         anotherOneBtn.addEventListener("click", () => {
             const icon = anotherOneBtn.querySelector("i");
             icon.classList.add("spin");
@@ -1167,7 +1239,6 @@
             updateDujitangCard();
         });
 
-        // 点赞效果（卡片上的红心）
         likeArea.addEventListener("click", () => {
             likeArea.classList.add("active");
             let count = parseInt(
