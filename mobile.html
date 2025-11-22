@@ -4,27 +4,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- 浏览器标签标题 -->
+    <!-- 页面标题 -->
     <title>Lynn</title>
 
     <!-- 站点图标 -->
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon" />
 
-    <!-- ========= 国外网站 / 社交平台预览（OG + Twitter，用英文 & bg.jpg） ========= -->
+    <!-- 基础描述（国内搜索 / 微信 / QQ / 微博 等也会参考） -->
+    <meta name="description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
+
+    <!-- ========= Open Graph：大部分平台统一使用（微信 / QQ / 微博 / Telegram / WhatsApp 等） ========= -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Lynn">
     <meta property="og:title" content="Lynn">
-    <meta property="og:description" content="Just someone who loves to mess around on the internet.">
-    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
+    <!-- 微信等希望显示的预览图 -->
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/Fm2.png">
     <meta property="og:url" content="https://aura.us.kg">
 
+    <!-- ========= Twitter 卡片：主要给 X/Twitter / 部分国外平台用英文预览 ========= -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Lynn">
     <meta name="twitter:description" content="Just someone who loves to mess around on the internet.">
+    <!-- 国外希望显示的预览图 -->
     <meta name="twitter:image" content="https://save.aura.us.kg/Picture/bg.jpg">
 
-    <!-- ========= 国内网站 / 社交平台预览（描述 + 图片，用中文 & Fm2.png） ========= -->
-    <meta name="description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
+    <!-- 结构化数据（可选） -->
     <meta itemprop="name" content="Lynn">
     <meta itemprop="description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
     <meta itemprop="image" content="https://save.aura.us.kg/Picture/Fm2.png">
@@ -106,28 +111,55 @@
             object-position: center;
         }
 
-        /* 上下滑动提示（放在视频上方，滑动一次后隐藏） */
-        .swipe-hint {
-            position: absolute;
+        /* ===== 滑动提示：顶部显示（与你原来位置一致），但使用三点 + 文案样式 ===== */
+        .swipe-indicator {
+            position: absolute;          /* 附着在 video-layer 里 */
             top: 16px;
             left: 50%;
             transform: translateX(-50%);
+            z-index: 5;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 2px;
+            gap: 4px;
+            opacity: 0.85;
+            pointer-events: none;        /* 不挡手势和点击 */
+            transition: opacity 0.3s ease;
+        }
+
+        .swipe-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .swipe-dot {
+            width: 4px;
+            height: 4px;
+            background: #ffffff;
+            border-radius: 50%;
+            animation: swipeDotPulse 1.5s infinite;
+        }
+
+        .swipe-dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .swipe-dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        .swipe-text {
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 4px;
             color: rgba(249, 250, 251, 0.9);
-            font-size: 18px;
-            pointer-events: none;
-            animation: swipeHintFloat 2.2s ease-in-out infinite;
         }
-        .swipe-hint i {
-            text-shadow: 0 0 10px rgba(15, 23, 42, 0.8);
-        }
-        @keyframes swipeHintFloat {
-            0%   { transform: translate(-50%, 0);   opacity: 0.2; }
-            50%  { transform: translate(-50%, 6px); opacity: 1;   }
-            100% { transform: translate(-50%, 0);   opacity: 0.2; }
+
+        @keyframes swipeDotPulse {
+            0%   { transform: scale(1); }
+            50%  { transform: scale(1.5); }
+            100% { transform: scale(1); }
         }
 
         /* 第二层（下方卡片层）—— 底部永远贴底，通过「高度」折叠/展开/拖动 */
@@ -136,7 +168,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            height: 40vh;         /* 初始高度 40%（JS 会再精确设置一遍） */
+            height: 45vh;         /* 初始高度 45%（JS 会再精确设置） */
             background: linear-gradient(
                 180deg,
                 rgba(15, 23, 42, 0.96) 0%,
@@ -152,45 +184,36 @@
             transition: height 0.25s ease;
         }
 
-        /* 折叠状态：用 class 标记，但底层还是 height 控制 */
         .item-layer.collapsed {
-            /* 具体高度由 JS 设置为 30% */
+            /* 折叠状态高度由 JS 控制到 20% */
         }
 
-        /* 顶部可点击区域：本身不接收事件，只让中间小白条可点/拖 */
-        .ios-slide-hit-area {
+        /* 可滚动内容区域 */
+        .item-content {
             position: absolute;
-            top: 6px;
+            top: 0;
             left: 0;
-            width: 100%;
-            height: 40px;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            z-index: 4;
-            pointer-events: none;
+            right: 0;
+            bottom: 0;
+            padding: 12px 16px 18px;
+            overflow-y: auto;
         }
 
-        /* 中间那条小横条（唯一可点 / 可拖拽区域） */
+        /* 小白条“容器”—— 现在在 item-content 里面，会随内容一起滚动 */
+        .slide-bar-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        /* 小白条本体（可点 / 可拖拽） */
         .ios-slide-bar {
             width: 60px;
             height: 6px;
             background: rgba(248, 250, 252, 0.9);
             border-radius: 999px;
             box-shadow: 0 0 8px rgba(148, 163, 184, 0.9);
-            pointer-events: auto;
             cursor: pointer;
-        }
-
-        /* 里面内容区域可滚动 */
-        .item-content {
-            position: absolute;
-            top: 46px; /* 给顶部小条留位置 */
-            left: 0;
-            right: 0;
-            bottom: 0;
-            padding: 18px 16px 18px;
-            overflow-y: auto;
         }
 
         /* 标题区域 */
@@ -539,20 +562,26 @@
         <source src="https://save.aura.us.kg/Mobile/bg1.MP4" type="video/mp4" />
     </video>
 
-    <!-- 上下滑动提示 -->
-    <div class="swipe-hint" id="swipeHint">
-        <i class="fa fa-angle-up"></i>
-        <i class="fa fa-angle-down"></i>
+    <!-- 顶部滑动提示 -->
+    <div class="swipe-indicator" id="swipeHint">
+        <div class="swipe-dots">
+            <div class="swipe-dot"></div>
+            <div class="swipe-dot"></div>
+            <div class="swipe-dot"></div>
+        </div>
+        <span class="swipe-text">滑动切换视频</span>
     </div>
 </div>
 
 <!-- 下方卡片层（第二层） -->
 <div class="item-layer" id="itemLayer">
-    <div class="ios-slide-hit-area" id="slideHit">
-        <div class="ios-slide-bar"></div>
-    </div>
-
     <div class="item-content">
+        <!-- 小白条：现在在内容里，不再悬浮固定 -->
+        <div class="slide-bar-wrapper">
+            <div class="ios-slide-bar"></div>
+        </div>
+
+        <!-- 标题 & 简介 -->
         <div class="text-center mb-4">
             <h1 class="hero-title text-shadow">
                 Hey, I'm <span class="hero-name">Lyn</span>
@@ -637,17 +666,17 @@
     ];
 
     // 底部面板高度的比例配置
-    const MIN_RATIO = 0.3;   // 最矮 30%
-    const MAX_RATIO = 0.9;   // 最高 90%
-    const DEFAULT_RATIO = 0.4; // 初始 40%
+    const MIN_RATIO = 0.2;      // 关闭：20% 高度
+    const MAX_RATIO = 0.9;      // 顶部拖满：90% 高度
+    const DEFAULT_RATIO = 0.45; // 默认打开：45% 高度
 
     // DOM
     const videoPlayer = document.getElementById("videoPlayer");
     const videoLayer = document.getElementById("videoLayer");
     const itemLayer = document.getElementById("itemLayer");
-    const slideHit = document.getElementById("slideHit");
-    const slideBar = slideHit ? slideHit.querySelector(".ios-slide-bar") : null;
     const swipeHint = document.getElementById("swipeHint");
+
+    const slideBar = document.querySelector(".ios-slide-bar");
 
     const dujitangText = document.getElementById("dujitangText");
     const authorInfo = document.getElementById("authorInfo");
@@ -665,10 +694,10 @@
     let currentDujitang = null;
     let currentVideoIndex = 1;
 
-    // ===== 底部面板拖动：高度区间在 [30%, 90%] 之间 =====
-    let MIN_HEIGHT = 0;  // px
-    let MAX_HEIGHT = 0;  // px
-    let DEFAULT_HEIGHT = 0; // px
+    // ===== 底部面板拖动：高度区间在 [20%, 90%] 之间 =====
+    let MIN_HEIGHT = 0;
+    let MAX_HEIGHT = 0;
+    let DEFAULT_HEIGHT = 0;
 
     let isDraggingPanel = false;
     let dragStartY = 0;
@@ -682,10 +711,7 @@
         DEFAULT_HEIGHT = vh * DEFAULT_RATIO;
 
         const rect = itemLayer.getBoundingClientRect();
-        let h = rect.height;
-        if (!h) {
-            h = DEFAULT_HEIGHT;
-        }
+        let h = rect.height || DEFAULT_HEIGHT;
         if (h < MIN_HEIGHT) h = MIN_HEIGHT;
         if (h > MAX_HEIGHT) h = MAX_HEIGHT;
         itemLayer.style.height = h + "px";
@@ -708,7 +734,7 @@
         const dy = currentY - dragStartY;
         if (Math.abs(dy) > 3) dragMoved = true;
 
-        // 上拉 dy<0，高度变大；下拉 dy>0，高度变小
+        // 上拉 dy<0 高度变大，下拉 dy>0 高度变小
         let newHeight = dragStartHeight - dy;
         if (newHeight < MIN_HEIGHT) newHeight = MIN_HEIGHT;
         if (newHeight > MAX_HEIGHT) newHeight = MAX_HEIGHT;
@@ -733,12 +759,12 @@
         const mid = (MIN_HEIGHT + DEFAULT_HEIGHT) / 2;
 
         if (h <= mid) {
-            // 低位 → 展开到 40%
+            // 从低位 → 回到 45%
             itemLayer.style.height = DEFAULT_HEIGHT + "px";
             itemLayer.classList.remove("collapsed");
             videoPlayer.muted = true;
         } else {
-            // 高位 → 折叠到 30%
+            // 从较高 → 收到 20%
             itemLayer.style.height = MIN_HEIGHT + "px";
             itemLayer.classList.add("collapsed");
             videoPlayer.muted = false;
@@ -1211,7 +1237,7 @@
 
     // 初始化
     document.addEventListener("DOMContentLoaded", async () => {
-        // 先算一次高度：30%(min)、90%(max)、40%(default)
+        // 高度比例：20% ～ 90%，初始 45%
         recalcHeights();
 
         currentVideoIndex = Math.floor(Math.random() * VIDEO_TOTAL) + 1;
@@ -1219,7 +1245,6 @@
 
         videoPlayer.addEventListener("ended", playNextVideo);
 
-        // 初始高度：40%（DEFAULT_HEIGHT），并静音
         itemLayer.style.height = DEFAULT_HEIGHT + "px";
         itemLayer.classList.remove("collapsed");
         videoPlayer.muted = true;
