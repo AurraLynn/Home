@@ -216,9 +216,9 @@
             z-index: 10;
             display: flex;
             justify-content: center;
-            padding-top: 0;
-            padding-bottom: 6px;
-            transform: translateY(-6px);   /* 关键：整体往上抬 6px */
+            padding-top: 10px;
+            padding-bottom: 10px;
+            transform: translateY(-10px);   /* 关键：整体往上抬 6px */
         }
 
         /* 小白条本体，稍微缩小一点 */
@@ -721,6 +721,7 @@
     const swipeHint = document.getElementById("swipeHint");
 
     const slideBar = document.querySelector(".ios-slide-bar");
+    const slideBarWrapper = document.querySelector(".slide-bar-wrapper");
 
     const dujitangText = document.getElementById("dujitangText");
     const authorInfo = document.getElementById("authorInfo");
@@ -835,23 +836,34 @@
             togglePanelByClick();
         });
 
-        // 触摸拖动（移动端）
-        slideBar.addEventListener("touchstart", function (e) {
+// ======== 触摸拖动（移动端）：改绑到 slideBarWrapper，且非 passive，防止内容滑动 ========
+
+// 把拖动起点、过程、结束拆成三个函数，方便绑定到 wrapper
+        function handleTouchStartOnBar(e) {
             if (e.touches && e.touches.length > 0) {
+                e.preventDefault(); // 阻止一开始就触发滚动
                 startPanelDrag(e.touches[0].clientY);
             }
-        }, { passive: true });
+        }
 
-        slideBar.addEventListener("touchmove", function (e) {
+        function handleTouchMoveOnBar(e) {
             if (!isDraggingPanel || !e.touches || e.touches.length === 0) return;
+            e.preventDefault(); // 拖动过程中禁用 item-content 的滚动
             movePanelDrag(e.touches[0].clientY);
-        }, { passive: true });
+        }
 
-        ["touchend", "touchcancel"].forEach(evt => {
-            slideBar.addEventListener(evt, function () {
-                endPanelDrag();
-            }, { passive: true });
-        });
+        function handleTouchEndOnBar() {
+            endPanelDrag();
+        }
+
+// 用整个 slideBarWrapper 当“手势区域”，比细小白条更好点中
+        if (slideBarWrapper) {
+            slideBarWrapper.addEventListener("touchstart", handleTouchStartOnBar, { passive: false });
+            slideBarWrapper.addEventListener("touchmove", handleTouchMoveOnBar, { passive: false });
+            ["touchend", "touchcancel"].forEach(evt => {
+                slideBarWrapper.addEventListener(evt, handleTouchEndOnBar, { passive: false });
+            });
+        }
 
         // 鼠标拖动（PC 调试用）
         slideBar.addEventListener("mousedown", function (e) {
