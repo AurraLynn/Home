@@ -64,11 +64,10 @@
             box-shadow: 0 12px 26px rgba(15, 23, 42, 0.8);
         }
 
-        /* 左侧顶部随机预览图 */
         .brand-icon {
             width: 34px;
             height: 34px;
-            border-radius: 12px;
+            border-radius: 10px;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -379,8 +378,19 @@
             border: 1px solid #4b5563;
         }
 
+        .btn-copy-icon,
         .btn-share-icon {
-            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-copy-icon svg,
+        .btn-share-icon svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
         }
 
         /* 右侧：图片选择 + 预览 */
@@ -448,6 +458,42 @@
             box-shadow: 0 0 0 1px #38bdf8, 0 10px 22px rgba(56, 189, 248, 0.25);
         }
 
+        /* 自定义图片链接 */
+        .custom-image-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .custom-image-row input[type="text"] {
+            flex: 1;
+        }
+
+        .btn-use-custom {
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid #d1d5db;
+            background: #f9fafb;
+            font-size: 12px;
+            cursor: pointer;
+            color: #4b5563;
+            white-space: nowrap;
+        }
+
+        .btn-use-custom:hover {
+            background: #e5e7eb;
+        }
+
+        body.dark .btn-use-custom {
+            background: rgba(15, 23, 42, 0.92);
+            border-color: #4b5563;
+            color: #e5e7eb;
+        }
+
+        body.dark .btn-use-custom:hover {
+            background: rgba(31, 41, 55, 0.95);
+        }
+
         /* 主预览：固定宽高，图片填满 */
         .preview-box {
             border-radius: 14px;
@@ -457,7 +503,7 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            margin-top: 4px;
+            margin-top: 8px;
             align-items: center;
             justify-content: center;
         }
@@ -528,7 +574,10 @@
                 <div class="brand-icon" id="brand-icon"></div>
                 <div class="brand-text">
                     <div class="brand-name">Lyn's Card Maker</div>
-                    <div class="brand-sub">Generate share-card links for WeChat · QQ and other social apps.</div>
+                    <div class="brand-sub">
+                        Generate share-card links for WeChat · QQ<br>
+                        and other social apps.
+                    </div>
                 </div>
             </div>
             <div class="header-desc">
@@ -560,7 +609,7 @@
 
             <div class="field">
                 <label for="target">目标链接</label>
-                <textarea id="target" placeholder="请输入合法链接，例如：https://aura.us.kg、aura.us.kg/..."></textarea>
+                <textarea id="target" placeholder="请输入合法链接，例如：https://aura.us.kg、baidu.com、shadowrocket://add"></textarea>
                 <div class="hint">必须是有效链接，不支持纯文本内容。</div>
             </div>
 
@@ -579,15 +628,37 @@
                 <button class="btn-main" id="btn-generate">Generate Card</button>
                 <div class="status" id="status"></div>
 
-                <!-- 生成结果：放在 Generate Card 按钮下面 -->
+                <!-- 生成结果 -->
                 <div class="result" id="result" style="display:none;">
                     <div class="result-title">生成成功 🎉</div>
                     <div>分享链接：</div>
                     <div class="result-link" id="share-url"></div>
                     <div class="btn-row">
-                        <button class="btn-copy" id="btn-copy">Copy Link</button>
+                        <!-- Copy 按钮：B 组 · 两个重叠方块 -->
+                        <button class="btn-copy" id="btn-copy">
+    <span class="btn-copy-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <!-- 后面的方块 -->
+        <rect x="8" y="8" width="8" height="8" rx="2"></rect>
+          <!-- 前面的方块 -->
+        <rect x="5" y="5" width="8" height="8" rx="2"></rect>
+      </svg>
+    </span>
+                            <span>Copy Link</span>
+                        </button>
+
+                        <!-- Share 按钮：B 组 · 三个点连线 -->
                         <button class="btn-share" id="btn-share">
-                            <span class="btn-share-icon">🔗</span>
+    <span class="btn-share-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <!-- 三个点 -->
+        <circle cx="6" cy="12" r="1.5" fill="currentColor" />
+        <circle cx="12" cy="7" r="1.5" fill="currentColor" />
+        <circle cx="18" cy="12" r="1.5" fill="currentColor" />
+          <!-- 连线 -->
+        <path d="M7.3 11l3.4-2.3M13.3 8.7L16.7 11" stroke-linecap="round" />
+      </svg>
+    </span>
                             <span>Share Link</span>
                         </button>
                     </div>
@@ -595,15 +666,28 @@
             </div>
         </div>
 
-        <!-- 右侧：图片选择 + 预览 -->
+        <!-- 右侧：图片选择 + 自定义链接 + 预览 -->
         <div>
             <div class="thumbs-wrap">
                 <div class="thumbs-title">
-                    <span>预览图片（点击选择封面图）</span>
+                    <span>预览图片 · 点击选择封面图</span>
                     <span style="font-size:11px;opacity:.78;">来源：/Picture/Preview/...</span>
                 </div>
                 <div class="thumbs-grid" id="thumbs-grid">
                     <!-- 缩略图由 JS 填充 -->
+                </div>
+
+                <div class="field" style="margin-top:10px;">
+                    <label for="custom-image-url" style="font-size:12px;">自定义图片链接:</label>
+                    <div class="custom-image-row">
+                        <input
+                                id="custom-image-url"
+                                type="text"
+                                placeholder="https://example.com/your-cover.png"
+                        />
+                        <button type="button" class="btn-use-custom" id="btn-use-custom-image">Use</button>
+                    </div>
+                    <div class="hint">留空则使用上方预设图片。输入链接需以 http:// 或 https:// 开头。</div>
                 </div>
 
                 <div class="preview-box">
@@ -637,7 +721,8 @@
     const previewImg = document.getElementById("preview-img");
     const brandIcon = document.getElementById("brand-icon");
 
-    let selectedImage = imageFiles[0];
+    let selectedImageFile = imageFiles[0];
+    let selectedImageUrl = baseImageUrl + selectedImageFile;
     let lastTitle = defaultTitle;
     let lastDescription = defaultDesc;
 
@@ -663,7 +748,8 @@
         imageFiles.forEach((file, index) => {
             const url = baseImageUrl + file;
             const div = document.createElement("div");
-            div.className = "thumb" + (index === 0 ? " selected" : "");
+            const isDefault = index === 0;
+            div.className = "thumb" + (isDefault ? " selected" : "");
             div.dataset.file = file;
             div.dataset.url = url;
 
@@ -677,28 +763,53 @@
             img.addEventListener("dragstart", (e) => e.preventDefault());
 
             div.appendChild(img);
-            div.addEventListener("click", () => selectThumb(div));
+            div.addEventListener("click", () => {
+                const all = thumbsGrid.querySelectorAll(".thumb");
+                all.forEach((t) => t.classList.remove("selected"));
+                div.classList.add("selected");
+                selectedImageFile = file;
+                selectedImageUrl = url;
+                previewImg.src = url;
+            });
+
+            if (isDefault) {
+                selectedImageFile = file;
+                selectedImageUrl = url;
+            }
 
             thumbsGrid.appendChild(div);
         });
 
-        updatePreview(selectedImage);
-    }
-
-    function selectThumb(el) {
-        const all = thumbsGrid.querySelectorAll(".thumb");
-        all.forEach((t) => t.classList.remove("selected"));
-        el.classList.add("selected");
-        selectedImage = el.dataset.file;
-        updatePreview(selectedImage);
-    }
-
-    function updatePreview(file) {
-        const url = baseImageUrl + file;
-        previewImg.src = url;
+        previewImg.src = selectedImageUrl;
     }
 
     buildThumbs();
+
+    // 自定义图片链接
+    const customImageInput = document.getElementById("custom-image-url");
+    const btnUseCustomImage = document.getElementById("btn-use-custom-image");
+
+    btnUseCustomImage.addEventListener("click", () => {
+        const raw = (customImageInput.value || "").trim();
+        const statusEl = document.getElementById("status");
+
+        if (!raw) {
+            statusEl.textContent = "请先输入图片链接，或使用上方预设图片。";
+            return;
+        }
+        if (!/^https?:\/\//i.test(raw)) {
+            statusEl.textContent = "图片链接需要以 http:// 或 https:// 开头。";
+            return;
+        }
+        selectedImageFile = null;
+        selectedImageUrl = raw;
+        previewImg.src = raw;
+
+        const all = thumbsGrid.querySelectorAll(".thumb");
+        all.forEach((t) => t.classList.remove("selected"));
+
+        statusEl.textContent = "已使用自定义图片链接。";
+    });
 
     // 模式切换
     const modeToggle = document.getElementById("mode-toggle");
@@ -774,7 +885,7 @@
         const description = (descInput.value || "").trim() || defaultDesc;
         const target = (targetInput.value || "").trim();
         const expire = expireValue;
-        const image = baseImageUrl + selectedImage;
+        const image = selectedImageUrl || (baseImageUrl + imageFiles[0]);
 
         lastTitle = title;
         lastDescription = description;
