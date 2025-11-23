@@ -2,46 +2,40 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta property="og:title" content="" id="title">
-  <meta property="og:description" content="" id="desc">
-  <meta property="og:image" content="" id="img">
-  <meta property="og:url" content="" id="url">
-  <title>微信卡片页</title>
+
+  <!-- ↓↓↓ 修改下面四个内容 ↓↓↓ -->
+  <meta property="og:title" content="这里填写卡片标题，例如：Lyn 的个人主页">
+  <meta property="og:description" content="这里填写卡片描述，例如：一个喜欢折腾的灵魂">
+  <meta property="og:image" content="https://你的预览图地址.jpg">
+  <meta property="og:url" content="https://你的跳转中间页链接.html">
+
+  <!-- 微信特用标签 -->
+  <meta name="description" content="这里填写卡片描述">
+  <meta itemprop="image" content="https://你的预览图地址.jpg">
+
+  <title>正在跳转...</title>
+
+  <script>
+    // 设置跳转目标链接
+    const target = "https://你要跳转的真实目标链接.com";
+
+    // 微信会抓取本页面的 meta，不会被 JS 影响
+    // 仅用于用户打开后的跳转
+    setTimeout(() => {
+      window.location.href = target;
+    }, 200);
+  </script>
+
   <style>
-    body { display: flex; flex-direction: column; align-items: center; margin-top: 50px; }
-    input { margin: 5px; padding: 8px; width: 300px; }
-    button { padding: 8px 20px; background: #07c160; color: #fff; border: none; border-radius: 4px; }
+    body {
+      font-family: -apple-system, sans-serif;
+      text-align: center;
+      margin-top: 100px;
+    }
   </style>
 </head>
 <body>
-  <h3>生成微信卡片页</h3>
-  <input type="text" id="link" placeholder="目标链接">
-  <input type="text" id="titleInput" placeholder="卡片标题">
-  <input type="text" id="descInput" placeholder="卡片描述">
-  <input type="text" id="imgInput" placeholder="预览图链接">
-  <button onclick="createCard()">生成卡片页</button>
-  <p id="result"></p>
-
-  <script>
-    function createCard() {
-      const link = document.getElementById("link").value;
-      const title = document.getElementById("titleInput").value;
-      const desc = document.getElementById("descInput").value;
-      const img = document.getElementById("imgInput").value;
-      const cardUrl = window.location.href; // 当前页面链接
-
-      // 修改meta标签
-      document.getElementById("title").content = title;
-      document.getElementById("desc").content = desc;
-      document.getElementById("img").content = img;
-      document.getElementById("url").content = cardUrl;
-
-      // 自动跳转到目标链接
-      setTimeout(() => { window.location.href = link; }, 100);
-
-      // 提示：将当前页面链接分享到微信，即可生成卡片
-      document.getElementById("result").innerText = "卡片页已生成！复制当前页面链接，在微信中打开即可看到卡片";
-    }
-  </script>
+  <h2>正在跳转，请稍候…</h2>
+  <p>如果没有跳转，<a href="https://你要跳转的真实目标链接.com">点击这里</a></p>
 </body>
 </html>
