@@ -1,20 +1,7 @@
 // functions/api/share-create.js
 
-type StoredCard = {
-  title: string;
-  description: string;
-  image: string;
-  target: string;           // 目标内容（可能是 URL 或 文本）
-  mode: "url" | "text";     // url = 跳转；text = 展示内容
-  expireAt?: number | null; // 过期时间时间戳（毫秒）
-  createdAt: number;
-};
-
-type Env = {
-  Card_KV: KVNamespace;
-};
-
-function randomId(len = 8): string {
+// KV 里存的结构：title/description/image/target/mode/expireAt/createdAt
+function randomId(len = 8) {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   const arr = new Uint8Array(len);
   crypto.getRandomValues(arr);
@@ -25,7 +12,7 @@ function randomId(len = 8): string {
   return out;
 }
 
-function parseExpire(expire: string | undefined): number | null {
+function parseExpire(expire) {
   const now = Date.now();
   switch (expire) {
     case "1d":
@@ -40,8 +27,8 @@ function parseExpire(expire: string | undefined): number | null {
   }
 }
 
-function normalizeTarget(raw: string): { mode: "url" | "text"; value: string } {
-  const s = raw.trim();
+function normalizeTarget(raw) {
+  const s = (raw || "").trim();
   if (!s) {
     return { mode: "text", value: "" };
   }
@@ -51,28 +38,31 @@ function normalizeTarget(raw: string): { mode: "url" | "text"; value: string } {
     return { mode: "url", value: s };
   }
 
-  // 看起来像域名：自动补 https://
+  // 看起来像域名：自动加 https://
   const looksLikeDomain = s.includes(".") && !/\s/.test(s);
   if (looksLikeDomain) {
     return { mode: "url", value: "https://" + s };
   }
 
-  // 否则视为纯文本
+  // 否则当文本
   return { mode: "text", value: s };
 }
 
-export const onRequest: PagesFunction<Env> = async (context) => {
+export async function onRequest(context) {
   const { request, env } = context;
 
   if (request.method !== "POST") {
     return new Response("Method Not Allowed", { status: 405 });
   }
 
-  let payload: any;
+  let payload;
   try {
     payload = await request.json();
   } catch (e) {
-    return Response.json({ ok: false, message: "Invalid JSON body." }, { status: 400 });
+    return new Response(
+      JSON.stringify({ ok: false, message: "Invalid JSON body." }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
   }
 
   const title = (payload.title || "").toString().trim();
@@ -82,21 +72,26 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const expire = (payload.expire || "7d").toString();
 
   if (!targetRaw.trim()) {
-    return Response.json({ ok: false, message: "目标内容不能为空。" }, { status: 400 });
+    return new Response(
+      JSON.stringify({ ok: false, message: "目标内容不能为空。" }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
   }
 
-  const { mode, value: target } = normalizeTarget(targetRaw);
+  const norm = normalizeTarget(targetRaw);
+  const target = norm.value;
+  const mode = norm.mode;
   const expireAt = parseExpire(expire);
-  const id = randomId(8);
 
-  const card: StoredCard = {
+  const id = randomId(8);
+  const card = {
     title,
     description,
     image,
     target,
     mode,
     expireAt,
-    createdAt: Date.now(),
+    createdAt: Date.now()
   };
 
   await env.Card_KV.put(id, JSON.stringify(card));
@@ -104,5 +99,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const url = new URL(request.url);
   const shareUrl = `${url.origin}/C/${id}`;
 
-  return Response.json({ ok: true, shareUrl });
-};
+  return new Response(
+    JSON.stringify({ ok: true, shareUrl }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
