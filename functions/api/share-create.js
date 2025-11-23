@@ -26,22 +26,29 @@ function parseExpire(expire) {
   }
 }
 
+// 只接受链接：
+// - 任意 scheme://
+// - 或类似 baidu.com 这种域名形式（自动补 https://）
+// 其它一律报错
 function normalizeTarget(raw) {
   const s = (raw || "").trim();
   if (!s) {
-    return { mode: "text", value: "" };
+    return { ok: false, message: "目标链接不能为空。" };
   }
 
-  if (/^https?:\/\//i.test(s)) {
-    return { mode: "url", value: s };
+  // 任意协议：http://, https://, shadowrocket://, clash:// 等
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(s)) {
+    return { ok: true, mode: "url", value: s };
   }
 
+  // 看起来像域名：自动加 https://
   const looksLikeDomain = s.includes(".") && !/\s/.test(s);
   if (looksLikeDomain) {
-    return { mode: "url", value: "https://" + s };
+    return { ok: true, mode: "url", value: "https://" + s };
   }
 
-  return { mode: "text", value: s };
+  // 其它情况视为非法
+  return { ok: false, message: "目标必须是合法链接，不支持纯文本内容。" };
 }
 
 export async function onRequest(context) {
@@ -69,14 +76,21 @@ export async function onRequest(context) {
 
   if (!targetRaw.trim()) {
     return new Response(
-      JSON.stringify({ ok: false, message: "目标内容不能为空。" }),
+      JSON.stringify({ ok: false, message: "目标链接不能为空。" }),
       { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
 
   const norm = normalizeTarget(targetRaw);
+  if (!norm.ok) {
+    return new Response(
+      JSON.stringify({ ok: false, message: norm.message }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
   const target = norm.value;
-  const mode = norm.mode;
+  const mode = "url"; // 现在只允许链接
   const expireAt = parseExpire(expire);
 
   const id = randomId(8);
