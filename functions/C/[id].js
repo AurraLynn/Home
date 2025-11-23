@@ -1,162 +1,378 @@
 // functions/C/[id].js
-// 短链页面：根据 id 从 KV 中取出数据，输出带 OG meta 的 HTML + 自动跳转
 
-export async function onRequest(context) {
-  const { env, params, request } = context;
-  const id = params.id;
+type StoredCard = {
+  title: string;
+  description: string;
+  image: string;
+  target: string;
+  mode: "url" | "text";
+  expireAt?: number | null;
+  createdAt: number;
+};
 
-  if (!id) {
-    return new Response("Invalid id", { status: 400 });
-  }
+type Env = {
+  Card_KV: KVNamespace;
+};
 
-  // 从 KV 获取记录（这里用 Card_KV）
-  const record = await env.Card_KV.get(id, "json");
-
-  // 没有就说明过期或不存在
-  if (!record) {
-    return new Response(generateExpiredHtml(), {
-      status: 404,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-    });
-  }
-
-  const { title, description, image, target } = record;
-  const url = new URL(request.url);
-  const shareUrl = `${url.origin}/C/${id}`; // 大写 C
-
-  const html = generateShareHtml({ title, description, image, target, shareUrl });
-
-  return new Response(html, {
-    headers: { "Content-Type": "text/html; charset=utf-8" },
+function escapeHtml(str: string = ""): string {
+  return str.replace(/[&<>"']/g, (ch) => {
+    switch (ch) {
+      case "&": return "&amp;";
+      case "<": return "&lt;";
+      case ">": return "&gt;";
+      case '"': return "&quot;";
+      case "'": return "&#39;";
+      default: return ch;
+    }
   });
 }
 
-function esc(s) {
-  return String(s || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+function renderPage(opts: {
+  card?: StoredCard;
+  url: string;
+  expired?: boolean;
+}): Response {
+  const { card, url, expired } = opts;
+  const title = card?.title || "Lyn's Card";
+  const desc = card?.description || (expired ? "This link has expired." : "A card shared by Lyn.");
+  const image = card?.image || "https://save.aura.us.kg/Picture/Preview/YL1.png";
 
-function generateShareHtml({ title, description, image, target, shareUrl }) {
-  return `<!DOCTYPE html>
+  const isTextMode = card && card.mode === "text";
+
+  const html = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(title)}</title>
 
-  <title>${esc(title)}</title>
-  <meta name="description" content="${esc(description)}" />
-
-  <!-- 微信/QQ/微博 通用 Open Graph -->
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="Lyn Share" />
-  <meta property="og:title" content="${esc(title)}" />
-  <meta property="og:description" content="${esc(description)}" />
-  <meta property="og:image" content="${esc(image)}" />
-  <meta property="og:url" content="${esc(shareUrl)}" />
-
-  <!-- 备用 Twitter 卡片 -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${esc(title)}" />
-  <meta name="twitter:description" content="${esc(description)}" />
-  <meta name="twitter:image" content="${esc(image)}" />
+  <!-- OG / WeChat / QQ 预览 -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="${escapeHtml(title)}">
+  <meta property="og:description" content="${escapeHtml(desc)}">
+  <meta property="og:image" content="${escapeHtml(image)}">
+  <meta property="og:url" content="${escapeHtml(url)}">
 
   <style>
+    * { box-sizing: border-box; }
     body {
       margin: 0;
-      padding: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #020617;
-      color: #e5e7eb;
-      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color: #f9fafb;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      padding: 16px;
+    }
+    .shell {
+      width: 100%;
+      max-width: 480px;
+    }
+    .card {
+      background: radial-gradient(circle at top, #020617, #020617);
+      border-radius: 24px;
+      padding: 24px 20px 20px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      box-shadow:
+        0 24px 60px rgba(15, 23, 42, 0.9),
+        0 0 0 1px rgba(15, 23, 42, 0.6);
+    }
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
       text-align: center;
     }
-    .box {
-      max-width: 480px;
-      padding: 24px 20px;
-    }
-    h1 {
-      font-size: 22px;
-      margin-bottom: 8px;
-    }
-    p {
-      font-size: 14px;
-      margin-top: 0;
-      color: #9ca3af;
-    }
-    .tip {
-      margin-top: 16px;
+    .subtitle {
       font-size: 13px;
-      color: #6b7280;
+      color: #9ca3af;
+      text-align: center;
+      margin-bottom: 18px;
     }
-    a {
-      color: #38bdf8;
-      text-decoration: none;
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.8);
+      font-size: 11px;
+      color: #e5e7eb;
+      margin: 0 auto 18px;
+    }
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+    }
+    .info {
+      font-size: 12px;
+      color: #9ca3af;
+      text-align: center;
+      margin-bottom: 16px;
+      min-height: 32px;
+    }
+    .countdown {
+      font-size: 12px;
+      text-align: center;
+      margin-bottom: 16px;
+      color: #e5e7eb;
+    }
+    .countdown strong {
+      font-size: 16px;
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    .btn {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary {
+      background: #facc15;
+      color: #1f2937;
+    }
+    .btn-secondary {
+      background: rgba(15, 23, 42, 0.9);
+      color: #e5e7eb;
+      border: 1px solid #4b5563;
+    }
+    .link-box {
+      font-size: 11px;
+      color: #9ca3af;
+      word-break: break-all;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      margin-bottom: 4px;
+    }
+    .text-box {
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .footer {
+      margin-top: 10px;
+      font-size: 11px;
+      color: #6b7280;
+      text-align: center;
     }
   </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="card">
+      <div class="title">${escapeHtml(title)}</div>
+      <div class="subtitle">${expired ? "Link status" : "A card shared by Lyn"}</div>
+
+      <div class="badge">
+        <span class="badge-dot"></span>
+        <span id="badge-text">${expired ? "Link expired" : "Preparing to open..."}</span>
+      </div>
+
+      <div class="info" id="env-info"></div>
+
+      ${
+        card && !expired && !isTextMode
+          ? `<div class="countdown">将在 <strong id="countdown-num">3</strong> 秒后尝试打开链接</div>`
+          : `<div class="countdown" id="countdown-num" style="display:none;"></div>`
+      }
+
+      ${
+        card && !expired && isTextMode
+          ? `<div class="text-box" id="text-content">${escapeHtml(card.target)}</div>`
+          : ""
+      }
+
+      <div class="btn-row" id="btn-row">
+        ${
+          card && !expired && !isTextMode
+            ? `<button class="btn btn-primary" id="open-btn">立即打开</button>`
+            : ""
+        }
+        ${
+          card && !expired
+            ? `<button class="btn btn-secondary" id="copy-btn">复制链接 / 内容</button>`
+            : ""
+        }
+      </div>
+
+      ${
+        card && !expired && !isTextMode
+          ? `<div class="link-box" id="link-box">${escapeHtml(card.target)}</div>`
+          : ""
+      }
+
+      ${
+        expired
+          ? `<div class="text-box">链接不存在或已失效，如果是你自己生成的链接，可以在 Lyn's Card Maker 中重新创建一个新的。</div>`
+          : ""
+      }
+
+      <div class="footer">
+        Lyn's Card · Powered by Cloudflare Pages & KV
+      </div>
+    </div>
+  </div>
 
   <script>
-    // 给微信等抓取 meta 一点时间，再跳转到真实目标地址
-    const targetUrl = ${JSON.stringify(target)};
-    setTimeout(function () {
-      window.location.replace(targetUrl);
-    }, 800);
+    (function () {
+      const card = ${
+        card
+          ? JSON.stringify({
+              mode: card.mode,
+              target: card.target,
+            })
+          : "null"
+      };
+      const expired = ${expired ? "true" : "false"};
+
+      const envInfo = document.getElementById("env-info");
+      const badgeText = document.getElementById("badge-text");
+      const cdNum = document.getElementById("countdown-num");
+      const openBtn = document.getElementById("open-btn");
+      const copyBtn = document.getElementById("copy-btn");
+      const linkBox = document.getElementById("link-box");
+
+      if (!card || expired) {
+        if (envInfo) {
+          envInfo.textContent = "This link is invalid or has expired.";
+        }
+        return;
+      }
+
+      const ua = navigator.userAgent || "";
+      const isWeChat = /MicroMessenger/i.test(ua);
+      const isQQ = /QQ\\//i.test(ua);
+
+      if (card.mode === "text") {
+        if (envInfo) {
+          envInfo.textContent = "这是一个文本卡片，不会自动跳转。";
+        }
+        if (badgeText) {
+          badgeText.textContent = "Text card";
+        }
+      } else {
+        if (isWeChat || isQQ) {
+          if (envInfo) {
+            envInfo.textContent =
+              "检测到你在微信或 QQ 内打开，本页面可能无法直接跳转。请点击右上角“⋯”，选择“在浏览器中打开”后再尝试。";
+          }
+        } else {
+          if (envInfo) {
+            envInfo.textContent =
+              "如果没有自动跳转，可以点击下方按钮手动打开。";
+          }
+        }
+
+        let seconds = 3;
+        if (cdNum) cdNum.textContent = String(seconds);
+
+        if (!(isWeChat || isQQ)) {
+          const timer = setInterval(() => {
+            seconds -= 1;
+            if (seconds >= 0 && cdNum) {
+              cdNum.textContent = String(seconds);
+            }
+            if (seconds <= 0) {
+              clearInterval(timer);
+              try {
+                window.location.href = card.target;
+              } catch (e) {}
+            }
+          }, 1000);
+        } else {
+          if (cdNum) {
+            cdNum.parentElement && (cdNum.parentElement.textContent = "自动跳转已暂停，请在浏览器中打开本页面再试。");
+          }
+        }
+      }
+
+      if (openBtn && card.mode === "url") {
+        openBtn.addEventListener("click", () => {
+          try {
+            window.location.href = card.target;
+          } catch (e) {}
+        });
+      }
+
+      if (copyBtn) {
+        copyBtn.addEventListener("click", async () => {
+          const textToCopy =
+            card.mode === "url"
+              ? card.target
+              : card.target;
+          try {
+            await navigator.clipboard.writeText(textToCopy);
+            if (envInfo) envInfo.textContent = "已复制到剪贴板，可以粘贴到浏览器或聊天中。";
+          } catch (e) {
+            if (envInfo) envInfo.textContent = "复制失败，请长按上方内容手动复制。";
+          }
+        });
+      }
+
+      if (card.mode === "text" && linkBox) {
+        linkBox.style.display = "none";
+      }
+    })();
   </script>
-</head>
-<body>
-  <div class="box">
-    <h1>正在为你打开链接…</h1>
-    <p>${esc(title)}</p>
-    <p class="tip">如果长时间没有跳转，请 <a href="${esc(target)}">点击这里手动打开</a>。</p>
-  </div>
 </body>
 </html>`;
+
+  return new Response(html, {
+    status: expired ? 410 : 200,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "no-store",
+    },
+  });
 }
 
-function generateExpiredHtml() {
-  return `<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>链接已失效</title>
-  <style>
-    body {
-      margin:0;
-      padding:0;
-      background:#020617;
-      color:#e5e7eb;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      min-height:100vh;
-      text-align:center;
-    }
-    .box {
-      max-width:360px;
-      padding:24px 20px;
-    }
-    h1 {
-      font-size:22px;
-      margin-bottom:8px;
-    }
-    p {
-      font-size:14px;
-      color:#9ca3af;
-    }
-  </style>
-</head>
-<body>
-  <div class="box">
-    <h1>链接已失效</h1>
-    <p>可能已经被删除或超过了设置的有效期。</p>
-  </div>
-</body>
-</html>`;
-}
+export const onRequest: PagesFunction<Env> = async (context) => {
+  const { env, params, request } = context;
+  const id = (params as any).id as string | undefined;
+
+  if (!id) {
+    return renderPage({ url: new URL(request.url).toString(), expired: true });
+  }
+
+  const data = await env.Card_KV.get(id);
+  if (!data) {
+    return renderPage({ url: new URL(request.url).toString(), expired: true });
+  }
+
+  let card: StoredCard;
+  try {
+    card = JSON.parse(data) as StoredCard;
+  } catch {
+    return renderPage({ url: new URL(request.url).toString(), expired: true });
+  }
+
+  const now = Date.now();
+  if (card.expireAt && card.expireAt > 0 && now > card.expireAt) {
+    return renderPage({ card, url: new URL(request.url).toString(), expired: true });
+  }
+
+  return renderPage({ card, url: new URL(request.url).toString(), expired: false });
+};
