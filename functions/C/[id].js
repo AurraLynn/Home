@@ -1,39 +1,39 @@
 // functions/C/[id].js
 
 function escapeHtml(str) {
-  if (!str) return "";
-  return String(str).replace(/[&<>"']/g, (ch) => {
-    switch (ch) {
-      case "&":
-        return "&amp;";
-      case "<":
-        return "&lt;";
-      case ">":
-        return "&gt;";
-      case '"':
-        return "&quot;";
-      case "'":
-        return "&#39;";
-      default:
-        return ch;
-    }
-  });
+    if (!str) return "";
+    return String(str).replace(/[&<>"']/g, (ch) => {
+        switch (ch) {
+            case "&":
+                return "&amp;";
+            case "<":
+                return "&lt;";
+            case ">":
+                return "&gt;";
+            case '"':
+                return "&quot;";
+            case "'":
+                return "&#39;";
+            default:
+                return ch;
+        }
+    });
 }
 
 function renderPage(options) {
-  const card = options.card || null;
-  const url = options.url;
-  const expired = !!options.expired;
+    const card = options.card || null;
+    const url = options.url;
+    const expired = !!options.expired;
 
-  const title = card && card.title ? card.title : "Lyn's Card";
-  const desc = card && card.description
-    ? card.description
-    : (expired ? "This link has expired." : "A card shared by Lyn.");
-  const image = card && card.image
-    ? card.image
-    : "https://save.aura.us.kg/Picture/Preview/YL1.png";
+    const title = card && card.title ? card.title : "Lyn's Card";
+    const desc = card && card.description
+        ? card.description
+        : (expired ? "This link has expired." : "A card shared by Lyn.");
+    const image = card && card.image
+        ? card.image
+        : "https://save.aura.us.kg/Picture/Preview/YL1.png";
 
-  const html = `<!DOCTYPE html>
+    const html = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -201,15 +201,15 @@ function renderPage(options) {
 
       ${
         !expired
-          ? '<div class="countdown">将在 <strong id="countdown-num">3</strong> 秒后尝试打开链接</div>'
-          : '<div class="countdown" id="countdown-num" style="display:none;"></div>'
-      }
+            ? '<div class="countdown">将在 <strong id="countdown-num">3</strong> 秒后尝试打开链接</div>'
+            : '<div class="countdown" id="countdown-num" style="display:none;"></div>'
+    }
 
       <!-- 微信 / QQ 强提示 -->
       <div class="wx-strong" id="wx-warning" style="display:none;">
         检测到你在 <strong>微信 / QQ</strong> 内打开。<br>
         如 <strong>3 秒后仍未跳转</strong>，请点击右上角
-        <strong>“···” → 在浏览器中打开</strong> 再访问。
+        <strong>“···” → 用浏览器打开</strong> 谢谢。☺️
       </div>
 
       <div class="btn-row" id="btn-row">
@@ -219,15 +219,15 @@ function renderPage(options) {
 
       ${
         !expired
-          ? '<div class="link-box" id="link-box">' + escapeHtml(card ? card.target : "") + '</div>'
-          : ''
-      }
+            ? '<div class="link-box" id="link-box">' + escapeHtml(card ? card.target : "") + '</div>'
+            : ''
+    }
 
       ${
         expired
-          ? '<div class="text-box">链接不存在或已失效，如果是你自己生成的链接，可以在 Lyn\'s Card Maker 中重新创建一个新的。</div>'
-          : ''
-      }
+            ? '<div class="text-box">链接不存在或已失效，如果是你自己生成的链接，可以在 Lyn\'s Card Maker 中重新创建一个新的。</div>'
+            : ''
+    }
 
       <div class="footer">
         Lyn&#39;s Card · Powered by Cloudflare Pages
@@ -319,40 +319,40 @@ function renderPage(options) {
 </body>
 </html>`;
 
-  return new Response(html, {
-    status: expired ? 410 : 200,
-    headers: {
-      "content-type": "text/html; charset=utf-8",
-      "cache-control": "no-store",
-    },
-  });
+    return new Response(html, {
+        status: expired ? 410 : 200,
+        headers: {
+            "content-type": "text/html; charset=utf-8",
+            "cache-control": "no-store",
+        },
+    });
 }
 
 export async function onRequest(context) {
-  const { env, params, request } = context;
-  const id = params && params.id ? String(params.id) : "";
-  const url = new URL(request.url).toString();
+    const { env, params, request } = context;
+    const id = params && params.id ? String(params.id) : "";
+    const url = new URL(request.url).toString();
 
-  if (!id) {
-    return renderPage({ url: url, expired: true });
-  }
+    if (!id) {
+        return renderPage({ url: url, expired: true });
+    }
 
-  const data = await env.Card_KV.get(id);
-  if (!data) {
-    return renderPage({ url: url, expired: true });
-  }
+    const data = await env.Card_KV.get(id);
+    if (!data) {
+        return renderPage({ url: url, expired: true });
+    }
 
-  let card;
-  try {
-    card = JSON.parse(data);
-  } catch (e) {
-    return renderPage({ url: url, expired: true });
-  }
+    let card;
+    try {
+        card = JSON.parse(data);
+    } catch (e) {
+        return renderPage({ url: url, expired: true });
+    }
 
-  const now = Date.now();
-  if (card.expireAt && card.expireAt > 0 && now > card.expireAt) {
-    return renderPage({ card, url: url, expired: true });
-  }
+    const now = Date.now();
+    if (card.expireAt && card.expireAt > 0 && now > card.expireAt) {
+        return renderPage({ card, url: url, expired: true });
+    }
 
-  return renderPage({ card, url: url, expired: false });
+    return renderPage({ card, url: url, expired: false });
 }
