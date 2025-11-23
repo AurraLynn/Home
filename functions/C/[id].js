@@ -1,21 +1,8 @@
 // functions/C/[id].js
 
-type StoredCard = {
-  title: string;
-  description: string;
-  image: string;
-  target: string;
-  mode: "url" | "text";
-  expireAt?: number | null;
-  createdAt: number;
-};
-
-type Env = {
-  Card_KV: KVNamespace;
-};
-
-function escapeHtml(str: string = ""): string {
-  return str.replace(/[&<>"']/g, (ch) => {
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str).replace(/[&<>"']/g, (ch) => {
     switch (ch) {
       case "&": return "&amp;";
       case "<": return "&lt;";
@@ -27,15 +14,18 @@ function escapeHtml(str: string = ""): string {
   });
 }
 
-function renderPage(opts: {
-  card?: StoredCard;
-  url: string;
-  expired?: boolean;
-}): Response {
-  const { card, url, expired } = opts;
-  const title = card?.title || "Lyn's Card";
-  const desc = card?.description || (expired ? "This link has expired." : "A card shared by Lyn.");
-  const image = card?.image || "https://save.aura.us.kg/Picture/Preview/YL1.png";
+function renderPage(options) {
+  const card = options.card || null;
+  const url = options.url;
+  const expired = !!options.expired;
+
+  const title = card && card.title ? card.title : "Lyn's Card";
+  const desc = card && card.description
+    ? card.description
+    : (expired ? "This link has expired." : "A card shared by Lyn.");
+  const image = card && card.image
+    ? card.image
+    : "https://save.aura.us.kg/Picture/Preview/YL1.png";
 
   const isTextMode = card && card.mode === "text";
 
@@ -195,65 +185,58 @@ function renderPage(opts: {
 
       ${
         card && !expired && !isTextMode
-          ? `<div class="countdown">将在 <strong id="countdown-num">3</strong> 秒后尝试打开链接</div>`
-          : `<div class="countdown" id="countdown-num" style="display:none;"></div>`
+          ? '<div class="countdown">将在 <strong id="countdown-num">3</strong> 秒后尝试打开链接</div>'
+          : '<div class="countdown" id="countdown-num" style="display:none;"></div>'
       }
 
       ${
         card && !expired && isTextMode
-          ? `<div class="text-box" id="text-content">${escapeHtml(card.target)}</div>`
-          : ""
+          ? '<div class="text-box" id="text-content">' + escapeHtml(card.target) + '</div>'
+          : ''
       }
 
       <div class="btn-row" id="btn-row">
         ${
           card && !expired && !isTextMode
-            ? `<button class="btn btn-primary" id="open-btn">立即打开</button>`
-            : ""
+            ? '<button class="btn btn-primary" id="open-btn">立即打开</button>'
+            : ''
         }
         ${
           card && !expired
-            ? `<button class="btn btn-secondary" id="copy-btn">复制链接 / 内容</button>`
-            : ""
+            ? '<button class="btn btn-secondary" id="copy-btn">复制链接 / 内容</button>'
+            : ''
         }
       </div>
 
       ${
         card && !expired && !isTextMode
-          ? `<div class="link-box" id="link-box">${escapeHtml(card.target)}</div>`
-          : ""
+          ? '<div class="link-box" id="link-box">' + escapeHtml(card.target) + '</div>'
+          : ''
       }
 
       ${
         expired
-          ? `<div class="text-box">链接不存在或已失效，如果是你自己生成的链接，可以在 Lyn's Card Maker 中重新创建一个新的。</div>`
-          : ""
+          ? '<div class="text-box">链接不存在或已失效，如果是你自己生成的链接，可以在 Lyn\'s Card Maker 中重新创建一个新的。</div>'
+          : ''
       }
 
       <div class="footer">
-        Lyn's Card · Powered by Cloudflare Pages & KV
+        Lyn\'s Card · Powered by Cloudflare Pages & KV
       </div>
     </div>
   </div>
 
   <script>
     (function () {
-      const card = ${
-        card
-          ? JSON.stringify({
-              mode: card.mode,
-              target: card.target,
-            })
-          : "null"
-      };
-      const expired = ${expired ? "true" : "false"};
+      var card = ${card ? JSON.stringify({ mode: card.mode, target: card.target }) : "null"};
+      var expired = ${expired ? "true" : "false"};
 
-      const envInfo = document.getElementById("env-info");
-      const badgeText = document.getElementById("badge-text");
-      const cdNum = document.getElementById("countdown-num");
-      const openBtn = document.getElementById("open-btn");
-      const copyBtn = document.getElementById("copy-btn");
-      const linkBox = document.getElementById("link-box");
+      var envInfo = document.getElementById("env-info");
+      var badgeText = document.getElementById("badge-text");
+      var cdNum = document.getElementById("countdown-num");
+      var openBtn = document.getElementById("open-btn");
+      var copyBtn = document.getElementById("copy-btn");
+      var linkBox = document.getElementById("link-box");
 
       if (!card || expired) {
         if (envInfo) {
@@ -262,9 +245,9 @@ function renderPage(opts: {
         return;
       }
 
-      const ua = navigator.userAgent || "";
-      const isWeChat = /MicroMessenger/i.test(ua);
-      const isQQ = /QQ\\//i.test(ua);
+      var ua = navigator.userAgent || "";
+      var isWeChat = /MicroMessenger/i.test(ua);
+      var isQQ = /QQ\\//i.test(ua);
 
       if (card.mode === "text") {
         if (envInfo) {
@@ -286,11 +269,11 @@ function renderPage(opts: {
           }
         }
 
-        let seconds = 3;
+        var seconds = 3;
         if (cdNum) cdNum.textContent = String(seconds);
 
         if (!(isWeChat || isQQ)) {
-          const timer = setInterval(() => {
+          var timer = setInterval(function () {
             seconds -= 1;
             if (seconds >= 0 && cdNum) {
               cdNum.textContent = String(seconds);
@@ -303,14 +286,15 @@ function renderPage(opts: {
             }
           }, 1000);
         } else {
-          if (cdNum) {
-            cdNum.parentElement && (cdNum.parentElement.textContent = "自动跳转已暂停，请在浏览器中打开本页面再试。");
+          if (cdNum && cdNum.parentElement) {
+            cdNum.parentElement.textContent =
+              "自动跳转已暂停，请在浏览器中打开本页面再试。";
           }
         }
       }
 
       if (openBtn && card.mode === "url") {
-        openBtn.addEventListener("click", () => {
+        openBtn.addEventListener("click", function () {
           try {
             window.location.href = card.target;
           } catch (e) {}
@@ -318,16 +302,16 @@ function renderPage(opts: {
       }
 
       if (copyBtn) {
-        copyBtn.addEventListener("click", async () => {
-          const textToCopy =
-            card.mode === "url"
-              ? card.target
-              : card.target;
-          try {
-            await navigator.clipboard.writeText(textToCopy);
-            if (envInfo) envInfo.textContent = "已复制到剪贴板，可以粘贴到浏览器或聊天中。";
-          } catch (e) {
-            if (envInfo) envInfo.textContent = "复制失败，请长按上方内容手动复制。";
+        copyBtn.addEventListener("click", function () {
+          var textToCopy = card.target;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textToCopy).then(function () {
+              if (envInfo) envInfo.textContent = "已复制到剪贴板，可以粘贴到浏览器或聊天中。";
+            }).catch(function () {
+              if (envInfo) envInfo.textContent = "复制失败，请长按上方内容手动复制。";
+            });
+          } else {
+            if (envInfo) envInfo.textContent = "当前环境不支持一键复制，请长按上方内容手动复制。";
           }
         });
       }
@@ -344,35 +328,37 @@ function renderPage(opts: {
     status: expired ? 410 : 200,
     headers: {
       "content-type": "text/html; charset=utf-8",
-      "cache-control": "no-store",
-    },
+      "cache-control": "no-store"
+    }
   });
 }
 
-export const onRequest: PagesFunction<Env> = async (context) => {
+export async function onRequest(context) {
   const { env, params, request } = context;
-  const id = (params as any).id as string | undefined;
+  const id = params && params.id ? String(params.id) : "";
+
+  const url = new URL(request.url).toString();
 
   if (!id) {
-    return renderPage({ url: new URL(request.url).toString(), expired: true });
+    return renderPage({ url: url, expired: true });
   }
 
   const data = await env.Card_KV.get(id);
   if (!data) {
-    return renderPage({ url: new URL(request.url).toString(), expired: true });
+    return renderPage({ url: url, expired: true });
   }
 
-  let card: StoredCard;
+  let card;
   try {
-    card = JSON.parse(data) as StoredCard;
-  } catch {
-    return renderPage({ url: new URL(request.url).toString(), expired: true });
+    card = JSON.parse(data);
+  } catch (e) {
+    return renderPage({ url: url, expired: true });
   }
 
   const now = Date.now();
   if (card.expireAt && card.expireAt > 0 && now > card.expireAt) {
-    return renderPage({ card, url: new URL(request.url).toString(), expired: true });
+    return renderPage({ card, url: url, expired: true });
   }
 
-  return renderPage({ card, url: new URL(request.url).toString(), expired: false });
-};
+  return renderPage({ card, url: url, expired: false });
+}
