@@ -1,6 +1,5 @@
 // functions/api/share-create.js
 
-// KV 里存的结构：title/description/image/target/mode/expireAt/createdAt
 function randomId(len = 8) {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   const arr = new Uint8Array(len);
@@ -33,18 +32,15 @@ function normalizeTarget(raw) {
     return { mode: "text", value: "" };
   }
 
-  // 以 http/https 开头：直接当 URL
   if (/^https?:\/\//i.test(s)) {
     return { mode: "url", value: s };
   }
 
-  // 看起来像域名：自动加 https://
   const looksLikeDomain = s.includes(".") && !/\s/.test(s);
   if (looksLikeDomain) {
     return { mode: "url", value: "https://" + s };
   }
 
-  // 否则当文本
   return { mode: "text", value: s };
 }
 
