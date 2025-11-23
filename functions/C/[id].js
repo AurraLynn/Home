@@ -171,6 +171,19 @@ function renderPage(options) {
       color: #9ca3af;
       text-align: center;
     }
+    /* 微信 / QQ 强提示块 */
+    .wx-strong {
+      margin: 6px 0 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      font-size: 14px;
+      color: #b91c1c;
+      text-align: center;
+      font-weight: 600;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -188,9 +201,16 @@ function renderPage(options) {
 
       ${
         !expired
-          ? '<div class="countdown">将在 <strong id="countdown-num">5</strong> 秒后尝试打开链接</div>'
+          ? '<div class="countdown">将在 <strong id="countdown-num">3</strong> 秒后尝试打开链接</div>'
           : '<div class="countdown" id="countdown-num" style="display:none;"></div>'
       }
+
+      <!-- 微信 / QQ 强提示 -->
+      <div class="wx-strong" id="wx-warning" style="display:none;">
+        检测到你在 <strong>微信 / QQ</strong> 内打开。<br>
+        如 <strong>3 秒后仍未跳转</strong>，请点击右上角
+        <strong>“···” → 在浏览器中打开</strong> 再访问。
+      </div>
 
       <div class="btn-row" id="btn-row">
         ${!expired ? '<button class="btn btn-primary" id="open-btn">立即打开</button>' : ''}
@@ -225,6 +245,7 @@ function renderPage(options) {
       var cdNum = document.getElementById("countdown-num");
       var openBtn = document.getElementById("open-btn");
       var copyBtn = document.getElementById("copy-btn");
+      var wxWarning = document.getElementById("wx-warning");
 
       if (!card || expired) {
         if (envInfo) {
@@ -240,10 +261,13 @@ function renderPage(options) {
       if (isWeChat || isQQ) {
         if (envInfo) {
           envInfo.textContent =
-            "检测到你在微信 / QQ 内打开，本页面会尝试自动跳转，如无法跳转，请点击右上角“⋯”，选择“在浏览器中打开”。";
+            "当前在微信 / QQ 内打开，本页面会尝试自动跳转，如无法跳转请按提示在浏览器中打开。";
         }
         if (badgeText) {
-          badgeText.textContent = "Trying to open link";
+          badgeText.textContent = "WeChat / QQ detected";
+        }
+        if (wxWarning) {
+          wxWarning.style.display = "block";
         }
       } else {
         if (envInfo) {
@@ -251,8 +275,8 @@ function renderPage(options) {
         }
       }
 
-      // 所有环境都尝试 5 秒自动跳转
-      var seconds = 5;
+      // 所有环境都尝试 3 秒自动跳转
+      var seconds = 3;
       if (cdNum) cdNum.textContent = String(seconds);
 
       var timer = setInterval(function () {
