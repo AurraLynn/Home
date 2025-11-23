@@ -1,4 +1,4 @@
-// src/worker.js
+z// src/worker.js
 
 // 简单的 HTML 转义，避免 XSS / meta 被破坏
 function escapeHtml(str = "") {
