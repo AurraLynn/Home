@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta property="og:title" content="" id="title">
+  <meta property="og:description" content="" id="desc">
+  <meta property="og:image" content="" id="img">
+  <meta property="og:url" content="" id="url">
+  <title>微信卡片页</title>
+  <style>
+    body { display: flex; flex-direction: column; align-items: center; margin-top: 50px; }
+    input { margin: 5px; padding: 8px; width: 300px; }
+    button { padding: 8px 20px; background: #07c160; color: #fff; border: none; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h3>生成微信卡片页</h3>
+  <input type="text" id="link" placeholder="目标链接">
+  <input type="text" id="titleInput" placeholder="卡片标题">
+  <input type="text" id="descInput" placeholder="卡片描述">
+  <input type="text" id="imgInput" placeholder="预览图链接">
+  <button onclick="createCard()">生成卡片页</button>
+  <p id="result"></p>
+
+  <script>
+    function createCard() {
+      const link = document.getElementById("link").value;
+      const title = document.getElementById("titleInput").value;
+      const desc = document.getElementById("descInput").value;
+      const img = document.getElementById("imgInput").value;
+      const cardUrl = window.location.href; // 当前页面链接
+
+      // 修改meta标签
+      document.getElementById("title").content = title;
+      document.getElementById("desc").content = desc;
+      document.getElementById("img").content = img;
+      document.getElementById("url").content = cardUrl;
+
+      // 自动跳转到目标链接
+      setTimeout(() => { window.location.href = link; }, 100);
+
+      // 提示：将当前页面链接分享到微信，即可生成卡片
+      document.getElementById("result").innerText = "卡片页已生成！复制当前页面链接，在微信中打开即可看到卡片";
+    }
+  </script>
+</body>
+</html>
