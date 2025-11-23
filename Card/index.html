@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Card Maker</title>
+    <title>Lyn's Card Maker</title>
 
     <style>
         * { box-sizing: border-box; }
@@ -20,6 +20,7 @@
             padding: 16px;
             transition: background 0.25s ease, color 0.25s ease;
         }
+
         body.dark {
             background: radial-gradient(circle at top, #1f2937 0, #020617 45%, #000 100%);
             color: #f9fafb;
@@ -30,7 +31,7 @@
             max-width: 900px;
         }
 
-        /* 顶部品牌区 */
+        /* 顶部区域 */
         .header {
             display: flex;
             justify-content: space-between;
@@ -38,12 +39,14 @@
             margin-bottom: 16px;
             gap: 12px;
         }
+
         .header-main {
             display: flex;
             flex-direction: column;
             gap: 8px;
             min-width: 0;
         }
+
         .brand-card {
             display: flex;
             align-items: center;
@@ -54,60 +57,57 @@
             border: 1px solid #e5e7eb;
             box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
         }
+
         body.dark .brand-card {
             background: rgba(15, 23, 42, 0.96);
             border-color: #374151;
             box-shadow: 0 12px 26px rgba(15, 23, 42, 0.8);
         }
+
+        /* 左侧顶部随机预览图 */
         .brand-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 999px;
-            overflow: hidden;
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             flex-shrink: 0;
-            border: 2px solid rgba(255,255,255,.8);
-            box-shadow: 0 6px 14px rgba(15,23,42,.4);
-            background: #111827;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
-        .brand-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            -webkit-user-drag: none;
-            user-select: none;
-        }
+
         .brand-text {
             display: flex;
             flex-direction: column;
             gap: 2px;
             min-width: 0;
         }
+
         .brand-name {
             font-size: 16px;
             font-weight: 650;
             letter-spacing: 0.02em;
             white-space: nowrap;
         }
+
         .brand-sub {
             font-size: 11px;
             color: #6b7280;
             white-space: nowrap;
         }
+
         body.dark .brand-sub {
             color: #9ca3af;
         }
+
         .header-desc {
             font-size: 12px;
             color: #6b7280;
         }
+
         body.dark .header-desc {
             color: #9ca3af;
         }
 
-        /* 主题切换 */
         .mode-toggle {
             display: inline-flex;
             align-items: center;
@@ -118,10 +118,12 @@
             font-size: 11px;
             flex-shrink: 0;
         }
+
         body.dark .mode-toggle {
             background: rgba(15, 23, 42, 0.96);
             border-color: #4b5563;
         }
+
         .mode-btn {
             padding: 4px 10px;
             border: none;
@@ -133,17 +135,21 @@
             align-items: center;
             gap: 4px;
         }
+
         body.dark .mode-btn {
             color: #9ca3af;
         }
+
         .mode-btn.active {
             background: #111827;
             color: #f9fafb;
         }
+
         body.dark .mode-btn.active {
             background: #f9fafb;
             color: #111827;
         }
+
         .mode-dot {
             width: 6px;
             height: 6px;
@@ -164,6 +170,7 @@
             box-shadow: 0 18px 35px rgba(15, 23, 42, 0.12);
             transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
         }
+
         body.dark .card {
             background: rgba(15, 23, 42, 0.96);
             border-color: rgba(148, 163, 184, 0.35);
@@ -176,11 +183,13 @@
         .field {
             margin-bottom: 14px;
         }
+
         label {
             display: block;
             font-size: 13px;
             margin-bottom: 4px;
         }
+
         input[type="text"],
         textarea {
             width: 100%;
@@ -193,42 +202,49 @@
             outline: none;
             transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
         }
+
         textarea {
             min-height: 72px;
             resize: vertical;
         }
+
         body.dark input[type="text"],
         body.dark textarea {
             border-color: #4b5563;
             background: rgba(15, 23, 42, 0.92);
             color: #e5e7eb;
         }
+
         input:focus,
         textarea:focus {
             border-color: #38bdf8;
             box-shadow: 0 0 0 1px #38bdf8;
             background: #ffffff;
         }
+
         body.dark input:focus,
         body.dark textarea:focus {
             background: rgba(15, 23, 42, 0.96);
         }
+
         .hint {
             font-size: 11px;
             color: #9ca3af;
             margin-top: 3px;
         }
+
         body.dark .hint {
             color: #6b7280;
         }
 
-        /* 过期时间按钮 */
+        /* 过期时间选项按钮 */
         .expire-group {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
             margin-top: 4px;
         }
+
         .expire-pill {
             padding: 4px 10px;
             border-radius: 999px;
@@ -239,17 +255,20 @@
             color: #4b5563;
             transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
         }
+
         .expire-pill.active {
             background: #111827;
             color: #f9fafb;
             border-color: #111827;
             box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.06);
         }
+
         body.dark .expire-pill {
             background: rgba(15, 23, 42, 0.92);
             border-color: #4b5563;
             color: #e5e7eb;
         }
+
         body.dark .expire-pill.active {
             background: #f9fafb;
             color: #111827;
@@ -257,13 +276,14 @@
             box-shadow: 0 0 0 1px rgba(248, 250, 252, 0.25);
         }
 
-        /* 操作区 */
+        /* 按钮/状态/结果 */
         .actions {
             margin-top: 10px;
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
+
         .btn-main {
             width: 100%;
             padding: 11px;
@@ -277,22 +297,25 @@
             transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.1s;
             box-shadow: 0 10px 25px rgba(34, 197, 94, 0.32);
         }
+
         .btn-main:active {
             transform: translateY(1px);
             box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
             opacity: 0.93;
         }
+
         .status {
             font-size: 12px;
             color: #ca8a04;
             min-height: 16px;
         }
+
         body.dark .status {
             color: #facc15;
         }
 
         .result {
-            margin-top: 12px;
+            margin-top: 8px;
             padding: 10px 12px;
             border-radius: 12px;
             background: #f9fafb;
@@ -300,40 +323,73 @@
             font-size: 12px;
             word-break: break-all;
         }
+
         body.dark .result {
             background: rgba(15, 23, 42, 0.96);
             border-color: #334155;
         }
+
         .result-title {
             font-weight: 600;
             margin-bottom: 4px;
             font-size: 13px;
         }
+
         .result-link {
             margin-top: 4px;
         }
-        .btn-copy {
+
+        .btn-row {
             margin-top: 8px;
-            width: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btn-copy,
+        .btn-share {
             padding: 6px 10px;
             font-size: 12px;
             border-radius: 999px;
-            background: #111827;
-            color: #f9fafb;
             border: none;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
+
+        .btn-copy {
+            background: #111827;
+            color: #f9fafb;
+        }
+
         body.dark .btn-copy {
             background: #020617;
             border: 1px solid #4b5563;
         }
 
-        /* 右侧缩略图 + 大预览 */
+        .btn-share {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        body.dark .btn-share {
+            background: #1f2937;
+            color: #e5e7eb;
+            border: 1px solid #4b5563;
+        }
+
+        .btn-share-icon {
+            font-size: 13px;
+        }
+
+        /* 右侧：图片选择 + 预览 */
         .thumbs-wrap {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
+
         .thumbs-title {
             font-size: 12px;
             color: #6b7280;
@@ -342,14 +398,17 @@
             align-items: center;
             gap: 8px;
         }
+
         body.dark .thumbs-title {
             color: #9ca3af;
         }
+
         .thumbs-grid {
             display: grid;
             grid-template-columns: repeat(5, minmax(0, 1fr));
             gap: 6px;
         }
+
         .thumb {
             position: relative;
             border-radius: 10px;
@@ -360,10 +419,12 @@
             transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
             background: #e5e7eb;
         }
+
         body.dark .thumb {
             border-color: #334155;
             background: #020617;
         }
+
         .thumb img {
             width: 100%;
             height: 100%;
@@ -372,18 +433,22 @@
             -webkit-user-drag: none;
             user-select: none;
         }
+
         .thumb:hover {
             transform: translateY(-1px);
             box-shadow: 0 10px 20px rgba(15, 23, 42, 0.1);
         }
+
         body.dark .thumb:hover {
             box-shadow: 0 10px 20px rgba(15, 23, 42, 0.9);
         }
+
         .thumb.selected {
             border-color: #38bdf8;
             box-shadow: 0 0 0 1px #38bdf8, 0 10px 22px rgba(56, 189, 248, 0.25);
         }
 
+        /* 主预览：固定宽高，图片填满 */
         .preview-box {
             border-radius: 14px;
             border: 1px dashed #d1d5db;
@@ -396,10 +461,12 @@
             align-items: center;
             justify-content: center;
         }
+
         body.dark .preview-box {
             background: radial-gradient(circle at top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.95));
             border-color: rgba(148, 163, 184, 0.5);
         }
+
         .preview-img {
             width: 100%;
             max-width: 440px;
@@ -409,10 +476,12 @@
             border: 1px solid #e5e7eb;
             background: #f9fafb;
         }
+
         body.dark .preview-img {
             border-color: #1f2937;
             background: #020617;
         }
+
         .preview-img img {
             width: 100%;
             height: 100%;
@@ -429,96 +498,25 @@
             color: #9ca3af;
             text-align: right;
         }
+
         body.dark .footer {
             color: #6b7280;
         }
 
-        /* 弹窗 */
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.45);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-            z-index: 40;
-        }
-        .modal {
-            max-width: 380px;
-            width: 100%;
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 16px 16px 12px;
-            box-shadow: 0 24px 60px rgba(15,23,42,0.35);
-            border: 1px solid #e5e7eb;
-        }
-        body.dark .modal {
-            background: #0b1120;
-            border-color: #1f2937;
-            box-shadow: 0 24px 60px rgba(15,23,42,0.9);
-            color: #e5e7eb;
-        }
-        .modal-title {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-        .modal-text {
-            font-size: 12px;
-            color: #6b7280;
-            margin-bottom: 8px;
-        }
-        body.dark .modal-text {
-            color: #9ca3af;
-        }
-        .modal-link-box {
-            font-size: 12px;
-            border-radius: 10px;
-            border: 1px solid #e5e7eb;
-            padding: 8px;
-            background: #f9fafb;
-            word-break: break-all;
-            margin-bottom: 10px;
-        }
-        body.dark .modal-link-box {
-            border-color: #374151;
-            background: #020617;
-        }
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-        }
-        .btn-secondary {
-            padding: 6px 10px;
-            border-radius: 999px;
-            border: 1px solid #d1d5db;
-            background: #ffffff;
-            font-size: 12px;
-            cursor: pointer;
-        }
-        body.dark .btn-secondary {
-            border-color: #4b5563;
-            background: #020617;
-            color: #e5e7eb;
-        }
-        .btn-share {
-            padding: 6px 12px;
-            border-radius: 999px;
-            border: none;
-            background: linear-gradient(135deg, #22c55e, #22d3ee);
-            color: #020617;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
         @media (max-width: 768px) {
-            body { align-items: flex-start; }
-            .card { grid-template-columns: minmax(0, 1fr); }
-            .header { flex-direction: column; align-items: flex-start; }
-            .footer { text-align: left; }
+            body {
+                align-items: flex-start;
+            }
+            .card {
+                grid-template-columns: minmax(0, 1fr);
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .footer {
+                text-align: left;
+            }
         }
     </style>
 </head>
@@ -527,16 +525,14 @@
     <div class="header">
         <div class="header-main">
             <div class="brand-card">
-                <div class="brand-icon">
-                    <img id="brand-thumb" src="" alt="thumb" />
-                </div>
+                <div class="brand-icon" id="brand-icon"></div>
                 <div class="brand-text">
-                    <div class="brand-name">Lyn's Card Make</div>
-                    <div class="brand-sub">Generate social card links for WeChat, QQ and more.</div>
+                    <div class="brand-name">Lyn's Card Maker</div>
+                    <div class="brand-sub">Generate share-card links for WeChat · QQ and other social apps.</div>
                 </div>
             </div>
             <div class="header-desc">
-                生成适合在微信 / QQ 中分享的卡片链接。
+                生成适合在微信 / QQ 等社交..中分享的卡片链接。
             </div>
         </div>
         <div class="mode-toggle" id="mode-toggle">
@@ -548,7 +544,7 @@
     </div>
 
     <div class="card">
-        <!-- 左侧：表单 -->
+        <!-- 左侧：表单 + 生成结果 -->
         <div>
             <div class="field">
                 <label for="title">卡片标题</label>
@@ -563,12 +559,9 @@
             </div>
 
             <div class="field">
-                <label for="target">目标内容或链接</label>
-                <textarea id="target" placeholder="例如：https://aura.us.kg
-例如:  我是一条示例文本。"></textarea>
-                <div class="hint">
-                    可以是一条链接（https://...）或一段文本；链接会跳转，文本会直接显示。
-                </div>
+                <label for="target">目标链接</label>
+                <textarea id="target" placeholder="请输入合法链接，例如：https://aura.us.kg、aura.us.kg/..."></textarea>
+                <div class="hint">必须是有效链接，不支持纯文本内容。</div>
             </div>
 
             <div class="field">
@@ -585,6 +578,20 @@
             <div class="actions">
                 <button class="btn-main" id="btn-generate">Generate Card</button>
                 <div class="status" id="status"></div>
+
+                <!-- 生成结果：放在 Generate Card 按钮下面 -->
+                <div class="result" id="result" style="display:none;">
+                    <div class="result-title">生成成功 🎉</div>
+                    <div>分享链接：</div>
+                    <div class="result-link" id="share-url"></div>
+                    <div class="btn-row">
+                        <button class="btn-copy" id="btn-copy">Copy Link</button>
+                        <button class="btn-share" id="btn-share">
+                            <span class="btn-share-icon">🔗</span>
+                            <span>Share Link</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -592,10 +599,12 @@
         <div>
             <div class="thumbs-wrap">
                 <div class="thumbs-title">
-                    <span>预览图片 · 点击选择封面图</span>
+                    <span>预览图片（点击选择封面图）</span>
                     <span style="font-size:11px;opacity:.78;">来源：/Picture/Preview/...</span>
                 </div>
-                <div class="thumbs-grid" id="thumbs-grid"></div>
+                <div class="thumbs-grid" id="thumbs-grid">
+                    <!-- 缩略图由 JS 填充 -->
+                </div>
 
                 <div class="preview-box">
                     <div class="preview-img">
@@ -608,32 +617,12 @@
                         />
                     </div>
                 </div>
-
-                <div class="result" id="result" style="display:none;">
-                    <div class="result-title">生成成功 🎉</div>
-                    <div>分享链接：</div>
-                    <div class="result-link" id="share-url"></div>
-                    <button class="btn-copy" id="btn-copy">复制链接</button>
-                </div>
             </div>
         </div>
     </div>
 
     <div class="footer">
         基于 Cloudflare Pages ，仅存卡片配置，不存访问日志。
-    </div>
-</div>
-
-<!-- 弹窗 Modal -->
-<div class="modal-backdrop" id="share-modal">
-    <div class="modal">
-        <div class="modal-title">Card generated</div>
-        <div class="modal-text">You can share this link to WeChat, QQ or anywhere you like.</div>
-        <div class="modal-link-box" id="modal-link-text"></div>
-        <div class="modal-actions">
-            <button class="btn-secondary" id="modal-close-btn">Close</button>
-            <button class="btn-share" id="modal-share-btn">Share</button>
-        </div>
     </div>
 </div>
 
@@ -646,9 +635,28 @@
 
     const thumbsGrid = document.getElementById("thumbs-grid");
     const previewImg = document.getElementById("preview-img");
-    const brandThumb = document.getElementById("brand-thumb");
+    const brandIcon = document.getElementById("brand-icon");
 
     let selectedImage = imageFiles[0];
+    let lastTitle = defaultTitle;
+    let lastDescription = defaultDesc;
+
+    // 顶部随机预览图
+    (function setRandomBrandIcon() {
+        const idx = Math.floor(Math.random() * imageFiles.length);
+        const file = imageFiles[idx];
+        const url = baseImageUrl + file;
+        brandIcon.style.backgroundImage = `url(${url})`;
+    })();
+
+    // 简单判断是否像一个链接：scheme:// 或者带点的域名
+    function isProbablyUrl(s) {
+        if (!s) return false;
+        const str = s.trim();
+        if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(str)) return true;
+        if (str.includes(".") && !/\s/.test(str)) return true;
+        return false;
+    }
 
     function buildThumbs() {
         thumbsGrid.innerHTML = "";
@@ -674,10 +682,6 @@
             thumbsGrid.appendChild(div);
         });
 
-        // 左上角品牌缩略图随机一张
-        const rand = Math.floor(Math.random() * imageFiles.length);
-        brandThumb.src = baseImageUrl + imageFiles[rand];
-
         updatePreview(selectedImage);
     }
 
@@ -700,6 +704,7 @@
     const modeToggle = document.getElementById("mode-toggle");
     const modeButtons = modeToggle.querySelectorAll(".mode-btn");
     const bodyEl = document.body;
+
     modeButtons.forEach((btn) => {
         btn.addEventListener("click", () => {
             const mode = btn.dataset.mode;
@@ -713,20 +718,30 @@
         });
     });
 
-    // 过期时间选择 + 提示
+    // 过期时间选择 + 提示文本
     const expireGroup = document.getElementById("expire-group");
     const expireHintEl = document.getElementById("expire-hint");
     let expireValue = "7d";
 
     function updateExpireHint(value) {
         switch (value) {
-            case "1d": expireHintEl.textContent = "卡片将在 1 天后过期。"; break;
-            case "7d": expireHintEl.textContent = "卡片将在 7 天后过期。"; break;
-            case "30d": expireHintEl.textContent = "卡片将在 30 天后过期。"; break;
-            case "forever": expireHintEl.textContent = "卡片不会自动过期。"; break;
-            default: expireHintEl.textContent = "卡片将在 7 天后过期。";
+            case "1d":
+                expireHintEl.textContent = "卡片将在 1 天后过期。";
+                break;
+            case "7d":
+                expireHintEl.textContent = "卡片将在 7 天后过期。";
+                break;
+            case "30d":
+                expireHintEl.textContent = "卡片将在 30 天后过期。";
+                break;
+            case "forever":
+                expireHintEl.textContent = "卡片不会自动过期。";
+                break;
+            default:
+                expireHintEl.textContent = "卡片将在 7 天后过期。";
         }
     }
+
     updateExpireHint(expireValue);
 
     expireGroup.addEventListener("click", (e) => {
@@ -739,18 +754,16 @@
         updateExpireHint(expireValue);
     });
 
-    // 生成 + 复制 + 弹窗分享
     const btn = document.getElementById("btn-generate");
     const statusEl = document.getElementById("status");
     const resultBox = document.getElementById("result");
     const shareUrlEl = document.getElementById("share-url");
     const btnCopy = document.getElementById("btn-copy");
+    const btnShare = document.getElementById("btn-share");
 
-    const modal = document.getElementById("share-modal");
-    const modalLinkText = document.getElementById("modal-link-text");
-    const modalCloseBtn = document.getElementById("modal-close-btn");
-    const modalShareBtn = document.getElementById("modal-share-btn");
-    let lastShareUrl = "";
+    if (!("share" in navigator)) {
+        btnShare.style.display = "none";
+    }
 
     btn.addEventListener("click", async () => {
         const titleInput = document.getElementById("title");
@@ -759,12 +772,21 @@
 
         const title = (titleInput.value || "").trim() || defaultTitle;
         const description = (descInput.value || "").trim() || defaultDesc;
-        const targetRaw = (targetInput.value || "").trim();
+        const target = (targetInput.value || "").trim();
         const expire = expireValue;
         const image = baseImageUrl + selectedImage;
 
-        if (!targetRaw) {
-            statusEl.textContent = "请先填写目标内容或链接。";
+        lastTitle = title;
+        lastDescription = description;
+
+        if (!target) {
+            statusEl.textContent = "请先填写目标链接。";
+            resultBox.style.display = "none";
+            return;
+        }
+
+        if (!isProbablyUrl(target)) {
+            statusEl.textContent = "请输入正确的链接，不支持纯文本内容。";
             resultBox.style.display = "none";
             return;
         }
@@ -776,7 +798,7 @@
             const res = await fetch("/api/share-create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title, description, image, target: targetRaw, expire }),
+                body: JSON.stringify({ title, description, image, target, expire }),
             });
 
             const data = await res.json();
@@ -785,18 +807,14 @@
                 return;
             }
 
-            lastShareUrl = data.shareUrl;
             shareUrlEl.textContent = data.shareUrl;
             shareUrlEl.dataset.url = data.shareUrl;
             resultBox.style.display = "block";
             statusEl.textContent = "";
-
-            // 弹出分享弹窗
-            modalLinkText.textContent = data.shareUrl;
-            modal.style.display = "flex";
         } catch (e) {
             console.error(e);
             statusEl.textContent = "网络异常，请稍后再试。";
+            resultBox.style.display = "none";
         }
     });
 
@@ -811,26 +829,20 @@
         }
     });
 
-    modalCloseBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-    });
-
-    modalShareBtn.addEventListener("click", async () => {
-        const url = lastShareUrl || shareUrlEl.dataset.url;
-        if (!url) return;
+    btnShare.addEventListener("click", async () => {
+        const url = shareUrlEl.dataset.url;
+        if (!url || !navigator.share) {
+            statusEl.textContent = "当前浏览器不支持系统分享，请手动复制链接。";
+            return;
+        }
         try {
-            if (navigator.share) {
-                await navigator.share({
-                    title: "A card shared by Lyn",
-                    text: "Check this card:",
-                    url
-                });
-            } else {
-                await navigator.clipboard.writeText(url);
-                alert("Link copied. You can paste it into WeChat, QQ, etc.");
-            }
+            await navigator.share({
+                title: lastTitle,
+                text: lastDescription,
+                url,
+            });
         } catch (e) {
-            console.log("share cancelled or failed", e);
+            console.error(e);
         }
     });
 </script>
