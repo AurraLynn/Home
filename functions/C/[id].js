@@ -4,12 +4,18 @@ function escapeHtml(str) {
   if (!str) return "";
   return String(str).replace(/[&<>"']/g, (ch) => {
     switch (ch) {
-      case "&": return "&amp;";
-      case "<": return "&lt;";
-      case ">": return "&gt;";
-      case '"': return "&quot;";
-      case "'": return "&#39;";
-      default: return ch;
+      case "&":
+        return "&amp;";
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case '"':
+        return "&quot;";
+      case "'":
+        return "&#39;";
+      default:
+        return ch;
     }
   });
 }
@@ -26,8 +32,6 @@ function renderPage(options) {
   const image = card && card.image
     ? card.image
     : "https://save.aura.us.kg/Picture/Preview/YL1.png";
-
-  const isTextMode = card && card.mode === "text";
 
   const html = `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -49,8 +53,8 @@ function renderPage(options) {
       margin: 0;
       min-height: 100vh;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #020617;
-      color: #f9fafb;
+      background: #f3f4f6;
+      color: #111827;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -61,13 +65,11 @@ function renderPage(options) {
       max-width: 480px;
     }
     .card {
-      background: radial-gradient(circle at top, #020617, #020617);
-      border-radius: 24px;
-      padding: 24px 20px 20px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      box-shadow:
-        0 24px 60px rgba(15, 23, 42, 0.9),
-        0 0 0 1px rgba(15, 23, 42, 0.6);
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 20px 18px 18px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 18px 35px rgba(15, 23, 42, 0.12);
     }
     .title {
       font-size: 18px;
@@ -77,9 +79,9 @@ function renderPage(options) {
     }
     .subtitle {
       font-size: 13px;
-      color: #9ca3af;
+      color: #6b7280;
       text-align: center;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
     .badge {
       display: inline-flex;
@@ -87,11 +89,11 @@ function renderPage(options) {
       gap: 6px;
       padding: 4px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.5);
-      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
       font-size: 11px;
-      color: #e5e7eb;
-      margin: 0 auto 18px;
+      color: #4b5563;
+      margin: 0 auto 14px;
     }
     .badge-dot {
       width: 7px;
@@ -102,16 +104,16 @@ function renderPage(options) {
     }
     .info {
       font-size: 12px;
-      color: #9ca3af;
+      color: #6b7280;
       text-align: center;
-      margin-bottom: 16px;
+      margin-bottom: 8px;
       min-height: 32px;
     }
     .countdown {
       font-size: 12px;
       text-align: center;
-      margin-bottom: 16px;
-      color: #e5e7eb;
+      margin-bottom: 12px;
+      color: #111827;
     }
     .countdown strong {
       font-size: 16px;
@@ -121,7 +123,7 @@ function renderPage(options) {
       flex-wrap: wrap;
       gap: 8px;
       justify-content: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     .btn {
       padding: 8px 14px;
@@ -134,38 +136,39 @@ function renderPage(options) {
       gap: 6px;
     }
     .btn-primary {
-      background: #facc15;
-      color: #1f2937;
+      background: #111827;
+      color: #f9fafb;
     }
     .btn-secondary {
-      background: rgba(15, 23, 42, 0.9);
-      color: #e5e7eb;
-      border: 1px solid #4b5563;
+      background: #e5e7eb;
+      color: #111827;
     }
     .link-box {
       font-size: 11px;
-      color: #9ca3af;
+      color: #6b7280;
       word-break: break-all;
       padding: 8px 10px;
       border-radius: 12px;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(55, 65, 81, 0.9);
-      margin-bottom: 4px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 6px;
     }
     .text-box {
       margin-top: 8px;
       padding: 10px 12px;
       border-radius: 12px;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(55, 65, 81, 0.9);
-      font-size: 14px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      font-size: 13px;
+      color: #b91c1c;
       white-space: pre-wrap;
       word-break: break-word;
+      text-align: center;
     }
     .footer {
       margin-top: 10px;
       font-size: 11px;
-      color: #6b7280;
+      color: #9ca3af;
       text-align: center;
     }
   </style>
@@ -184,33 +187,19 @@ function renderPage(options) {
       <div class="info" id="env-info"></div>
 
       ${
-        card && !expired && !isTextMode
-          ? '<div class="countdown">将在 <strong id="countdown-num">3</strong> 秒后尝试打开链接</div>'
+        !expired
+          ? '<div class="countdown">将在 <strong id="countdown-num">5</strong> 秒后尝试打开链接</div>'
           : '<div class="countdown" id="countdown-num" style="display:none;"></div>'
       }
 
-      ${
-        card && !expired && isTextMode
-          ? '<div class="text-box" id="text-content">' + escapeHtml(card.target) + '</div>'
-          : ''
-      }
-
       <div class="btn-row" id="btn-row">
-        ${
-          card && !expired && !isTextMode
-            ? '<button class="btn btn-primary" id="open-btn">立即打开</button>'
-            : ''
-        }
-        ${
-          card && !expired
-            ? '<button class="btn btn-secondary" id="copy-btn">复制链接 / 内容</button>'
-            : ''
-        }
+        ${!expired ? '<button class="btn btn-primary" id="open-btn">立即打开</button>' : ''}
+        ${!expired ? '<button class="btn btn-secondary" id="copy-btn">复制链接</button>' : ''}
       </div>
 
       ${
-        card && !expired && !isTextMode
-          ? '<div class="link-box" id="link-box">' + escapeHtml(card.target) + '</div>'
+        !expired
+          ? '<div class="link-box" id="link-box">' + escapeHtml(card ? card.target : "") + '</div>'
           : ''
       }
 
@@ -221,14 +210,14 @@ function renderPage(options) {
       }
 
       <div class="footer">
-        Lyn\'s Card · Powered by Cloudflare Pages & KV
+        Lyn&#39;s Card · Powered by Cloudflare Pages
       </div>
     </div>
   </div>
 
   <script>
     (function () {
-      var card = ${card ? JSON.stringify({ mode: card.mode, target: card.target }) : "null"};
+      var card = ${card ? JSON.stringify({ target: card.target }) : "null"};
       var expired = ${expired ? "true" : "false"};
 
       var envInfo = document.getElementById("env-info");
@@ -236,7 +225,6 @@ function renderPage(options) {
       var cdNum = document.getElementById("countdown-num");
       var openBtn = document.getElementById("open-btn");
       var copyBtn = document.getElementById("copy-btn");
-      var linkBox = document.getElementById("link-box");
 
       if (!card || expired) {
         if (envInfo) {
@@ -249,51 +237,38 @@ function renderPage(options) {
       var isWeChat = /MicroMessenger/i.test(ua);
       var isQQ = /QQ\\//i.test(ua);
 
-      if (card.mode === "text") {
+      if (isWeChat || isQQ) {
         if (envInfo) {
-          envInfo.textContent = "这是一个文本卡片，不会自动跳转。";
+          envInfo.textContent =
+            "检测到你在微信 / QQ 内打开，本页面会尝试自动跳转，如无法跳转，请点击右上角“⋯”，选择“在浏览器中打开”。";
         }
         if (badgeText) {
-          badgeText.textContent = "Text card";
+          badgeText.textContent = "Trying to open link";
         }
       } else {
-        if (isWeChat || isQQ) {
-          if (envInfo) {
-            envInfo.textContent =
-              "检测到你在微信或 QQ 内打开，本页面可能无法直接跳转。请点击右上角“⋯”，选择“在浏览器中打开”后再尝试。";
-          }
-        } else {
-          if (envInfo) {
-            envInfo.textContent =
-              "如果没有自动跳转，可以点击下方按钮手动打开。";
-          }
-        }
-
-        var seconds = 3;
-        if (cdNum) cdNum.textContent = String(seconds);
-
-        if (!(isWeChat || isQQ)) {
-          var timer = setInterval(function () {
-            seconds -= 1;
-            if (seconds >= 0 && cdNum) {
-              cdNum.textContent = String(seconds);
-            }
-            if (seconds <= 0) {
-              clearInterval(timer);
-              try {
-                window.location.href = card.target;
-              } catch (e) {}
-            }
-          }, 1000);
-        } else {
-          if (cdNum && cdNum.parentElement) {
-            cdNum.parentElement.textContent =
-              "自动跳转已暂停，请在浏览器中打开本页面再试。";
-          }
+        if (envInfo) {
+          envInfo.textContent = "如果没有自动跳转，可以点击下方按钮手动打开。";
         }
       }
 
-      if (openBtn && card.mode === "url") {
+      // 所有环境都尝试 5 秒自动跳转
+      var seconds = 5;
+      if (cdNum) cdNum.textContent = String(seconds);
+
+      var timer = setInterval(function () {
+        seconds -= 1;
+        if (seconds >= 0 && cdNum) {
+          cdNum.textContent = String(seconds);
+        }
+        if (seconds <= 0) {
+          clearInterval(timer);
+          try {
+            window.location.href = card.target;
+          } catch (e) {}
+        }
+      }, 1000);
+
+      if (openBtn) {
         openBtn.addEventListener("click", function () {
           try {
             window.location.href = card.target;
@@ -308,16 +283,12 @@ function renderPage(options) {
             navigator.clipboard.writeText(textToCopy).then(function () {
               if (envInfo) envInfo.textContent = "已复制到剪贴板，可以粘贴到浏览器或聊天中。";
             }).catch(function () {
-              if (envInfo) envInfo.textContent = "复制失败，请长按上方内容手动复制。";
+              if (envInfo) envInfo.textContent = "复制失败，请长按上方链接手动复制。";
             });
           } else {
-            if (envInfo) envInfo.textContent = "当前环境不支持一键复制，请长按上方内容手动复制。";
+            if (envInfo) envInfo.textContent = "当前环境不支持一键复制，请长按上方链接手动复制。";
           }
         });
-      }
-
-      if (card.mode === "text" && linkBox) {
-        linkBox.style.display = "none";
       }
     })();
   </script>
@@ -328,15 +299,14 @@ function renderPage(options) {
     status: expired ? 410 : 200,
     headers: {
       "content-type": "text/html; charset=utf-8",
-      "cache-control": "no-store"
-    }
+      "cache-control": "no-store",
+    },
   });
 }
 
 export async function onRequest(context) {
   const { env, params, request } = context;
   const id = params && params.id ? String(params.id) : "";
-
   const url = new URL(request.url).toString();
 
   if (!id) {
