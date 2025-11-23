@@ -1,1 +1,168 @@
+// src/worker.js
 
+// 简单的 HTML 转义，避免 XSS / meta 被破坏
+function escapeHtml(str = "") {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+// 生成短 ID，用在 /s/:id
+function generateId() {
+  if (crypto.randomUUID) {
+    return crypto.randomUUID().replace(/-/g, "").slice(0, 8);
+  }
+  return Math.random().toString(36).slice(2, 10);
+}
+
+// CORS 头（如果只自己用，可以把 * 换成你的域名）
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type"
+};
+
+export default {
+  /**
+   * Worker 入口
+   * @param {Request} request
+   * @param {any} env - 包含 SHARE_KV
+   */
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const { pathname, origin } = url;
+
+    // 预检请求 (CORS)
+    if (pathname === "/api/share/create" && request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: CORS_HEADERS
+      });
+    }
+
+    // 1. 创建分享链接：POST /api/share/create
+    if (pathname === "/api/share/create" && request.method === "POST") {
+      try {
+        const body = await request.json().catch(() => null);
+        if (!body || typeof body !== "object") {
+          return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+            status: 400,
+            headers: {
+              "Content-Type": "application/json; charset=utf-8",
+              ...CORS_HEADERS
+            }
+          });
+        }
+
+        const rawTitle = (body.title || "").toString().trim();
+        const rawDesc  = (body.desc  || "").toString().trim();
+        const rawImage = (body.image || "").toString().trim();
+        const rawUrl   = (body.url   || "").toString().trim();
+
+        // 默认值，防止没填
+        const payload = {
+          title: rawTitle || "Lyn's Share",
+          desc:  rawDesc  || "Just someone who loves to mess around on the internet.",
+          image: rawImage || "https://save.aura.us.kg/Picture/bg.jpg",
+          target: rawUrl  || "https://aura.us.kg"
+        };
+
+        const id = generateId();
+
+        // 存入 KV
+        await env.SHARE_KV.put(id, JSON.stringify(payload));
+
+        // 分享链接：当前域名 + /s/:id
+        const shareUrl = `${origin}/s/${id}`;
+
+        return new Response(JSON.stringify({ id, shareUrl }), {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            ...CORS_HEADERS
+          }
+        });
+      } catch (err) {
+        return new Response(JSON.stringify({ error: "Server error" }), {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            ...CORS_HEADERS
+          }
+        });
+      }
+    }
+
+    // 2. 分享页：GET /s/:id
+    if (pathname.startsWith("/s/") && request.method === "GET") {
+      const id = pathname.split("/").pop();
+      if (!id) {
+        return new Response("Invalid share id", { status: 400 });
+      }
+
+      const data = await env.SHARE_KV.get(id, { type: "json" });
+
+      if (!data) {
+        return new Response("分享链接不存在或已删除。", {
+          status: 404,
+          headers: { "Content-Type": "text/plain; charset=utf-8" }
+        });
+      }
+
+      const title  = data.title  || "Lyn's Share";
+      const desc   = data.desc   || "";
+      const image  = data.image  || "";
+      const target = data.target || "https://aura.us.kg";
+
+      // og:url 用分享页本身（方便各平台缓存）
+      const shareUrl = `${origin}/s/${id}`;
+
+      const html = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>${escapeHtml(title)}</title>
+
+  <meta name="description" content="${escapeHtml(desc)}">
+
+  <!-- Open Graph / 微信 / QQ 预览 -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="${escapeHtml(title)}">
+  <meta property="og:title" content="${escapeHtml(title)}">
+  <meta property="og:description" content="${escapeHtml(desc)}">
+  <meta property="og:image" content="${escapeHtml(image)}">
+  <meta property="og:url" content="${escapeHtml(shareUrl)}">
+
+  <!-- Schema.org 补充 -->
+  <meta itemprop="name" content="${escapeHtml(title)}">
+  <meta itemprop="description" content="${escapeHtml(desc)}">
+  <meta itemprop="image" content="${escapeHtml(image)}">
+</head>
+<body>
+  <script>
+    // 打开分享页时自动跳转到目标地址
+    location.replace(${JSON.stringify(target)});
+  <\/script>
+  <noscript>
+    本页用于分享跳转，如未自动跳转，请点击
+    <a href="${escapeHtml(target)}">这里</a> 打开原文。
+  </noscript>
+</body>
+</html>`;
+
+      return new Response(html, {
+        status: 200,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "public, max-age=600"
+        }
+      });
+    }
+
+    // 其它路径
+    return new Response("Not found", { status: 404 });
+  }
+};
