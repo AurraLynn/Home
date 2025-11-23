@@ -1,79 +1,108 @@
 // functions/api/share-create.js
-// 接收前端传的标题/描述/图片/目标链接/过期时间，写入 KV，返回短链 /C/:id
 
-export async function onRequestPost(context) {
+type StoredCard = {
+  title: string;
+  description: string;
+  image: string;
+  target: string;           // 目标内容（可能是 URL 或 文本）
+  mode: "url" | "text";     // url = 跳转；text = 展示内容
+  expireAt?: number | null; // 过期时间时间戳（毫秒）
+  createdAt: number;
+};
+
+type Env = {
+  Card_KV: KVNamespace;
+};
+
+function randomId(len = 8): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  let out = "";
+  for (let i = 0; i < len; i++) {
+    out += chars[arr[i] % chars.length];
+  }
+  return out;
+}
+
+function parseExpire(expire: string | undefined): number | null {
+  const now = Date.now();
+  switch (expire) {
+    case "1d":
+      return now + 1 * 24 * 60 * 60 * 1000;
+    case "7d":
+      return now + 7 * 24 * 60 * 60 * 1000;
+    case "30d":
+      return now + 30 * 24 * 60 * 60 * 1000;
+    case "forever":
+    default:
+      return null;
+  }
+}
+
+function normalizeTarget(raw: string): { mode: "url" | "text"; value: string } {
+  const s = raw.trim();
+  if (!s) {
+    return { mode: "text", value: "" };
+  }
+
+  // 以 http/https 开头：直接当 URL
+  if (/^https?:\/\//i.test(s)) {
+    return { mode: "url", value: s };
+  }
+
+  // 看起来像域名：自动补 https://
+  const looksLikeDomain = s.includes(".") && !/\s/.test(s);
+  if (looksLikeDomain) {
+    return { mode: "url", value: "https://" + s };
+  }
+
+  // 否则视为纯文本
+  return { mode: "text", value: s };
+}
+
+export const onRequest: PagesFunction<Env> = async (context) => {
   const { request, env } = context;
 
+  if (request.method !== "POST") {
+    return new Response("Method Not Allowed", { status: 405 });
+  }
+
+  let payload: any;
   try {
-    const body = await request.json();
-    const { title, description, image, target, expire } = body || {};
-
-    if (!title || !description || !image || !target) {
-      return json(
-        { ok: false, message: "请填写完整：标题、描述、图片地址、目标链接" },
-        { status: 400 }
-      );
-    }
-
-    // 生成短 ID
-    const id = generateId();
-
-    // 过期时间：秒
-    const expireMap = {
-      "1d": 60 * 60 * 24,
-      "7d": 60 * 60 * 24 * 7,
-      "30d": 60 * 60 * 24 * 30,
-      forever: null,
-    };
-    const ttl = expireMap[expire] ?? expireMap["7d"];
-
-    const data = {
-      title,
-      description,
-      image,
-      target,
-      createdAt: Date.now(),
-      expire,
-    };
-
-    // 写入 KV（用 Card_KV）
-    if (ttl) {
-      await env.Card_KV.put(id, JSON.stringify(data), { expirationTtl: ttl });
-    } else {
-      await env.Card_KV.put(id, JSON.stringify(data));
-    }
-
-    const url = new URL(request.url);
-    // 短链前缀：/C/（大写 C）
-    const shareUrl = `${url.origin}/C/${id}`;
-
-    return json({ ok: true, id, shareUrl });
+    payload = await request.json();
   } catch (e) {
-    return json(
-      { ok: false, message: "服务异常，请稍后重试" },
-      { status: 500 }
-    );
+    return Response.json({ ok: false, message: "Invalid JSON body." }, { status: 400 });
   }
-}
 
-function generateId() {
-  const chars =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let id = "";
-  for (let i = 0; i < 6; i++) {
-    id += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return id;
-}
+  const title = (payload.title || "").toString().trim();
+  const description = (payload.description || "").toString().trim();
+  const image = (payload.image || "").toString().trim();
+  const targetRaw = (payload.target || "").toString();
+  const expire = (payload.expire || "7d").toString();
 
-// 小工具：返回 JSON
-function json(data, init = {}) {
-  const headers = new Headers(init.headers || {});
-  if (!headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json; charset=utf-8");
+  if (!targetRaw.trim()) {
+    return Response.json({ ok: false, message: "目标内容不能为空。" }, { status: 400 });
   }
-  return new Response(JSON.stringify(data), {
-    ...init,
-    headers,
-  });
-}
+
+  const { mode, value: target } = normalizeTarget(targetRaw);
+  const expireAt = parseExpire(expire);
+  const id = randomId(8);
+
+  const card: StoredCard = {
+    title,
+    description,
+    image,
+    target,
+    mode,
+    expireAt,
+    createdAt: Date.now(),
+  };
+
+  await env.Card_KV.put(id, JSON.stringify(card));
+
+  const url = new URL(request.url);
+  const shareUrl = `${url.origin}/C/${id}`;
+
+  return Response.json({ ok: true, shareUrl });
+};
