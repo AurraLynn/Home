@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Lyn's Paste</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
+    <style>
+        :root {
+            color-scheme: light dark;
+            --bg: #f4f5fb;
+            --layer: #ffffff;
+            --layer-soft: #f9fafb;
+            --text-main: #0f172a;
+            --text-sub: #6b7280;
+            --border-soft: rgba(148,163,184,0.5);
+            --border-strong: rgba(148,163,184,0.9);
+            --accent: #22c55e;
+            --accent2: #0ea5e9;
+            --danger: #b91c1c;
+            --shadow-main: 0 18px 48px rgba(15,23,42,0.14);
+            --input-bg: #f9fafb;
+        }
+
+        body.theme-dark {
+            --bg: #020617;
+            --layer: #020617;
+            --layer-soft: rgba(15,23,42,0.96);
+            --text-main: #e5e7eb;
+            --text-sub: #9ca3af;
+            --border-soft: rgba(55,65,81,0.9);
+            --border-strong: rgba(148,163,184,0.9);
+            --accent: #22c55e;
+            --accent2: #0ea5e9;
+            --danger: #fecaca;
+            --shadow-main:
+                    0 22px 60px rgba(15,23,42,0.96),
+                    0 0 0 1px rgba(15,23,42,0.9);
+            --input-bg: rgba(15,23,42,0.96);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 12px;
+            background:
+                    radial-gradient(circle at top, rgba(34,197,94,0.12), transparent 60%),
+                    radial-gradient(circle at bottom, rgba(56,189,248,0.10), transparent 60%),
+                    var(--bg);
+            color: var(--text-main);
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .shell {
+            width: 100%;
+            max-width: 720px;
+        }
+
+        .header {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-main {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: radial-gradient(circle at top left,#22c55e,#0ea5e9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brand-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .brand-title {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: .02em;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: var(--text-sub);
+        }
+
+        /* 白/夜模式按钮：小胶囊 + 文本 */
+        .theme-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            border: 1px solid var(--border-soft);
+            background: transparent;
+            padding: 4px 10px;
+            font-size: 11px;
+            color: var(--text-sub);
+            cursor: pointer;
+        }
+
+        .theme-toggle .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border-soft);
+            background: #e5e7eb;
+        }
+
+        body.theme-dark .theme-toggle .dot {
+            background: #0f172a;
+            box-shadow: 0 0 0 2px rgba(250,204,21,0.7);
+        }
+
+        .card {
+            background: var(--layer);
+            border-radius: 20px;
+            border: 1px solid var(--border-soft);
+            box-shadow: var(--shadow-main);
+            padding: 16px 18px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-section {
+            border-radius: 14px;
+            padding: 10px 10px;
+            background: var(--layer-soft);
+            border: 1px solid rgba(148,163,184,0.25);
+        }
+
+        .card-section + .card-section { margin-top: 4px; }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .section-title .tag {
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.4);
+            color: var(--text-sub);
+        }
+
+        .section-text {
+            font-size: 11px;
+            color: var(--text-sub);
+            line-height: 1.6;
+        }
+
+        .mode-label {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: rgba(239,246,255,1);
+            border: 1px solid rgba(59,130,246,0.6);
+            color: #1d4ed8;
+        }
+        body.theme-dark .mode-label {
+            background: rgba(15,23,42,0.98);
+            border-color: rgba(79,70,229,0.75);
+            color: #a5b4fc;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 2px;
+        }
+
+        .field-label {
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+
+        .field-inline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        input[type="text"], input[type="password"] {
+            border-radius: 999px;
+            border: 1px solid var(--border-strong);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-size: 12px;
+            padding: 6px 10px;
+            outline: none;
+            min-width: 160px;
+            max-width: 260px;
+        }
+        input::placeholder { color: rgba(148,163,184,0.7); }
+
+        /* TTL 按钮：参考你截图的效果 */
+        .ttl-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .ttl-btn {
+            border-radius: 999px;
+            border: 1px solid #d4d4d8;
+            background: #fff;
+            color: #374151;
+            font-size: 12px;
+            padding: 4px 14px;
+            cursor: pointer;
+            outline: none;
+        }
+        body.theme-dark .ttl-btn {
+            background: rgba(15,23,42,0.96);
+            border-color: rgba(75,85,99,0.9);
+            color: var(--text-sub);
+        }
+        .ttl-btn.active {
+            background: #111827;
+            color: #ffffff;
+            border-color: #111827;
+            box-shadow: 0 4px 10px rgba(15,23,42,0.25);
+        }
+
+        .ttl-hint {
+            font-size: 11px;
+            color: var(--text-sub);
+            margin-top: 4px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 220px;
+            resize: vertical;
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--border-strong);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            outline: none;
+            transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+        }
+        textarea::placeholder { color: rgba(148,163,184,0.8); }
+        textarea:focus {
+            border-color: var(--accent2);
+            box-shadow: 0 0 0 1px rgba(56,189,248,0.35);
+            background: #ffffff;
+        }
+        body.theme-dark textarea:focus {
+            box-shadow:
+                    0 0 0 1px rgba(56,189,248,0.8),
+                    0 12px 30px rgba(15,23,42,0.9);
+            background: rgba(15,23,42,1);
+        }
+
+        .hint {
+            font-size: 11px;
+            color: var(--text-sub);
+        }
+
+        button {
+            border: none;
+            outline: none;
+            cursor: pointer;
+            font-size: 12px;
+            border-radius: 999px;
+            padding: 6px 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 主按钮：回到“正常大小” */
+        .btn-primary {
+            font-weight: 500;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            color: #020617;
+            box-shadow: 0 10px 26px rgba(34,197,94,0.3);
+        }
+        .btn-primary:hover {
+            filter: brightness(1.03);
+            box-shadow: 0 14px 32px rgba(34,197,94,0.4);
+        }
+
+        .btn-secondary {
+            background: var(--layer-soft);
+            color: var(--text-main);
+            border: 1px solid var(--border-strong);
+        }
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        body.theme-dark .btn-secondary:hover {
+            background: rgba(31,41,55,0.96);
+        }
+
+        .btn-danger {
+            background: rgba(248,113,113,0.12);
+            color: var(--danger);
+            border: 1px solid rgba(248,113,113,0.7);
+        }
+        .btn-danger:hover {
+            background: rgba(248,113,113,0.2);
+        }
+
+        .result-box {
+            font-size: 12px;
+            color: var(--text-sub);
+            padding: 8px 10px;
+            border-radius: 12px;
+            background: var(--layer-soft);
+            border: 1px dashed var(--border-strong);
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .footer-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 11px;
+            color: var(--text-sub);
+            margin-top: 2px;
+            padding-top: 4px;
+            border-top: 1px dashed var(--border-soft);
+        }
+
+        @media (max-width: 640px) {
+            .card {
+                padding: 14px 12px 12px;
+                border-radius: 16px;
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            input[type="text"], input[type="password"] {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="theme-light">
+<div class="shell">
+    <header class="header">
+        <div class="brand">
+            <div class="brand-main">
+                <div class="brand-logo">
+                    <img id="brandIcon" alt="icon">
+                </div>
+                <div class="brand-title">Lyn's Paste</div>
+            </div>
+            <div class="brand-sub">Paste text. Get URL. Move on.</div>
+        </div>
+        <button type="button" class="theme-toggle" id="themeToggle">
+            <span class="dot"></span>
+            <span class="label">Light</span>
+        </button>
+    </header>
+
+    <main class="card">
+        <!-- 顶部说明 -->
+        <section class="card-section">
+            <div class="section-title">
+                使用说明
+                <span class="tag">GUIDE</span>
+                <span class="mode-label" id="modeLabel">模式：新建</span>
+            </div>
+            <div class="section-text" id="subtitle">
+                新建一条文本，选择过期时间，生成可分享链接。支持设置管理密码，便于后续修改或删除。
+            </div>
+            <div class="section-text" style="margin-top:4px;">
+                用法：在这里粘贴任何文本，提交，然后与 URL 共享。<br>
+                警告：仅用于临时共享，文件可能会在不通知的情况下被删除！
+            </div>
+        </section>
+
+        <form id="pasteForm">
+            <!-- 基础信息 -->
+            <section class="card-section">
+                <div class="section-title">
+                    基础信息
+                    <span class="tag">META</span>
+                </div>
+
+                <div class="field">
+                    <div class="field-label">文件名</div>
+                    <div class="field-inline">
+                        <input id="filename" type="text" placeholder="例如：notes-2025-11-24">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="field-label">管理密码（可选）</div>
+                    <div class="field-inline">
+                        <input id="password" type="password" placeholder="设置后可更新 / 删除内容">
+                    </div>
+                    <div class="hint">
+                        不填密码 = 临时分享（默认 10 分钟，可手动调整）。填写密码 = 可管理内容（默认不过期，也可自行选择）。
+                    </div>
+                </div>
+            </section>
+
+            <!-- 过期时间 -->
+            <section class="card-section">
+                <div class="section-title">
+                    过期时间
+                    <span class="tag">TTL</span>
+                </div>
+                <div class="field">
+                    <div class="ttl-group" id="ttlGroup">
+                        <button type="button" class="ttl-btn active" data-ttl="10m">10 分钟</button>
+                        <button type="button" class="ttl-btn" data-ttl="1d">1 天</button>
+                        <button type="button" class="ttl-btn" data-ttl="7d">7 天</button>
+                        <button type="button" class="ttl-btn" data-ttl="30d">30 天</button>
+                        <button type="button" class="ttl-btn" data-ttl="forever">不过期</button>
+                    </div>
+                    <div class="ttl-hint" id="ttlHint">内容将在 10 分钟后过期。</div>
+                </div>
+            </section>
+
+            <!-- 内容 -->
+            <section class="card-section">
+                <div class="section-title">
+                    内容
+                    <span class="tag">BODY</span>
+                </div>
+                <div class="field">
+                    <textarea id="content" placeholder="在这里粘贴内容（代码、日志、随手记都可以）..." required></textarea>
+                </div>
+            </section>
+
+            <!-- 操作 -->
+            <section class="card-section">
+                <div class="section-title">
+                    操作
+                    <span class="tag">ACTION</span>
+                </div>
+                <div class="field" style="gap:8px;">
+                    <div class="field-inline" style="gap:8px;">
+                        <button type="submit" class="btn-primary" id="submitBtn">生成链接</button>
+                        <button type="button" class="btn-secondary" id="btnNew">新建</button>
+                        <button type="button" class="btn-danger" id="btnDelete" style="display:none;">删除内容</button>
+                        <button type="button" class="btn-secondary" id="btnCopyLink" style="display:none;">复制分享文案</button>
+                    </div>
+                </div>
+
+                <div class="field" id="resultBox" style="display:none; margin-top:6px;">
+                    <div class="result-box">
+                        <div id="resultText"></div>
+                    </div>
+                </div>
+            </section>
+        </form>
+
+        <!-- 底部信息 -->
+        <section class="footer-row">
+            <span>入口：<span id="baseUrlText"></span></span>
+            <span>By Lyn · Cloudflare Workers & KV</span>
+        </section>
+    </main>
+</div>
+
+<script>
+    // ========== 主题切换 ==========
+    const THEME_KEY = "lyn_paste_theme_final_v2";
+    const themeToggle = document.getElementById("themeToggle");
+
+    function applyTheme(theme) {
+        document.body.classList.remove("theme-light", "theme-dark");
+        document.body.classList.add("theme-" + theme);
+        const label = themeToggle.querySelector(".label");
+        label.textContent = theme === "dark" ? "Dark" : "Light";
+        try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
+    }
+
+    (function initTheme() {
+        let theme = "light";
+        try {
+            const saved = localStorage.getItem(THEME_KEY);
+            if (saved === "dark" || saved === "light") theme = saved;
+        } catch (_) {}
+        applyTheme(theme);
+    })();
+
+    if (themeToggle) {
+        themeToggle.addEventListener("click", () => {
+            const current = document.body.classList.contains("theme-dark") ? "dark" : "light";
+            applyTheme(current === "dark" ? "light" : "dark");
+        });
+    }
+
+    // ========== 标题随机图标（YL1~YL10） ==========
+    (function initRandomIcon() {
+        const ICONS = [];
+        for (let i = 1; i <= 10; i++) {
+            ICONS.push(`https://save.aura.us.kg/Picture/Preview/YL${i}.png`);
+        }
+        const img = document.getElementById("brandIcon");
+        if (!img || !ICONS.length) return;
+        const pick = ICONS[Math.floor(Math.random() * ICONS.length)];
+        img.src = pick;
+    })();
+
+    // ========== 业务逻辑 ==========
+    const BASE_URL = location.origin + "/Paste";
+    const API_BASE = location.origin + "/api/paste";
+
+    const qs = (id) => document.getElementById(id);
+
+    const $filename     = qs("filename");
+    const $password     = qs("password");
+    const $content      = qs("content");
+    const $ttlGroup     = qs("ttlGroup");
+    const $ttlHint      = qs("ttlHint");
+    const $form         = qs("pasteForm");
+    const $submitBtn    = qs("submitBtn");
+    const $btnNew       = qs("btnNew");
+    const $btnDelete    = qs("btnDelete");
+    const $btnCopyLink  = qs("btnCopyLink");
+    const $resultBox    = qs("resultBox");
+    const $resultText   = qs("resultText");
+    const $subtitle     = qs("subtitle");
+    const $modeLabel    = qs("modeLabel");
+    const $baseUrlText  = qs("baseUrlText");
+
+    let currentSlug = null;
+    let hasPassword = false;
+    let ttlKey = "10m";
+    let shareText = null;
+    let lastPasswordEmpty = true;
+
+    if ($baseUrlText) {
+        $baseUrlText.textContent = BASE_URL;
+    }
+
+    const ttlTextMap = {
+        "10m": "内容将在 10 分钟后过期。",
+        "1d":  "内容将在 1 天后过期。",
+        "7d":  "内容将在 7 天后过期。",
+        "30d": "内容将在 30 天后过期。",
+        "forever": "内容不会自动过期（服务清理除外）。"
+    };
+
+    function updateTtlHint() {
+        if (!$ttlHint) return;
+        $ttlHint.textContent = ttlTextMap[ttlKey] || ttlTextMap["10m"];
+    }
+
+    function setTtl(key) {
+        ttlKey = key;
+        if ($ttlGroup) {
+            const btns = $ttlGroup.querySelectorAll(".ttl-btn");
+            btns.forEach(btn => {
+                btn.classList.toggle("active", btn.dataset.ttl === key);
+            });
+        }
+        updateTtlHint();
+    }
+
+    if ($ttlGroup) {
+        $ttlGroup.addEventListener("click", (e) => {
+            const btn = e.target.closest(".ttl-btn");
+            if (!btn) return;
+            const key = btn.dataset.ttl;
+            if (!key) return;
+            setTtl(key);
+        });
+    }
+
+    if ($password) {
+        $password.addEventListener("input", () => {
+            const nowEmpty = !$password.value.trim();
+            if (lastPasswordEmpty && !nowEmpty) {
+                if (ttlKey === "10m") setTtl("forever");
+            }
+            if (!lastPasswordEmpty && nowEmpty) {
+                if (ttlKey === "forever") setTtl("10m");
+            }
+            lastPasswordEmpty = nowEmpty;
+        });
+    }
+
+    function resetToNew() {
+        currentSlug = null;
+        hasPassword = false;
+        ttlKey = "10m";
+        shareText = null;
+        lastPasswordEmpty = true;
+
+        if ($filename) $filename.value = "";
+        if ($password) $password.value = "";
+        if ($content)  $content.value = "";
+        setTtl("10m");
+
+        if ($resultBox) $resultBox.style.display = "none";
+        if ($btnCopyLink) $btnCopyLink.style.display = "none";
+        if ($btnDelete)   $btnDelete.style.display = "none";
+        if ($submitBtn)   $submitBtn.textContent = "生成链接";
+        if ($modeLabel)   $modeLabel.textContent = "模式：新建";
+        if ($subtitle)    $subtitle.textContent =
+            "新建一条文本，选择过期时间，生成可分享链接。支持设置管理密码，便于后续修改或删除。";
+
+        const url = new URL(location.href);
+        url.searchParams.delete("id");
+        history.replaceState(null, "", url.toString());
+    }
+
+    function formatShareText(slug, filename, content) {
+        const name = filename || slug;
+        const plain = (content || "").replace(/\s+/g, " ").trim();
+        const snippet = plain.length > 40 ? plain.slice(0, 40) + "…" : (plain || "（无内容）");
+        return `${BASE_URL}/${name} ${snippet}`;
+    }
+
+    function fillViewFromData(data) {
+        currentSlug = data.slug;
+        hasPassword = !!data.hasPassword;
+        ttlKey = data.ttlKey || "10m";
+
+        if ($filename) $filename.value = data.filename || "";
+        if ($content)  $content.value = data.content || "";
+        setTtl(ttlKey);
+
+        const viewLink = `${BASE_URL}?id=${encodeURIComponent(currentSlug)}`;
+        shareText = formatShareText(currentSlug, data.filename, data.content || "");
+
+        const lines = [];
+        lines.push(`访问链接：${viewLink}`);
+        lines.push(`分享文案：${shareText}`);
+        if (data.createdAt) {
+            lines.push(`创建时间：${new Date(data.createdAt).toLocaleString("zh-CN",{hour12:false})}`);
+        }
+        if (data.expiresAt) {
+            lines.push(`过期时间：${new Date(data.expiresAt).toLocaleString("zh-CN",{hour12:false})}`);
+        } else {
+            lines.push("过期时间：不过期（forever）");
+        }
+        lines.push(`管理状态：${hasPassword ? "已设置管理密码，可更新/删除" : "未设置管理密码，仅适合临时分享"}`);
+
+        if ($resultText && $resultBox) {
+            $resultText.textContent = lines.join("\n");
+            $resultBox.style.display = "block";
+        }
+
+        if (hasPassword) {
+            if ($btnDelete)   $btnDelete.style.display = "inline-flex";
+            if ($btnCopyLink) $btnCopyLink.style.display = "inline-flex";
+            if ($modeLabel)   $modeLabel.textContent = "模式：可管理";
+            if ($subtitle)    $subtitle.textContent =
+                "你正在管理一条可更新 / 删除的内容，修改后点击“保存更新”即可生效。";
+            if ($submitBtn)   $submitBtn.textContent = "保存更新";
+        } else {
+            if ($btnDelete)   $btnDelete.style.display = "none";
+            if ($btnCopyLink) $btnCopyLink.style.display = "inline-flex";
+            if ($modeLabel)   $modeLabel.textContent = "模式：临时分享";
+            if ($subtitle)    $subtitle.textContent =
+                "这是一条临时内容，没有管理密码，不支持后续修改/删除。";
+            if ($submitBtn)   $submitBtn.textContent = "生成新副本";
+        }
+
+        const url = new URL(location.href);
+        url.searchParams.set("id", currentSlug);
+        history.replaceState(null, "", url.toString());
+    }
+
+    async function postAction(payload) {
+        const res = await fetch(API_BASE, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+            throw new Error(data.error || `请求失败（${res.status}）`);
+        }
+        return data;
+    }
+
+    if ($form) {
+        $form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const content = ($content && $content.value.trim()) || "";
+            if (!content) {
+                alert("内容不能为空");
+                return;
+            }
+            const filename = $filename ? $filename.value.trim() : "";
+            const password = $password ? $password.value.trim() : "";
+            const action = currentSlug && hasPassword ? "update" : "create";
+
+            if ($submitBtn) {
+                $submitBtn.disabled = true;
+                $submitBtn.textContent = action === "create" ? "生成中…" : "保存中…";
+            }
+
+            try {
+                const payload = {
+                    action,
+                    slug: currentSlug,
+                    filename,
+                    content,
+                    ttlKey,
+                    managePassword: password || null,
+                };
+                const data = await postAction(payload);
+                fillViewFromData(data);
+                alert(action === "create" ? "已生成链接" : "已保存更新");
+            } catch (err) {
+                console.error(err);
+                alert(err.message || "操作失败");
+            } finally {
+                if ($submitBtn) {
+                    $submitBtn.disabled = false;
+                    $submitBtn.textContent =
+                        currentSlug && hasPassword ? "保存更新" : "生成链接";
+                }
+            }
+        });
+    }
+
+    if ($btnNew) {
+        $btnNew.addEventListener("click", () => {
+            resetToNew();
+        });
+    }
+
+    if ($btnDelete) {
+        $btnDelete.addEventListener("click", async () => {
+            if (!currentSlug) return;
+            if (!hasPassword) {
+                alert("这条内容没有管理密码，不支持删除。");
+                return;
+            }
+            const pwd = ($password && $password.value.trim()) || "";
+            if (!pwd) {
+                alert("删除前请先输入你设置的管理密码。");
+                return;
+            }
+            if (!confirm("确认删除这条内容吗？删除后将无法恢复。")) return;
+
+            $btnDelete.disabled = true;
+            $btnDelete.textContent = "删除中…";
+            try {
+                await postAction({
+                    action: "delete",
+                    slug: currentSlug,
+                    managePassword: pwd,
+                });
+                alert("已删除");
+                resetToNew();
+            } catch (err) {
+                console.error(err);
+                alert(err.message || "删除失败");
+            } finally {
+                $btnDelete.disabled = false;
+                $btnDelete.textContent = "删除内容";
+            }
+        });
+    }
+
+    if ($btnCopyLink) {
+        $btnCopyLink.addEventListener("click", async () => {
+            if (!shareText) return;
+            try {
+                await navigator.clipboard.writeText(shareText);
+                const old = $btnCopyLink.textContent;
+                $btnCopyLink.textContent = "已复制分享文案";
+                setTimeout(() => { $btnCopyLink.textContent = old; }, 1500);
+            } catch (e) {
+                alert("复制失败，请手动复制：\n" + shareText);
+            }
+        });
+    }
+
+    async function initFromQuery() {
+        const url = new URL(location.href);
+        const id = url.searchParams.get("id");
+        if (!id) {
+            resetToNew();
+            return;
+        }
+        try {
+            const res = await fetch(`${API_BASE}/${encodeURIComponent(id)}`);
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.ok) {
+                resetToNew();
+                alert(data.error || "未找到这条内容（可能已过期或被删除）");
+                return;
+            }
+            fillViewFromData(data);
+        } catch (e) {
+            console.error(e);
+            resetToNew();
+            alert("加载失败");
+        }
+    }
+
+    // 初始状态
+    setTtl("10m");
+    initFromQuery();
+</script>
+</body>
+</html>
