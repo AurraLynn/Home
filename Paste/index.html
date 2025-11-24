@@ -21,7 +21,6 @@
             --shadow-main: 0 18px 48px rgba(15,23,42,0.14);
             --input-bg: #f9fafb;
         }
-
         body.theme-dark {
             --bg: #020617;
             --layer: #020617;
@@ -34,13 +33,11 @@
             --accent2: #0ea5e9;
             --danger: #fecaca;
             --shadow-main:
-                    0 22px 60px rgba(15,23,42,0.96),
-                    0 0 0 1px rgba(15,23,42,0.9);
+                0 22px 60px rgba(15,23,42,0.96),
+                0 0 0 1px rgba(15,23,42,0.9);
             --input-bg: rgba(15,23,42,0.96);
         }
-
         * { box-sizing: border-box; }
-
         body {
             margin: 0;
             min-height: 100vh;
@@ -50,18 +47,13 @@
             justify-content: center;
             padding: 24px 12px;
             background:
-                    radial-gradient(circle at top, rgba(34,197,94,0.12), transparent 60%),
-                    radial-gradient(circle at bottom, rgba(56,189,248,0.10), transparent 60%),
-                    var(--bg);
+                radial-gradient(circle at top, rgba(34,197,94,0.12), transparent 60%),
+                radial-gradient(circle at bottom, rgba(56,189,248,0.10), transparent 60%),
+                var(--bg);
             color: var(--text-main);
             transition: background 0.2s ease, color 0.2s ease;
         }
-
-        .shell {
-            width: 100%;
-            max-width: 720px;
-        }
-
+        .shell { width: 100%; max-width: 720px; }
         .header {
             margin-bottom: 10px;
             display: flex;
@@ -69,19 +61,16 @@
             gap: 10px;
             align-items: center;
         }
-
         .brand {
             display: flex;
             flex-direction: column;
             gap: 2px;
         }
-
         .brand-main {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-
         .brand-logo {
             width: 28px;
             height: 28px;
@@ -92,26 +81,23 @@
             align-items: center;
             justify-content: center;
         }
-
         .brand-logo img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 10px;
             display: block;
         }
-
         .brand-title {
             font-size: 18px;
             font-weight: 600;
             letter-spacing: .02em;
         }
-
         .brand-sub {
             font-size: 11px;
             color: var(--text-sub);
         }
-
-        /* 白/夜模式按钮：小胶囊 + 文本 */
+        /* 主题切换 */
         .theme-toggle {
             display: inline-flex;
             align-items: center;
@@ -124,20 +110,18 @@
             color: var(--text-sub);
             cursor: pointer;
         }
-
         .theme-toggle .dot {
             width: 12px;
             height: 12px;
             border-radius: 999px;
             border: 1px solid var(--border-soft);
-            background: #e5e7eb;
+            background: radial-gradient(circle at top, #fde68a, #f97316);
+            box-shadow: 0 0 4px rgba(249,115,22,0.6);
         }
-
         body.theme-dark .theme-toggle .dot {
-            background: #0f172a;
-            box-shadow: 0 0 0 2px rgba(250,204,21,0.7);
+            background: radial-gradient(circle at center, #22c55e, #0ea5e9);
+            box-shadow: 0 0 6px rgba(56,189,248,0.9);
         }
-
         .card {
             background: var(--layer);
             border-radius: 20px;
@@ -148,16 +132,13 @@
             flex-direction: column;
             gap: 12px;
         }
-
         .card-section {
             border-radius: 14px;
             padding: 10px 10px;
             background: var(--layer-soft);
             border: 1px solid rgba(148,163,184,0.25);
         }
-
         .card-section + .card-section { margin-top: 4px; }
-
         .section-title {
             font-size: 12px;
             font-weight: 600;
@@ -166,7 +147,6 @@
             align-items: center;
             gap: 6px;
         }
-
         .section-title .tag {
             font-size: 10px;
             padding: 1px 6px;
@@ -174,13 +154,11 @@
             border: 1px solid rgba(148,163,184,0.4);
             color: var(--text-sub);
         }
-
         .section-text {
             font-size: 11px;
             color: var(--text-sub);
             line-height: 1.6;
         }
-
         .mode-label {
             font-size: 11px;
             padding: 3px 8px;
@@ -194,12 +172,15 @@
             border-color: rgba(79,70,229,0.75);
             color: #a5b4fc;
         }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        .usage-label {
+            color: var(--accent2);
+            font-weight: 600;
         }
+        .warning-label {
+            color: #dc2626;
+            font-weight: 600;
+        }
+        form { display: flex; flex-direction: column; gap: 8px; }
 
         .field {
             display: flex;
@@ -207,19 +188,16 @@
             gap: 4px;
             margin-top: 2px;
         }
-
         .field-label {
             font-size: 12px;
             color: var(--text-sub);
         }
-
         .field-inline {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
             align-items: center;
         }
-
         input[type="text"], input[type="password"] {
             border-radius: 999px;
             border: 1px solid var(--border-strong);
@@ -229,11 +207,9 @@
             padding: 6px 10px;
             outline: none;
             min-width: 160px;
-            max-width: 260px;
         }
         input::placeholder { color: rgba(148,163,184,0.7); }
 
-        /* TTL 按钮：参考你截图的效果 */
         .ttl-group {
             display: flex;
             flex-wrap: wrap;
@@ -260,13 +236,11 @@
             border-color: #111827;
             box-shadow: 0 4px 10px rgba(15,23,42,0.25);
         }
-
         .ttl-hint {
             font-size: 11px;
             color: var(--text-sub);
             margin-top: 4px;
         }
-
         textarea {
             width: 100%;
             min-height: 220px;
@@ -290,16 +264,14 @@
         }
         body.theme-dark textarea:focus {
             box-shadow:
-                    0 0 0 1px rgba(56,189,248,0.8),
-                    0 12px 30px rgba(15,23,42,0.9);
+                0 0 0 1px rgba(56,189,248,0.8),
+                0 12px 30px rgba(15,23,42,0.9);
             background: rgba(15,23,42,1);
         }
-
         .hint {
             font-size: 11px;
             color: var(--text-sub);
         }
-
         button {
             border: none;
             outline: none;
@@ -311,8 +283,6 @@
             align-items: center;
             gap: 6px;
         }
-
-        /* 主按钮：回到“正常大小” */
         .btn-primary {
             font-weight: 500;
             background: linear-gradient(90deg, var(--accent), var(--accent2));
@@ -323,19 +293,15 @@
             filter: brightness(1.03);
             box-shadow: 0 14px 32px rgba(34,197,94,0.4);
         }
-
         .btn-secondary {
             background: var(--layer-soft);
             color: var(--text-main);
             border: 1px solid var(--border-strong);
         }
-        .btn-secondary:hover {
-            background: #e5e7eb;
-        }
+        .btn-secondary:hover { background: #e5e7eb; }
         body.theme-dark .btn-secondary:hover {
             background: rgba(31,41,55,0.96);
         }
-
         .btn-danger {
             background: rgba(248,113,113,0.12);
             color: var(--danger);
@@ -344,7 +310,6 @@
         .btn-danger:hover {
             background: rgba(248,113,113,0.2);
         }
-
         .result-box {
             font-size: 12px;
             color: var(--text-sub);
@@ -352,9 +317,33 @@
             border-radius: 12px;
             background: var(--layer-soft);
             border: 1px dashed var(--border-strong);
-            white-space: pre-wrap;
+        }
+        .result-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+        .result-label {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: rgba(148,163,184,0.15);
+            color: var(--text-sub);
+        }
+        .result-link {
+            font-size: 11px;
             word-break: break-all;
         }
+        .status-msg {
+            font-size: 11px;
+            margin-top: 4px;
+            min-height: 1.2em;
+            color: var(--text-sub);
+        }
+        .status-msg.success { color: #16a34a; }
+        .status-msg.error { color: #dc2626; }
 
         .footer-row {
             display: flex;
@@ -368,6 +357,22 @@
             border-top: 1px dashed var(--border-soft);
         }
 
+        /* 查看模式 */
+        #viewerContainer {
+            display: none;
+        }
+        #viewerContent {
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        #viewerMeta {
+            font-size: 11px;
+            color: var(--text-sub);
+            margin-bottom: 6px;
+        }
+
         @media (max-width: 640px) {
             .card {
                 padding: 14px 12px 12px;
@@ -379,6 +384,10 @@
             }
             input[type="text"], input[type="password"] {
                 max-width: 100%;
+            }
+            .result-row {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
     </style>
@@ -410,91 +419,146 @@
                 <span class="mode-label" id="modeLabel">模式：新建</span>
             </div>
             <div class="section-text" id="subtitle">
-                新建一条文本，选择过期时间，生成可分享链接。支持设置管理密码，便于后续修改或删除。
+                新建一条文本，选择过期时间，生成可分享链接。可选设置管理密码，方便后续修改或删除。
             </div>
             <div class="section-text" style="margin-top:4px;">
-                用法：在这里粘贴任何文本，提交，然后与 URL 共享。<br>
-                警告：仅用于临时共享，文件可能会在不通知的情况下被删除！
+                <span class="usage-label">用法：</span>在这里粘贴任何文本，提交，然后将生成的 URL 分享给他人。<br>
+                <span class="warning-label">警告：</span>仅用于临时共享，文件可能会在不通知的情况下被删除！
             </div>
         </section>
 
-        <form id="pasteForm">
-            <!-- 基础信息 -->
-            <section class="card-section">
-                <div class="section-title">
-                    基础信息
-                    <span class="tag">META</span>
-                </div>
-
-                <div class="field">
-                    <div class="field-label">文件名</div>
-                    <div class="field-inline">
-                        <input id="filename" type="text" placeholder="例如：notes-2025-11-24">
+        <!-- 编辑模式容器 -->
+        <div id="editorContainer">
+            <form id="pasteForm">
+                <!-- 基础信息 -->
+                <section class="card-section">
+                    <div class="section-title">
+                        基础信息
+                        <span class="tag">META</span>
                     </div>
-                </div>
 
-                <div class="field">
-                    <div class="field-label">管理密码（可选）</div>
-                    <div class="field-inline">
-                        <input id="password" type="password" placeholder="设置后可更新 / 删除内容">
+                    <div class="field">
+                        <div class="field-label">文件名</div>
+                        <div class="field-inline">
+                            <input id="filename" type="text" placeholder="例如：notes-2025-11-24">
+                        </div>
                     </div>
-                    <div class="hint">
-                        不填密码 = 临时分享（默认 10 分钟，可手动调整）。填写密码 = 可管理内容（默认不过期，也可自行选择）。
-                    </div>
-                </div>
-            </section>
 
-            <!-- 过期时间 -->
-            <section class="card-section">
-                <div class="section-title">
-                    过期时间
-                    <span class="tag">TTL</span>
-                </div>
-                <div class="field">
-                    <div class="ttl-group" id="ttlGroup">
-                        <button type="button" class="ttl-btn active" data-ttl="10m">10 分钟</button>
-                        <button type="button" class="ttl-btn" data-ttl="1d">1 天</button>
-                        <button type="button" class="ttl-btn" data-ttl="7d">7 天</button>
-                        <button type="button" class="ttl-btn" data-ttl="30d">30 天</button>
-                        <button type="button" class="ttl-btn" data-ttl="forever">不过期</button>
+                    <div class="field">
+                        <div class="field-label">自定义 URL（可选）</div>
+                        <div class="field-inline">
+                            <input id="customId" type="text" placeholder="例如：lyn-note（将用于 ?id=lyn-note）">
+                        </div>
+                        <div class="hint">
+                            优先级：自定义 URL &gt; 文件名 &gt; 随机 4~10 位短链接。
+                        </div>
                     </div>
-                    <div class="ttl-hint" id="ttlHint">内容将在 10 分钟后过期。</div>
-                </div>
-            </section>
 
-            <!-- 内容 -->
-            <section class="card-section">
-                <div class="section-title">
-                    内容
-                    <span class="tag">BODY</span>
-                </div>
-                <div class="field">
-                    <textarea id="content" placeholder="在这里粘贴内容（代码、日志、随手记都可以）..." required></textarea>
-                </div>
-            </section>
-
-            <!-- 操作 -->
-            <section class="card-section">
-                <div class="section-title">
-                    操作
-                    <span class="tag">ACTION</span>
-                </div>
-                <div class="field" style="gap:8px;">
-                    <div class="field-inline" style="gap:8px;">
-                        <button type="submit" class="btn-primary" id="submitBtn">生成链接</button>
-                        <button type="button" class="btn-secondary" id="btnNew">新建</button>
-                        <button type="button" class="btn-danger" id="btnDelete" style="display:none;">删除内容</button>
-                        <button type="button" class="btn-secondary" id="btnCopyLink" style="display:none;">复制分享文案</button>
+                    <div class="field">
+                        <div class="field-label">管理密码（可选）</div>
+                        <div class="field-inline">
+                            <input id="password" type="password" placeholder="设置后可更新 / 删除内容">
+                        </div>
+                        <div class="hint">
+                            不填密码 = 临时分享，仅访问链接；填写密码 = 同时生成管理链接（可更新 / 删除）。
+                        </div>
                     </div>
-                </div>
+                </section>
 
-                <div class="field" id="resultBox" style="display:none; margin-top:6px;">
-                    <div class="result-box">
-                        <div id="resultText"></div>
+                <!-- 过期时间 -->
+                <section class="card-section">
+                    <div class="section-title">
+                        过期时间
+                        <span class="tag">TTL</span>
                     </div>
-                </div>
-            </section>
-        </form>
+                    <div class="field">
+                        <div class="ttl-group" id="ttlGroup">
+                            <button type="button" class="ttl-btn active" data-ttl="10m">10 分钟</button>
+                            <button type="button" class="ttl-btn" data-ttl="1d">1 天</button>
+                            <button type="button" class="ttl-btn" data-ttl="7d">7 天</button>
+                            <button type="button" class="ttl-btn" data-ttl="30d">30 天</button>
+                            <button type="button" class="ttl-btn" data-ttl="forever">不过期</button>
+                        </div>
+                        <div class="ttl-hint" id="ttlHint">内容将在 10 分钟后过期。</div>
+                    </div>
+                </section>
+
+                <!-- 内容 -->
+                <section class="card-section">
+                    <div class="section-title">
+                        内容
+                        <span class="tag">BODY</span>
+                    </div>
+                    <div class="field">
+                        <textarea id="content" placeholder="在这里粘贴内容（代码、日志、随手记都可以）..." required></textarea>
+                    </div>
+                </section>
+
+                <!-- 操作 -->
+                <section class="card-section">
+                    <div class="section-title">
+                        操作
+                        <span class="tag">ACTION</span>
+                    </div>
+                    <div class="field" style="gap:8px;">
+                        <div class="field-inline" style="gap:8px;">
+                            <button type="submit" class="btn-primary" id="submitBtn">
+                                <span class="icon">✨</span><span class="text">生成链接</span>
+                            </button>
+                            <button type="button" class="btn-secondary" id="btnNew">
+                                🆕 新建
+                            </button>
+                            <button type="button" class="btn-danger" id="btnDelete" style="display:none;">
+                                🗑 删除内容
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="field" id="resultBox" style="display:none; margin-top:6px;">
+                        <div class="result-box">
+                            <div class="result-row">
+                                <span class="result-label">访问链接</span>
+                                <span class="result-link" id="viewLinkText"></span>
+                                <button type="button" class="btn-secondary" id="btnCopyView">
+                                    📋 复制
+                                </button>
+                            </div>
+                            <div class="result-row" id="manageLinkRow" style="display:none;">
+                                <span class="result-label">管理链接</span>
+                                <span class="result-link" id="manageLinkText"></span>
+                                <button type="button" class="btn-secondary" id="btnCopyManage">
+                                    🔑 复制
+                                </button>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">分享文案</span>
+                                <span class="result-link" id="shareText"></span>
+                                <button type="button" class="btn-secondary" id="btnCopyShare">
+                                    📋 复制
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="statusMsg" class="status-msg"></div>
+                </section>
+            </form>
+        </div>
+
+        <!-- 查看模式容器（?id=xxx 且不含密码时） -->
+        <section id="viewerContainer" class="card-section">
+            <div class="section-title">
+                内容查看
+                <span class="tag">VIEW</span>
+            </div>
+            <div id="viewerMeta"></div>
+            <pre id="viewerContent"></pre>
+            <div class="field" style="margin-top:8px;">
+                <button type="button" class="btn-secondary" id="btnBackToEditor">
+                    ⬅ 返回编辑页面
+                </button>
+            </div>
+        </section>
 
         <!-- 底部信息 -->
         <section class="footer-row">
@@ -505,10 +569,8 @@
 </div>
 
 <script>
-    // ========== 主题切换 ==========
-    const THEME_KEY = "lyn_paste_theme_final_v2";
+    const THEME_KEY = "lyn_paste_theme_v3";
     const themeToggle = document.getElementById("themeToggle");
-
     function applyTheme(theme) {
         document.body.classList.remove("theme-light", "theme-dark");
         document.body.classList.add("theme-" + theme);
@@ -516,7 +578,6 @@
         label.textContent = theme === "dark" ? "Dark" : "Light";
         try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
     }
-
     (function initTheme() {
         let theme = "light";
         try {
@@ -525,15 +586,11 @@
         } catch (_) {}
         applyTheme(theme);
     })();
+    themeToggle.addEventListener("click", () => {
+        const current = document.body.classList.contains("theme-dark") ? "dark" : "light";
+        applyTheme(current === "dark" ? "light" : "dark");
+    });
 
-    if (themeToggle) {
-        themeToggle.addEventListener("click", () => {
-            const current = document.body.classList.contains("theme-dark") ? "dark" : "light";
-            applyTheme(current === "dark" ? "light" : "dark");
-        });
-    }
-
-    // ========== 标题随机图标（YL1~YL10） ==========
     (function initRandomIcon() {
         const ICONS = [];
         for (let i = 1; i <= 10; i++) {
@@ -545,36 +602,52 @@
         img.src = pick;
     })();
 
-    // ========== 业务逻辑 ==========
+    // ===== 全局 DOM =====
     const BASE_URL = location.origin + "/Paste";
     const API_BASE = location.origin + "/api/paste";
 
-    const qs = (id) => document.getElementById(id);
+    const qs = id => document.getElementById(id);
 
-    const $filename     = qs("filename");
-    const $password     = qs("password");
-    const $content      = qs("content");
-    const $ttlGroup     = qs("ttlGroup");
-    const $ttlHint      = qs("ttlHint");
-    const $form         = qs("pasteForm");
-    const $submitBtn    = qs("submitBtn");
-    const $btnNew       = qs("btnNew");
-    const $btnDelete    = qs("btnDelete");
-    const $btnCopyLink  = qs("btnCopyLink");
-    const $resultBox    = qs("resultBox");
-    const $resultText   = qs("resultText");
-    const $subtitle     = qs("subtitle");
-    const $modeLabel    = qs("modeLabel");
-    const $baseUrlText  = qs("baseUrlText");
+    const $filename        = qs("filename");
+    const $customId        = qs("customId");
+    const $password        = qs("password");
+    const $content         = qs("content");
+    const $ttlGroup        = qs("ttlGroup");
+    const $ttlHint         = qs("ttlHint");
+    const $form            = qs("pasteForm");
+    const $submitBtn       = qs("submitBtn");
+    const $btnNew          = qs("btnNew");
+    const $btnDelete       = qs("btnDelete");
+    const $resultBox       = qs("resultBox");
+    const $viewLinkText    = qs("viewLinkText");
+    const $manageLinkText  = qs("manageLinkText");
+    const $shareText       = qs("shareText");
+    const $manageLinkRow   = qs("manageLinkRow");
+    const $btnCopyView     = qs("btnCopyView");
+    const $btnCopyManage   = qs("btnCopyManage");
+    const $btnCopyShare    = qs("btnCopyShare");
+    const $statusMsg       = qs("statusMsg");
+    const $subtitle        = qs("subtitle");
+    const $modeLabel       = qs("modeLabel");
+    const $baseUrlText     = qs("baseUrlText");
+    const $editorContainer = qs("editorContainer");
+    const $viewerContainer = qs("viewerContainer");
+    const $viewerMeta      = qs("viewerMeta");
+    const $viewerContent   = qs("viewerContent");
+    const $btnBackToEditor = qs("btnBackToEditor");
 
-    let currentSlug = null;
-    let hasPassword = false;
+    if ($baseUrlText) $baseUrlText.textContent = BASE_URL;
+
+    // 状态
+    let currentSlug = null;          // 当前内容的 ID
+    let currentManageKey = null;     // 当前管理密码（用于生成管理链接）
     let ttlKey = "10m";
-    let shareText = null;
-    let lastPasswordEmpty = true;
 
-    if ($baseUrlText) {
-        $baseUrlText.textContent = BASE_URL;
+    function setStatus(msg, type) {
+        if (!$statusMsg) return;
+        $statusMsg.textContent = msg || "";
+        $statusMsg.classList.remove("success", "error");
+        if (type) $statusMsg.classList.add(type);
     }
 
     const ttlTextMap = {
@@ -584,12 +657,9 @@
         "30d": "内容将在 30 天后过期。",
         "forever": "内容不会自动过期（服务清理除外）。"
     };
-
     function updateTtlHint() {
-        if (!$ttlHint) return;
-        $ttlHint.textContent = ttlTextMap[ttlKey] || ttlTextMap["10m"];
+        if ($ttlHint) $ttlHint.textContent = ttlTextMap[ttlKey] || ttlTextMap["10m"];
     }
-
     function setTtl(key) {
         ttlKey = key;
         if ($ttlGroup) {
@@ -600,9 +670,8 @@
         }
         updateTtlHint();
     }
-
     if ($ttlGroup) {
-        $ttlGroup.addEventListener("click", (e) => {
+        $ttlGroup.addEventListener("click", e => {
             const btn = e.target.closest(".ttl-btn");
             if (!btn) return;
             const key = btn.dataset.ttl;
@@ -611,100 +680,108 @@
         });
     }
 
-    if ($password) {
-        $password.addEventListener("input", () => {
-            const nowEmpty = !$password.value.trim();
-            if (lastPasswordEmpty && !nowEmpty) {
-                if (ttlKey === "10m") setTtl("forever");
-            }
-            if (!lastPasswordEmpty && nowEmpty) {
-                if (ttlKey === "forever") setTtl("10m");
-            }
-            lastPasswordEmpty = nowEmpty;
-        });
+    // helper: 生成 ID
+    function slugify(str) {
+        if (!str) return "";
+        return str
+            .toString()
+            .trim()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-zA-Z0-9_-]/g, "")
+            .toLowerCase();
+    }
+    function randomId4to10() {
+        const len = 4 + Math.floor(Math.random() * 7); // 4~10
+        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        let out = "";
+        for (let i = 0; i < len; i++) {
+            out += chars[Math.floor(Math.random() * chars.length)];
+        }
+        return out;
+    }
+
+    function computeSlug() {
+        const custom = $customId ? $customId.value.trim() : "";
+        const fname  = $filename ? $filename.value.trim() : "";
+        let base = custom || fname;
+        let slug = slugify(base);
+        if (!slug) slug = randomId4to10();
+        return slug;
+    }
+
+    function resetButtonsForNew() {
+        if ($submitBtn) {
+            $submitBtn.querySelector(".icon").textContent = "✨";
+            $submitBtn.querySelector(".text").textContent = "生成链接";
+        }
+        if ($btnDelete) $btnDelete.style.display = "none";
+        if ($modeLabel) $modeLabel.textContent = "模式：新建";
+        if ($subtitle) {
+            $subtitle.textContent = "新建一条文本，选择过期时间，生成可分享链接。可选设置管理密码，方便后续修改或删除。";
+        }
+    }
+
+    function enterEditorMode() {
+        if ($editorContainer) $editorContainer.style.display = "";
+        if ($viewerContainer) $viewerContainer.style.display = "none";
+    }
+    function enterViewerMode() {
+        if ($editorContainer) $editorContainer.style.display = "none";
+        if ($viewerContainer) $viewerContainer.style.display = "";
+        if ($modeLabel) $modeLabel.textContent = "模式：查看";
     }
 
     function resetToNew() {
         currentSlug = null;
-        hasPassword = false;
+        currentManageKey = null;
         ttlKey = "10m";
-        shareText = null;
-        lastPasswordEmpty = true;
-
+        setTtl("10m");
         if ($filename) $filename.value = "";
+        if ($customId) $customId.value = "";
         if ($password) $password.value = "";
         if ($content)  $content.value = "";
-        setTtl("10m");
 
         if ($resultBox) $resultBox.style.display = "none";
-        if ($btnCopyLink) $btnCopyLink.style.display = "none";
-        if ($btnDelete)   $btnDelete.style.display = "none";
-        if ($submitBtn)   $submitBtn.textContent = "生成链接";
-        if ($modeLabel)   $modeLabel.textContent = "模式：新建";
-        if ($subtitle)    $subtitle.textContent =
-            "新建一条文本，选择过期时间，生成可分享链接。支持设置管理密码，便于后续修改或删除。";
+        if ($viewLinkText) $viewLinkText.textContent = "";
+        if ($manageLinkText) $manageLinkText.textContent = "";
+        if ($shareText) $shareText.textContent = "";
+        if ($manageLinkRow) $manageLinkRow.style.display = "none";
+
+        resetButtonsForNew();
+        setStatus("", null);
+        enterEditorMode();
 
         const url = new URL(location.href);
         url.searchParams.delete("id");
         history.replaceState(null, "", url.toString());
     }
 
-    function formatShareText(slug, filename, content) {
-        const name = filename || slug;
+    function formatShareText(id, filename, content) {
+        const name = filename || id;
         const plain = (content || "").replace(/\s+/g, " ").trim();
         const snippet = plain.length > 40 ? plain.slice(0, 40) + "…" : (plain || "（无内容）");
-        return `${BASE_URL}/${name} ${snippet}`;
+        return `${BASE_URL}?id=${encodeURIComponent(id)} ${name ? name + " · " : ""}${snippet}`;
     }
 
-    function fillViewFromData(data) {
-        currentSlug = data.slug;
-        hasPassword = !!data.hasPassword;
-        ttlKey = data.ttlKey || "10m";
+    function fillResult(id, passwordPlain, data) {
+        if (!$resultBox) return;
+        const viewLink = `${BASE_URL}?id=${encodeURIComponent(id)}`;
+        const manageLink = passwordPlain ? `${BASE_URL}?id=${encodeURIComponent(id + ":" + passwordPlain)}` : null;
 
-        if ($filename) $filename.value = data.filename || "";
-        if ($content)  $content.value = data.content || "";
-        setTtl(ttlKey);
+        const filename = data.filename || "";
+        const content  = data.content || "";
 
-        const viewLink = `${BASE_URL}?id=${encodeURIComponent(currentSlug)}`;
-        shareText = formatShareText(currentSlug, data.filename, data.content || "");
+        const share = formatShareText(id, filename, content);
 
-        const lines = [];
-        lines.push(`访问链接：${viewLink}`);
-        lines.push(`分享文案：${shareText}`);
-        if (data.createdAt) {
-            lines.push(`创建时间：${new Date(data.createdAt).toLocaleString("zh-CN",{hour12:false})}`);
+        if ($viewLinkText) $viewLinkText.textContent = viewLink;
+        if ($shareText)    $shareText.textContent    = share;
+        if (manageLink && $manageLinkRow && $manageLinkText) {
+            $manageLinkText.textContent = manageLink;
+            $manageLinkRow.style.display = "";
+        } else if ($manageLinkRow) {
+            $manageLinkRow.style.display = "none";
         }
-        if (data.expiresAt) {
-            lines.push(`过期时间：${new Date(data.expiresAt).toLocaleString("zh-CN",{hour12:false})}`);
-        } else {
-            lines.push("过期时间：不过期（forever）");
-        }
-        lines.push(`管理状态：${hasPassword ? "已设置管理密码，可更新/删除" : "未设置管理密码，仅适合临时分享"}`);
-
-        if ($resultText && $resultBox) {
-            $resultText.textContent = lines.join("\n");
-            $resultBox.style.display = "block";
-        }
-
-        if (hasPassword) {
-            if ($btnDelete)   $btnDelete.style.display = "inline-flex";
-            if ($btnCopyLink) $btnCopyLink.style.display = "inline-flex";
-            if ($modeLabel)   $modeLabel.textContent = "模式：可管理";
-            if ($subtitle)    $subtitle.textContent =
-                "你正在管理一条可更新 / 删除的内容，修改后点击“保存更新”即可生效。";
-            if ($submitBtn)   $submitBtn.textContent = "保存更新";
-        } else {
-            if ($btnDelete)   $btnDelete.style.display = "none";
-            if ($btnCopyLink) $btnCopyLink.style.display = "inline-flex";
-            if ($modeLabel)   $modeLabel.textContent = "模式：临时分享";
-            if ($subtitle)    $subtitle.textContent =
-                "这是一条临时内容，没有管理密码，不支持后续修改/删除。";
-            if ($submitBtn)   $submitBtn.textContent = "生成新副本";
-        }
-
-        const url = new URL(location.href);
-        url.searchParams.set("id", currentSlug);
-        history.replaceState(null, "", url.toString());
+        $resultBox.style.display = "block";
     }
 
     async function postAction(payload) {
@@ -720,43 +797,82 @@
         return data;
     }
 
+    // 提交 新建/更新
     if ($form) {
-        $form.addEventListener("submit", async (e) => {
+        $form.addEventListener("submit", async e => {
             e.preventDefault();
-            const content = ($content && $content.value.trim()) || "";
-            if (!content) {
-                alert("内容不能为空");
+            const text = ($content && $content.value.trim()) || "";
+            if (!text) {
+                setStatus("内容不能为空。", "error");
                 return;
             }
+
             const filename = $filename ? $filename.value.trim() : "";
-            const password = $password ? $password.value.trim() : "";
-            const action = currentSlug && hasPassword ? "update" : "create";
+            const pwd      = $password ? $password.value.trim() : "";
+            const slug     = currentSlug || computeSlug();
+
+            const action = currentSlug && pwd ? "update" : "create";
 
             if ($submitBtn) {
                 $submitBtn.disabled = true;
-                $submitBtn.textContent = action === "create" ? "生成中…" : "保存中…";
+                $submitBtn.querySelector(".icon").textContent = action === "create" ? "✨" : "💾";
+                $submitBtn.querySelector(".text").textContent = action === "create" ? "生成中…" : "保存中…";
             }
+            setStatus("正在提交，请稍候…", null);
 
             try {
                 const payload = {
                     action,
-                    slug: currentSlug,
+                    slug,
                     filename,
-                    content,
+                    content: text,
                     ttlKey,
-                    managePassword: password || null,
+                    managePassword: pwd || null,
                 };
                 const data = await postAction(payload);
-                fillViewFromData(data);
-                alert(action === "create" ? "已生成链接" : "已保存更新");
+
+                // 后端应返回 data.slug（使用我们传的 slug 或处理后的 slug）
+                const finalId = data.slug || slug;
+                currentSlug = finalId;
+                currentManageKey = pwd || null;
+
+                fillResult(finalId, currentManageKey, data);
+
+                if (pwd) {
+                    if ($modeLabel) $modeLabel.textContent = "模式：可管理";
+                    if ($subtitle) {
+                        $subtitle.textContent = "你正在管理一条可更新 / 删除的内容，修改后点击“保存更新”即可生效。";
+                    }
+                    if ($submitBtn) {
+                        $submitBtn.querySelector(".icon").textContent = "💾";
+                        $submitBtn.querySelector(".text").textContent = "保存更新";
+                    }
+                    if ($btnDelete) $btnDelete.style.display = "inline-flex";
+                } else {
+                    resetButtonsForNew();
+                }
+
+                setStatus(action === "create" ? "已生成链接。" : "已保存更新。", "success");
+                const url = new URL(location.href);
+                if (pwd) {
+                    url.searchParams.set("id", finalId + ":" + pwd);
+                } else {
+                    url.searchParams.set("id", finalId);
+                }
+                history.replaceState(null, "", url.toString());
             } catch (err) {
                 console.error(err);
-                alert(err.message || "操作失败");
+                setStatus(err.message || "操作失败。", "error");
             } finally {
                 if ($submitBtn) {
                     $submitBtn.disabled = false;
-                    $submitBtn.textContent =
-                        currentSlug && hasPassword ? "保存更新" : "生成链接";
+                    if (currentSlug && currentManageKey) {
+                        $submitBtn.querySelector(".icon").textContent = "💾";
+                        $submitBtn.querySelector(".text").textContent = "保存更新";
+                    } else {
+                        $submitBtn.querySelector(".icon").textContent = "✨";
+                        $submitBtn.querySelector(".text").textContent = "生成链接";
+                    }
                 }
             }
         });
@@ -771,17 +887,12 @@
     if ($btnDelete) {
         $btnDelete.addEventListener("click", async () => {
             if (!currentSlug) return;
-            if (!hasPassword) {
-                alert("这条内容没有管理密码，不支持删除。");
-                return;
-            }
             const pwd = ($password && $password.value.trim()) || "";
             if (!pwd) {
-                alert("删除前请先输入你设置的管理密码。");
+                setStatus("删除需要管理密码，请先输入。", "error");
                 return;
             }
-            if (!confirm("确认删除这条内容吗？删除后将无法恢复。")) return;
-
+            setStatus("正在删除…", null);
             $btnDelete.disabled = true;
             $btnDelete.textContent = "删除中…";
             try {
@@ -790,56 +901,158 @@
                     slug: currentSlug,
                     managePassword: pwd,
                 });
-                alert("已删除");
+                setStatus("已删除。", "success");
                 resetToNew();
             } catch (err) {
                 console.error(err);
-                alert(err.message || "删除失败");
+                setStatus(err.message || "删除失败。", "error");
             } finally {
                 $btnDelete.disabled = false;
-                $btnDelete.textContent = "删除内容";
+                $btnDelete.textContent = "🗑 删除内容";
             }
         });
     }
 
-    if ($btnCopyLink) {
-        $btnCopyLink.addEventListener("click", async () => {
-            if (!shareText) return;
-            try {
-                await navigator.clipboard.writeText(shareText);
-                const old = $btnCopyLink.textContent;
-                $btnCopyLink.textContent = "已复制分享文案";
-                setTimeout(() => { $btnCopyLink.textContent = old; }, 1500);
-            } catch (e) {
-                alert("复制失败，请手动复制：\n" + shareText);
+    async function copyText(text, btn, doneLabel) {
+        if (!text) return;
+        try {
+            await navigator.clipboard.writeText(text);
+            if (btn) {
+                const old = btn.textContent;
+                btn.textContent = doneLabel || "已复制";
+                setTimeout(() => { btn.textContent = old; }, 1500);
             }
+            setStatus("已复制到剪贴板。", "success");
+        } catch (e) {
+            setStatus("复制失败，请手动复制。", "error");
+        }
+    }
+
+    if ($btnCopyView) {
+        $btnCopyView.addEventListener("click", () => {
+            copyText($viewLinkText && $viewLinkText.textContent, $btnCopyView, "已复制");
+        });
+    }
+    if ($btnCopyManage) {
+        $btnCopyManage.addEventListener("click", () => {
+            copyText($manageLinkText && $manageLinkText.textContent, $btnCopyManage, "已复制");
+        });
+    }
+    if ($btnCopyShare) {
+        $btnCopyShare.addEventListener("click", () => {
+            copyText($shareText && $shareText.textContent, $btnCopyShare, "已复制");
+        });
+    }
+
+    // 查看模式：?id=xxx
+    async function loadViewMode(slug) {
+        enterViewerMode();
+        setStatus("正在加载内容…", null);
+        try {
+            const res = await fetch(`${API_BASE}/${encodeURIComponent(slug)}`);
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.ok) {
+                if ($viewerContent) $viewerContent.textContent = "未找到这条内容，可能已过期或被删除。";
+                if ($viewerMeta) $viewerMeta.textContent = "";
+                setStatus(data.error || "内容不存在。", "error");
+                return;
+            }
+            if ($viewerContent) $viewerContent.textContent = data.content || "";
+            if ($viewerMeta) {
+                const parts = [];
+                if (data.filename) parts.push(`文件名：${data.filename}`);
+                if (data.createdAt) {
+                    parts.push(`创建时间：${new Date(data.createdAt).toLocaleString("zh-CN",{hour12:false})}`);
+                }
+                if (data.expiresAt) {
+                    parts.push(`过期时间：${new Date(data.expiresAt).toLocaleString("zh-CN",{hour12:false})}`);
+                } else {
+                    parts.push("过期时间：不过期（forever）");
+                }
+                $viewerMeta.textContent = parts.join(" · ");
+            }
+            setStatus("", null);
+        } catch (e) {
+            console.error(e);
+            if ($viewerContent) $viewerContent.textContent = "加载失败，请稍后重试。";
+            if ($viewerMeta) $viewerMeta.textContent = "";
+            setStatus("加载失败。", "error");
+        }
+    }
+
+    // 管理模式：?id=slug:password
+    async function loadManageMode(slug, manageKey) {
+        enterEditorMode();
+        setStatus("正在加载管理内容…", null);
+        try {
+            const res = await fetch(`${API_BASE}/${encodeURIComponent(slug)}`);
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.ok) {
+                setStatus(data.error || "内容不存在。", "error");
+                resetToNew();
+                return;
+            }
+            currentSlug = data.slug || slug;
+            currentManageKey = manageKey || null;
+
+            if ($filename) $filename.value = data.filename || "";
+            if ($content)  $content.value  = data.content || "";
+            if ($password && manageKey) $password.value = manageKey;
+            // TTL 用后端的
+            if (data.ttlKey) {
+                ttlKey = data.ttlKey;
+                setTtl(ttlKey);
+            }
+
+            if ($modeLabel) $modeLabel.textContent = "模式：可管理";
+            if ($subtitle) {
+                $subtitle.textContent = "你正在管理一条可更新 / 删除的内容，修改后点击“保存更新”即可生效。";
+            }
+            if ($submitBtn) {
+                $submitBtn.querySelector(".icon").textContent = "💾";
+                $submitBtn.querySelector(".text").textContent = "保存更新";
+            }
+            if ($btnDelete) $btnDelete.style.display = "inline-flex";
+
+            fillResult(currentSlug, currentManageKey, data);
+            setStatus("", null);
+
+            const url = new URL(location.href);
+            url.searchParams.set("id", currentManageKey ? currentSlug + ":" + currentManageKey : currentSlug);
+            history.replaceState(null, "", url.toString());
+        } catch (e) {
+            console.error(e);
+            setStatus("加载失败。", "error");
+            resetToNew();
+        }
+    }
+
+    if ($btnBackToEditor) {
+        $btnBackToEditor.addEventListener("click", () => {
+            resetToNew();
         });
     }
 
     async function initFromQuery() {
         const url = new URL(location.href);
-        const id = url.searchParams.get("id");
-        if (!id) {
+        const idParam = url.searchParams.get("id");
+        if (!idParam) {
             resetToNew();
             return;
         }
-        try {
-            const res = await fetch(`${API_BASE}/${encodeURIComponent(id)}`);
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok || !data.ok) {
+        // 判断有没有 :
+        if (idParam.includes(":")) {
+            const [slug, manageKey] = idParam.split(":", 2);
+            if (!slug) {
                 resetToNew();
-                alert(data.error || "未找到这条内容（可能已过期或被删除）");
                 return;
             }
-            fillViewFromData(data);
-        } catch (e) {
-            console.error(e);
-            resetToNew();
-            alert("加载失败");
+            await loadManageMode(slug, manageKey || "");
+        } else {
+            await loadViewMode(idParam);
         }
     }
 
-    // 初始状态
     setTtl("10m");
     initFromQuery();
 </script>
