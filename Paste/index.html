@@ -6,389 +6,288 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
     <style>
-        :root {
+        :root{
             color-scheme: light dark;
-            --bg: #f4f5fb;
-            --layer: #ffffff;
-            --layer-soft: #f9fafb;
-            --text-main: #0f172a;
-            --text-sub: #6b7280;
-            --border-soft: rgba(148,163,184,0.5);
-            --border-strong: rgba(148,163,184,0.9);
-            --accent: #22c55e;
-            --accent2: #0ea5e9;
-            --danger: #b91c1c;
-            --shadow-main: 0 18px 48px rgba(15,23,42,0.14);
-            --input-bg: #f9fafb;
+            --bg:#f4f5fb;
+            --layer:#ffffff;
+            --layer-soft:#f9fafb;
+            --text-main:#0f172a;
+            --text-sub:#6b7280;
+            --border-soft:rgba(148,163,184,0.5);
+            --border-strong:rgba(148,163,184,0.9);
+            --accent:#22c55e;
+            --accent2:#0ea5e9;
+            --danger:#b91c1c;
+            --shadow-main:0 18px 48px rgba(15,23,42,0.14);
+            --input-bg:#f9fafb;
         }
-        body.theme-dark {
-            --bg: #020617;
-            --layer: #020617;
-            --layer-soft: rgba(15,23,42,0.96);
-            --text-main: #e5e7eb;
-            --text-sub: #9ca3af;
-            --border-soft: rgba(55,65,81,0.9);
-            --border-strong: rgba(148,163,184,0.9);
-            --accent: #22c55e;
-            --accent2: #0ea5e9;
-            --danger: #fecaca;
+        body.theme-dark{
+            --bg:#020617;
+            --layer:#020617;
+            --layer-soft:rgba(15,23,42,0.96);
+            --text-main:#e5e7eb;
+            --text-sub:#9ca3af;
+            --border-soft:rgba(55,65,81,0.9);
+            --border-strong:rgba(148,163,184,0.9);
+            --accent:#22c55e;
+            --accent2:#0ea5e9;
+            --danger:#fecaca;
             --shadow-main:
                 0 22px 60px rgba(15,23,42,0.96),
                 0 0 0 1px rgba(15,23,42,0.9);
-            --input-bg: rgba(15,23,42,0.96);
+            --input-bg:rgba(15,23,42,0.96);
         }
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px 12px;
+        body.mode-manage{
+            --accent:#0ea5e9;
+            --accent2:#6366f1;
+        }
+        *{box-sizing:border-box;}
+        body{
+            margin:0;
+            min-height:100vh;
+            font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:24px 12px;
             background:
-                radial-gradient(circle at top, rgba(34,197,94,0.12), transparent 60%),
-                radial-gradient(circle at bottom, rgba(56,189,248,0.10), transparent 60%),
+                radial-gradient(circle at top,rgba(34,197,94,0.12),transparent 60%),
+                radial-gradient(circle at bottom,rgba(56,189,248,0.10),transparent 60%),
                 var(--bg);
-            color: var(--text-main);
-            transition: background 0.2s ease, color 0.2s ease;
+            color:var(--text-main);
+            transition:background .2s ease,color .2s ease;
         }
-        .shell { width: 100%; max-width: 720px; }
-        .header {
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            align-items: center;
+        .shell{width:100%;max-width:720px;}
+        .header{
+            margin-bottom:10px;
+            display:flex;
+            justify-content:space-between;
+            gap:10px;
+            align-items:center;
         }
-        .brand {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
+        .brand{display:flex;flex-direction:column;gap:2px;}
+        .brand-main{display:flex;align-items:center;gap:8px;}
+        .brand-logo{
+            width:28px;height:28px;
+            border-radius:10px;
+            overflow:hidden;
+            background:radial-gradient(circle at top left,#22c55e,#0ea5e9);
+            display:flex;align-items:center;justify-content:center;
         }
-        .brand-main {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .brand-logo img{
+            width:100%;height:100%;object-fit:cover;border-radius:10px;display:block;
         }
-        .brand-logo {
-            width: 28px;
-            height: 28px;
-            border-radius: 10px;
-            overflow: hidden;
-            background: radial-gradient(circle at top left,#22c55e,#0ea5e9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .brand-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 10px;
-            display: block;
-        }
-        .brand-title {
-            font-size: 18px;
-            font-weight: 600;
-            letter-spacing: .02em;
-        }
-        .brand-sub {
-            font-size: 11px;
-            color: var(--text-sub);
-        }
-        /* 主题切换 */
-        .theme-toggle {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            border-radius: 999px;
-            border: 1px solid var(--border-soft);
-            background: transparent;
-            padding: 4px 10px;
-            font-size: 11px;
-            color: var(--text-sub);
-            cursor: pointer;
-        }
-        .theme-toggle .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 999px;
-            border: 1px solid var(--border-soft);
-            background: radial-gradient(circle at top, #fde68a, #f97316);
-            box-shadow: 0 0 4px rgba(249,115,22,0.6);
-        }
-        body.theme-dark .theme-toggle .dot {
-            background: radial-gradient(circle at center, #22c55e, #0ea5e9);
-            box-shadow: 0 0 6px rgba(56,189,248,0.9);
-        }
-        .card {
-            background: var(--layer);
-            border-radius: 20px;
-            border: 1px solid var(--border-soft);
-            box-shadow: var(--shadow-main);
-            padding: 16px 18px 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .card-section {
-            border-radius: 14px;
-            padding: 10px 10px;
-            background: var(--layer-soft);
-            border: 1px solid rgba(148,163,184,0.25);
-        }
-        .card-section + .card-section { margin-top: 4px; }
-        .section-title {
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .section-title .tag {
-            font-size: 10px;
-            padding: 1px 6px;
-            border-radius: 999px;
-            border: 1px solid rgba(148,163,184,0.4);
-            color: var(--text-sub);
-        }
-        .section-text {
-            font-size: 11px;
-            color: var(--text-sub);
-            line-height: 1.6;
-        }
-        .mode-label {
-            font-size: 11px;
-            padding: 3px 8px;
-            border-radius: 999px;
-            background: rgba(239,246,255,1);
-            border: 1px solid rgba(59,130,246,0.6);
-            color: #1d4ed8;
-        }
-        body.theme-dark .mode-label {
-            background: rgba(15,23,42,0.98);
-            border-color: rgba(79,70,229,0.75);
-            color: #a5b4fc;
-        }
-        .usage-label {
-            color: var(--accent2);
-            font-weight: 600;
-        }
-        .warning-label {
-            color: #dc2626;
-            font-weight: 600;
-        }
-        form { display: flex; flex-direction: column; gap: 8px; }
+        .brand-title{font-size:18px;font-weight:600;letter-spacing:.02em;}
+        .brand-sub{font-size:11px;color:var(--text-sub);}
 
-        .field {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            margin-top: 2px;
+        .theme-toggle{
+            display:inline-flex;align-items:center;gap:6px;
+            border-radius:999px;border:1px solid var(--border-soft);
+            background:transparent;padding:4px 10px;
+            font-size:11px;color:var(--text-sub);
+            cursor:pointer;
         }
-        .field-label {
-            font-size: 12px;
-            color: var(--text-sub);
+        .theme-icon{
+            width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;
         }
-        .field-inline {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            align-items: center;
-        }
-        input[type="text"], input[type="password"] {
-            border-radius: 999px;
-            border: 1px solid var(--border-strong);
-            background: var(--input-bg);
-            color: var(--text-main);
-            font-size: 12px;
-            padding: 6px 10px;
-            outline: none;
-            min-width: 160px;
-        }
-        input::placeholder { color: rgba(148,163,184,0.7); }
+        .theme-icon svg{width:16px;height:16px;fill:currentColor;}
+        body.theme-dark .theme-icon-sun{display:none;}
+        body.theme-dark .theme-icon-moon{display:inline-flex;}
+        body.theme-light .theme-icon-moon{display:none;}
 
-        .ttl-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+        .card{
+            background:var(--layer);
+            border-radius:20px;
+            border:1px solid var(--border-soft);
+            box-shadow:var(--shadow-main);
+            padding:16px 18px 14px;
+            display:flex;flex-direction:column;gap:12px;
+            transition:border-color .2s ease,box-shadow .2s ease;
         }
-        .ttl-btn {
-            border-radius: 999px;
-            border: 1px solid #d4d4d8;
-            background: #fff;
-            color: #374151;
-            font-size: 12px;
-            padding: 4px 14px;
-            cursor: pointer;
-            outline: none;
+        body.mode-manage .card{
+            border-color:rgba(56,189,248,0.9);
+            box-shadow:
+                0 0 0 1px rgba(56,189,248,0.45),
+                var(--shadow-main);
         }
-        body.theme-dark .ttl-btn {
-            background: rgba(15,23,42,0.96);
-            border-color: rgba(75,85,99,0.9);
-            color: var(--text-sub);
+        .card-section{
+            border-radius:14px;
+            padding:10px 10px;
+            background:var(--layer-soft);
+            border:1px solid rgba(148,163,184,0.25);
         }
-        .ttl-btn.active {
-            background: #111827;
-            color: #ffffff;
-            border-color: #111827;
-            box-shadow: 0 4px 10px rgba(15,23,42,0.25);
+        .card-section+.card-section{margin-top:4px;}
+        .section-title{
+            font-size:12px;font-weight:600;margin-bottom:6px;
+            display:flex;align-items:center;gap:6px;
         }
-        .ttl-hint {
-            font-size: 11px;
-            color: var(--text-sub);
-            margin-top: 4px;
+        body.mode-manage .section-title{color:var(--accent2);}
+        .section-title .tag{
+            font-size:10px;padding:1px 6px;border-radius:999px;
+            border:1px solid rgba(148,163,184,0.4);color:var(--text-sub);
         }
-        textarea {
-            width: 100%;
-            min-height: 220px;
-            resize: vertical;
-            padding: 10px 12px;
-            border-radius: 14px;
-            border: 1px solid var(--border-strong);
-            background: var(--input-bg);
-            color: var(--text-main);
-            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-            font-size: 13px;
-            line-height: 1.5;
-            outline: none;
-            transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+        .section-text{font-size:11px;color:var(--text-sub);line-height:1.6;}
+        .mode-label{
+            font-size:11px;padding:3px 8px;border-radius:999px;
+            background:rgba(239,246,255,1);
+            border:1px solid rgba(59,130,246,0.6);
+            color:#1d4ed8;
         }
-        textarea::placeholder { color: rgba(148,163,184,0.8); }
-        textarea:focus {
-            border-color: var(--accent2);
-            box-shadow: 0 0 0 1px rgba(56,189,248,0.35);
-            background: #ffffff;
+        body.theme-dark .mode-label{
+            background:rgba(15,23,42,0.98);
+            border-color:rgba(79,70,229,0.75);
+            color:#a5b4fc;
         }
-        body.theme-dark textarea:focus {
+        body.mode-manage .mode-label{
+            border-color:rgba(56,189,248,0.9);
+            color:#0ea5e9;
+        }
+        .usage-label{color:var(--accent2);font-weight:600;}
+        .warning-label{color:#dc2626;font-weight:600;}
+
+        form{display:flex;flex-direction:column;gap:8px;}
+        .field{display:flex;flex-direction:column;gap:4px;margin-top:2px;}
+        .field-label{font-size:12px;color:var(--text-sub);}
+        .field-inline{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+
+        input[type="text"],input[type="password"]{
+            border-radius:999px;
+            border:1px solid var(--border-strong);
+            background:var(--input-bg);
+            color:var(--text-main);
+            font-size:12px;
+            padding:6px 10px;
+            outline:none;min-width:160px;
+        }
+        input::placeholder{color:rgba(148,163,184,0.7);}
+        .password-wrap{
+            position:relative;
+            display:inline-flex;align-items:center;
+            width:100%;max-width:260px;
+        }
+        .password-wrap input{width:100%;padding-right:30px;}
+        .password-eye{
+            position:absolute;right:8px;top:50%;transform:translateY(-50%);
+            border:none;background:transparent;padding:0;
+            cursor:pointer;color:var(--text-sub);
+            display:inline-flex;align-items:center;justify-content:center;
+        }
+        .password-eye svg{width:14px;height:14px;fill:currentColor;}
+
+        .ttl-group{display:flex;flex-wrap:wrap;gap:8px;}
+        .ttl-btn{
+            border-radius:999px;border:1px solid #d4d4d8;
+            background:#fff;color:#374151;
+            font-size:12px;padding:4px 14px;
+            cursor:pointer;outline:none;
+        }
+        body.theme-dark .ttl-btn{
+            background:rgba(15,23,42,0.96);
+            border-color:rgba(75,85,99,0.9);
+            color:var(--text-sub);
+        }
+        .ttl-btn.active{
+            background:#111827;color:#ffffff;
+            border-color:#111827;
+            box-shadow:0 4px 10px rgba(15,23,42,0.25);
+        }
+        .ttl-hint{font-size:11px;color:var(--text-sub);margin-top:4px;}
+
+        textarea{
+            width:100%;min-height:220px;resize:vertical;
+            padding:10px 12px;border-radius:14px;
+            border:1px solid var(--border-strong);
+            background:var(--input-bg);
+            color:var(--text-main);
+            font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+            font-size:13px;line-height:1.5;
+            outline:none;
+            transition:border-color .15s ease,box-shadow .15s ease,background .15s ease;
+        }
+        textarea::placeholder{color:rgba(148,163,184,0.8);}
+        textarea:focus{
+            border-color:var(--accent2);
+            box-shadow:0 0 0 1px rgba(56,189,248,0.35);
+            background:#ffffff;
+        }
+        body.theme-dark textarea:focus{
             box-shadow:
                 0 0 0 1px rgba(56,189,248,0.8),
                 0 12px 30px rgba(15,23,42,0.9);
-            background: rgba(15,23,42,1);
-        }
-        .hint {
-            font-size: 11px;
-            color: var(--text-sub);
-        }
-        button {
-            border: none;
-            outline: none;
-            cursor: pointer;
-            font-size: 12px;
-            border-radius: 999px;
-            padding: 6px 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .btn-primary {
-            font-weight: 500;
-            background: linear-gradient(90deg, var(--accent), var(--accent2));
-            color: #020617;
-            box-shadow: 0 10px 26px rgba(34,197,94,0.3);
-        }
-        .btn-primary:hover {
-            filter: brightness(1.03);
-            box-shadow: 0 14px 32px rgba(34,197,94,0.4);
-        }
-        .btn-secondary {
-            background: var(--layer-soft);
-            color: var(--text-main);
-            border: 1px solid var(--border-strong);
-        }
-        .btn-secondary:hover { background: #e5e7eb; }
-        body.theme-dark .btn-secondary:hover {
-            background: rgba(31,41,55,0.96);
-        }
-        .btn-danger {
-            background: rgba(248,113,113,0.12);
-            color: var(--danger);
-            border: 1px solid rgba(248,113,113,0.7);
-        }
-        .btn-danger:hover {
-            background: rgba(248,113,113,0.2);
-        }
-        .result-box {
-            font-size: 12px;
-            color: var(--text-sub);
-            padding: 8px 10px;
-            border-radius: 12px;
-            background: var(--layer-soft);
-            border: 1px dashed var(--border-strong);
-        }
-        .result-row {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 4px;
-        }
-        .result-label {
-            font-size: 11px;
-            padding: 2px 6px;
-            border-radius: 999px;
-            background: rgba(148,163,184,0.15);
-            color: var(--text-sub);
-        }
-        .result-link {
-            font-size: 11px;
-            word-break: break-all;
-        }
-        .status-msg {
-            font-size: 11px;
-            margin-top: 4px;
-            min-height: 1.2em;
-            color: var(--text-sub);
-        }
-        .status-msg.success { color: #16a34a; }
-        .status-msg.error { color: #dc2626; }
-
-        .footer-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 8px;
-            flex-wrap: wrap;
-            font-size: 11px;
-            color: var(--text-sub);
-            margin-top: 2px;
-            padding-top: 4px;
-            border-top: 1px dashed var(--border-soft);
+            background:rgba(15,23,42,1);
         }
 
-        /* 查看模式 */
-        #viewerContainer {
-            display: none;
+        .hint{font-size:11px;color:var(--text-sub);}
+        button{
+            border:none;outline:none;cursor:pointer;
+            font-size:12px;border-radius:999px;
+            padding:6px 14px;
+            display:inline-flex;align-items:center;gap:6px;
         }
-        #viewerContent {
-            font-size: 12px;
-            white-space: pre-wrap;
-            word-break: break-word;
-            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        .btn-primary{
+            font-weight:500;
+            background:linear-gradient(90deg,var(--accent),var(--accent2));
+            color:#020617;
+            box-shadow:0 10px 26px rgba(34,197,94,0.3);
         }
-        #viewerMeta {
-            font-size: 11px;
-            color: var(--text-sub);
-            margin-bottom: 6px;
+        .btn-primary:hover{
+            filter:brightness(1.03);
+            box-shadow:0 14px 32px rgba(34,197,94,0.4);
+        }
+        .btn-secondary{
+            background:var(--layer-soft);
+            color:var(--text-main);
+            border:1px solid var(--border-strong);
+        }
+        .btn-secondary:hover{background:#e5e7eb;}
+        body.theme-dark .btn-secondary:hover{
+            background:rgba(31,41,55,0.96);
+        }
+        .btn-danger{
+            background:rgba(248,113,113,0.12);
+            color:var(--danger);
+            border:1px solid rgba(248,113,113,0.7);
+        }
+        .btn-danger:hover{background:rgba(248,113,113,0.2);}
+
+        .icon-svg{width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;}
+        .icon-svg svg{width:14px;height:14px;fill:currentColor;}
+
+        .result-box{
+            font-size:12px;color:var(--text-sub);
+            padding:8px 10px;border-radius:12px;
+            background:var(--layer-soft);
+            border:1px dashed var(--border-strong);
+        }
+        .result-row{
+            display:flex;flex-wrap:wrap;align-items:center;
+            gap:6px;margin-bottom:4px;
+        }
+        .result-label{
+            font-size:11px;padding:2px 6px;border-radius:999px;
+            background:rgba(148,163,184,0.15);color:var(--text-sub);
+        }
+        .result-link{font-size:11px;word-break:break-all;}
+        .status-msg{
+            font-size:11px;margin-top:4px;min-height:1.2em;color:var(--text-sub);
+        }
+        .status-msg.success{color:#16a34a;}
+        .status-msg.error{color:#dc2626;}
+
+        .footer-row{
+            display:flex;justify-content:space-between;
+            gap:8px;flex-wrap:wrap;
+            font-size:11px;color:var(--text-sub);
+            margin-top:2px;padding-top:4px;
+            border-top:1px dashed var(--border-soft);
         }
 
-        @media (max-width: 640px) {
-            .card {
-                padding: 14px 12px 12px;
-                border-radius: 16px;
-            }
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            input[type="text"], input[type="password"] {
-                max-width: 100%;
-            }
-            .result-row {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+        @media(max-width:640px){
+            .card{padding:14px 12px 12px;border-radius:16px;}
+            .header{flex-direction:column;align-items:flex-start;}
+            input[type="text"],input[type="password"]{max-width:100%;}
+            .result-row{flex-direction:column;align-items:flex-start;}
+            .password-wrap{max-width:100%;}
         }
     </style>
 </head>
@@ -400,17 +299,24 @@
                 <div class="brand-logo">
                     <img id="brandIcon" alt="icon">
                 </div>
-                <div class="brand-title">Lyn's Paste</div>
             </div>
+            <div class="brand-title">Lyn's Paste</div>
             <div class="brand-sub">Paste text. Get URL. Move on.</div>
         </div>
         <button type="button" class="theme-toggle" id="themeToggle">
-            <span class="dot"></span>
+            <span class="theme-icon theme-icon-sun">
+                <!-- 太阳 SVG -->
+                <svg viewBox="0 0 20 20"><path d="M10 3.5a1 1 0 0 1-1-1V1.75a1 1 0 1 1 2 0V2.5a1 1 0 0 1-1 1zM10 18.25a1 1 0 0 1-1-1V16.5a1 1 0 1 1 2 0v.75a1 1 0 0 1-1 1zM4.22 5.03a1 1 0 0 1 1.41-1.41l.53.53a1 1 0 1 1-1.41 1.41l-.53-.53zM13.84 14.66a1 1 0 0 1 1.41-1.41l.53.53a1 1 0 1 1-1.41 1.41l-.53-.53zM1.75 11a1 1 0 0 1 0-2H2.5a1 1 0 1 1 0 2h-.75zM17.5 11a1 1 0 0 1 0-2h.75a1 1 0 0 1 0 2h-.75zM4.22 14.97l.53-.53a1 1 0 1 1 1.41 1.41l-.53.53a1 1 0 0 1-1.41-1.41zM13.84 5.34l.53-.53a1 1 0 1 1 1.41 1.41l-.53.53a1 1 0 0 1-1.41-1.41zM10 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg>
+            </span>
+            <span class="theme-icon theme-icon-moon">
+                <!-- 月亮 SVG -->
+                <svg viewBox="0 0 20 20"><path d="M15.25 11.1A5.5 5.5 0 0 1 8.9 4.75 5.5 5.5 0 1 0 15.25 11.1z"/></svg>
+            </span>
             <span class="label">Light</span>
         </button>
     </header>
 
-    <main class="card">
+    <main class="card" id="mainCard">
         <!-- 顶部说明 -->
         <section class="card-section">
             <div class="section-title">
@@ -427,7 +333,7 @@
             </div>
         </section>
 
-        <!-- 编辑模式容器 -->
+        <!-- 编辑区 -->
         <div id="editorContainer">
             <form id="pasteForm">
                 <!-- 基础信息 -->
@@ -440,14 +346,14 @@
                     <div class="field">
                         <div class="field-label">文件名</div>
                         <div class="field-inline">
-                            <input id="filename" type="text" placeholder="例如：notes-2025-11-24">
+                            <input id="filename" type="text" placeholder="例如：Lyn 或 notes-2025-11-24">
                         </div>
                     </div>
 
                     <div class="field">
                         <div class="field-label">自定义 URL（可选）</div>
                         <div class="field-inline">
-                            <input id="customId" type="text" placeholder="例如：lyn-note（将用于 ?id=lyn-note）">
+                            <input id="customId" type="text" placeholder="例如：Lyn（将用于 ?id=Lyn）">
                         </div>
                         <div class="hint">
                             优先级：自定义 URL &gt; 文件名 &gt; 随机 4~10 位短链接。
@@ -457,10 +363,15 @@
                     <div class="field">
                         <div class="field-label">管理密码（可选）</div>
                         <div class="field-inline">
-                            <input id="password" type="password" placeholder="设置后可更新 / 删除内容">
+                            <div class="password-wrap">
+                                <input id="password" type="password" placeholder="设置后可更新 / 删除内容">
+                                <button type="button" class="password-eye" id="passwordEye" aria-label="显示/隐藏密码">
+                                    <svg viewBox="0 0 20 20"><path d="M10 4C5.5 4 2 7.5 1 10c1 2.5 4.5 6 9 6s8-3.5 9-6c-1-2.5-4.5-6-9-6zm0 9a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+                                </button>
+                            </div>
                         </div>
                         <div class="hint">
-                            不填密码 = 临时分享，仅访问链接；填写密码 = 同时生成管理链接（可更新 / 删除）。
+                            不填密码 = 默认保存 10 分钟（可手动调整）；填密码 = 默认不过期（可手动调整）。
                         </div>
                     </div>
                 </section>
@@ -494,7 +405,7 @@
                     </div>
                 </section>
 
-                <!-- 操作 -->
+                <!-- 操作 + 结果 -->
                 <section class="card-section">
                     <div class="section-title">
                         操作
@@ -503,38 +414,44 @@
                     <div class="field" style="gap:8px;">
                         <div class="field-inline" style="gap:8px;">
                             <button type="submit" class="btn-primary" id="submitBtn">
-                                <span class="icon">✨</span><span class="text">生成链接</span>
-                            </button>
-                            <button type="button" class="btn-secondary" id="btnNew">
-                                🆕 新建
+                                <span class="icon-svg">
+                                    <!-- 箭头 SVG -->
+                                    <svg viewBox="0 0 20 20"><path d="M10 2a1 1 0 0 1 .9.55l6 12a1 1 0 0 1-1.3 1.35L11 13.38V17a1 1 0 1 1-2 0v-3.62L4.4 15.9A1 1 0 0 1 3.1 14.55l6-12A1 1 0 0 1 10 2z"/></svg>
+                                </span>
+                                <span class="text">生成链接</span>
                             </button>
                             <button type="button" class="btn-danger" id="btnDelete" style="display:none;">
-                                🗑 删除内容
+                                <span class="icon-svg">
+                                    <!-- 垃圾桶 SVG -->
+                                    <svg viewBox="0 0 20 20"><path d="M7 3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2h3a1 1 0 1 1 0 2h-1v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5H3a1 1 0 0 1 0-2h3zm1 0h4a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1zm-1 4a1 1 0 0 1 2 0v7a1 1 0 0 1-2 0zm5 0a1 1 0 0 1 2 0v7a1 1 0 0 1-2 0z"/></svg>
+                                </span>
+                                删除内容
                             </button>
                         </div>
                     </div>
 
-                    <div class="field" id="resultBox" style="display:none; margin-top:6px;">
+                    <div class="field" id="resultBox" style="display:none;margin-top:6px;">
                         <div class="result-box">
                             <div class="result-row">
                                 <span class="result-label">访问链接</span>
                                 <span class="result-link" id="viewLinkText"></span>
                                 <button type="button" class="btn-secondary" id="btnCopyView">
-                                    📋 复制
+                                    <span class="icon-svg">
+                                        <!-- 复制 SVG -->
+                                        <svg viewBox="0 0 20 20"><path d="M7 3a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2v-2h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v2H7z"/><path d="M3 7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7zm3-1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H6z"/></svg>
+                                    </span>
+                                    复制
                                 </button>
                             </div>
                             <div class="result-row" id="manageLinkRow" style="display:none;">
                                 <span class="result-label">管理链接</span>
                                 <span class="result-link" id="manageLinkText"></span>
                                 <button type="button" class="btn-secondary" id="btnCopyManage">
-                                    🔑 复制
-                                </button>
-                            </div>
-                            <div class="result-row">
-                                <span class="result-label">分享文案</span>
-                                <span class="result-link" id="shareText"></span>
-                                <button type="button" class="btn-secondary" id="btnCopyShare">
-                                    📋 复制
+                                    <span class="icon-svg">
+                                        <!-- 钥匙+复制 SVG -->
+                                        <svg viewBox="0 0 20 20"><path d="M10 2a4 4 0 0 1 4 4v1h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a3 3 0 0 1-3-3V8a2 2 0 0 1 2-2h1V6a4 4 0 0 1 4-4zm2 5V6a2 2 0 1 0-4 0v1z"/></svg>
+                                    </span>
+                                    复制
                                 </button>
                             </div>
                         </div>
@@ -545,515 +462,449 @@
             </form>
         </div>
 
-        <!-- 查看模式容器（?id=xxx 且不含密码时） -->
-        <section id="viewerContainer" class="card-section">
-            <div class="section-title">
-                内容查看
-                <span class="tag">VIEW</span>
-            </div>
-            <div id="viewerMeta"></div>
-            <pre id="viewerContent"></pre>
-            <div class="field" style="margin-top:8px;">
-                <button type="button" class="btn-secondary" id="btnBackToEditor">
-                    ⬅ 返回编辑页面
-                </button>
-            </div>
-        </section>
-
         <!-- 底部信息 -->
         <section class="footer-row">
             <span>入口：<span id="baseUrlText"></span></span>
-            <span>By Lyn · Cloudflare Workers & KV</span>
+            <span>By Lyn · Cloudflare Workers &amp; KV</span>
         </section>
     </main>
 </div>
 
 <script>
-    const THEME_KEY = "lyn_paste_theme_v3";
-    const themeToggle = document.getElementById("themeToggle");
-    function applyTheme(theme) {
-        document.body.classList.remove("theme-light", "theme-dark");
-        document.body.classList.add("theme-" + theme);
-        const label = themeToggle.querySelector(".label");
-        label.textContent = theme === "dark" ? "Dark" : "Light";
-        try { localStorage.setItem(THEME_KEY, theme); } catch (_) {}
+    const THEME_KEY="lyn_paste_theme_v3";
+    const themeToggle=document.getElementById("themeToggle");
+    function applyTheme(theme){
+        document.body.classList.remove("theme-light","theme-dark");
+        document.body.classList.add("theme-"+theme);
+        const label=themeToggle.querySelector(".label");
+        label.textContent=theme==="dark"?"Dark":"Light";
+        try{localStorage.setItem(THEME_KEY,theme);}catch(_){}
     }
-    (function initTheme() {
-        let theme = "light";
-        try {
-            const saved = localStorage.getItem(THEME_KEY);
-            if (saved === "dark" || saved === "light") theme = saved;
-        } catch (_) {}
+    (function initTheme(){
+        let theme="light";
+        try{
+            const saved=localStorage.getItem(THEME_KEY);
+            if(saved==="dark"||saved==="light")theme=saved;
+        }catch(_){}
         applyTheme(theme);
     })();
-    themeToggle.addEventListener("click", () => {
-        const current = document.body.classList.contains("theme-dark") ? "dark" : "light";
-        applyTheme(current === "dark" ? "light" : "dark");
+    themeToggle.addEventListener("click",()=>{
+        const current=document.body.classList.contains("theme-dark")?"dark":"light";
+        applyTheme(current==="dark"?"light":"dark");
     });
 
-    (function initRandomIcon() {
-        const ICONS = [];
-        for (let i = 1; i <= 10; i++) {
+    // 随机头像 YL1~YL10
+    (function initRandomIcon(){
+        const ICONS=[];
+        for(let i=1;i<=10;i++){
             ICONS.push(`https://save.aura.us.kg/Picture/Preview/YL${i}.png`);
         }
-        const img = document.getElementById("brandIcon");
-        if (!img || !ICONS.length) return;
-        const pick = ICONS[Math.floor(Math.random() * ICONS.length)];
-        img.src = pick;
+        const img=document.getElementById("brandIcon");
+        if(!img||!ICONS.length)return;
+        img.src=ICONS[Math.floor(Math.random()*ICONS.length)];
     })();
 
-    // ===== 全局 DOM =====
-    const BASE_URL = location.origin + "/Paste";
-    const API_BASE = location.origin + "/api/paste";
+    const BASE_URL=location.origin+"/Paste";
+    const API_BASE=location.origin+"/api/paste";
+    const qs=id=>document.getElementById(id);
 
-    const qs = id => document.getElementById(id);
+    const $filename=qs("filename");
+    const $customId=qs("customId");
+    const $password=qs("password");
+    const $passwordEye=qs("passwordEye");
+    const $content=qs("content");
+    const $ttlGroup=qs("ttlGroup");
+    const $ttlHint=qs("ttlHint");
+    const $form=qs("pasteForm");
+    const $submitBtn=qs("submitBtn");
+    const $btnDelete=qs("btnDelete");
+    const $resultBox=qs("resultBox");
+    const $viewLinkText=qs("viewLinkText");
+    const $manageLinkText=qs("manageLinkText");
+    const $manageLinkRow=qs("manageLinkRow");
+    const $btnCopyView=qs("btnCopyView");
+    const $btnCopyManage=qs("btnCopyManage");
+    const $statusMsg=qs("statusMsg");
+    const $subtitle=qs("subtitle");
+    const $modeLabel=qs("modeLabel");
+    const $baseUrlText=qs("baseUrlText");
 
-    const $filename        = qs("filename");
-    const $customId        = qs("customId");
-    const $password        = qs("password");
-    const $content         = qs("content");
-    const $ttlGroup        = qs("ttlGroup");
-    const $ttlHint         = qs("ttlHint");
-    const $form            = qs("pasteForm");
-    const $submitBtn       = qs("submitBtn");
-    const $btnNew          = qs("btnNew");
-    const $btnDelete       = qs("btnDelete");
-    const $resultBox       = qs("resultBox");
-    const $viewLinkText    = qs("viewLinkText");
-    const $manageLinkText  = qs("manageLinkText");
-    const $shareText       = qs("shareText");
-    const $manageLinkRow   = qs("manageLinkRow");
-    const $btnCopyView     = qs("btnCopyView");
-    const $btnCopyManage   = qs("btnCopyManage");
-    const $btnCopyShare    = qs("btnCopyShare");
-    const $statusMsg       = qs("statusMsg");
-    const $subtitle        = qs("subtitle");
-    const $modeLabel       = qs("modeLabel");
-    const $baseUrlText     = qs("baseUrlText");
-    const $editorContainer = qs("editorContainer");
-    const $viewerContainer = qs("viewerContainer");
-    const $viewerMeta      = qs("viewerMeta");
-    const $viewerContent   = qs("viewerContent");
-    const $btnBackToEditor = qs("btnBackToEditor");
+    if($baseUrlText)$baseUrlText.textContent=BASE_URL;
 
-    if ($baseUrlText) $baseUrlText.textContent = BASE_URL;
-
-    // 状态
-    let currentSlug = null;          // 当前内容的 ID
-    let currentManageKey = null;     // 当前管理密码（用于生成管理链接）
-    let ttlKey = "10m";
-
-    function setStatus(msg, type) {
-        if (!$statusMsg) return;
-        $statusMsg.textContent = msg || "";
-        $statusMsg.classList.remove("success", "error");
-        if (type) $statusMsg.classList.add(type);
+    // 密码 👁 显示/隐藏
+    if($passwordEye && $password){
+        $passwordEye.addEventListener("click",()=>{
+            $password.type=($password.type==="password")?"text":"password";
+        });
     }
 
-    const ttlTextMap = {
-        "10m": "内容将在 10 分钟后过期。",
-        "1d":  "内容将在 1 天后过期。",
-        "7d":  "内容将在 7 天后过期。",
-        "30d": "内容将在 30 天后过期。",
-        "forever": "内容不会自动过期（服务清理除外）。"
+    let currentSlug=null;
+    let currentManageKey=null;
+    let ttlKey="10m";
+    let ttlTouched=false; // 用户是否手动改过 TTL
+
+    function setStatus(msg,type){
+        if(!$statusMsg)return;
+        $statusMsg.textContent=msg||"";
+        $statusMsg.classList.remove("success","error");
+        if(type)$statusMsg.classList.add(type);
+    }
+
+    const ttlTextMap={
+        "10m":"内容将在 10 分钟后过期。",
+        "1d":"内容将在 1 天后过期。",
+        "7d":"内容将在 7 天后过期。",
+        "30d":"内容将在 30 天后过期。",
+        "forever":"内容不会自动过期（服务清理除外）。"
     };
-    function updateTtlHint() {
-        if ($ttlHint) $ttlHint.textContent = ttlTextMap[ttlKey] || ttlTextMap["10m"];
+    function updateTtlHint(){
+        if($ttlHint)$ttlHint.textContent=ttlTextMap[ttlKey]||ttlTextMap["10m"];
     }
-    function setTtl(key) {
-        ttlKey = key;
-        if ($ttlGroup) {
-            const btns = $ttlGroup.querySelectorAll(".ttl-btn");
-            btns.forEach(btn => {
-                btn.classList.toggle("active", btn.dataset.ttl === key);
+    function setTtl(key,fromUser=false){
+        ttlKey=key;
+        if(fromUser)ttlTouched=true;
+        if($ttlGroup){
+            $ttlGroup.querySelectorAll(".ttl-btn").forEach(btn=>{
+                btn.classList.toggle("active",btn.dataset.ttl===key);
             });
         }
         updateTtlHint();
     }
-    if ($ttlGroup) {
-        $ttlGroup.addEventListener("click", e => {
-            const btn = e.target.closest(".ttl-btn");
-            if (!btn) return;
-            const key = btn.dataset.ttl;
-            if (!key) return;
-            setTtl(key);
+    if($ttlGroup){
+        $ttlGroup.addEventListener("click",e=>{
+            const btn=e.target.closest(".ttl-btn");
+            if(!btn)return;
+            const key=btn.dataset.ttl;
+            if(!key)return;
+            setTtl(key,true);
+        });
+    }
+    setTtl("10m",false);
+
+    // 密码输入改变时：如果用户没手动改 TTL，则自动切换 10m / forever
+    if($password){
+        $password.addEventListener("input",()=>{
+            if(ttlTouched)return;
+            const hasPwd=$password.value.trim().length>0;
+            setTtl(hasPwd?"forever":"10m",false);
         });
     }
 
-    // helper: 生成 ID
-    function slugify(str) {
-        if (!str) return "";
-        return str
-            .toString()
-            .trim()
-            .replace(/\s+/g, "-")
-            .replace(/[^a-zA-Z0-9_-]/g, "")
+    function slugify(str){
+        if(!str)return"";
+        return str.toString().trim()
+            .replace(/\s+/g,"-")
+            .replace(/[^a-zA-Z0-9_-]/g,"")
             .toLowerCase();
     }
-    function randomId4to10() {
-        const len = 4 + Math.floor(Math.random() * 7); // 4~10
-        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        let out = "";
-        for (let i = 0; i < len; i++) {
-            out += chars[Math.floor(Math.random() * chars.length)];
+    function randomId4to10(){
+        const len=4+Math.floor(Math.random()*7);
+        const chars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        let out="";
+        for(let i=0;i<len;i++){
+            out+=chars[Math.floor(Math.random()*chars.length)];
         }
         return out;
     }
-
-    function computeSlug() {
-        const custom = $customId ? $customId.value.trim() : "";
-        const fname  = $filename ? $filename.value.trim() : "";
-        let base = custom || fname;
-        let slug = slugify(base);
-        if (!slug) slug = randomId4to10();
+    function computeSlug(){
+        const custom=$customId?$customId.value.trim():"";
+        const fname=$filename?$filename.value.trim():"";
+        let base=custom||fname;
+        let slug=slugify(base);
+        if(!slug)slug=randomId4to10();
         return slug;
     }
 
-    function resetButtonsForNew() {
-        if ($submitBtn) {
-            $submitBtn.querySelector(".icon").textContent = "✨";
-            $submitBtn.querySelector(".text").textContent = "生成链接";
+    function resetButtonsForNew(){
+        if($submitBtn){
+            $submitBtn.querySelector(".text").textContent="生成链接";
         }
-        if ($btnDelete) $btnDelete.style.display = "none";
-        if ($modeLabel) $modeLabel.textContent = "模式：新建";
-        if ($subtitle) {
-            $subtitle.textContent = "新建一条文本，选择过期时间，生成可分享链接。可选设置管理密码，方便后续修改或删除。";
+        if($btnDelete)$btnDelete.style.display="none";
+        if($modeLabel)$modeLabel.textContent="模式：新建";
+        if($subtitle){
+            $subtitle.textContent="新建一条文本，选择过期时间，生成可分享链接。可选设置管理密码，方便后续修改或删除。";
         }
+        document.body.classList.remove("mode-manage");
     }
 
-    function enterEditorMode() {
-        if ($editorContainer) $editorContainer.style.display = "";
-        if ($viewerContainer) $viewerContainer.style.display = "none";
-    }
-    function enterViewerMode() {
-        if ($editorContainer) $editorContainer.style.display = "none";
-        if ($viewerContainer) $viewerContainer.style.display = "";
-        if ($modeLabel) $modeLabel.textContent = "模式：查看";
-    }
-
-    function resetToNew() {
-        currentSlug = null;
-        currentManageKey = null;
-        ttlKey = "10m";
-        setTtl("10m");
-        if ($filename) $filename.value = "";
-        if ($customId) $customId.value = "";
-        if ($password) $password.value = "";
-        if ($content)  $content.value = "";
-
-        if ($resultBox) $resultBox.style.display = "none";
-        if ($viewLinkText) $viewLinkText.textContent = "";
-        if ($manageLinkText) $manageLinkText.textContent = "";
-        if ($shareText) $shareText.textContent = "";
-        if ($manageLinkRow) $manageLinkRow.style.display = "none";
-
+    function resetToNew(){
+        currentSlug=null;
+        currentManageKey=null;
+        ttlKey="10m";
+        ttlTouched=false;
+        setTtl("10m",false);
+        if($filename)$filename.value="";
+        if($customId)$customId.value="";
+        if($password)$password.value="";
+        if($content)$content.value="";
+        if($resultBox)$resultBox.style.display="none";
+        if($viewLinkText)$viewLinkText.textContent="";
+        if($manageLinkText)$manageLinkText.textContent="";
+        if($manageLinkRow)$manageLinkRow.style.display="none";
         resetButtonsForNew();
-        setStatus("", null);
-        enterEditorMode();
+        setStatus("",null);
 
-        const url = new URL(location.href);
+        const url=new URL(location.href);
         url.searchParams.delete("id");
-        history.replaceState(null, "", url.toString());
+        history.replaceState(null,"",url.toString());
     }
 
-    function formatShareText(id, filename, content) {
-        const name = filename || id;
-        const plain = (content || "").replace(/\s+/g, " ").trim();
-        const snippet = plain.length > 40 ? plain.slice(0, 40) + "…" : (plain || "（无内容）");
-        return `${BASE_URL}?id=${encodeURIComponent(id)} ${name ? name + " · " : ""}${snippet}`;
-    }
+    function fillResult(id,passwordPlain){
+        if(!$resultBox)return;
+        const viewLink=`${BASE_URL}?id=${encodeURIComponent(id)}`;
+        const manageLink=passwordPlain?`${BASE_URL}?id=${encodeURIComponent(id+":"+passwordPlain)}`:null;
 
-    function fillResult(id, passwordPlain, data) {
-        if (!$resultBox) return;
-        const viewLink = `${BASE_URL}?id=${encodeURIComponent(id)}`;
-        const manageLink = passwordPlain ? `${BASE_URL}?id=${encodeURIComponent(id + ":" + passwordPlain)}` : null;
-
-        const filename = data.filename || "";
-        const content  = data.content || "";
-
-        const share = formatShareText(id, filename, content);
-
-        if ($viewLinkText) $viewLinkText.textContent = viewLink;
-        if ($shareText)    $shareText.textContent    = share;
-        if (manageLink && $manageLinkRow && $manageLinkText) {
-            $manageLinkText.textContent = manageLink;
-            $manageLinkRow.style.display = "";
-        } else if ($manageLinkRow) {
-            $manageLinkRow.style.display = "none";
+        if($viewLinkText)$viewLinkText.textContent=viewLink;
+        if(manageLink && $manageLinkRow && $manageLinkText){
+            $manageLinkText.textContent=manageLink;
+            $manageLinkRow.style.display="";
+        }else if($manageLinkRow){
+            $manageLinkRow.style.display="none";
         }
-        $resultBox.style.display = "block";
+        $resultBox.style.display="block";
     }
 
-    async function postAction(payload) {
-        const res = await fetch(API_BASE, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
+    async function postAction(payload){
+        const res=await fetch(API_BASE,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify(payload)
         });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data.ok) {
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok || !data.ok){
             throw new Error(data.error || `请求失败（${res.status}）`);
         }
         return data;
     }
 
-    // 提交 新建/更新
-    if ($form) {
-        $form.addEventListener("submit", async e => {
+    if($form){
+        $form.addEventListener("submit",async e=>{
             e.preventDefault();
-            const text = ($content && $content.value.trim()) || "";
-            if (!text) {
-                setStatus("内容不能为空。", "error");
+            const text=($content && $content.value.trim())||"";
+            if(!text){
+                setStatus("内容不能为空。","error");
                 return;
             }
+            const filename=$filename?$filename.value.trim():"";
+            const pwd=$password?$password.value.trim():"";
 
-            const filename = $filename ? $filename.value.trim() : "";
-            const pwd      = $password ? $password.value.trim() : "";
-            const slug     = currentSlug || computeSlug();
-
-            const action = currentSlug && pwd ? "update" : "create";
-
-            if ($submitBtn) {
-                $submitBtn.disabled = true;
-                $submitBtn.querySelector(".icon").textContent = action === "create" ? "✨" : "💾";
-                $submitBtn.querySelector(".text").textContent = action === "create" ? "生成中…" : "保存中…";
+            let effectiveTtl=ttlKey;
+            if(!ttlTouched){
+                effectiveTtl=pwd?"forever":"10m";
             }
-            setStatus("正在提交，请稍候…", null);
 
-            try {
-                const payload = {
+            const slug=currentSlug || computeSlug();
+            const action=(currentSlug && pwd)?"update":"create";
+
+            if($submitBtn){
+                $submitBtn.disabled=true;
+                $submitBtn.querySelector(".text").textContent=
+                    action==="create"?"生成中…":"保存中…";
+            }
+            setStatus("正在提交，请稍候…",null);
+
+            try{
+                const payload={
                     action,
                     slug,
                     filename,
-                    content: text,
-                    ttlKey,
-                    managePassword: pwd || null,
+                    content:text,
+                    ttlKey:effectiveTtl,
+                    managePassword:pwd || null
                 };
-                const data = await postAction(payload);
+                const data=await postAction(payload);
+                const finalId=data.slug || slug;
+                currentSlug=finalId;
+                currentManageKey=pwd || null;
 
-                // 后端应返回 data.slug（使用我们传的 slug 或处理后的 slug）
-                const finalId = data.slug || slug;
-                currentSlug = finalId;
-                currentManageKey = pwd || null;
+                fillResult(finalId,currentManageKey);
 
-                fillResult(finalId, currentManageKey, data);
-
-                if (pwd) {
-                    if ($modeLabel) $modeLabel.textContent = "模式：可管理";
-                    if ($subtitle) {
-                        $subtitle.textContent = "你正在管理一条可更新 / 删除的内容，修改后点击“保存更新”即可生效。";
+                if(pwd){
+                    if($modeLabel)$modeLabel.textContent="模式：可管理";
+                    if($subtitle){
+                        $subtitle.textContent="你正在管理一条可更新 / 删除的内容，修改后点击“保存更新”即可生效。";
                     }
-                    if ($submitBtn) {
-                        $submitBtn.querySelector(".icon").textContent = "💾";
-                        $submitBtn.querySelector(".text").textContent = "保存更新";
-                    }
-                    if ($btnDelete) $btnDelete.style.display = "inline-flex";
-                } else {
+                    if($submitBtn)$submitBtn.querySelector(".text").textContent="保存更新";
+                    if($btnDelete)$btnDelete.style.display="inline-flex";
+                    document.body.classList.add("mode-manage");
+                }else{
                     resetButtonsForNew();
                 }
 
-                setStatus(action === "create" ? "已生成链接。" : "已保存更新。", "success");
-                const url = new URL(location.href);
-                if (pwd) {
-                    url.searchParams.set("id", finalId + ":" + pwd);
-                } else {
-                    url.searchParams.set("id", finalId);
+                setStatus(action==="create"?"已生成链接。":"已保存更新。","success");
+                const url=new URL(location.href);
+                if(pwd){
+                    url.searchParams.set("id",finalId+":"+pwd);
+                }else{
+                    url.searchParams.set("id",finalId);
                 }
-                history.replaceState(null, "", url.toString());
-            } catch (err) {
+                history.replaceState(null,"",url.toString());
+            }catch(err){
                 console.error(err);
-                setStatus(err.message || "操作失败。", "error");
-            } finally {
-                if ($submitBtn) {
-                    $submitBtn.disabled = false;
-                    if (currentSlug && currentManageKey) {
-                        $submitBtn.querySelector(".icon").textContent = "💾";
-                        $submitBtn.querySelector(".text").textContent = "保存更新";
-                    } else {
-                        $submitBtn.querySelector(".icon").textContent = "✨";
-                        $submitBtn.querySelector(".text").textContent = "生成链接";
+                setStatus(err.message || "操作失败。","error");
+            }finally{
+                if($submitBtn){
+                    $submitBtn.disabled=false;
+                    if(currentSlug && currentManageKey){
+                        $submitBtn.querySelector(".text").textContent="保存更新";
+                    }else{
+                        $submitBtn.querySelector(".text").textContent="生成链接";
                     }
                 }
             }
         });
     }
 
-    if ($btnNew) {
-        $btnNew.addEventListener("click", () => {
-            resetToNew();
-        });
-    }
-
-    if ($btnDelete) {
-        $btnDelete.addEventListener("click", async () => {
-            if (!currentSlug) return;
-            const pwd = ($password && $password.value.trim()) || "";
-            if (!pwd) {
-                setStatus("删除需要管理密码，请先输入。", "error");
+    if($btnDelete){
+        $btnDelete.addEventListener("click",async ()=>{
+            if(!currentSlug)return;
+            const pwd=($password && $password.value.trim())||"";
+            if(!pwd){
+                setStatus("删除需要管理密码，请先输入。","error");
                 return;
             }
-            setStatus("正在删除…", null);
-            $btnDelete.disabled = true;
-            $btnDelete.textContent = "删除中…";
-            try {
-                await postAction({
-                    action: "delete",
-                    slug: currentSlug,
-                    managePassword: pwd,
-                });
-                setStatus("已删除。", "success");
+            setStatus("正在删除…",null);
+            $btnDelete.disabled=true;
+            try{
+                await postAction({action:"delete",slug:currentSlug,managePassword:pwd});
+                setStatus("已删除。","success");
                 resetToNew();
-            } catch (err) {
+            }catch(err){
                 console.error(err);
-                setStatus(err.message || "删除失败。", "error");
-            } finally {
-                $btnDelete.disabled = false;
-                $btnDelete.textContent = "🗑 删除内容";
+                setStatus(err.message || "删除失败。","error");
+            }finally{
+                $btnDelete.disabled=false;
             }
         });
     }
 
-    async function copyText(text, btn, doneLabel) {
-        if (!text) return;
-        try {
+    async function copyText(text,btn){
+        if(!text)return;
+        try{
             await navigator.clipboard.writeText(text);
-            if (btn) {
-                const old = btn.textContent;
-                btn.textContent = doneLabel || "已复制";
-                setTimeout(() => { btn.textContent = old; }, 1500);
+            if(btn){
+                const old=btn.textContent;
+                btn.textContent="已复制";
+                setTimeout(()=>{btn.textContent=old;},1500);
             }
-            setStatus("已复制到剪贴板。", "success");
-        } catch (e) {
-            setStatus("复制失败，请手动复制。", "error");
+            setStatus("已复制到剪贴板。","success");
+        }catch(e){
+            setStatus("复制失败，请手动复制。","error");
         }
     }
-
-    if ($btnCopyView) {
-        $btnCopyView.addEventListener("click", () => {
-            copyText($viewLinkText && $viewLinkText.textContent, $btnCopyView, "已复制");
+    if($btnCopyView){
+        $btnCopyView.addEventListener("click",()=>{
+            copyText($viewLinkText && $viewLinkText.textContent,$btnCopyView);
         });
     }
-    if ($btnCopyManage) {
-        $btnCopyManage.addEventListener("click", () => {
-            copyText($manageLinkText && $manageLinkText.textContent, $btnCopyManage, "已复制");
-        });
-    }
-    if ($btnCopyShare) {
-        $btnCopyShare.addEventListener("click", () => {
-            copyText($shareText && $shareText.textContent, $btnCopyShare, "已复制");
+    if($btnCopyManage){
+        $btnCopyManage.addEventListener("click",()=>{
+            copyText($manageLinkText && $manageLinkText.textContent,$btnCopyManage);
         });
     }
 
-    // 查看模式：?id=xxx
-    async function loadViewMode(slug) {
-        enterViewerMode();
-        setStatus("正在加载内容…", null);
-        try {
-            const res = await fetch(`${API_BASE}/${encodeURIComponent(slug)}`);
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok || !data.ok) {
-                if ($viewerContent) $viewerContent.textContent = "未找到这条内容，可能已过期或被删除。";
-                if ($viewerMeta) $viewerMeta.textContent = "";
-                setStatus(data.error || "内容不存在。", "error");
+    function escapeHtml(str){
+        return (str||"").replace(/[&<>"']/g,s=>{
+            switch(s){
+                case"&":return"&amp;";
+                case"<":return"&lt;";
+                case">":return"&gt;";
+                case"\"":return"&quot;";
+                case"'":return"&#39;";
+                default:return s;
+            }
+        });
+    }
+
+    // 纯内容模式：?id=slug（不带密码）
+    async function loadRawView(slug){
+        try{
+            const res=await fetch(`${API_BASE}/${encodeURIComponent(slug)}`);
+            const data=await res.json().catch(()=>({}));
+            if(!res.ok || !data.ok){
+                document.body.className="";
+                document.body.style.margin="0";
+                document.body.innerHTML=
+                    `<pre style="white-space:pre-wrap;word-break:break-word;font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;font-size:12px;line-height:1.5;padding:16px;">${escapeHtml(data.error||"内容不存在。")}</pre>`;
+                document.title="Lyn's Paste";
                 return;
             }
-            if ($viewerContent) $viewerContent.textContent = data.content || "";
-            if ($viewerMeta) {
-                const parts = [];
-                if (data.filename) parts.push(`文件名：${data.filename}`);
-                if (data.createdAt) {
-                    parts.push(`创建时间：${new Date(data.createdAt).toLocaleString("zh-CN",{hour12:false})}`);
-                }
-                if (data.expiresAt) {
-                    parts.push(`过期时间：${new Date(data.expiresAt).toLocaleString("zh-CN",{hour12:false})}`);
-                } else {
-                    parts.push("过期时间：不过期（forever）");
-                }
-                $viewerMeta.textContent = parts.join(" · ");
-            }
-            setStatus("", null);
-        } catch (e) {
-            console.error(e);
-            if ($viewerContent) $viewerContent.textContent = "加载失败，请稍后重试。";
-            if ($viewerMeta) $viewerMeta.textContent = "";
-            setStatus("加载失败。", "error");
+            document.body.className="";
+            document.body.style.margin="0";
+            const safe=escapeHtml(data.content||"");
+            document.body.innerHTML=
+                `<pre style="white-space:pre-wrap;word-break:break-word;font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;font-size:12px;line-height:1.5;padding:16px;">${safe}</pre>`;
+            document.title=data.filename || "Lyn's Paste";
+        }catch(e){
+            document.body.className="";
+            document.body.style.margin="0";
+            document.body.innerHTML=
+                `<pre style="white-space:pre-wrap;word-break:break-word;font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;font-size:12px;line-height:1.5;padding:16px;">加载失败，请稍后重试。</pre>`;
+            document.title="Lyn's Paste";
         }
     }
 
     // 管理模式：?id=slug:password
-    async function loadManageMode(slug, manageKey) {
-        enterEditorMode();
-        setStatus("正在加载管理内容…", null);
-        try {
-            const res = await fetch(`${API_BASE}/${encodeURIComponent(slug)}`);
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok || !data.ok) {
-                setStatus(data.error || "内容不存在。", "error");
+    async function loadManageMode(slug,manageKey){
+        setStatus("正在加载管理内容…",null);
+        try{
+            const res=await fetch(`${API_BASE}/${encodeURIComponent(slug)}`);
+            const data=await res.json().catch(()=>({}));
+            if(!res.ok || !data.ok){
+                setStatus(data.error || "内容不存在。","error");
                 resetToNew();
                 return;
             }
-            currentSlug = data.slug || slug;
-            currentManageKey = manageKey || null;
+            currentSlug=data.slug || slug;
+            currentManageKey=manageKey || null;
 
-            if ($filename) $filename.value = data.filename || "";
-            if ($content)  $content.value  = data.content || "";
-            if ($password && manageKey) $password.value = manageKey;
-            // TTL 用后端的
-            if (data.ttlKey) {
-                ttlKey = data.ttlKey;
-                setTtl(ttlKey);
+            if($filename)$filename.value=data.filename || "";
+            if($content)$content.value=data.content || "";
+            if($password && manageKey)$password.value=manageKey;
+            if(data.ttlKey){
+                ttlKey=data.ttlKey;
+                ttlTouched=false;
+                setTtl(ttlKey,false);
             }
 
-            if ($modeLabel) $modeLabel.textContent = "模式：可管理";
-            if ($subtitle) {
-                $subtitle.textContent = "你正在管理一条可更新 / 删除的内容，修改后点击“保存更新”即可生效。";
+            if($modeLabel)$modeLabel.textContent="模式：可管理";
+            if($subtitle){
+                $subtitle.textContent="你正在管理一条可更新 / 删除的内容，修改后点击“保存更新”即可生效。";
             }
-            if ($submitBtn) {
-                $submitBtn.querySelector(".icon").textContent = "💾";
-                $submitBtn.querySelector(".text").textContent = "保存更新";
-            }
-            if ($btnDelete) $btnDelete.style.display = "inline-flex";
+            if($submitBtn)$submitBtn.querySelector(".text").textContent="保存更新";
+            if($btnDelete)$btnDelete.style.display="inline-flex";
+            document.body.classList.add("mode-manage");
 
-            fillResult(currentSlug, currentManageKey, data);
-            setStatus("", null);
+            fillResult(currentSlug,currentManageKey);
+            setStatus("",null);
 
-            const url = new URL(location.href);
-            url.searchParams.set("id", currentManageKey ? currentSlug + ":" + currentManageKey : currentSlug);
-            history.replaceState(null, "", url.toString());
-        } catch (e) {
+            const url=new URL(location.href);
+            url.searchParams.set("id",currentManageKey?currentSlug+":"+currentManageKey:currentSlug);
+            history.replaceState(null,"",url.toString());
+        }catch(e){
             console.error(e);
-            setStatus("加载失败。", "error");
+            setStatus("加载失败。","error");
             resetToNew();
         }
     }
 
-    if ($btnBackToEditor) {
-        $btnBackToEditor.addEventListener("click", () => {
-            resetToNew();
-        });
-    }
-
-    async function initFromQuery() {
-        const url = new URL(location.href);
-        const idParam = url.searchParams.get("id");
-        if (!idParam) {
+    async function initFromQuery(){
+        const url=new URL(location.href);
+        const idParam=url.searchParams.get("id");
+        if(!idParam){
             resetToNew();
             return;
         }
-        // 判断有没有 :
-        if (idParam.includes(":")) {
-            const [slug, manageKey] = idParam.split(":", 2);
-            if (!slug) {
-                resetToNew();
-                return;
-            }
-            await loadManageMode(slug, manageKey || "");
-        } else {
-            await loadViewMode(idParam);
+        if(idParam.includes(":")){
+            const [slug,manageKey]=idParam.split(":",2);
+            if(!slug){resetToNew();return;}
+            await loadManageMode(slug,manageKey || "");
+        }else{
+            await loadRawView(idParam);
         }
     }
 
-    setTtl("10m");
+    // 如果带 id，则按内容/管理模式处理
     initFromQuery();
 </script>
 </body>
