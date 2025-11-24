@@ -15,8 +15,8 @@
             --text-sub:#6b7280;
             --border-soft:rgba(148,163,184,0.5);
             --border-strong:rgba(148,163,184,0.9);
-            --accent:#22c55e;
-            --accent2:#0ea5e9;
+            --accent:#0ea5e9;
+            --accent2:#6366f1;
             --danger:#b91c1c;
             --shadow-main:0 18px 48px rgba(15,23,42,0.14);
             --input-bg:#f9fafb;
@@ -29,8 +29,8 @@
             --text-sub:#9ca3af;
             --border-soft:rgba(55,65,81,0.9);
             --border-strong:rgba(148,163,184,0.9);
-            --accent:#22c55e;
-            --accent2:#0ea5e9;
+            --accent:#0ea5e9;
+            --accent2:#6366f1;
             --danger:#fecaca;
             --shadow-main:
                 0 22px 60px rgba(15,23,42,0.96),
@@ -102,19 +102,23 @@
             box-shadow:var(--shadow-main);
             padding:16px 18px 14px;
             display:flex;flex-direction:column;gap:12px;
-            transition:border-color .2s ease,box-shadow .2s ease;
+            transition:border-color .2s ease,box-shadow .2s ease,background .2s ease;
         }
         body.mode-manage .card{
             border-color:rgba(56,189,248,0.9);
             box-shadow:
                 0 0 0 1px rgba(56,189,248,0.45),
                 var(--shadow-main);
+            background:linear-gradient(145deg,rgba(15,23,42,0.96),rgba(15,23,42,0.98));
         }
         .card-section{
             border-radius:14px;
             padding:10px 10px;
             background:var(--layer-soft);
             border:1px solid rgba(148,163,184,0.25);
+        }
+        body.mode-manage .card-section{
+            background:rgba(15,23,42,0.96);
         }
         .card-section+.card-section{margin-top:4px;}
         .section-title{
@@ -227,12 +231,12 @@
         .btn-primary{
             font-weight:500;
             background:linear-gradient(90deg,var(--accent),var(--accent2));
-            color:#020617;
-            box-shadow:0 10px 26px rgba(34,197,94,0.3);
+            color:#f9fafb;
+            box-shadow:0 10px 26px rgba(37,99,235,0.35);
         }
         .btn-primary:hover{
-            filter:brightness(1.03);
-            box-shadow:0 14px 32px rgba(34,197,94,0.4);
+            filter:brightness(1.05);
+            box-shadow:0 14px 32px rgba(37,99,235,0.5);
         }
         .btn-secondary{
             background:var(--layer-soft);
@@ -305,11 +309,11 @@
         </div>
         <button type="button" class="theme-toggle" id="themeToggle">
             <span class="theme-icon theme-icon-sun">
-                <!-- 太阳 SVG -->
+                <!-- 日间 SVG -->
                 <svg viewBox="0 0 20 20"><path d="M10 3.5a1 1 0 0 1-1-1V1.75a1 1 0 1 1 2 0V2.5a1 1 0 0 1-1 1zM10 18.25a1 1 0 0 1-1-1V16.5a1 1 0 1 1 2 0v.75a1 1 0 0 1-1 1zM4.22 5.03a1 1 0 0 1 1.41-1.41l.53.53a1 1 0 1 1-1.41 1.41l-.53-.53zM13.84 14.66a1 1 0 0 1 1.41-1.41l.53.53a1 1 0 1 1-1.41 1.41l-.53-.53zM1.75 11a1 1 0 0 1 0-2H2.5a1 1 0 1 1 0 2h-.75zM17.5 11a1 1 0 0 1 0-2h.75a1 1 0 0 1 0 2h-.75zM4.22 14.97l.53-.53a1 1 0 1 1 1.41 1.41l-.53.53a1 1 0 0 1-1.41-1.41zM13.84 5.34l.53-.53a1 1 0 1 1 1.41 1.41l-.53.53a1 1 0 0 1-1.41-1.41zM10 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg>
             </span>
             <span class="theme-icon theme-icon-moon">
-                <!-- 月亮 SVG -->
+                <!-- 夜间 SVG -->
                 <svg viewBox="0 0 20 20"><path d="M15.25 11.1A5.5 5.5 0 0 1 8.9 4.75 5.5 5.5 0 1 0 15.25 11.1z"/></svg>
             </span>
             <span class="label">Light</span>
@@ -318,7 +322,7 @@
 
     <main class="card" id="mainCard">
         <!-- 顶部说明 -->
-        <section class="card-section">
+        <section class="card-section" id="topNotice">
             <div class="section-title">
                 使用说明
                 <span class="tag">GUIDE</span>
@@ -328,51 +332,22 @@
                 新建一条文本，选择过期时间，生成可分享链接。可选设置管理密码，方便后续修改或删除。
             </div>
             <div class="section-text" style="margin-top:4px;">
-                <span class="usage-label">用法：</span>在这里粘贴任何文本，提交，然后将生成的 URL 分享给他人。<br>
+                <span class="usage-label">用法：</span>在这里粘贴任何文本，点击“上传”，然后将生成的 URL 分享给他人（以 <code>text/plain</code> 形式打开，像文件一样）。<br>
                 <span class="warning-label">警告：</span>仅用于临时共享，文件可能会在不通知的情况下被删除！
             </div>
         </section>
 
-        <!-- 编辑区 -->
+        <!-- 编辑区：内容 → TTL → URL & 密码 -->
         <div id="editorContainer">
             <form id="pasteForm">
-                <!-- 基础信息 -->
+                <!-- 内容 -->
                 <section class="card-section">
                     <div class="section-title">
-                        基础信息
-                        <span class="tag">META</span>
+                        内容
+                        <span class="tag">BODY</span>
                     </div>
-
                     <div class="field">
-                        <div class="field-label">文件名</div>
-                        <div class="field-inline">
-                            <input id="filename" type="text" placeholder="例如：Lyn 或 notes-2025-11-24">
-                        </div>
-                    </div>
-
-                    <div class="field">
-                        <div class="field-label">自定义 URL（可选）</div>
-                        <div class="field-inline">
-                            <input id="customId" type="text" placeholder="例如：Lyn（将用于 ?id=Lyn）">
-                        </div>
-                        <div class="hint">
-                            优先级：自定义 URL &gt; 文件名 &gt; 随机 4~10 位短链接。
-                        </div>
-                    </div>
-
-                    <div class="field">
-                        <div class="field-label">管理密码（可选）</div>
-                        <div class="field-inline">
-                            <div class="password-wrap">
-                                <input id="password" type="password" placeholder="设置后可更新 / 删除内容">
-                                <button type="button" class="password-eye" id="passwordEye" aria-label="显示/隐藏密码">
-                                    <svg viewBox="0 0 20 20"><path d="M10 4C5.5 4 2 7.5 1 10c1 2.5 4.5 6 9 6s8-3.5 9-6c-1-2.5-4.5-6-9-6zm0 9a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="hint">
-                            不填密码 = 默认保存 10 分钟（可手动调整）；填密码 = 默认不过期（可手动调整）。
-                        </div>
+                        <textarea id="content" placeholder="在这里粘贴内容（代码、日志、随手记都可以）..." required></textarea>
                     </div>
                 </section>
 
@@ -394,14 +369,37 @@
                     </div>
                 </section>
 
-                <!-- 内容 -->
+                <!-- URL & 密码 -->
                 <section class="card-section">
                     <div class="section-title">
-                        内容
-                        <span class="tag">BODY</span>
+                        链接与管理
+                        <span class="tag">LINK</span>
                     </div>
+
                     <div class="field">
-                        <textarea id="content" placeholder="在这里粘贴内容（代码、日志、随手记都可以）..." required></textarea>
+                        <div class="field-label">自定义 URL（可选）</div>
+                        <div class="field-inline">
+                            <input id="customId" type="text" placeholder="例如：Lyn（将用于 /api/paste/Lyn）">
+                        </div>
+                        <div class="hint">
+                            优先级：自定义 URL &gt; 随机 4~10 位短链接。
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="field-label">管理密码（可选）</div>
+                        <div class="field-inline">
+                            <div class="password-wrap">
+                                <input id="password" type="password" placeholder="设置后可更新 / 删除内容">
+                                <button type="button" class="password-eye" id="passwordEye" aria-label="显示/隐藏密码">
+                                    <!-- 眼睛 SVG -->
+                                    <svg viewBox="0 0 20 20"><path d="M10 4C5.5 4 2 7.5 1 10c1 2.5 4.5 6 9 6s8-3.5 9-6c-1-2.5-4.5-6-9-6zm0 9a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="hint">
+                            不填密码 = 默认保存 10 分钟（可手动调整）；填密码 = 默认不过期（可手动调整）。
+                        </div>
                     </div>
                 </section>
 
@@ -415,10 +413,10 @@
                         <div class="field-inline" style="gap:8px;">
                             <button type="submit" class="btn-primary" id="submitBtn">
                                 <span class="icon-svg">
-                                    <!-- 箭头 SVG -->
-                                    <svg viewBox="0 0 20 20"><path d="M10 2a1 1 0 0 1 .9.55l6 12a1 1 0 0 1-1.3 1.35L11 13.38V17a1 1 0 1 1-2 0v-3.62L4.4 15.9A1 1 0 0 1 3.1 14.55l6-12A1 1 0 0 1 10 2z"/></svg>
+                                    <!-- 上传 SVG -->
+                                    <svg viewBox="0 0 20 20"><path d="M10 2a1 1 0 0 1 .7.29l3 3a1 1 0 1 1-1.4 1.42L11 5.41V12a1 1 0 1 1-2 0V5.41L7.7 6.71A1 1 0 0 1 6.3 5.29l3-3A1 1 0 0 1 10 2z"/><path d="M4 11a1 1 0 0 1 1 1v3h10v-3a1 1 0 1 1 2 0v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a1 1 0 0 1 1-1z"/></svg>
                                 </span>
-                                <span class="text">生成链接</span>
+                                <span class="text">上传</span>
                             </button>
                             <button type="button" class="btn-danger" id="btnDelete" style="display:none;">
                                 <span class="icon-svg">
@@ -453,6 +451,13 @@
                                     </span>
                                     复制
                                 </button>
+                                <button type="button" class="btn-secondary" id="btnOpenManage">
+                                    <span class="icon-svg">
+                                        <!-- 进入管理 SVG -->
+                                        <svg viewBox="0 0 20 20"><path d="M4 4a2 2 0 0 1 2-2h5a1 1 0 1 1 0 2H6v12h8v-5a1 1 0 1 1 2 0v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4z"/><path d="M11.3 5.3a1 1 0 0 1 1.4 0L16 8.59a1 1 0 0 1 0 1.41l-3.3 3.3a1 1 0 0 1-1.4-1.42L13.59 10 11.3 7.71a1 1 0 0 1 0-1.41z"/></svg>
+                                    </span>
+                                    管理页面
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -464,7 +469,7 @@
 
         <!-- 底部信息 -->
         <section class="footer-row">
-            <span>入口：<span id="baseUrlText"></span></span>
+            <span>访问入口：<span id="baseUrlText"></span></span>
             <span>By Lyn · Cloudflare Workers &amp; KV</span>
         </section>
     </main>
@@ -505,10 +510,10 @@
     })();
 
     const BASE_URL=location.origin+"/Paste";
+    const VIEW_BASE=location.origin+"/api/paste";
     const API_BASE=location.origin+"/api/paste";
     const qs=id=>document.getElementById(id);
 
-    const $filename=qs("filename");
     const $customId=qs("customId");
     const $password=qs("password");
     const $passwordEye=qs("passwordEye");
@@ -524,12 +529,13 @@
     const $manageLinkRow=qs("manageLinkRow");
     const $btnCopyView=qs("btnCopyView");
     const $btnCopyManage=qs("btnCopyManage");
+    const $btnOpenManage=qs("btnOpenManage");
     const $statusMsg=qs("statusMsg");
     const $subtitle=qs("subtitle");
     const $modeLabel=qs("modeLabel");
     const $baseUrlText=qs("baseUrlText");
 
-    if($baseUrlText)$baseUrlText.textContent=BASE_URL;
+    if($baseUrlText)$baseUrlText.textContent=VIEW_BASE + "/{id}";
 
     // 密码 👁 显示/隐藏
     if($passwordEye && $password){
@@ -608,8 +614,7 @@
     }
     function computeSlug(){
         const custom=$customId?$customId.value.trim():"";
-        const fname=$filename?$filename.value.trim():"";
-        let base=custom||fname;
+        let base=custom;
         let slug=slugify(base);
         if(!slug)slug=randomId4to10();
         return slug;
@@ -617,7 +622,7 @@
 
     function resetButtonsForNew(){
         if($submitBtn){
-            $submitBtn.querySelector(".text").textContent="生成链接";
+            $submitBtn.querySelector(".text").textContent="上传";
         }
         if($btnDelete)$btnDelete.style.display="none";
         if($modeLabel)$modeLabel.textContent="模式：新建";
@@ -633,7 +638,6 @@
         ttlKey="10m";
         ttlTouched=false;
         setTtl("10m",false);
-        if($filename)$filename.value="";
         if($customId)$customId.value="";
         if($password)$password.value="";
         if($content)$content.value="";
@@ -651,15 +655,20 @@
 
     function fillResult(id,passwordPlain){
         if(!$resultBox)return;
-        const viewLink=`${BASE_URL}?id=${encodeURIComponent(id)}`;
-        const manageLink=passwordPlain?`${BASE_URL}?id=${encodeURIComponent(id+":"+passwordPlain)}`:null;
+        const viewLink=`${VIEW_BASE}/${encodeURIComponent(id)}`;
+        const manageParam=passwordPlain?`${id}:${passwordPlain}`:null;
+        const manageLink=manageParam?`${BASE_URL}?id=${encodeURIComponent(manageParam)}`:null;
 
         if($viewLinkText)$viewLinkText.textContent=viewLink;
         if(manageLink && $manageLinkRow && $manageLinkText){
-            $manageLinkText.textContent=manageLink;
+            // 显示时用未编码的形式更直观
+            const displayManage=`${BASE_URL}?id=${id}:${passwordPlain}`;
+            $manageLinkText.textContent=displayManage;
             $manageLinkRow.style.display="";
+            $btnOpenManage.dataset.href=manageLink;
         }else if($manageLinkRow){
             $manageLinkRow.style.display="none";
+            if($btnOpenManage)$btnOpenManage.dataset.href="";
         }
         $resultBox.style.display="block";
     }
@@ -685,9 +694,9 @@
                 setStatus("内容不能为空。","error");
                 return;
             }
-            const filename=$filename?$filename.value.trim():"";
             const pwd=$password?$password.value.trim():"";
 
+            // 默认 TTL：没手动改过时，根据是否有密码决定
             let effectiveTtl=ttlKey;
             if(!ttlTouched){
                 effectiveTtl=pwd?"forever":"10m";
@@ -699,7 +708,7 @@
             if($submitBtn){
                 $submitBtn.disabled=true;
                 $submitBtn.querySelector(".text").textContent=
-                    action==="create"?"生成中…":"保存中…";
+                    action==="create"?"上传中…":"保存中…";
             }
             setStatus("正在提交，请稍候…",null);
 
@@ -707,7 +716,6 @@
                 const payload={
                     action,
                     slug,
-                    filename,
                     content:text,
                     ttlKey:effectiveTtl,
                     managePassword:pwd || null
@@ -719,37 +727,17 @@
 
                 fillResult(finalId,currentManageKey);
 
-                if(pwd){
-                    if($modeLabel)$modeLabel.textContent="模式：可管理";
-                    if($subtitle){
-                        $subtitle.textContent="你正在管理一条可更新 / 删除的内容，修改后点击“保存更新”即可生效。";
-                    }
-                    if($submitBtn)$submitBtn.querySelector(".text").textContent="保存更新";
-                    if($btnDelete)$btnDelete.style.display="inline-flex";
-                    document.body.classList.add("mode-manage");
-                }else{
-                    resetButtonsForNew();
-                }
+                // 生成后不自动进管理模式，只展示链接
+                resetButtonsForNew();
+                setStatus(action==="create"?"上传完成，已生成链接。":"已保存更新。","success");
 
-                setStatus(action==="create"?"已生成链接。":"已保存更新。","success");
-                const url=new URL(location.href);
-                if(pwd){
-                    url.searchParams.set("id",finalId+":"+pwd);
-                }else{
-                    url.searchParams.set("id",finalId);
-                }
-                history.replaceState(null,"",url.toString());
             }catch(err){
                 console.error(err);
                 setStatus(err.message || "操作失败。","error");
             }finally{
                 if($submitBtn){
                     $submitBtn.disabled=false;
-                    if(currentSlug && currentManageKey){
-                        $submitBtn.querySelector(".text").textContent="保存更新";
-                    }else{
-                        $submitBtn.querySelector(".text").textContent="生成链接";
-                    }
+                    $submitBtn.querySelector(".text").textContent="上传";
                 }
             }
         });
@@ -802,46 +790,16 @@
             copyText($manageLinkText && $manageLinkText.textContent,$btnCopyManage);
         });
     }
-
-    function escapeHtml(str){
-        return (str||"").replace(/[&<>"']/g,s=>{
-            switch(s){
-                case"&":return"&amp;";
-                case"<":return"&lt;";
-                case">":return"&gt;";
-                case"\"":return"&quot;";
-                case"'":return"&#39;";
-                default:return s;
-            }
-        });
-    }
-
-    // 纯内容模式：?id=slug（不带密码）
-    async function loadRawView(slug){
-        try{
-            const res=await fetch(`${API_BASE}/${encodeURIComponent(slug)}`);
-            const data=await res.json().catch(()=>({}));
-            if(!res.ok || !data.ok){
-                document.body.className="";
-                document.body.style.margin="0";
-                document.body.innerHTML=
-                    `<pre style="white-space:pre-wrap;word-break:break-word;font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;font-size:12px;line-height:1.5;padding:16px;">${escapeHtml(data.error||"内容不存在。")}</pre>`;
-                document.title="Lyn's Paste";
+    if($btnOpenManage){
+        $btnOpenManage.addEventListener("click",()=>{
+            const href=$btnOpenManage.dataset.href;
+            if(!href){
+                setStatus("暂无管理链接。","error");
                 return;
             }
-            document.body.className="";
-            document.body.style.margin="0";
-            const safe=escapeHtml(data.content||"");
-            document.body.innerHTML=
-                `<pre style="white-space:pre-wrap;word-break:break-word;font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;font-size:12px;line-height:1.5;padding:16px;">${safe}</pre>`;
-            document.title=data.filename || "Lyn's Paste";
-        }catch(e){
-            document.body.className="";
-            document.body.style.margin="0";
-            document.body.innerHTML=
-                `<pre style="white-space:pre-wrap;word-break:break-word;font-family:SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;font-size:12px;line-height:1.5;padding:16px;">加载失败，请稍后重试。</pre>`;
-            document.title="Lyn's Paste";
-        }
+            // 新窗口打开管理页面
+            window.open(href,"_blank","noopener");
+        });
     }
 
     // 管理模式：?id=slug:password
@@ -858,7 +816,6 @@
             currentSlug=data.slug || slug;
             currentManageKey=manageKey || null;
 
-            if($filename)$filename.value=data.filename || "";
             if($content)$content.value=data.content || "";
             if($password && manageKey)$password.value=manageKey;
             if(data.ttlKey){
@@ -867,9 +824,10 @@
                 setTtl(ttlKey,false);
             }
 
-            if($modeLabel)$modeLabel.textContent="模式：可管理";
+            // 进入管理页面：强提醒
+            if($modeLabel)$modeLabel.textContent="模式：管理";
             if($subtitle){
-                $subtitle.textContent="你正在管理一条可更新 / 删除的内容，修改后点击“保存更新”即可生效。";
+                $subtitle.textContent="⚠ 你正在管理一条可更新 / 删除的内容，修改后点击“保存更新”即可生效。";
             }
             if($submitBtn)$submitBtn.querySelector(".text").textContent="保存更新";
             if($btnDelete)$btnDelete.style.display="inline-flex";
@@ -879,7 +837,7 @@
             setStatus("",null);
 
             const url=new URL(location.href);
-            url.searchParams.set("id",currentManageKey?currentSlug+":"+currentManageKey:currentSlug);
+            url.searchParams.set("id",`${slug}:${manageKey||""}`);
             history.replaceState(null,"",url.toString());
         }catch(e){
             console.error(e);
@@ -895,16 +853,22 @@
             resetToNew();
             return;
         }
-        if(idParam.includes(":")){
-            const [slug,manageKey]=idParam.split(":",2);
-            if(!slug){resetToNew();return;}
-            await loadManageMode(slug,manageKey || "");
-        }else{
-            await loadRawView(idParam);
+        // 只允许管理模式：slug:password
+        const decoded=decodeURIComponent(idParam);
+        if(!decoded.includes(":")){
+            // 没有密码，不进入管理模式，直接当新建
+            resetToNew();
+            return;
         }
+        const [slug,manageKey] = decoded.split(":",2);
+        if(!slug){
+            resetToNew();
+            return;
+        }
+        await loadManageMode(slug,manageKey || "");
     }
 
-    // 如果带 id，则按内容/管理模式处理
+    // 仅处理管理模式
     initFromQuery();
 </script>
 </body>
