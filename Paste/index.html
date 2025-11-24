@@ -2,9 +2,25 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Lyn's Paste</title>
+    <title>Lyn's Pastebin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
+
+    <!-- Open Graph / WeChat / Telegram 预览 -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Lyn's Pastebin">
+    <meta property="og:title" content="Lyn's Pastebin">
+    <meta property="og:description" content="一个喜欢在互联网上瞎折腾的人罢了。">
+    <!-- 预览图片：从头像库中选一张固定图，页面内部头像仍然是 YL1~YL10 随机 -->
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/Preview/YL1.png">
+    <meta property="og:url" content="https://aura.us.kg/Paste">
+
+    <!-- Twitter 卡片 -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Lyn's Pastebin">
+    <meta name="twitter:description" content="一个喜欢在互联网上瞎折腾的人罢了。">
+    <meta name="twitter:image" content="https://save.aura.us.kg/Picture/Preview/YL1.png">
+
     <style>
         :root{
             color-scheme: light dark;
@@ -140,14 +156,15 @@
             gap:12px;
             transition:border-color .2s ease,box-shadow .2s ease,background .2s ease;
         }
+        /* 管理模式：只做高亮边框，不再压黑背景 */
         body.mode-manage .card{
             border-color:rgba(56,189,248,0.85);
             box-shadow:
                     0 0 0 1px rgba(56,189,248,0.45),
                     0 16px 40px rgba(15,23,42,0.16);
-            /* 不再强行改背景，保持跟普通模式一样 */
             background:var(--layer);
         }
+
         .card-section{
             border-radius:14px;
             padding:10px 10px;
@@ -155,6 +172,7 @@
             border:1px solid rgba(148,163,184,0.25);
         }
         .card-section+.card-section{margin-top:4px;}
+
         .section-title{
             font-size:12px;
             font-weight:600;
@@ -162,10 +180,12 @@
             display:flex;
             align-items:center;
             gap:6px;
+            color:var(--text-main);
         }
         body.mode-manage .section-title{
-            color:#e0f2fe;
+            color:var(--text-main); /* 管理模式下标题保持清晰可见 */
         }
+
         .section-title .tag{
             font-size:10px;
             padding:1px 6px;
@@ -197,13 +217,14 @@
         }
         .usage-label{color:var(--accent);font-weight:600;}
         .warning-label{color:#dc2626;font-weight:700;}
+
+        /* 管理模式下，说明和警告更显眼 */
         body.mode-manage #subtitle{
-            color:#facc15;          /* 管理模式下，上面那段提示文字变成亮黄色 */
+            color:#facc15;
             font-weight:600;
         }
-
         body.mode-manage .warning-label{
-            color:#fb7185;          /* 管理模式下，"警告" 文字更显眼一点的红色 */
+            color:#fb7185;
         }
 
         .important-hint{
@@ -376,23 +397,27 @@
             flex-wrap:wrap;
         }
 
+        /* 生成链接区域布局优化 */
         .result-box{
             font-size:12px;
             color:var(--text-sub);
-            padding:8px 10px;
+            padding:10px 10px;
             border-radius:12px;
             background:var(--layer-soft);
             border:1px dashed var(--border-strong);
-        }
-        body.mode-manage .result-box{
-            background:rgba(15,23,42,0.98);
+            display:flex;
+            flex-direction:column;
+            gap:6px;
         }
         .result-row{
             display:flex;
-            flex-wrap:wrap;
             align-items:center;
-            gap:6px;
-            margin-bottom:4px;
+            gap:8px;
+            flex-wrap:wrap;
+        }
+        .result-main{
+            flex:1;
+            min-width:0;
         }
         .result-label{
             font-size:11px;
@@ -400,8 +425,19 @@
             border-radius:999px;
             background:rgba(148,163,184,0.15);
             color:var(--text-sub);
+            margin-right:4px;
         }
-        .result-link{font-size:11px;word-break:break-all;}
+        .result-link{
+            font-size:11px;
+            word-break:break-all;
+            color:var(--text-main);
+        }
+        .result-actions{
+            display:flex;
+            gap:6px;
+            flex-shrink:0;
+        }
+
         .status-msg{
             font-size:11px;
             margin-top:4px;
@@ -435,6 +471,14 @@
             .action-row{
                 justify-content:flex-start;
             }
+            .result-row{
+                flex-direction:column;
+                align-items:flex-start;
+            }
+            .result-actions{
+                width:100%;
+                justify-content:flex-start;
+            }
         }
     </style>
 </head>
@@ -446,7 +490,7 @@
                 <img id="brandIcon" alt="icon">
             </div>
             <div class="brand-text">
-                <div class="brand-title">Lyn's Paste</div>
+                <div class="brand-title">Lyn's Pastebin</div>
                 <div class="brand-sub">Paste text. Get URL. Move on.</div>
             </div>
         </div>
@@ -535,6 +579,9 @@
                             <div class="hint">
                                 优先级：自定义 URL &gt; 随机 4~10 位短链接。
                             </div>
+                            <div class="hint">
+                                仅支持英文、数字、- 和 _，不支持中文。
+                            </div>
                         </div>
 
                         <div class="field-block">
@@ -589,42 +636,53 @@
 
                     <div class="field" id="resultBox" style="display:none;margin-top:6px;">
                         <div class="result-box">
+                            <!-- 访问链接 -->
                             <div class="result-row">
-                                <span class="result-label">访问链接</span>
-                                <span class="result-link" id="viewLinkText"></span>
-                                <button type="button" class="btn-secondary" id="btnCopyView">
-                                    <span class="icon-svg">
-                                        <!-- 复制 SVG -->
-                                        <svg viewBox="0 0 20 20">
-                                            <path d="M7 3a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2v-2h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v2H7z"/>
-                                            <path d="M3 7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7zm3-1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H6z"/>
-                                        </svg>
-                                    </span>
-                                    复制
-                                </button>
+                                <div class="result-main">
+                                    <span class="result-label">访问链接</span>
+                                    <span class="result-link" id="viewLinkText"></span>
+                                </div>
+                                <div class="result-actions">
+                                    <button type="button" class="btn-secondary" id="btnCopyView">
+                                        <span class="icon-svg">
+                                            <!-- 复制 SVG -->
+                                            <svg viewBox="0 0 20 20">
+                                                <path d="M7 3a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2v-2h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v2H7z"/>
+                                                <path d="M3 7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7zm3-1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H6z"/>
+                                            </svg>
+                                        </span>
+                                        复制
+                                    </button>
+                                </div>
                             </div>
+
+                            <!-- 管理链接 -->
                             <div class="result-row" id="manageLinkRow" style="display:none;">
-                                <span class="result-label">管理链接</span>
-                                <span class="result-link" id="manageLinkText"></span>
-                                <button type="button" class="btn-secondary" id="btnCopyManage">
-                                    <span class="icon-svg">
-                                        <!-- 钥匙+复制 SVG -->
-                                        <svg viewBox="0 0 20 20">
-                                            <path d="M10 2a4 4 0 0 1 4 4v1h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a3 3 0 0 1-3-3V8a2 2 0 0 1 2-2h1V6a4 4 0 0 1 4-4zm2 5V6a2 2 0 1 0-4 0v1z"/>
-                                        </svg>
-                                    </span>
-                                    复制
-                                </button>
-                                <button type="button" class="btn-secondary" id="btnOpenManage">
-                                    <span class="icon-svg">
-                                        <!-- 进入管理 SVG -->
-                                        <svg viewBox="0 0 20 20">
-                                            <path d="M4 4a2 2 0 0 1 2-2h5a1 1 0 1 1 0 2H6v12h8v-5a1 1 0 1 1 2 0v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4z"/>
-                                            <path d="M11.3 5.3a1 1 0 0 1 1.4 0L16 8.59a1 1 0 0 1 0 1.41l-3.3 3.3a1 1 0 0 1-1.4-1.42L13.59 10 11.3 7.71a1 1 0 0 1 0-1.41z"/>
-                                        </svg>
-                                    </span>
-                                    管理页面
-                                </button>
+                                <div class="result-main">
+                                    <span class="result-label">管理链接</span>
+                                    <span class="result-link" id="manageLinkText"></span>
+                                </div>
+                                <div class="result-actions">
+                                    <button type="button" class="btn-secondary" id="btnCopyManage">
+                                        <span class="icon-svg">
+                                            <!-- 钥匙+复制 SVG -->
+                                            <svg viewBox="0 0 20 20">
+                                                <path d="M10 2a4 4 0 0 1 4 4v1h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a3 3 0 0 1-3-3V8a2 2 0 0 1 2-2h1V6a4 4 0 0 1 4-4zm2 5V6a2 2 0 1 0-4 0v1z"/>
+                                            </svg>
+                                        </span>
+                                        复制
+                                    </button>
+                                    <button type="button" class="btn-secondary" id="btnOpenManage">
+                                        <span class="icon-svg">
+                                            <!-- 进入管理 SVG -->
+                                            <svg viewBox="0 0 20 20">
+                                                <path d="M4 4a2 2 0 0 1 2-2h5a1 1 0 1 1 0 2H6v12h8v-5a1 1 0 1 1 2 0v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4z"/>
+                                                <path d="M11.3 5.3a1 1 0 0 1 1.4 0L16 8.59a1 1 0 0 1 0 1.41l-3.3 3.3a1 1 0 0 1-1.4-1.42L13.59 10 11.3 7.71a1 1 0 0 1 0-1.41z"/>
+                                            </svg>
+                                        </span>
+                                        管理页面
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -637,7 +695,7 @@
         <!-- 底部信息 -->
         <section class="footer-row">
             <span>访问入口：<span id="baseUrlText"></span></span>
-            <span>By Lyn · Cloudflare Workers &amp; KV</span>
+            <span>By AurraLynn · Cloudflare Workers &amp; KV</span>
         </section>
     </main>
 </div>
@@ -705,6 +763,13 @@
 
     if($baseUrlText)$baseUrlText.textContent=VIEW_BASE + "/{id}";
 
+    function setStatus(msg,type){
+        if(!$statusMsg)return;
+        $statusMsg.textContent=msg||"";
+        $statusMsg.classList.remove("success","error");
+        if(type)$statusMsg.classList.add(type);
+    }
+
     // 密码 👁 显示/隐藏
     if($passwordEye && $password){
         $passwordEye.addEventListener("click",()=>{
@@ -712,17 +777,24 @@
         });
     }
 
+    // 自定义 URL：禁止中文等非法字符，只保留 a-zA-Z0-9_-
+    if($customId){
+        $customId.addEventListener("input",()=>{
+            const raw=$customId.value;
+            const filtered=raw.replace(/[^a-zA-Z0-9_-]/g,"");
+            if(raw!==filtered){
+                $customId.value=filtered;
+                setStatus("自定义 URL 仅支持英文、数字、- 和 _，已自动移除不支持的字符。","error");
+            }else if($statusMsg.textContent.startsWith("自定义 URL 仅支持")){
+                setStatus("",null);
+            }
+        });
+    }
+
     let currentSlug=null;
     let currentManageKey=null;
     let ttlKey="10m";
     let ttlTouched=false; // 用户是否手动改过 TTL
-
-    function setStatus(msg,type){
-        if(!$statusMsg)return;
-        $statusMsg.textContent=msg||"";
-        $statusMsg.classList.remove("success","error");
-        if(type)$statusMsg.classList.add(type);
-    }
 
     const ttlTextMap={
         "10m":"内容将在 10 分钟后过期。",
@@ -841,7 +913,6 @@
 
         if($viewLinkText)$viewLinkText.textContent=viewLink;
         if(manageLink && $manageLinkRow && $manageLinkText){
-            // 显示时用未编码的形式更直观
             const displayManage=`${BASE_URL}?id=${id}:${passwordPlain}`;
             $manageLinkText.textContent=displayManage;
             $manageLinkRow.style.display="";
