@@ -1,302 +1,143 @@
-// src/index.js
-
-// 映射 TTL key 到秒数
-const TTL_MAP = {
-  "10m": 10 * 60,
-  "1d": 24 * 60 * 60,
-  "7d": 7 * 24 * 60 * 60,
-  "30d": 30 * 24 * 60 * 60,
-  "forever": 0,
-};
-
-// 简单生成 8 位 ID
-function generateId() {
-  const bytes = new Uint8Array(4);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-// 文件名 -> 路径 slug
-function slugify(name) {
-  const s = name
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9\-]/g, "");
-  return s || null;
-}
-
-// 统一 JSON 返回
-function jsonResponse(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "content-type": "application/json; charset=utf-8" },
-  });
-}
-
-// 计算过期时间 & KV 选项
-function buildExpiry(ttlKey) {
-  const seconds = TTL_MAP[ttlKey] ?? TTL_MAP["10m"];
-  const now = Date.now();
-  if (seconds > 0) {
-    return {
-      expiresAt: now + seconds * 1000,
-      kvOptions: { expirationTtl: seconds },
-    };
-  }
-  return {
-    expiresAt: null,
-    kvOptions: {},
-  };
-}
-
-async function handlePost(request, env) {
-  const url = new URL(request.url);
-  const baseUrl = url.origin + "/Paste";
-
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return jsonResponse({ ok: false, error: "请求体必须是 JSON" }, 400);
-  }
-
-  const action = body.action;
-  if (!action) {
-    return jsonResponse({ ok: false, error: "缺少 action 字段" }, 400);
-  }
-
-  // 通用字段
-  const rawSlug = (body.slug || "").toString().trim() || null;
-  const filename = (body.filename || "").toString().trim() || "";
-  const content = (body.content || "").toString();
-  const ttlKey = (body.ttlKey || "10m").toString();
-  const managePassword = (body.managePassword || "").toString();
-
-  // === 创建 ===
-  if (action === "create") {
-    if (!content.trim()) {
-      return jsonResponse({ ok: false, error: "内容不能为空" }, 400);
-    }
-
-    let slug = null;
-    let mode = "temp";
-    let hasPassword = false;
-
-    if (managePassword) {
-      mode = "managed";
-      hasPassword = true;
-    }
-
-    // 有管理密码且有文件名 => 尝试用文件名作为 slug
-    if (managePassword && filename) {
-      const s = slugify(filename);
-      if (!s) {
-        return jsonResponse({ ok: false, error: "文件名格式不合法" }, 400);
-      }
-      // 检查是否已存在
-      const existing = await env.PASTE.get(s);
-      if (existing) {
-        return jsonResponse({ ok: false, error: "该文件名路径已被占用，请换一个" }, 409);
-      }
-      slug = s;
-    } else {
-      // 临时分享或无文件名 => 用随机 ID
-      slug = generateId();
-    }
-
-    const { expiresAt, kvOptions } = buildExpiry(ttlKey);
-
-    const now = Date.now();
-    const record = {
-      slug,
-      filename: filename || null,
-      content,
-      createdAt: now,
-      updatedAt: now,
-      ttlKey,
-      expiresAt,
-      mode,
-      hasPassword,
-      password: hasPassword ? managePassword : null,
-    };
-
-    await env.PASTE.put(slug, JSON.stringify(record), kvOptions);
-
-    const viewUrl = `${baseUrl}?id=${encodeURIComponent(slug)}`;
-    const plain = content.replace(/\s+/g, " ").trim();
-    const snippet = plain.length > 40 ? plain.slice(0, 40) + "…" : plain || "（无内容）";
-    const shareText = `${baseUrl}/${filename || slug} ${snippet}`;
-
-    return jsonResponse({
-      ok: true,
-      action: "create",
-      slug,
-      filename: record.filename,
-      content: record.content,
-      ttlKey: record.ttlKey,
-      createdAt: record.createdAt,
-      expiresAt: record.expiresAt,
-      mode: record.mode,
-      hasPassword: record.hasPassword,
-      viewUrl,
-      shareText,
-    }, 201);
-  }
-
-  // === 更新 ===
-  if (action === "update") {
-    if (!rawSlug) {
-      return jsonResponse({ ok: false, error: "缺少 slug" }, 400);
-    }
-    if (!content.trim()) {
-      return jsonResponse({ ok: false, error: "内容不能为空" }, 400);
-    }
-
-    const val = await env.PASTE.get(rawSlug);
-    if (!val) {
-      return jsonResponse({ ok: false, error: "内容不存在或已过期" }, 404);
-    }
-    let record;
-    try {
-      record = JSON.parse(val);
-    } catch {
-      return jsonResponse({ ok: false, error: "存储格式错误，无法更新" }, 500);
-    }
-
-    if (!record.hasPassword) {
-      return jsonResponse({ ok: false, error: "该内容未设置管理密码，不支持更新" }, 403);
-    }
-    if (!managePassword) {
-      return jsonResponse({ ok: false, error: "更新时必须提供管理密码" }, 400);
-    }
-    if (record.password !== managePassword) {
-      return jsonResponse({ ok: false, error: "管理密码不正确" }, 403);
-    }
-
-    const { expiresAt, kvOptions } = buildExpiry(ttlKey);
-
-    record.content = content;
-    record.ttlKey = ttlKey;
-    record.expiresAt = expiresAt;
-    record.updatedAt = Date.now();
-    // 文件名如果有新值，也允许改
-    record.filename = filename || record.filename || null;
-
-    await env.PASTE.put(rawSlug, JSON.stringify(record), kvOptions);
-
-    const viewUrl = `${baseUrl}?id=${encodeURIComponent(record.slug)}`;
-    const plain = content.replace(/\s+/g, " ").trim();
-    const snippet = plain.length > 40 ? plain.slice(0, 40) + "…" : plain || "（无内容）";
-    const shareText = `${baseUrl}/${record.filename || record.slug} ${snippet}`;
-
-    return jsonResponse({
-      ok: true,
-      action: "update",
-      slug: record.slug,
-      filename: record.filename,
-      content: record.content,
-      ttlKey: record.ttlKey,
-      createdAt: record.createdAt,
-      expiresAt: record.expiresAt,
-      mode: record.mode,
-      hasPassword: record.hasPassword,
-      viewUrl,
-      shareText,
-    });
-  }
-
-  // === 删除 ===
-  if (action === "delete") {
-    if (!rawSlug) {
-      return jsonResponse({ ok: false, error: "缺少 slug" }, 400);
-    }
-    const val = await env.PASTE.get(rawSlug);
-    if (!val) {
-      return jsonResponse({ ok: false, error: "内容不存在或已过期" }, 404);
-    }
-    let record;
-    try {
-      record = JSON.parse(val);
-    } catch {
-      return jsonResponse({ ok: false, error: "存储格式错误，无法删除" }, 500);
-    }
-
-    if (!record.hasPassword) {
-      return jsonResponse({ ok: false, error: "该内容未设置管理密码，不支持删除" }, 403);
-    }
-    if (!managePassword) {
-      return jsonResponse({ ok: false, error: "删除时必须提供管理密码" }, 400);
-    }
-    if (record.password !== managePassword) {
-      return jsonResponse({ ok: false, error: "管理密码不正确" }, 403);
-    }
-
-    await env.PASTE.delete(rawSlug);
-    return jsonResponse({ ok: true, action: "delete", deleted: true });
-  }
-
-  return jsonResponse({ ok: false, error: "不支持的 action" }, 400);
-}
-
-async function handleGet(request, env) {
-  const url = new URL(request.url);
-  const path = url.pathname; // /api/paste 或 /api/paste/{slug}
-
-  if (!path.startsWith("/api/paste")) {
-    return jsonResponse({ ok: false, error: "Not Found" }, 404);
-  }
-
-  if (path === "/api/paste") {
-    return jsonResponse({ ok: false, error: "缺少 ID" }, 400);
-  }
-
-  const slug = path.replace("/api/paste/", "");
-  if (!slug) {
-    return jsonResponse({ ok: false, error: "缺少 ID" }, 400);
-  }
-
-  const val = await env.PASTE.get(slug);
-  if (!val) {
-    return jsonResponse({ ok: false, error: "内容不存在或已过期" }, 404);
-  }
-
-  let record;
-  try {
-    record = JSON.parse(val);
-  } catch {
-    return jsonResponse({ ok: false, error: "存储格式错误" }, 500);
-  }
-
-  return jsonResponse({
-    ok: true,
-    slug: record.slug,
-    filename: record.filename,
-    content: record.content,
-    ttlKey: record.ttlKey,
-    createdAt: record.createdAt,
-    updatedAt: record.updatedAt,
-    expiresAt: record.expiresAt,
-    mode: record.mode,
-    hasPassword: record.hasPassword,
-  });
-}
-
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    if (url.pathname === "/api/paste" || url.pathname.startsWith("/api/paste/")) {
-      if (request.method === "POST") {
-        return handlePost(request, env);
-      }
-      if (request.method === "GET") {
-        return handleGet(request, env);
-      }
-      return jsonResponse({ ok: false, error: "Method Not Allowed" }, 405);
+
+    // 只处理 /api/paste 开头的路径
+    if (!url.pathname.startsWith('/api/paste')) {
+      return new Response('Not found', { status: 404 });
     }
 
-    return new Response("Not Found", { status: 404 });
+    // 预检请求（OPTIONS）
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      });
+    }
+
+    // ===== GET /api/paste/:id 读取 =====
+    if (request.method === 'GET') {
+      const parts = url.pathname.split('/');
+      const slug = parts[parts.length - 1] || '';
+      if (!slug || slug === 'paste') {
+        return json({ ok: false, error: 'Missing id' }, 400);
+      }
+
+      const raw = await env.Paste_KV.get(slug);
+      if (!raw) {
+        return json({ ok: false, error: 'Not found' }, 404);
+      }
+
+      const data = JSON.parse(raw);
+      return json({ ok: true, ...data });
+    }
+
+    // ===== POST /api/paste  新建 / 更新 / 删除 =====
+    if (request.method === 'POST') {
+      const body = await request.json().catch(() => ({}));
+      const { action, slug, filename, content, ttlKey, managePassword } = body;
+
+      const ttlMap = {
+        '10m': 10 * 60,
+        '1d':  24 * 60 * 60,
+        '7d':  7 * 24 * 60 * 60,
+        '30d': 30 * 24 * 60 * 60,
+        'forever': null,
+      };
+      const ttlSeconds = ttlMap[ttlKey] ?? ttlMap['10m'];
+
+      const makeSlug = () =>
+        Math.random().toString(36).slice(2, 10) +
+        Math.random().toString(36).slice(2, 6);
+
+      // === create 新建 ===
+      if (action === 'create') {
+        if (!content || !String(content).trim()) {
+          return json({ ok: false, error: '内容不能为空' }, 400);
+        }
+
+        const newSlug = makeSlug();
+        const now = Date.now();
+        const hasPwd = !!(managePassword && managePassword.trim());
+
+        const data = {
+          slug: newSlug,
+          filename: filename || '',
+          content,
+          ttlKey: ttlKey || '10m',
+          hasPassword: hasPwd,
+          passwordPlain: hasPwd ? managePassword : null, // 简版：明文保存
+          createdAt: now,
+          expiresAt: ttlSeconds ? now + ttlSeconds * 1000 : null,
+        };
+
+        const putOpts = ttlSeconds ? { expirationTtl: ttlSeconds } : {};
+        await env.Paste_KV.put(newSlug, JSON.stringify(data), putOpts);
+
+        return json({ ok: true, ...data });
+      }
+
+      // === update / delete 更新 / 删除 ===
+      if (action === 'update' || action === 'delete') {
+        if (!slug) {
+          return json({ ok: false, error: '缺少 slug' }, 400);
+        }
+
+        const raw = await env.Paste_KV.get(slug);
+        if (!raw) {
+          return json({ ok: false, error: '内容不存在' }, 404);
+        }
+
+        const data = JSON.parse(raw);
+
+        // 有密码就要校验
+        if (data.hasPassword) {
+          if (!managePassword) {
+            return json({ ok: false, error: '需要管理密码' }, 401);
+          }
+          if (managePassword !== data.passwordPlain) {
+            return json({ ok: false, error: '密码错误' }, 403);
+          }
+        }
+
+        // 删除
+        if (action === 'delete') {
+          await env.Paste_KV.delete(slug);
+          return json({ ok: true, deleted: true });
+        }
+
+        // 更新
+        const now = Date.now();
+        if (typeof filename === 'string') {
+          data.filename = filename;
+        }
+        if (typeof content === 'string') {
+          data.content = content;
+        }
+        data.ttlKey = ttlKey || data.ttlKey || '10m';
+        data.expiresAt = ttlSeconds ? now + ttlSeconds * 1000 : null;
+
+        const putOpts2 = ttlSeconds ? { expirationTtl: ttlSeconds } : {};
+        await env.Paste_KV.put(slug, JSON.stringify(data), putOpts2);
+
+        return json({ ok: true, ...data });
+      }
+
+      return json({ ok: false, error: '未知 action' }, 400);
+    }
+
+    // 其它方法 405
+    return json({ ok: false, error: 'Method not allowed' }, 405);
   },
 };
+
+function json(obj, status = 200) {
+  return new Response(JSON.stringify(obj), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
