@@ -671,7 +671,7 @@
                                         <path d="M4 4v4a1 1 0 0 0 1 1h4V7H6.414A4 4 0 1 1 10 14v2a6 6 0 1 0-6-6V4z"/>
                                     </svg>
                                 </span>
-                                重置 / 清空
+                                清空
                             </button>
                         </div>
                         <div class="action-row">
@@ -682,7 +682,7 @@
                                         <path d="M4 11a1 1 0 0 1 1 1v3h10v-3a1 1 0 1 1 2 0v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a1 1 0 0 1 1-1z"/>
                                     </svg>
                                 </span>
-                                <span class="text">上传 / 保存</span>
+                                <span class="text">上传</span>
                             </button>
                         </div>
                     </div>
@@ -1100,7 +1100,7 @@
         state.originalSlug=null;
         if($submitBtn){
             const span=$submitBtn.querySelector(".text");
-            if(span)span.textContent="上传 / 保存";
+            if(span)span.textContent="上传";
         }
         if($btnHome)$btnHome.style.display="none";
         if(clear){
@@ -1572,7 +1572,7 @@
                     $submitBtn.disabled=false;
                     $submitBtn.classList.remove("btn-disabled");
                     const span=$submitBtn.querySelector(".text");
-                    if(span)span.textContent=state.mode==="edit"?"更新 / 保存":"上传 / 保存";
+                    if(span)span.textContent=state.mode==="edit"?"更新":"上传";
                 }
             }
         });
