@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <title>Pastebox</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Favicon：多种写法提高兼容性 -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
 
     <!-- Open Graph / WeChat / Telegram 预览 -->
@@ -33,9 +37,7 @@
             --accent:#38bdf8;
             --accent2:#6366f1;
             --danger:#fecaca;
-            --shadow-main:
-                0 22px 60px rgba(15,23,42,0.96),
-                0 0 0 1px rgba(15,23,42,0.9);
+            --shadow-main:0 22px 60px rgba(15,23,42,0.9);
             --input-bg:rgba(15,23,42,0.96);
         }
         body.theme-light{
@@ -49,10 +51,9 @@
             --accent:#2563eb;
             --accent2:#6366f1;
             --danger:#b91c1c;
-            --shadow-main:0 18px 48px rgba(15,23,42,0.14);
+            --shadow-main:0 18px 40px rgba(15,23,42,0.14);
             --input-bg:#f9fafb;
         }
-
         *{box-sizing:border-box;}
         body{
             margin:0;
@@ -61,135 +62,100 @@
             display:flex;
             align-items:center;
             justify-content:center;
-            padding:24px 12px;
+            padding:30px 12px;
             background:
                 radial-gradient(circle at top,rgba(56,189,248,0.18),transparent 60%),
                 radial-gradient(circle at bottom,rgba(129,140,248,0.18),transparent 60%),
                 var(--bg);
             color:var(--text-main);
-            transition:background .2s ease,color .2s ease;
         }
         .shell{width:100%;max-width:880px;}
 
+        /* 顶部 */
         .header{
-            margin-bottom:14px;
+            margin-bottom:18px;
             display:flex;
             justify-content:space-between;
-            gap:10px;
+            gap:12px;
             align-items:center;
         }
         .brand{
             display:flex;
             align-items:center;
             gap:10px;
-            padding:8px 12px;
+            padding:10px 14px;
             border-radius:18px;
-            background:linear-gradient(135deg,rgba(15,23,42,0.9),rgba(56,189,248,0.12));
+            background:linear-gradient(135deg,rgba(15,23,42,0.96),rgba(56,189,248,0.15));
             border:1px solid rgba(148,163,184,0.5);
-            box-shadow:0 14px 40px rgba(15,23,42,0.65);
-            transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+            box-shadow:0 14px 40px rgba(15,23,42,0.7);
+            transition:transform .15s ease, box-shadow .15s ease,border-color .15s ease;
         }
         body.theme-light .brand{
-            background:linear-gradient(135deg,#ffffff,rgba(219,234,254,0.9));
-            box-shadow:0 14px 36px rgba(15,23,42,0.16);
+            background:linear-gradient(135deg,#ffffff,rgba(219,234,254,0.95));
+            box-shadow:0 12px 30px rgba(15,23,42,0.15);
         }
         .brand:hover{
-            transform:translateY(-3px);
-            box-shadow:0 20px 50px rgba(15,23,42,0.9);
-            border-color:rgba(56,189,248,0.9);
+            transform:translateY(-1px);
+            box-shadow:0 18px 46px rgba(15,23,42,0.9);
+            border-color:rgba(56,189,248,0.8);
         }
         .brand-logo{
-            width:44px;
-            height:44px;
-            border-radius:16px;
-            overflow:hidden;
+            width:44px;height:44px;border-radius:16px;overflow:hidden;
             background:radial-gradient(circle at top left,#22c55e,#0ea5e9);
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            flex-shrink:0;
-            position:relative;
+            display:flex;align-items:center;justify-content:center;
         }
-        .brand-logo::after{
-            content:"";
-            position:absolute;
-            inset:-2px;
-            border-radius:16px;
-            border:1px solid rgba(56,189,248,0.4);
-            box-shadow:0 0 18px rgba(56,189,248,0.6);
-            opacity:0.3;
-            pointer-events:none;
-        }
-        .brand-logo img{
-            width:100%;
-            height:100%;
-            object-fit:cover;
-            border-radius:16px;
-            display:block;
-        }
-        .brand-text{
-            display:flex;
-            flex-direction:column;
-            gap:2px;
-        }
-        .brand-title{
-            font-size:18px;
-            font-weight:600;
-            letter-spacing:.03em;
-        }
-        .brand-sub{
-            font-size:11px;
-            color:var(--text-sub);
-        }
+        .brand-logo img{width:100%;height:100%;object-fit:cover;border-radius:16px;}
+        .brand-text{display:flex;flex-direction:column;gap:3px;}
+        .brand-title{font-size:19px;font-weight:600;letter-spacing:.03em;}
+        .brand-sub{font-size:11px;color:var(--text-sub);}
 
-        .header-actions{
-            display:flex;
-            align-items:center;
-            gap:8px;
-        }
+        .header-actions{display:flex;align-items:center;gap:8px;}
 
         button{
-            border:none;
-            outline:none;
-            cursor:pointer;
-            font-size:12px;
+            border:none;outline:none;cursor:pointer;
             border-radius:999px;
             padding:6px 14px;
-            display:inline-flex;
-            align-items:center;
-            gap:6px;
+            display:inline-flex;align-items:center;gap:6px;
+            font-size:12px;
             background:transparent;
             color:var(--text-main);
+            transition:
+                background-color .15s ease,
+                box-shadow .15s ease,
+                transform .08s ease,
+                border-color .15s ease,
+                opacity .15s ease;
+        }
+        button:hover{
+            transform:translateY(-1px);
+        }
+        button:active{
+            transform:translateY(0);
+            opacity:.9;
+        }
+        button:focus-visible{
+            outline:2px solid var(--accent2);
+            outline-offset:1px;
         }
 
-        .icon-svg{
-            width:14px;
-            height:14px;
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-        }
+        .icon-svg{width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;}
         .icon-svg svg{width:14px;height:14px;fill:currentColor;}
 
         .theme-toggle{
-            border-radius:999px;
             border:1px solid var(--border-soft);
-            background:rgba(15,23,42,0.7);
-            font-size:11px;
-            color:var(--text-sub);
+            background:rgba(15,23,42,0.8);
+            font-size:11px;color:var(--text-sub);
             box-shadow:0 10px 24px rgba(15,23,42,0.7);
         }
         body.theme-light .theme-toggle{
             background:#ffffff;
-            box-shadow:0 10px 24px rgba(148,163,184,0.5);
+            box-shadow:0 8px 20px rgba(148,163,184,0.5);
         }
-        .theme-icon{
-            width:16px;
-            height:16px;
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
+        .theme-toggle:hover{
+            box-shadow:0 12px 26px rgba(37,99,235,0.5);
+            border-color:rgba(56,189,248,0.85);
         }
+        .theme-icon{width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;}
         .theme-icon svg{width:16px;height:16px;fill:currentColor;}
         body.theme-dark .theme-icon-sun{display:none;}
         body.theme-dark .theme-icon-moon{display:inline-flex;}
@@ -197,65 +163,59 @@
 
         .pill-btn{
             border:1px solid var(--border-soft);
-            background:rgba(15,23,42,0.8);
+            background:rgba(15,23,42,0.85);
             font-size:11px;
-            padding-inline:10px;
         }
-        body.theme-light .pill-btn{
-            background:#ffffff;
-        }
-        .pill-btn-primary{
-            border-color:rgba(56,189,248,0.9);
+        body.theme-light .pill-btn{background:#ffffff;}
+        .pill-btn-primary{border-color:rgba(56,189,248,0.9);}
+        .pill-btn:hover{
+            box-shadow:0 10px 24px rgba(15,23,42,0.8);
+            border-color:rgba(56,189,248,0.7);
         }
 
+        /* 主卡片 */
         .card{
             background:var(--layer);
-            border-radius:20px;
+            border-radius:22px;
             border:1px solid var(--border-soft);
             box-shadow:var(--shadow-main);
-            padding:16px 18px 14px;
+            padding:18px 20px 16px;
             display:flex;
             flex-direction:column;
-            gap:12px;
-            transition:border-color .2s ease,box-shadow .2s ease,background .2s ease;
+            gap:14px;
         }
-
         .card-section{
-            border-radius:14px;
-            padding:10px 10px;
+            border-radius:16px;
+            padding:12px 12px;
             background:var(--layer-soft);
             border:1px solid rgba(148,163,184,0.25);
         }
-        .card-section+.card-section{margin-top:4px;}
-
+        .card-section + .card-section{margin-top:6px;}
         .section-title{
             font-size:12px;
             font-weight:600;
-            margin-bottom:6px;
-            display:flex;
-            align-items:center;
-            gap:6px;
-            color:var(--text-main);
+            margin-bottom:8px;
+            display:flex;align-items:center;gap:6px;
         }
         .section-title .tag{
             font-size:10px;
             padding:1px 6px;
             border-radius:999px;
-            border:1px solid rgba(148,163,184,0.4);
+            border:1px solid rgba(148,163,184,0.5);
             color:var(--text-sub);
         }
         .section-text{
             font-size:11px;
             color:var(--text-sub);
-            line-height:1.6;
+            line-height:1.8;
         }
         .warning-label{color:#dc2626;font-weight:700;}
 
-        form{display:flex;flex-direction:column;gap:8px;}
+        form{display:flex;flex-direction:column;gap:10px;}
         .field{display:flex;flex-direction:column;gap:4px;margin-top:2px;}
         .field-label{font-size:12px;color:var(--text-sub);}
         .field-inline{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
-        .field-row{display:flex;flex-wrap:wrap;gap:10px;}
+        .field-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;}
         .field-block{flex:1 1 200px;}
 
         input[type="text"],input[type="password"]{
@@ -267,15 +227,18 @@
             padding:6px 10px;
             outline:none;
             width:100%;
-            transition:border-color .15s ease, box-shadow .15s ease, background .15s ease;
         }
         input::placeholder{color:rgba(148,163,184,0.7);}
+        input:focus{
+            border-color:var(--accent2);
+            box-shadow:0 0 0 1px rgba(56,189,248,0.4);
+        }
         .input-error{
             border-color:#f97373;
             box-shadow:0 0 0 1px rgba(248,113,113,0.6);
         }
 
-        .ttl-group{display:flex;flex-wrap:wrap;gap:8px;}
+        .ttl-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;}
         .ttl-btn{
             border-radius:999px;
             border:1px solid #d4d4d8;
@@ -296,9 +259,16 @@
             border-color:#111827;
             box-shadow:0 4px 10px rgba(15,23,42,0.25);
         }
-        .ttl-btn[disabled]{opacity:.45;cursor:not-allowed;}
-        .ttl-hint{font-size:11px;color:var(--text-sub);margin-top:4px;}
+        .ttl-btn:hover{
+            border-color:var(--accent);
+            box-shadow:0 4px 9px rgba(37,99,235,0.35);
+        }
+        .ttl-btn[disabled]{opacity:.35;cursor:not-allowed;}
+        .ttl-hint{font-size:11px;color:var(--text-sub);margin-top:6px;}
 
+        .textarea-wrap{
+            position:relative;
+        }
         textarea{
             width:100%;
             min-height:220px;
@@ -308,378 +278,307 @@
             border:1px solid var(--border-strong);
             background:var(--input-bg);
             color:var(--text-main);
-            font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+            font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
             font-size:13px;
             line-height:1.5;
             outline:none;
-            transition:border-color .15s ease,box-shadow .15s ease,background .15s ease;
         }
         textarea::placeholder{color:rgba(148,163,184,0.8);}
         textarea:focus{
             border-color:var(--accent2);
             box-shadow:0 0 0 1px rgba(56,189,248,0.35);
-            background:#ffffff;
         }
-        body.theme-dark textarea:focus{
-            box-shadow:
-                0 0 0 1px rgba(56,189,248,0.8),
-                0 12px 30px rgba(15,23,42,0.9);
-            background:rgba(15,23,42,1);
+        .textarea-meta{
+            position:absolute;
+            right:8px;
+            bottom:6px;
+            font-size:10px;
+            color:var(--text-sub);
+            pointer-events:none;
+            background:linear-gradient(90deg,rgba(15,23,42,0.7),rgba(15,23,42,0));
+            padding:2px 6px;
+            border-radius:999px;
         }
 
         .hint{font-size:11px;color:var(--text-sub);}
         .hint-error{color:#f97373;}
         .hint-success{color:#22c55e;}
-        .byte-count{
-            font-size:11px;
-            color:var(--accent2);
-        }
+        .byte-count{font-size:11px;color:var(--text-sub);}
+        .byte-num{color:var(--accent2);font-weight:600;}
+        .line-num{color:var(--accent);font-weight:600;}
 
         .btn-primary{
             font-weight:500;
             background:linear-gradient(90deg,var(--accent),var(--accent2));
             color:#f9fafb;
             box-shadow:0 8px 20px rgba(37,99,235,0.35);
-            transition:filter .15s ease, box-shadow .15s ease, opacity .15s ease;
         }
-        .btn-primary:hover{
-            filter:brightness(1.05);
-            box-shadow:0 10px 24px rgba(37,99,235,0.5);
-        }
-        .btn-primary.btn-disabled{
-            opacity:.5;
-            cursor:not-allowed;
-            box-shadow:none;
-        }
+        .btn-primary:hover{box-shadow:0 10px 24px rgba(37,99,235,0.5);}
+        .btn-primary.btn-disabled{opacity:.5;cursor:not-allowed;box-shadow:none;}
         .btn-secondary{
             background:var(--layer-soft);
             color:var(--text-main);
             border:1px solid var(--border-strong);
         }
         .btn-secondary:hover{background:#e5e7eb;}
-        body.theme-dark .btn-secondary:hover{
-            background:rgba(31,41,55,0.96);
-        }
+        body.theme-dark .btn-secondary:hover{background:rgba(31,41,55,0.96);}
         .btn-danger{
             background:rgba(248,113,113,0.12);
             color:var(--danger);
             border:1px solid rgba(248,113,113,0.7);
         }
-        .btn-danger:hover{background:rgba(248,113,113,0.2);}
+        .btn-danger:hover{
+            background:rgba(248,113,113,0.22);
+        }
         .btn-xs{padding:3px 8px;font-size:11px;}
+        .btn-sm{padding:4px 12px;font-size:12px;}
+
+        .btn-reset{
+            background:#020617;
+            color:#e5e7eb;
+            border:1px solid var(--border-strong);
+        }
+        body.theme-light .btn-reset{
+            background:#111827;
+            color:#f9fafb;
+        }
+        .field-reset{
+            display:flex;
+            justify-content:center;
+        }
+        @keyframes spin{
+            from{transform:rotate(0deg);}
+            to{transform:rotate(360deg);}
+        }
+        .btn-reset:hover .icon-svg svg{
+            animation:spin .8s linear infinite;
+            transform-origin:center;
+        }
 
         .action-row{
             display:flex;
             justify-content:flex-end;
             gap:8px;
             flex-wrap:wrap;
+            margin-top:4px;
+        }
+
+        .upload-row{margin-top:4px;align-items:center;gap:8px;}
+        .upload-btn{
+            display:inline-flex;align-items:center;gap:4px;
+            padding:4px 10px;border-radius:999px;
+            border:1px dashed var(--border-strong);
+            background:rgba(15,23,42,0.5);
+            color:var(--text-sub);
+            font-size:11px;
+            cursor:pointer;
+            transition:
+                background-color .15s ease,
+                border-color .15s ease,
+                transform .08s ease,
+                box-shadow .15s ease;
+        }
+        body.theme-light .upload-btn{background:#ffffff;}
+        .upload-btn:hover{
+            border-style:solid;
+            border-color:var(--accent);
+            background:rgba(15,23,42,0.85);
+            box-shadow:0 8px 18px rgba(37,99,235,0.4);
+            transform:translateY(-1px);
         }
 
         .result-box{
-            font-size:12px;
-            color:var(--text-sub);
-            padding:10px 10px;
-            border-radius:12px;
+            font-size:12px;color:var(--text-sub);
+            padding:10px;border-radius:12px;
             background:var(--layer-soft);
             border:1px dashed var(--border-strong);
-            display:flex;
-            flex-direction:column;
-            gap:6px;
+            display:flex;flex-direction:column;gap:8px;
         }
         .result-row{
             display:flex;
             align-items:flex-start;
+            justify-content:space-between;
             gap:8px;
             flex-wrap:wrap;
         }
         .result-main{flex:1;min-width:0;}
         .result-label{
             font-size:11px;
-            padding:2px 6px;
-            border-radius:999px;
+            padding:2px 6px;border-radius:999px;
             background:rgba(148,163,184,0.15);
-            color:var(--text-sub);
-            margin-right:4px;
         }
         .result-link{
             font-size:11px;
             word-break:break-all;
             color:var(--text-main);
+            margin-top:2px;
+            display:block;
         }
         .result-actions{
             display:flex;
             flex-direction:column;
-            gap:4px;
+            gap:6px;
+            align-items:flex-end;
             flex-shrink:0;
         }
 
         .status-msg{
-            font-size:11px;
-            margin-top:4px;
-            min-height:1.2em;
-            color:var(--text-sub);
+            font-size:11px;margin-top:4px;min-height:1.2em;color:var(--text-sub);
         }
         .status-msg.success{color:#16a34a;}
         .status-msg.error{color:#dc2626;}
 
         .footer-row{
-            display:flex;
-            justify-content:space-between;
-            gap:8px;
-            flex-wrap:wrap;
-            font-size:11px;
-            color:var(--text-sub);
-            margin-top:2px;
-            padding-top:4px;
+            display:flex;justify-content:space-between;
+            gap:8px;flex-wrap:wrap;
+            font-size:11px;color:var(--text-sub);
+            margin-top:4px;padding-top:6px;
             border-top:1px dashed var(--border-soft);
         }
 
-        /* 文件上传按钮 */
-        .upload-row{
-            margin-top:4px;
-            align-items:center;
-            gap:8px;
-        }
-        .upload-btn{
-            display:inline-flex;
-            align-items:center;
-            gap:4px;
-            padding:4px 10px;
-            border-radius:999px;
-            border:1px dashed var(--border-strong);
-            background:rgba(15,23,42,0.4);
-            color:var(--text-sub);
-            cursor:pointer;
-            font-size:11px;
-        }
-        body.theme-light .upload-btn{background:#ffffff;}
-        .upload-btn:hover{border-style:solid;}
-
-        /* 登录大药丸弹窗 */
+        /* 登录弹窗：居中小方块 */
         .modal-backdrop{
-            position:fixed;
-            inset:0;
+            position:fixed;inset:0;
             background:rgba(15,23,42,0.65);
-            display:flex;
-            align-items:flex-start;
-            justify-content:center;
-            padding-top:40px;
-            z-index:40;
+            display:flex;align-items:center;justify-content:center;
+            padding:16px;z-index:40;
         }
-        .auth-pill{
-            min-width:280px;
-            max-width:460px;
-            border-radius:999px;
+        .auth-panel{
+            width:260px;
+            border-radius:18px;
             background:linear-gradient(135deg,rgba(15,23,42,0.98),rgba(30,64,175,0.96));
             border:1px solid rgba(56,189,248,0.8);
-            box-shadow:
-                0 18px 60px rgba(15,23,42,0.9),
-                0 0 0 1px rgba(15,23,42,0.8);
-            padding:10px 16px;
-            display:flex;
-            align-items:center;
-            gap:14px;
+            box-shadow:0 20px 60px rgba(15,23,42,0.95);
+            padding:12px 12px 10px;
+            display:flex;flex-direction:column;gap:10px;
             color:#e5e7eb;
         }
-        body.theme-light .auth-pill{
+        body.theme-light .auth-panel{
             background:linear-gradient(135deg,#ffffff,rgba(219,234,254,0.95));
             color:#111827;
         }
-        .auth-pill-left{
-            display:flex;
-            flex-direction:column;
-            gap:2px;
-            min-width:0;
+        .auth-panel-header{
+            display:flex;justify-content:space-between;gap:8px;align-items:flex-start;
         }
-        .auth-pill-title{
-            font-size:13px;
-            font-weight:600;
-        }
-        .auth-pill-sub{
-            font-size:11px;
-            opacity:.8;
-        }
-        .auth-pill-form{
-            display:flex;
-            align-items:center;
-            gap:8px;
-            flex:1;
-        }
-        .auth-pill-inputs{
-            display:flex;
-            gap:6px;
-            flex:1;
-        }
-        .auth-pill-inputs input{
-            font-size:12px;
-            border-radius:999px;
-            border:1px solid rgba(148,163,184,0.9);
-            background:rgba(15,23,42,0.8);
-            color:inherit;
-        }
-        body.theme-light .auth-pill-inputs input{
-            background:#ffffff;
-        }
-        .auth-pill-actions{
-            display:flex;
-            flex-direction:column;
-            gap:4px;
-        }
-        .auth-pill-msg{
-            font-size:11px;
-            margin-top:4px;
-            min-height:1.2em;
-        }
-        .auth-pill-msg.success{color:#4ade80;}
-        .auth-pill-msg.error{color:#fecaca;}
-        .auth-pill-close{
-            border-radius:999px;
-            width:26px;
-            height:26px;
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-            background:rgba(15,23,42,0.8);
+        .auth-panel-title{font-size:14px;font-weight:600;}
+        .auth-panel-sub{font-size:11px;opacity:.8;margin-top:2px;}
+        .auth-panel-close{
+            border-radius:999px;width:24px;height:24px;
+            display:inline-flex;align-items:center;justify-content:center;
+            background:rgba(15,23,42,0.9);
             border:1px solid rgba(148,163,184,0.7);
         }
-        body.theme-light .auth-pill-close{background:#eef2ff;}
+        body.theme-light .auth-panel-close{background:#eef2ff;}
+        .auth-panel-form{display:flex;flex-direction:column;gap:8px;}
+        .auth-panel-row{display:flex;flex-direction:column;gap:6px;}
+        .auth-panel-row input{
+            font-size:12px;border-radius:999px;
+            border:1px solid rgba(148,163,184,0.9);
+            background:rgba(15,23,42,0.9);
+            color:inherit;padding:6px 10px;
+        }
+        body.theme-light .auth-panel-row input{background:#ffffff;}
+        .auth-panel-actions{display:flex;gap:6px;justify-content:flex-end;}
+        .auth-panel-msg{font-size:11px;min-height:1.2em;}
+        .auth-panel-msg.success{color:#4ade80;}
+        .auth-panel-msg.error{color:#fecaca;}
 
         /* 用户中心弹层 */
         .uc-backdrop{
-            position:fixed;
-            inset:0;
+            position:fixed;inset:0;
             background:rgba(15,23,42,0.7);
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            padding:20px 10px;
-            z-index:30;
+            display:flex;align-items:center;justify-content:center;
+            padding:20px 10px;z-index:30;
         }
         .uc-panel{
-            width:100%;
-            max-width:880px;
-            max-height:90vh;
+            width:100%;max-width:880px;max-height:90vh;
             background:var(--layer);
             border-radius:20px;
             border:1px solid rgba(148,163,184,0.7);
             box-shadow:0 24px 70px rgba(15,23,42,0.95);
             padding:14px 14px 12px;
-            display:flex;
-            flex-direction:column;
-            gap:10px;
+            display:flex;flex-direction:column;gap:10px;
         }
         .uc-header{
-            display:flex;
-            justify-content:space-between;
-            gap:10px;
-            align-items:flex-start;
+            display:flex;justify-content:space-between;
+            gap:10px;align-items:flex-start;
         }
-        .uc-title-box{
-            display:flex;
-            align-items:center;
-            gap:8px;
-        }
-        .uc-title-main{
-            font-size:14px;
-            font-weight:600;
-        }
-        .uc-title-sub{
-            font-size:11px;
-            color:var(--text-sub);
-        }
-        .uc-actions{
-            display:flex;
-            flex-wrap:wrap;
-            gap:6px;
-            justify-content:flex-end;
-        }
+        .uc-title-box{display:flex;align-items:flex-start;gap:8px;}
+        .uc-title-main{font-size:14px;font-weight:600;}
+        .uc-title-sub{font-size:11px;color:var(--text-sub);margin-top:2px;}
+        .uc-actions{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;}
         .uc-body{
             border-radius:14px;
             background:var(--layer-soft);
             border:1px solid rgba(51,65,85,0.9);
-            padding:8px;
-            overflow:auto;
+            padding:8px;overflow:auto;
         }
-        .uc-empty{
-            font-size:12px;
-            color:var(--text-sub);
-            padding:18px 6px;
-            text-align:center;
-        }
-        .uc-list{
-            display:flex;
-            flex-direction:column;
-            gap:6px;
-        }
+        .uc-empty{font-size:12px;color:var(--text-sub);padding:16px 6px;text-align:center;}
+        .uc-list{display:flex;flex-direction:column;gap:6px;}
         .uc-item{
             border-radius:12px;
             border:1px solid rgba(75,85,99,0.9);
-            background:rgba(15,23,42,0.9);
+            background:rgba(15,23,42,0.96);
             padding:8px 8px 6px;
-            display:flex;
-            flex-direction:column;
-            gap:4px;
+            display:flex;flex-direction:column;gap:4px;
             font-size:11px;
         }
-        body.theme-light .uc-item{
-            background:#ffffff;
-        }
+        body.theme-light .uc-item{background:#ffffff;}
         .uc-item-top{
-            display:flex;
-            justify-content:space-between;
-            gap:6px;
+            display:flex;justify-content:space-between;gap:6px;
         }
-        .uc-item-title{
-            font-weight:600;
-            font-size:12px;
-        }
-        .uc-item-meta{
-            font-size:10px;
-            color:var(--text-sub);
-            text-align:right;
-        }
+        .uc-item-title{font-size:12px;font-weight:600;display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+        .uc-item-meta{font-size:10px;color:var(--text-sub);text-align:right;}
         .uc-tag{
+            display:inline-flex;align-items:center;
+            padding:1px 6px;border-radius:999px;
+            border:1px solid rgba(148,163,184,0.7);margin-left:2px;
+            font-size:10px;color:var(--text-sub);
+        }
+        .uc-remark{
             display:inline-flex;
             align-items:center;
-            padding:1px 6px;
+            padding:2px 8px;
+            border-radius:999px;
+            background:rgba(59,130,246,0.16);
+            color:#60a5fa;
+            font-weight:500;
+        }
+        body.theme-light .uc-remark{
+            background:rgba(59,130,246,0.18);
+            color:#1d4ed8;
+        }
+        .uc-link{word-break:break-all;color:var(--text-main);}
+        .uc-link-tag{
+            display:inline-flex;
+            align-items:center;
+            padding:2px 8px;
             border-radius:999px;
             border:1px solid rgba(148,163,184,0.7);
-            margin-left:4px;
+            background:rgba(15,23,42,0.9);
+            font-size:11px;
         }
-        .uc-link{
-            word-break:break-all;
-            color:var(--text-main);
+        body.theme-light .uc-link-tag{
+            background:#f9fafb;
         }
-        .uc-item-actions{
-            margin-top:4px;
-            display:flex;
-            flex-wrap:wrap;
-            gap:6px;
-        }
+        .uc-item-actions{margin-top:4px;display:flex;flex-wrap:wrap;gap:6px;}
 
         @media(max-width:780px){
-            .card{padding:14px 12px 12px;border-radius:16px;}
-            .header{flex-direction:column;align-items:flex-start;}
+            body{padding:22px 10px;}
+            .card{padding:14px 12px 12px;border-radius:18px;}
+            .header{flex-direction:column;align-items:flex-start;gap:10px;}
             .brand{width:100%;}
             .header-actions{align-self:flex-end;}
-            .auth-pill{
-                flex-direction:column;
-                align-items:stretch;
-                border-radius:26px;
-            }
-            .auth-pill-form{
-                flex-direction:column;
-                align-items:stretch;
-            }
-            .auth-pill-actions{
-                flex-direction:row;
-                justify-content:flex-end;
-            }
-            .uc-header{
+            .uc-header{flex-direction:column;align-items:flex-start;}
+            .uc-actions{justify-content:flex-start;}
+            .result-row{
                 flex-direction:column;
                 align-items:flex-start;
             }
-            .uc-actions{justify-content:flex-start;}
+            .result-actions{
+                flex-direction:row;
+                align-items:flex-start;
+            }
         }
     </style>
 </head>
@@ -687,9 +586,7 @@
 <div class="shell">
     <header class="header">
         <div class="brand">
-            <div class="brand-logo">
-                <img id="brandIcon" alt="icon">
-            </div>
+            <div class="brand-logo"><img id="brandIcon" alt="icon"></div>
             <div class="brand-text">
                 <div class="brand-title">PasteBox</div>
                 <div class="brand-sub">Paste text. Get URL. Move on.</div>
@@ -710,6 +607,16 @@
                 <span class="label">Dark</span>
             </button>
 
+            <!-- 首页按钮：仅在编辑模式显示，初始隐藏 -->
+            <button type="button" class="pill-btn" id="btnHome" style="display:none;">
+                <span class="icon-svg">
+                    <svg viewBox="0 0 20 20">
+                        <path d="M10.707 2.293a1 1 0 0 0-1.414 0l-7 7A1 1 0 0 0 3 10h1v7a1 1 0 0 0 1 1h3v-4h4v4h3a1 1 0 0 0 1-1v-7h1a1 1 0 0 0 .707-1.707l-7-7z"/>
+                    </svg>
+                </span>
+                首页
+            </button>
+
             <button type="button" class="pill-btn pill-btn-primary" id="btnAuthOpen">
                 <span class="icon-svg">
                     <svg viewBox="0 0 20 20">
@@ -718,25 +625,12 @@
                 </span>
                 <span id="btnAuthLabel">登录</span>
             </button>
-
-            <button type="button" class="pill-btn" id="btnUserCenterOpen" style="display:none;">
-                <span class="icon-svg">
-                    <svg viewBox="0 0 20 20">
-                        <path d="M3 4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3H3V4zm0 5h14v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
-                    </svg>
-                </span>
-                <span>用户中心</span>
-            </button>
         </div>
     </header>
 
     <main class="card" id="mainCard">
-        <!-- 顶部说明 -->
-        <section class="card-section" id="topNotice">
-            <div class="section-title">
-                使用说明
-                <span class="tag">GUIDE</span>
-            </div>
+        <section class="card-section">
+            <div class="section-title">使用说明<span class="tag">GUIDE</span></div>
             <div class="section-text">
                 在下面粘贴文本或从文件导入，选择有效期后生成一个可分享的访问链接（以 <code>text/plain</code> 打开）。<br>
                 <span class="warning-label">警告：</span>请勿存储敏感信息，本工具仅适用于临时共享内容。
@@ -745,17 +639,29 @@
 
         <div id="editorContainer">
             <form id="pasteForm">
-                <!-- 内容 + 文件上传 -->
                 <section class="card-section">
-                    <div class="section-title">
-                        编辑 / 粘贴
-                        <span class="tag">BODY</span>
+                    <div class="section-title">编辑 / 粘贴<span class="tag">BODY</span></div>
+                    <div class="field">
+                        <div class="textarea-wrap">
+                            <textarea id="content" placeholder="在这里粘贴内容（代码、日志、随手记都可以），或下方选择文件导入…" required></textarea>
+                            <div class="textarea-meta">
+                                行数：<span class="line-num" id="lineNum">1</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="field">
-                        <textarea id="content" placeholder="在这里粘贴内容（代码、日志、随手记都可以），或下方选择文件导入…" required></textarea>
+                        <span class="byte-count">已输入 <span class="byte-num" id="byteNum">0</span> 字节</span>
                     </div>
-                    <div class="field">
-                        <span class="byte-count" id="byteCount">已输入 0 字节</span>
+                    <!-- 重置按钮：在上传按钮上方，小药丸，居中 -->
+                    <div class="field field-reset">
+                        <button type="button" class="btn-reset btn-sm" id="btnResetContent">
+                            <span class="icon-svg">
+                                <svg viewBox="0 0 20 20">
+                                    <path d="M4 4v4a1 1 0 0 0 1 1h4V7H6.414A4 4 0 1 1 10 14v2a6 6 0 1 0-6-6V4z"/>
+                                </svg>
+                            </span>
+                            重置
+                        </button>
                     </div>
                     <div class="field">
                         <div class="field-inline upload-row">
@@ -774,12 +680,8 @@
                     </div>
                 </section>
 
-                <!-- 过期时间 -->
                 <section class="card-section">
-                    <div class="section-title">
-                        过期时间
-                        <span class="tag">TTL</span>
-                    </div>
+                    <div class="section-title">过期时间<span class="tag">TTL</span></div>
                     <div class="field">
                         <div class="ttl-group" id="ttlGroup">
                             <button type="button" class="ttl-btn" data-ttl="10m">10 Min</button>
@@ -792,45 +694,28 @@
                     </div>
                 </section>
 
-                <!-- 自定义 URL（登录后可用） -->
                 <section class="card-section" id="advancedSection">
-                    <div class="section-title">
-                        链接设置（需要登录）
-                        <span class="tag">LINK</span>
-                    </div>
-
+                    <div class="section-title">链接设置（需要登录）<span class="tag">LINK</span></div>
                     <div class="field-row">
                         <div class="field-block">
                             <div class="field-label">自定义 URL（可选）</div>
                             <div class="field-inline">
                                 <input id="customId" type="text" placeholder="例如：Lyn-Note-001">
                             </div>
-                            <div class="hint" id="customHint">
-                                仅支持英文、数字、- 和 _；留空则自动分配随机 ID。
+                            <div class="hint" id="customHint">仅支持英文、数字、- 和 _；留空则自动分配随机 ID。</div>
+                        </div>
+                        <div class="field-block">
+                            <div class="field-label">备注（可选）</div>
+                            <div class="field-inline">
+                                <input id="remark" type="text" placeholder="例如：服务器日志 / 临时 token">
                             </div>
+                            <div class="hint">仅在用户中心显示，方便你自己识别。</div>
                         </div>
                     </div>
                 </section>
 
-                <!-- 操作 + 结果 -->
                 <section class="card-section">
-                    <div class="section-title">
-                        确认
-                        <span class="tag">ACTION</span>
-                    </div>
-
-                    <!-- 重置内容按钮 -->
-                    <div class="field">
-                        <button type="button" class="btn-secondary btn-xs" id="btnResetContent">
-                            <span class="icon-svg">
-                                <svg viewBox="0 0 20 20">
-                                    <path d="M4 4v4a1 1 0 0 0 1 1h4V7H6.414A4 4 0 1 1 10 14v2a6 6 0 1 0-6-6V4z"/>
-                                </svg>
-                            </span>
-                            重置内容
-                        </button>
-                    </div>
-
+                    <div class="section-title">确认<span class="tag">ACTION</span></div>
                     <div class="field" style="gap:8px;">
                         <div class="action-row">
                             <button type="submit" class="btn-primary" id="submitBtn">
@@ -853,7 +738,7 @@
                                     <span class="result-link" id="viewLinkText"></span>
                                 </div>
                                 <div class="result-actions">
-                                    <button type="button" class="btn-secondary btn-xs" id="btnCopyView">
+                                    <button type="button" class="btn-secondary btn-sm" id="btnCopyView">
                                         <span class="icon-svg">
                                             <svg viewBox="0 0 20 20">
                                                 <path d="M7 3a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2v-2h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v2H7z"/>
@@ -862,7 +747,7 @@
                                         </span>
                                         复制
                                     </button>
-                                    <button type="button" class="btn-secondary btn-xs" id="btnOpenView">
+                                    <button type="button" class="btn-secondary btn-sm" id="btnOpenView">
                                         <span class="icon-svg">
                                             <svg viewBox="0 0 20 20">
                                                 <path d="M4 5a2 2 0 0 1 2-2h4a1 1 0 1 1 0 2H6v10h8v-4a1 1 0 1 1 2 0v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5z"/>
@@ -870,6 +755,15 @@
                                             </svg>
                                         </span>
                                         打开
+                                    </button>
+                                    <button type="button" class="btn-secondary btn-sm" id="btnManageCurrent">
+                                        <span class="icon-svg">
+                                            <svg viewBox="0 0 20 20">
+                                                <path d="M4 13.5V16h2.5l7.086-7.086-2.5-2.5L4 13.5z"/>
+                                                <path d="M13.121 3.879a1.5 1.5 0 0 1 2.121 0l.879.879a1.5 1.5 0 0 1 0 2.121l-1.121 1.12-3-3 1.121-1.12z"/>
+                                            </svg>
+                                        </span>
+                                        管理
                                     </button>
                                 </div>
                             </div>
@@ -881,35 +775,35 @@
             </form>
         </div>
 
-        <!-- 底部信息 -->
         <section class="footer-row">
             <span>访问入口：<span id="baseUrlText"></span></span>
-            <span>2025©️ By AurraLynn</span>
+            <span>PasteBox By AurraLynn</span>
         </section>
     </main>
 </div>
 
-<!-- 登录大药丸弹窗 -->
+<!-- 登录弹窗 -->
 <div class="modal-backdrop" id="authModal" style="display:none;">
-    <div class="auth-pill">
-        <div class="auth-pill-left">
-            <div class="auth-pill-title">登录 Pastebox</div>
-            <div class="auth-pill-sub" id="authSubtitle">登录后可使用自定义 URL 与用户中心。</div>
+    <div class="auth-panel">
+        <div class="auth-panel-header">
+            <div>
+                <div class="auth-panel-title">登录 Pastebox</div>
+                <div class="auth-panel-sub">登录后可使用自定义 URL 与用户中心。</div>
+            </div>
+            <button type="button" class="auth-panel-close" id="authCloseBtn" aria-label="关闭登录">
+                <span class="icon-svg">
+                    <svg viewBox="0 0 20 20">
+                        <path d="M5.293 5.293a1 1 0 0 1 1.414 0L10 8.586l3.293-3.293a1 1 0 1 1 1.414 1.414L11.414 10l3.293 3.293a1 1 0 0 1-1.414 1.414L10 11.414l-3.293 3.293a1 1 0 0 1-1.414-1.414L8.586 10 5.293 6.707a1 1 0 0 1 0-1.414z"/>
+                    </svg>
+                </span>
+            </button>
         </div>
-        <form class="auth-pill-form" id="authForm">
-            <div class="auth-pill-inputs">
+        <form class="auth-panel-form" id="authForm">
+            <div class="auth-panel-row">
                 <input id="authUsername" type="text" placeholder="用户名" autocomplete="username">
                 <input id="authPassword" type="password" placeholder="密码（至少 6 位）" autocomplete="current-password">
             </div>
-            <div class="auth-pill-actions">
-                <button type="submit" class="btn-primary btn-xs" id="btnDoLogin">
-                    <span class="icon-svg">
-                        <svg viewBox="0 0 20 20">
-                            <path d="M3 10a1 1 0 0 1 1-1h8.586L10.293 6.707a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4A1 1 0 0 1 10.293 13.293L12.586 11H4a1 1 0 0 1-1-1z"/>
-                        </svg>
-                    </span>
-                    登录
-                </button>
+            <div class="auth-panel-actions">
                 <button type="button" class="btn-secondary btn-xs" id="btnDoRegister">
                     <span class="icon-svg">
                         <svg viewBox="0 0 20 20">
@@ -919,20 +813,21 @@
                     </span>
                     注册
                 </button>
+                <button type="submit" class="btn-primary btn-xs" id="btnDoLogin">
+                    <span class="icon-svg">
+                        <svg viewBox="0 0 20 20">
+                            <path d="M3 10a1 1 0 0 1 1-1h8.586L10.293 6.707a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4A1 1 0 0 1 10.293 13.293L12.586 11H4a1 1 0 0 1-1-1z"/>
+                        </svg>
+                    </span>
+                    登录
+                </button>
             </div>
         </form>
-        <button type="button" class="auth-pill-close" id="authCloseBtn" aria-label="关闭登录">
-            <span class="icon-svg">
-                <svg viewBox="0 0 20 20">
-                    <path d="M5.293 5.293a1 1 0 0 1 1.414 0L10 8.586l3.293-3.293a1 1 0 1 1 1.414 1.414L11.414 10l3.293 3.293a1 1 0 0 1-1.414 1.414L10 11.414l-3.293 3.293a1 1 0 0 1-1.414-1.414L8.586 10 5.293 6.707a1 1 0 0 1 0-1.414z"/>
-                </svg>
-            </span>
-        </button>
+        <div class="auth-panel-msg" id="authMsg"></div>
     </div>
-    <div class="auth-pill-msg" id="authMsg"></div>
 </div>
 
-<!-- 用户中心弹层 -->
+<!-- 用户中心 -->
 <div class="uc-backdrop" id="userCenter" style="display:none;">
     <div class="uc-panel">
         <div class="uc-header">
@@ -948,14 +843,6 @@
                 </div>
             </div>
             <div class="uc-actions">
-                <button type="button" class="btn-secondary btn-xs" id="ucHomeBtn">
-                    <span class="icon-svg">
-                        <svg viewBox="0 0 20 20">
-                            <path d="M10.707 2.293a1 1 0 0 0-1.414 0l-7 7A1 1 0 0 0 3 10h1v7a1 1 0 0 0 1 1h3v-4h4v4h3a1 1 0 0 0 1-1v-7h1a1 1 0 0 0 .707-1.707l-7-7z"/>
-                        </svg>
-                    </span>
-                    首页
-                </button>
                 <button type="button" class="btn-secondary btn-xs" id="ucRefreshBtn">
                     <span class="icon-svg">
                         <svg viewBox="0 0 20 20">
@@ -992,50 +879,44 @@
 </div>
 
 <script>
-    // ===== 主题切换 =====
     const THEME_KEY="lyn_paste_theme_v3";
     const themeToggle=document.getElementById("themeToggle");
-    function applyTheme(theme){
+    function applyTheme(t){
         document.body.classList.remove("theme-light","theme-dark");
-        document.body.classList.add("theme-"+theme);
+        document.body.classList.add("theme-"+t);
         const label=themeToggle.querySelector(".label");
-        label.textContent=theme==="dark"?"Dark":"Light";
-        try{localStorage.setItem(THEME_KEY,theme);}catch(_){}
+        label.textContent=t==="dark"?"Dark":"Light";
+        try{localStorage.setItem(THEME_KEY,t);}catch(_){}
     }
-    (function initTheme(){
-        let theme="dark";
+    (function(){
+        let t="dark";
         try{
-            const saved=localStorage.getItem(THEME_KEY);
-            if(saved==="dark"||saved==="light")theme=saved;
+            const s=localStorage.getItem(THEME_KEY);
+            if(s==="dark"||s==="light")t=s;
         }catch(_){}
-        applyTheme(theme);
+        applyTheme(t);
     })();
     themeToggle.addEventListener("click",()=>{
-        const current=document.body.classList.contains("theme-dark")?"dark":"light";
-        applyTheme(current==="dark"?"light":"dark");
+        const cur=document.body.classList.contains("theme-dark")?"dark":"light";
+        applyTheme(cur==="dark"?"light":"dark");
     });
 
-    // 随机头像
-    (function initRandomIcon(){
+    (function(){
         const ICONS=[];
-        for(let i=1;i<=10;i++){
-            ICONS.push(`https://save.aura.us.kg/Picture/Preview/YL${i}.png`);
-        }
+        for(let i=1;i<=10;i++)ICONS.push(`https://save.aura.us.kg/Picture/Preview/YL${i}.png`);
         const img=document.getElementById("brandIcon");
-        if(!img||!ICONS.length)return;
-        img.src=ICONS[Math.floor(Math.random()*ICONS.length)];
+        if(img&&ICONS.length)img.src=ICONS[Math.floor(Math.random()*ICONS.length)];
     })();
 
-    // ===== 常量 & 元素 =====
     const BASE_URL=location.origin+"/Paste";
     const VIEW_BASE=location.origin+"/api/paste";
     const API_BASE=location.origin+"/api/paste";
     const AUTH_BASE=location.origin+"/api/auth";
-
     const qs=id=>document.getElementById(id);
 
     const $content=qs("content");
-    const $byteCount=qs("byteCount");
+    const $byteNum=qs("byteNum");
+    const $lineNum=qs("lineNum");
     const $ttlGroup=qs("ttlGroup");
     const $ttlHint=qs("ttlHint");
     const $form=qs("pasteForm");
@@ -1044,18 +925,20 @@
     const $viewLinkText=qs("viewLinkText");
     const $btnCopyView=qs("btnCopyView");
     const $btnOpenView=qs("btnOpenView");
+    const $btnManageCurrent=qs("btnManageCurrent");
     const $statusMsg=qs("statusMsg");
     const $baseUrlText=qs("baseUrlText");
     const $advancedSection=qs("advancedSection");
     const $ttlForeverBtn=qs("ttlForeverBtn");
     const $customId=qs("customId");
     const $customHint=qs("customHint");
+    const $remark=qs("remark");
     const $fileInput=qs("fileInput");
     const $fileHint=qs("fileHint");
     const $uploadBtn=qs("uploadBtn");
     const $btnResetContent=qs("btnResetContent");
 
-    // header / auth / user center
+    const $btnHome=qs("btnHome");
     const $btnAuthOpen=qs("btnAuthOpen");
     const $btnAuthLabel=qs("btnAuthLabel");
     const $authModal=qs("authModal");
@@ -1067,31 +950,26 @@
     const $authCloseBtn=qs("authCloseBtn");
     const $authMsg=qs("authMsg");
 
-    const $btnUserCenterOpen=qs("btnUserCenterOpen");
     const $userCenter=qs("userCenter");
     const $ucEmpty=qs("ucEmpty");
     const $ucList=qs("ucList");
-    const $ucSubtitle=qs("ucSubtitle");
-    const $ucHomeBtn=qs("ucHomeBtn");
     const $ucRefreshBtn=qs("ucRefreshBtn");
     const $ucLogoutBtn=qs("ucLogoutBtn");
     const $ucCloseBtn=qs("ucCloseBtn");
 
     if($baseUrlText)$baseUrlText.textContent=VIEW_BASE+"/{id}";
 
-    // ===== 状态 =====
     const state={
         loggedIn:false,
         username:null,
-        isSubmitting:false,
         ttlKey:"7d",
-        ttlTouchedByUser:false,
         customSlugError:false,
-        mode:"create",          // "create" | "edit"
-        originalSlug:null       // 编辑时原来的 slug
+        isSubmitting:false,
+        mode:"create",   // create | edit
+        originalSlug:null,
+        lastSlug:null
     };
 
-    // ===== 工具函数 =====
     function setStatus(msg,type){
         if(!$statusMsg)return;
         $statusMsg.textContent=msg||"";
@@ -1104,211 +982,62 @@
         $authMsg.classList.remove("success","error");
         if(type)$authMsg.classList.add(type);
     }
-
-    async function postJSON(url,bodyObj){
+    async function postJSON(url,body){
         const res=await fetch(url,{
             method:"POST",
             headers:{"Content-Type":"application/json"},
             credentials:"include",
-            body:JSON.stringify(bodyObj||{})
+            body:JSON.stringify(body||{})
         });
         const data=await res.json().catch(()=>({}));
-        if(!res.ok || data.ok===false){
-            const errMsg=data.error || `请求失败（${res.status}）`;
-            throw new Error(errMsg);
+        if(!res.ok||data.ok===false){
+            throw new Error(data.error||`请求失败（${res.status}）`);
         }
         return data;
     }
 
-    function updateSubmitDisabled(){
-        if(!$submitBtn)return;
-        const shouldDisable=state.customSlugError || state.isSubmitting;
-        $submitBtn.disabled=shouldDisable;
-        $submitBtn.classList.toggle("btn-disabled",shouldDisable);
-    }
-
-    // ===== 字节统计 =====
-    function getUtf8BytesLen(str){
-        let len=0;
-        for(let i=0;i<str.length;i++){
-            const code=str.charCodeAt(i);
-            if(code<0x80)len+=1;
-            else if(code<0x800)len+=2;
-            else if(code>=0xD800 && code<=0xDBFF){
-                // 代理对
-                i++;
-                len+=4;
-            }else len+=3;
-        }
-        return len;
-    }
+    // 字节 & 行数统计
     function updateByteCount(){
-        if(!$content || !$byteCount)return;
-        const text=$content.value || "";
-        const bytes=getUtf8BytesLen(text);
-        $byteCount.textContent=`已输入 ${bytes} 字节`;
+        if(!$content)return;
+        let len=0;
+        try{len=new TextEncoder().encode($content.value).length;}
+        catch(_){len=$content.value.length;}
+        if($byteNum)$byteNum.textContent=len;
+
+        if($lineNum){
+            let lines=0;
+            if($content.value){
+                lines=$content.value.split(/\r\n|\r|\n/).length;
+            }
+            $lineNum.textContent=lines||1;
+        }
     }
     if($content){
-        $content.addEventListener("input",updateByteCount);
         updateByteCount();
+        $content.addEventListener("input",updateByteCount);
     }
 
-    // ===== 登录 UI & 状态 =====
-    function applyAuthUI(){
-        if(state.loggedIn){
-            if($btnAuthLabel)$btnAuthLabel.textContent=state.username || "已登录";
-            if($btnUserCenterOpen)$btnUserCenterOpen.style.display="";
-            if($advancedSection)$advancedSection.style.display="";
-            if($ttlForeverBtn)$ttlForeverBtn.disabled=false;
-        }else{
-            if($btnAuthLabel)$btnAuthLabel.textContent="登录";
-            if($btnUserCenterOpen)$btnUserCenterOpen.style.display="none";
-            if($advancedSection)$advancedSection.style.display="none";
-            if($ttlForeverBtn)$ttlForeverBtn.disabled=true;
-            // 未登录默认 7 天
-            if(!state.ttlTouchedByUser){
-                setTtl("7d",false);
-            }
-        }
-        validateCustomSlug();
-    }
-
-    function setLoggedIn(username){
-        state.loggedIn=true;
-        state.username=username||"已登录用户";
-        try{localStorage.setItem("pbx_username",state.username);}catch(_){}
-        applyAuthUI();
-        closeAuthModal();
-    }
-    function setLoggedOut(){
-        state.loggedIn=false;
-        state.username=null;
-        try{localStorage.removeItem("pbx_username");}catch(_){}
-        applyAuthUI();
-        closeUserCenter();
-    }
-
-    async function initAuthFromServer(){
-        let savedName=null;
-        try{savedName=localStorage.getItem("pbx_username")||null;}catch(_){}
-        try{
-            const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
-            if(res.status===401){
-                setLoggedOut();
-                return;
-            }
-            const data=await res.json().catch(()=>({}));
-            if(res.ok && data && data.ok){
-                setLoggedIn(savedName||"已登录用户");
-            }else{
-                setLoggedOut();
-            }
-        }catch(e){
-            setLoggedOut();
-        }
-    }
-
-    // 登录弹窗控制
-    function openAuthModal(){
-        if($authModal)$authModal.style.display="flex";
-        setAuthTip("",null);
-        if($authUsername && !$authUsername.value){
-            $authUsername.focus();
-        }else if($authPassword){
-            $authPassword.focus();
-        }
-    }
-    function closeAuthModal(){
-        if($authModal)$authModal.style.display="none";
-    }
-
-    if($btnAuthOpen){
-        $btnAuthOpen.addEventListener("click",()=>{
-            if(state.loggedIn){
-                // 已登录再点，就直接打开用户中心
-                openUserCenter();
-            }else{
-                openAuthModal();
-            }
-        });
-    }
-    if($authCloseBtn){
-        $authCloseBtn.addEventListener("click",closeAuthModal);
-    }
-    if($authModal){
-        $authModal.addEventListener("click",e=>{
-            if(e.target===$authModal)closeAuthModal();
-        });
-    }
-
-    if($authForm){
-        $authForm.addEventListener("submit",async e=>{
-            e.preventDefault();
-            if(!$authUsername || !$authPassword)return;
-            const username=$authUsername.value.trim();
-            const password=$authPassword.value;
-            if(!username || !password){
-                setAuthTip("用户名和密码不能为空。","error");
-                return;
-            }
-            setAuthTip("登录中…",null);
-            try{
-                const data=await postJSON(AUTH_BASE+"/login",{username,password});
-                setLoggedIn(data.username||username);
-                setAuthTip("登录成功。","success");
-            }catch(err){
-                setAuthTip(err.message || "登录失败。","error");
-            }
-        });
-    }
-    if($btnDoRegister){
-        $btnDoRegister.addEventListener("click",async ()=>{
-            if(!$authUsername || !$authPassword)return;
-            const username=$authUsername.value.trim();
-            const password=$authPassword.value;
-            if(!username || !password){
-                setAuthTip("请先填写用户名和密码再注册。","error");
-                return;
-            }
-            if(password.length<6){
-                setAuthTip("密码至少 6 位。","error");
-                return;
-            }
-            setAuthTip("注册中…",null);
-            try{
-                const data=await postJSON(AUTH_BASE+"/register",{username,password});
-                // 注册后自动登录
-                setLoggedIn(data.username||username);
-                setAuthTip("注册成功，已自动登录。","success");
-            }catch(err){
-                setAuthTip(err.message || "注册失败。","error");
-            }
-        });
-    }
-
-    // ===== 文件上传：读取为文本 =====
-    if($uploadBtn && $fileInput){
+    // 文件导入
+    if($uploadBtn&&$fileInput){
         $uploadBtn.addEventListener("click",e=>{
             e.preventDefault();
             $fileInput.click();
         });
-    }
-    if($fileInput){
         $fileInput.addEventListener("change",()=>{
-            const file=$fileInput.files && $fileInput.files[0];
+            const file=$fileInput.files&&$fileInput.files[0];
             if(!file)return;
             const reader=new FileReader();
             reader.onload=()=>{
                 if($content){
                     $content.value=reader.result||"";
                     updateByteCount();
-                    setStatus(`已从文件「${file.name}」加载内容，请确认后上传。","success`);
                 }
                 if($fileHint){
                     $fileHint.textContent=`已加载：${file.name}（${file.size} 字节）`;
                     $fileHint.classList.remove("hint-error");
                     $fileHint.classList.add("hint-success");
                 }
+                setStatus(`已从文件「${file.name}」加载内容。`,"success");
             };
             reader.onerror=()=>{
                 if($fileHint){
@@ -1322,468 +1051,581 @@
         });
     }
 
-    // 重置内容按钮
+    // 重置
     if($btnResetContent){
         $btnResetContent.addEventListener("click",()=>{
             if($content)$content.value="";
-            if($fileHint){
-                $fileHint.textContent="支持文本文件，内容将自动写入上方文本框。";
-                $fileHint.classList.remove("hint-success","hint-error");
-            }
-            setStatus("已清空文本内容。","success");
+            if($remark)$remark.value="";
+            if($customId && state.mode==="create")$customId.value="";
             updateByteCount();
+            setStatus("已重置输入。");
         });
     }
 
-    // ===== TTL 逻辑 =====
-    const ttlTextMap={
+    // TTL
+    const ttlText={
         "10m":"内容将在 10 分钟后过期。",
         "1d":"内容将在 1 天后过期。",
         "7d":"内容将在 7 天后过期。",
         "30d":"内容将在 30 天后过期。",
         "forever":"内容不会自动过期（后台清理除外）。"
     };
-    function updateTtlHint(){
-        if($ttlHint)$ttlHint.textContent=ttlTextMap[state.ttlKey]||ttlTextMap["7d"];
-    }
-    function setTtl(key,fromUser){
+    function setTtl(key){
         state.ttlKey=key;
-        if(fromUser)state.ttlTouchedByUser=true;
         if($ttlGroup){
-            $ttlGroup.querySelectorAll(".ttl-btn").forEach(btn=>{
-                btn.classList.toggle("active",btn.dataset.ttl===key);
+            $ttlGroup.querySelectorAll(".ttl-btn").forEach(b=>{
+                b.classList.toggle("active",b.dataset.ttl===key);
             });
         }
-        updateTtlHint();
+        if($ttlHint)$ttlHint.textContent=ttlText[key]||ttlText["7d"];
     }
+    setTtl("7d");
     if($ttlGroup){
         $ttlGroup.addEventListener("click",e=>{
             const btn=e.target.closest(".ttl-btn");
             if(!btn)return;
+            if(btn.disabled)return;
             const key=btn.dataset.ttl;
             if(!key)return;
-            if(btn.disabled)return;
-            setTtl(key,true);
+            setTtl(key);
         });
     }
-    setTtl("7d",false); // 初始 7 天
 
-    // ===== 自定义 URL 校验 =====
+    // 自定义 URL 校验
     function validateCustomSlug(){
         state.customSlugError=false;
         if(!$customId)return;
-        const isLogged=state.loggedIn;
-        const val=$customId.value.trim();
-        if(!isLogged){
-            if($customHint){
-                $customHint.textContent="登录后可使用自定义 URL。";
-                $customHint.classList.remove("hint-error","hint-success");
-            }
-            $customId.classList.remove("input-error");
-            updateSubmitDisabled();
+
+        if(!state.loggedIn){
+            if($advancedSection)$advancedSection.style.display="none";
             return;
+        }else{
+            if($advancedSection)$advancedSection.style.display="";
         }
+
+        const val=$customId.value.trim();
         if(!val){
             if($customHint){
                 $customHint.textContent="留空则自动分配随机 ID。";
                 $customHint.classList.remove("hint-error","hint-success");
             }
             $customId.classList.remove("input-error");
-            updateSubmitDisabled();
             return;
         }
         const ok=/^[A-Za-z0-9_-]+$/.test(val);
         if(!ok){
             state.customSlugError=true;
             if($customHint){
-                $customHint.textContent="自定义 URL 仅支持英文、数字、- 和 _，请修改。";
+                $customHint.textContent="仅支持英文、数字、- 和 _。";
                 $customHint.classList.add("hint-error");
                 $customHint.classList.remove("hint-success");
             }
             $customId.classList.add("input-error");
         }else{
             if($customHint){
-                $customHint.textContent="看起来不错，可以使用这个自定义 ID。";
+                $customHint.textContent="可以使用这个自定义 ID。";
                 $customHint.classList.remove("hint-error");
                 $customHint.classList.add("hint-success");
             }
             $customId.classList.remove("input-error");
         }
-        updateSubmitDisabled();
     }
-    if($customId){
-        $customId.addEventListener("input",validateCustomSlug);
-    }
+    if($customId)$customId.addEventListener("input",validateCustomSlug);
 
-    // ===== Paste API 相关 =====
-    function fillResult(id){
-        if(!$resultBox)return;
-        const viewLink=`${VIEW_BASE}/${encodeURIComponent(id)}`;
-        if($viewLinkText)$viewLinkText.textContent=viewLink;
-        $resultBox.style.display="block";
-    }
-
-    async function postPaste(payload){
-        const res=await fetch(API_BASE,{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            credentials:"include",
-            body:JSON.stringify(payload)
-        });
-        const data=await res.json().catch(()=>({}));
-        if(!res.ok || data.ok===false){
-            throw new Error(data.error || `请求失败（${res.status}）`);
-        }
-        return data;
-    }
-
-    function resetToCreateMode(){
+    // 首页按钮 & 模式
+    function resetToCreateMode(clear){
         state.mode="create";
         state.originalSlug=null;
-        state.ttlTouchedByUser=false;
-        const defTtl=state.loggedIn?"forever":"7d";
-        setTtl(defTtl,false);
-        if($customId){
-            $customId.value="";
-            $customId.readOnly=false;
-            validateCustomSlug();
+        if($submitBtn){
+            const span=$submitBtn.querySelector(".text");
+            if(span)span.textContent="上传";
         }
-        if($content)$content.value="";
-        if($resultBox)$resultBox.style.display="none";
-        if($viewLinkText)$viewLinkText.textContent="";
-        setStatus("",null);
-        updateByteCount();
-        if($submitBtn)$submitBtn.querySelector(".text").textContent="上传";
+        if($customId)$customId.readOnly=false;
+        if(clear){
+            if($content)$content.value="";
+            if($remark)$remark.value="";
+            if($customId)$customId.value="";
+            updateByteCount();
+            if($resultBox)$resultBox.style.display="none";
+            setStatus("");
+            const url=new URL(location.href);
+            url.searchParams.delete("id");
+            history.replaceState(null,"",url.toString());
+        }
+        if($btnHome)$btnHome.style.display="none";
+    }
+    if($btnHome){
+        $btnHome.addEventListener("click",()=>{
+            resetToCreateMode(true);
+            history.replaceState(null,"",BASE_URL);
+            window.scrollTo({top:0,behavior:"smooth"});
+        });
+    }
+
+    // 登录状态 UI
+    function applyAuthUI(){
+        if($btnAuthLabel){
+            $btnAuthLabel.textContent=state.loggedIn?(state.username||"用户"):"登录";
+        }
+        if($advancedSection){
+            $advancedSection.style.display=state.loggedIn?"":"none";
+        }
+        if($ttlForeverBtn){
+            // 未登录用户禁止选 Never，避免“实际只有 10 分钟”的误解
+            $ttlForeverBtn.disabled=!state.loggedIn;
+        }
+        validateCustomSlug();
+    }
+    function setLoggedIn(username){
+        state.loggedIn=true;
+        state.username=username||"用户";
+        try{localStorage.setItem("pbx_username",state.username);}catch(_){}
+        applyAuthUI();
+    }
+    function setLoggedOut(){
+        state.loggedIn=false;
+        state.username=null;
+        try{localStorage.removeItem("pbx_username");}catch(_){}
+        applyAuthUI();
+    }
+
+    async function initAuthFromServer(){
+        let saved=null;
+        try{saved=localStorage.getItem("pbx_username")||null;}catch(_){}
+        try{
+            const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
+            if(res.status===401){setLoggedOut();return;}
+            const data=await res.json().catch(()=>({}));
+            if(data&&data.ok){
+                setLoggedIn(saved||"用户");
+            }else{
+                setLoggedOut();
+            }
+        }catch(_){
+            setLoggedOut();
+        }
+    }
+
+    // 登录弹窗
+    function openAuthModal(){
+        if(!$authModal)return;
+        $authModal.style.display="flex";
+        setAuthTip("");
+        if($authUsername)$authUsername.focus();
+    }
+    function closeAuthModal(){
+        if(!$authModal)return;
+        $authModal.style.display="none";
+        if($authForm)$authForm.reset();
+        setAuthTip("");
+    }
+    if($authCloseBtn)$authCloseBtn.addEventListener("click",closeAuthModal);
+    if($authModal){
+        $authModal.addEventListener("click",e=>{
+            if(e.target===$authModal)closeAuthModal();
+        });
+    }
+
+    // 用户中心弹层
+    function openUserCenter(){
+        if(!$userCenter)return;
+        $userCenter.style.display="flex";
+        loadUserPastes();
+    }
+    function closeUserCenter(){
+        if(!$userCenter)return;
+        $userCenter.style.display="none";
+    }
+    if($ucCloseBtn)$ucCloseBtn.addEventListener("click",closeUserCenter);
+    if($userCenter){
+        $userCenter.addEventListener("click",e=>{
+            if(e.target===$userCenter)closeUserCenter();
+        });
+    }
+
+    // 顶部用户按钮
+    if($btnAuthOpen){
+        $btnAuthOpen.addEventListener("click",()=>{
+            if(state.loggedIn)openUserCenter();
+            else openAuthModal();
+        });
+    }
+
+    // 登录 / 注册
+    if($authForm){
+        $authForm.addEventListener("submit",async e=>{
+            e.preventDefault();
+            const u=$authUsername.value.trim();
+            const p=$authPassword.value;
+            if(!u||!p){setAuthTip("用户名和密码不能为空。","error");return;}
+            setAuthTip("登录中…");
+            try{
+                const data=await postJSON(AUTH_BASE+"/login",{username:u,password:p});
+                setLoggedIn(data.username||u);
+                setAuthTip("登录成功。","success");
+                setTimeout(closeAuthModal,300);
+            }catch(err){
+                setAuthTip(err.message||"登录失败。","error");
+            }
+        });
+    }
+    if($btnDoRegister){
+        $btnDoRegister.addEventListener("click",async ()=>{
+            const u=$authUsername.value.trim();
+            const p=$authPassword.value;
+            if(!u||!p){setAuthTip("请先填写用户名和密码。","error");return;}
+            if(p.length<6){setAuthTip("密码至少 6 位。","error");return;}
+            setAuthTip("注册中…");
+            try{
+                await postJSON(AUTH_BASE+"/register",{username:u,password:p});
+                setAuthTip("注册成功，请点击登录。","success");
+            }catch(err){
+                setAuthTip(err.message||"注册失败。","error");
+            }
+        });
+    }
+
+    function formatDate(d){
+        if(!d)return"-";
+        const dt=new Date(d);
+        if(Number.isNaN(dt.getTime()))return"-";
+        const y=dt.getFullYear();
+        const m=String(dt.getMonth()+1).padStart(2,"0");
+        const da=String(dt.getDate()).padStart(2,"0");
+        const h=String(dt.getHours()).padStart(2,"0");
+        const mi=String(dt.getMinutes()).padStart(2,"0");
+        return `${y}-${m}-${da} ${h}:${mi}`;
+    }
+    function calcRemainDays(expires){
+        if(!expires)return null;
+        const t=new Date(expires).getTime();
+        if(Number.isNaN(t))return null;
+        const now=Date.now();
+        const diff=t-now;
+        const d=Math.ceil(diff/86400000);
+        return d;
+    }
+
+    // 用户中心列表
+    async function loadUserPastes(){
+        if(!$ucEmpty||!$ucList)return;
+        $ucEmpty.style.display="";
+        $ucEmpty.textContent="正在加载你的记录…";
+        $ucList.style.display="none";
+        $ucList.innerHTML="";
+        try{
+            const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
+            if(res.status===401){
+                $ucEmpty.textContent="登录状态已失效，请重新登录。";
+                setLoggedOut();
+                return;
+            }
+            const data=await res.json().catch(()=>({}));
+            if(!data.ok){
+                $ucEmpty.textContent=data.error||"加载失败。";
+                return;
+            }
+            const items=data.items||[];
+            const now=Date.now();
+            const filtered=items.filter(it=>{
+                if(!it) return false;
+                if(it.deleted||it.isDeleted) return false;
+                const expires=it.expiresAt||it.expires||null;
+                if(expires){
+                    const t=new Date(expires).getTime();
+                    if(!Number.isNaN(t) && t<now) return false; // 已过期不显示
+                }
+                return true;
+            });
+            if(!filtered.length){
+                $ucEmpty.textContent="暂无记录，先去创建一条吧。";
+                return;
+            }
+            $ucEmpty.style.display="none";
+            $ucList.style.display="flex";
+            filtered.forEach(item=>{
+                const slug=item.slug||item.id;
+                if(!slug)return;
+                const remark=item.remark||"(无备注)";
+                const created=item.createdAt||item.created||null;
+                const expires=item.expiresAt||item.expires||null;
+                const ttlKey=item.ttlKey||item.ttl||"";
+
+                const row=document.createElement("div");
+                row.className="uc-item";
+                row.innerHTML=`
+                    <div class="uc-item-top">
+                        <div class="uc-item-title">
+                            <span class="uc-remark"></span>
+                            <span class="uc-tag"></span>
+                        </div>
+                        <div class="uc-item-meta"></div>
+                    </div>
+                    <div class="uc-link"><span class="uc-link-tag"></span></div>
+                    <div class="uc-item-actions"></div>
+                `;
+                const meta=row.querySelector(".uc-item-meta");
+                const remarkEl=row.querySelector(".uc-remark");
+                const slugTag=row.querySelector(".uc-tag");
+                const linkTag=row.querySelector(".uc-link-tag");
+                const act=row.querySelector(".uc-item-actions");
+
+                const viewUrl=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
+                remarkEl.textContent=remark;
+                slugTag.textContent=slug;
+                linkTag.textContent=viewUrl;
+
+                let metaText=`创建：${formatDate(created)} · `;
+                if(ttlKey==="forever" || !expires){
+                    metaText+=`到期：Never(不过期)`;
+                }else{
+                    metaText+=`到期：${formatDate(expires)}`;
+                    const remain=calcRemainDays(expires);
+                    if(remain!=null){
+                        if(remain>=0){
+                            metaText+=` · 还有 ${remain} 天`;
+                        }else{
+                            metaText+=` · 已过期`;
+                        }
+                    }
+                }
+                if(ttlKey)metaText+=` · ${ttlKey}`;
+                meta.textContent=metaText;
+
+                const btnEdit=document.createElement("button");
+                btnEdit.type="button";
+                btnEdit.className="btn-secondary btn-xs";
+                btnEdit.innerHTML=`<span class="icon-svg">
+                    <svg viewBox="0 0 20 20"><path d="M4 13.5V16h2.5l7.086-7.086-2.5-2.5L4 13.5z"/><path d="M13.121 3.879a1.5 1.5 0 0 1 2.121 0l.879.879a1.5 1.5 0 0 1 0 2.121l-1.121 1.12-3-3 1.121-1.12z"/></svg>
+                </span>编辑`;
+                btnEdit.addEventListener("click",()=>{
+                    closeUserCenter();
+                    enterEditMode(slug);
+                });
+
+                const btnCopy=document.createElement("button");
+                btnCopy.type="button";
+                btnCopy.className="btn-secondary btn-xs";
+                btnCopy.innerHTML=`<span class="icon-svg">
+                    <svg viewBox="0 0 20 20"><path d="M7 3a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2v-2h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v2H7z"/><path d="M3 7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7z"/></svg>
+                </span>复制`;
+                btnCopy.addEventListener("click",async ()=>{
+                    try{
+                        await navigator.clipboard.writeText(viewUrl);
+                        setStatus("已复制链接。","success");
+                    }catch(_){
+                        setStatus("复制失败，请手动复制。","error");
+                    }
+                });
+
+                const btnOpen=document.createElement("button");
+                btnOpen.type="button";
+                btnOpen.className="btn-secondary btn-xs";
+                btnOpen.innerHTML=`<span class="icon-svg">
+                    <svg viewBox="0 0 20 20"><path d="M4 5a2 2 0 0 1 2-2h4a1 1 0 1 1 0 2H6v10h8v-4a1 1 0 1 1 2 0v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5z"/><path d="M11 4a1 1 0 0 1 1-1h4.5a.5.5 0 0 1 .5.5V8a1 1 0 1 1-2 0V6.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L13.586 5H12a1 1 0 0 1-1-1z"/></svg>
+                </span>打开`;
+                btnOpen.addEventListener("click",()=>{window.open(viewUrl,"_blank","noopener");});
+
+                const btnDel=document.createElement("button");
+                btnDel.type="button";
+                btnDel.className="btn-danger btn-xs";
+                btnDel.innerHTML=`<span class="icon-svg">
+                    <svg viewBox="0 0 20 20"><path d="M7 3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2h3a1 1 0 1 1 0 2h-1v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5H3a1 1 0 0 1 0-2h3zm1 0h4a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1zm-1 4a1 1 0 0 1 2 0v7a1 1 0 0 1-2 0zm5 0a1 1 0 0 1 2 0v7a1 1 0 0 1-2 0z"/></svg>
+                </span>删除`;
+                btnDel.addEventListener("click",async ()=>{
+                    if(!confirm("确认删除该链接？"))return;
+                    try{
+                        await postJSON(API_BASE,{action:"delete",slug});
+                        loadUserPastes();
+                        setStatus("已删除。","success");
+                    }catch(err){
+                        setStatus(err.message||"删除失败。","error");
+                    }
+                });
+
+                act.appendChild(btnEdit);
+                act.appendChild(btnCopy);
+                act.appendChild(btnOpen);
+                act.appendChild(btnDel);
+
+                $ucList.appendChild(row);
+            });
+        }catch(err){
+            $ucEmpty.style.display="";
+            $ucEmpty.textContent=err.message||"加载失败。";
+        }
+    }
+
+    if($ucRefreshBtn)$ucRefreshBtn.addEventListener("click",loadUserPastes);
+    if($ucLogoutBtn){
+        $ucLogoutBtn.addEventListener("click",async ()=>{
+            try{await postJSON(AUTH_BASE+"/logout",{});}catch(_){}
+            setLoggedOut();
+            closeUserCenter();
+            resetToCreateMode(true);
+            setStatus("已退出登录。","success");
+        });
+    }
+
+    // 编辑模式
+    async function enterEditMode(slug){
+        resetToCreateMode(false);
+        state.mode="edit";
+        state.originalSlug=slug;
+        if($submitBtn){
+            const span=$submitBtn.querySelector(".text");
+            if(span)span.textContent="更新";
+        }
+        if($btnHome)$btnHome.style.display="inline-flex";
+        setStatus("正在载入内容…");
+        try{
+            const url=new URL(`${API_BASE}/${encodeURIComponent(slug)}`);
+            url.searchParams.set("manage","1");
+            const res=await fetch(url.toString(),{credentials:"include"});
+            const data=await res.json().catch(()=>({}));
+            if(!res.ok||data.ok===false){
+                throw new Error(data.error||"内容不存在。");
+            }
+            if($content)$content.value=data.content||"";
+            if($remark)$remark.value=data.remark||"";
+            if($customId){
+                $customId.value=data.slug||slug;
+                $customId.readOnly=false;
+            }
+            updateByteCount();
+            if(data.ttlKey)setTtl(data.ttlKey);
+            const urlClean=new URL(location.href);
+            urlClean.searchParams.set("id",slug);
+            history.replaceState(null,"",urlClean.toString());
+            setStatus("已进入编辑模式。","success");
+        }catch(err){
+            setStatus(err.message||"载入失败。","error");
+            resetToCreateMode(false);
+        }
+    }
+
+    // 结果链接显示
+    function showResultLink(slug){
+        if(!$resultBox||!$viewLinkText)return;
+        const url=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
+        state.lastSlug=slug;
+        $viewLinkText.textContent=url;
+        $resultBox.style.display="block";
     }
 
     if($btnCopyView){
         $btnCopyView.addEventListener("click",async ()=>{
-            const text=$viewLinkText && $viewLinkText.textContent;
+            const text=$viewLinkText&&$viewLinkText.textContent;
             if(!text)return;
             try{
                 await navigator.clipboard.writeText(text);
-                setStatus("访问链接已复制到剪贴板。","success");
-            }catch(e){
+                setStatus("访问链接已复制。","success");
+            }catch(_){
                 setStatus("复制失败，请手动复制。","error");
             }
         });
     }
     if($btnOpenView){
         $btnOpenView.addEventListener("click",()=>{
-            const text=$viewLinkText && $viewLinkText.textContent;
-            if(!text){
-                setStatus("暂无访问链接。","error");
-                return;
-            }
+            const text=$viewLinkText&&$viewLinkText.textContent;
+            if(!text)return;
             window.open(text,"_blank","noopener");
         });
     }
+    if($btnManageCurrent){
+        $btnManageCurrent.addEventListener("click",()=>{
+            let slug=state.lastSlug;
+            if(!slug && $viewLinkText && $viewLinkText.textContent){
+                try{
+                    const u=new URL($viewLinkText.textContent);
+                    slug=decodeURIComponent(u.pathname.split("/").pop()||"");
+                }catch(_){}
+            }
+            if(!slug){
+                setStatus("暂无可管理的链接。","error");
+                return;
+            }
+            enterEditMode(slug);
+        });
+    }
 
+    // 提交
     if($form){
         $form.addEventListener("submit",async e=>{
             e.preventDefault();
-            const text=($content && $content.value.trim())||"";
-            if(!text){
-                setStatus("⚠️ 内容不能为空。","error");
-                return;
-            }
-            if(state.customSlugError){
-                setStatus("自定义 URL 不合法，请修改后再上传。","error");
-                return;
-            }
+            const text=($content&&$content.value.trim())||"";
+            if(!text){setStatus("内容不能为空。","error");return;}
+            if(state.customSlugError){setStatus("自定义 URL 不合法。","error");return;}
 
-            const isEdit=state.mode==="edit" && state.originalSlug;
-            let slugForRequest=null;
-            let newSlugForRequest=null;
-
-            if(isEdit){
-                // 使用 originalSlug 作为定位，允许 customId 改为新 slug
-                slugForRequest=state.originalSlug;
+            let slug=null;
+            let newSlug=null;
+            if(state.mode==="edit"){
+                slug=state.originalSlug;
                 if($customId){
-                    const val=$customId.value.trim();
-                    if(val && val!==state.originalSlug){
-                        newSlugForRequest=val;
-                    }
+                    const v=$customId.value.trim();
+                    if(v&&v!==slug)newSlug=v;
                 }
             }else{
-                if(state.loggedIn && $customId){
-                    const val=$customId.value.trim();
-                    if(val){
-                        slugForRequest=val;
-                    }
+                if(state.loggedIn&&$customId){
+                    const v=$customId.value.trim();
+                    if(v)slug=v;
                 }
             }
 
-            const effectiveTtl=state.ttlKey;
+            const payload={
+                action:state.mode==="edit"?"update":"create",
+                content:text,
+                ttlKey:state.ttlKey,
+                remark:$remark?$remark.value.trim():""
+            };
+            if(slug)payload.slug=slug;
+            if(newSlug)payload.newSlug=newSlug;
 
             state.isSubmitting=true;
-            updateSubmitDisabled();
             if($submitBtn){
-                $submitBtn.querySelector(".text").textContent=isEdit?"保存更新…":"上传中…";
+                $submitBtn.disabled=true;
+                $submitBtn.classList.add("btn-disabled");
+                const span=$submitBtn.querySelector(".text");
+                if(span)span.textContent=state.mode==="edit"?"保存中…":"上传中…";
             }
-            setStatus("正在提交，请稍候…",null);
-
+            setStatus("正在提交…");
             try{
-                const payload={
-                    action:isEdit?"update":"create",
-                    content:text,
-                    ttlKey:effectiveTtl
-                };
-                if(slugForRequest)payload.slug=slugForRequest;
-                if(isEdit && newSlugForRequest)payload.newSlug=newSlugForRequest;
-
-                const data=await postPaste(payload);
-                const finalId=data.slug || data.newSlug || slugForRequest || data.id;
-                state.originalSlug=finalId;
-
-                fillResult(finalId);
-
-                if(isEdit){
-                    setStatus("已保存更新。","success");
-                    // 更新成功后自动回到主页（关闭用户中心、重置为新建模式）
-                    closeUserCenter();
-                    resetToCreateMode();
+                const data=await postJSON(API_BASE,payload);
+                const finalSlug=data.slug||newSlug||slug;
+                if(!finalSlug)throw new Error("返回数据缺少 slug。");
+                showResultLink(finalSlug);
+                if(state.mode==="edit"){
+                    setStatus("更新成功，已回到主页。","success");
+                    resetToCreateMode(false);
                 }else{
                     setStatus("上传完成，已生成链接。","success");
-                    resetToCreateMode();
-                    // 新建后依然显示结果，所以上面 resetToCreateMode 会清掉结果，这里重新填上
-                    fillResult(finalId);
                 }
             }catch(err){
-                setStatus(err.message || "操作失败。","error");
+                setStatus(err.message||"操作失败。","error");
             }finally{
                 state.isSubmitting=false;
-                updateSubmitDisabled();
                 if($submitBtn){
-                    $submitBtn.querySelector(".text").textContent=isEdit?"更新":"上传";
+                    $submitBtn.disabled=false;
+                    $submitBtn.classList.remove("btn-disabled");
+                    const span=$submitBtn.querySelector(".text");
+                    if(span)span.textContent=state.mode==="edit"?"更新":"上传";
                 }
             }
         });
     }
 
-    // ===== 用户中心 =====
-    function openUserCenter(){
-        if(!state.loggedIn){
-            openAuthModal();
-            return;
+    // ESC 关闭弹窗
+    document.addEventListener("keydown",e=>{
+        if(e.key==="Escape"){
+            if($userCenter&&$userCenter.style.display==="flex")closeUserCenter();
+            else if($authModal&&$authModal.style.display==="flex")closeAuthModal();
         }
-        if($userCenter)$userCenter.style.display="flex";
-        loadUserPastes();
-    }
-    function closeUserCenter(){
-        if($userCenter)$userCenter.style.display="none";
-    }
-    if($btnUserCenterOpen){
-        $btnUserCenterOpen.addEventListener("click",openUserCenter);
-    }
-    if($ucCloseBtn){
-        $ucCloseBtn.addEventListener("click",closeUserCenter);
-    }
-    if($ucHomeBtn){
-        $ucHomeBtn.addEventListener("click",()=>{
-            closeUserCenter();
-            resetToCreateMode();
-        });
-    }
-    if($ucLogoutBtn){
-        $ucLogoutBtn.addEventListener("click",async ()=>{
-            try{
-                await postJSON(AUTH_BASE+"/logout",{});
-            }catch(_){}
-            setLoggedOut();
-            resetToCreateMode();
-            closeUserCenter();
-        });
-    }
-    if($ucRefreshBtn){
-        $ucRefreshBtn.addEventListener("click",()=>{
-            loadUserPastes(true);
-        });
-    }
+    });
 
-    async function loadUserPastes(fromRefresh){
-        if(!$ucEmpty || !$ucList)return;
-        $ucEmpty.style.display="block";
-        $ucEmpty.textContent="正在加载你的记录…";
-        $ucList.style.display="none";
-        $ucList.innerHTML="";
-
-        try{
-            const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
-            if(res.status===401){
-                setLoggedOut();
-                $ucEmpty.textContent="登录已失效，请重新登录后再试。";
-                return;
-            }
-            const data=await res.json().catch(()=>({}));
-            if(!res.ok || !data.ok){
-                $ucEmpty.textContent=data.error || "加载失败。";
-                return;
-            }
-            let items=Array.isArray(data.items)?data.items:[];
-            const now=Date.now();
-
-            // 自动删除已过期
-            const validItems=[];
-            for(const item of items){
-                if(item.expiresAt && item.expiresAt<now){
-                    try{
-                        await postPaste({action:"delete",slug:item.slug});
-                    }catch(_){}
-                }else{
-                    validItems.push(item);
-                }
-            }
-            items=validItems;
-
-            if(!items.length){
-                $ucEmpty.textContent="目前还没有记录，先回首页创建一条吧。";
-                return;
-            }
-
-            $ucEmpty.style.display="none";
-            $ucList.style.display="flex";
-
-            for(const item of items){
-                const div=document.createElement("div");
-                div.className="uc-item";
-
-                const created=item.createdAt?new Date(item.createdAt):null;
-                const expires=item.expiresAt?new Date(item.expiresAt):null;
-                const ttlKey=item.ttlKey || "unknown";
-                const remark=item.remark || "";
-                const slug=item.slug;
-
-                const metaParts=[];
-                if(created)metaParts.push(created.toLocaleString());
-                if(expires)metaParts.push("到期："+expires.toLocaleString());
-                if(ttlKey==="forever")metaParts.push("永不过期");
-                else if(ttlKey && ttlTextMap[ttlKey])metaParts.push(ttlTextMap[ttlKey].replace("内容将在 ","").replace("后过期。",""));
-
-                const link=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
-
-                div.innerHTML=`
-                    <div class="uc-item-top">
-                        <div class="uc-item-title">
-                            ${remark ? remark.replace(/</g,"&lt;").replace(/>/g,"&gt;") : slug}
-                        </div>
-                        <div class="uc-item-meta">
-                            <span>${metaParts.join(" · ")}</span>
-                            <span class="uc-tag">${ttlKey}</span>
-                        </div>
-                    </div>
-                    <div class="uc-link">${link}</div>
-                `;
-
-                const actions=document.createElement("div");
-                actions.className="uc-item-actions";
-
-                // 访问
-                const btnOpen=document.createElement("button");
-                btnOpen.className="btn-secondary btn-xs";
-                btnOpen.innerHTML=`
-                    <span class="icon-svg">
-                        <svg viewBox="0 0 20 20">
-                            <path d="M4 5a2 2 0 0 1 2-2h4a1 1 0 1 1 0 2H6v10h8v-4a1 1 0 1 1 2 0v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5z"/>
-                            <path d="M11 4a1 1 0 0 1 1-1h4.5a.5.5 0 0 1 .5.5V8a1 1 0 1 1-2 0V6.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L13.586 5H12a1 1 0 0 1-1-1z"/>
-                        </svg>
-                    </span>
-                    访问
-                `;
-                btnOpen.addEventListener("click",()=>window.open(link,"_blank","noopener"));
-                actions.appendChild(btnOpen);
-
-                // 复制
-                const btnCopy=document.createElement("button");
-                btnCopy.className="btn-secondary btn-xs";
-                btnCopy.innerHTML=`
-                    <span class="icon-svg">
-                        <svg viewBox="0 0 20 20">
-                            <path d="M7 3a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2v-2h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v2H7z"/>
-                            <path d="M3 7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7zm3-1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H6z"/>
-                        </svg>
-                    </span>
-                    复制
-                `;
-                btnCopy.addEventListener("click",async ()=>{
-                    try{
-                        await navigator.clipboard.writeText(link);
-                        setStatus("访问链接已复制到剪贴板。","success");
-                    }catch(_){
-                        setStatus("复制失败，请手动复制。","error");
-                    }
-                });
-                actions.appendChild(btnCopy);
-
-                // 编辑
-                const btnEdit=document.createElement("button");
-                btnEdit.className="btn-secondary btn-xs";
-                btnEdit.innerHTML=`
-                    <span class="icon-svg">
-                        <svg viewBox="0 0 20 20">
-                            <path d="M4 13.5V16h2.5l7.086-7.086-2.5-2.5L4 13.5zM14.207 2.793a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 1 0 1.414l-1.5 1.5-2.5-2.5 1.5-1.5z"/>
-                        </svg>
-                    </span>
-                    编辑
-                `;
-                btnEdit.addEventListener("click",()=>{
-                    // 进入编辑模式：填充主表单
-                    if($content)$content.value=item.content || "";
-                    if($customId){
-                        $customId.value=slug;
-                        $customId.readOnly=false; // 允许重新自定义 URL
-                        validateCustomSlug();
-                    }
-                    updateByteCount();
-                    state.mode="edit";
-                    state.originalSlug=slug;
-                    if($submitBtn)$submitBtn.querySelector(".text").textContent="更新";
-                    setStatus(`正在编辑：${slug}`,"success");
-                    // 编辑时主页为主；用户中心可保留打开，也可以手动点首页关闭
-                });
-                actions.appendChild(btnEdit);
-
-                // 删除
-                const btnDel=document.createElement("button");
-                btnDel.className="btn-danger btn-xs";
-                btnDel.innerHTML=`
-                    <span class="icon-svg">
-                        <svg viewBox="0 0 20 20">
-                            <path d="M7 3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2h3a1 1 0 1 1 0 2h-1v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5H3a1 1 0 0 1 0-2h4zm1 2v11h2V5H8zm4 0v11h2V5h-2z"/>
-                        </svg>
-                    </span>
-                    删除
-                `;
-                btnDel.addEventListener("click",async ()=>{
-                    if(!confirm("确定要删除这条记录吗？"))return;
-                    try{
-                        await postPaste({action:"delete",slug});
-                        setStatus("已删除。","success");
-                        loadUserPastes(true);
-                    }catch(err){
-                        setStatus(err.message || "删除失败。","error");
-                    }
-                });
-                actions.appendChild(btnDel);
-
-                div.appendChild(actions);
-                $ucList.appendChild(div);
-            }
-
-            if(fromRefresh){
-                setStatus("用户中心已刷新。","success");
-            }
-        }catch(e){
-            $ucEmpty.style.display="block";
-            $ucEmpty.textContent="加载失败，请稍后再试。";
-        }
-    }
-
-    // ===== 初始化 =====
-    (async function initAll(){
+    (async function init(){
         await initAuthFromServer();
         applyAuthUI();
-        resetToCreateMode();
+        resetToCreateMode(false);
     })();
 </script>
 </body>
