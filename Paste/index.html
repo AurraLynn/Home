@@ -1100,7 +1100,7 @@
         state.originalSlug=null;
         if($submitBtn){
             const span=$submitBtn.querySelector(".text");
-            if(span)span.textContent="上传";
+            if(span)span.textContent="上传 / 保存";
         }
         if($btnHome)$btnHome.style.display="none";
         if(clear){
@@ -1441,7 +1441,7 @@
         state.originalSlug=slug;
         if($submitBtn){
             const span=$submitBtn.querySelector(".text");
-            if(span)span.textContent="更新";
+            if(span)span.textContent="更新 / 保存";
         }
         if($btnHome)$btnHome.style.display="inline-flex";
         setStatus("正在载入内容…");
