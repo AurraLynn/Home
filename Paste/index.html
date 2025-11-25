@@ -64,9 +64,9 @@
             justify-content:center;
             padding:30px 12px;
             background:
-                radial-gradient(circle at top,rgba(56,189,248,0.18),transparent 60%),
-                radial-gradient(circle at bottom,rgba(129,140,248,0.18),transparent 60%),
-                var(--bg);
+                    radial-gradient(circle at top,rgba(56,189,248,0.18),transparent 60%),
+                    radial-gradient(circle at bottom,rgba(129,140,248,0.18),transparent 60%),
+                    var(--bg);
             color:var(--text-main);
         }
         .shell{width:100%;max-width:880px;}
@@ -1112,9 +1112,13 @@
         validateCustomSlug();
     }
     function setLoggedIn(username){
-        state.loggedIn=true;
-        state.username=username||"用户";
-        try{localStorage.setItem("pbx_username",state.username);}catch(_){}
+        state.loggedIn = true;
+        state.username = username || "用户";
+        try { localStorage.setItem("pbx_username", state.username); } catch(_) {}
+
+        // ✅ 已登录时默认改为「Never(不过期)」
+        setTtl("forever");
+
         applyAuthUI();
     }
     function setLoggedOut(){
