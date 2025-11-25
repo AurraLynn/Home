@@ -94,11 +94,11 @@
             box-shadow:0 12px 30px rgba(15,23,42,0.15);
         }
         .brand-logo{
-            width:44px;height:44px;border-radius:16px;overflow:hidden;
-            background:radial-gradient(circle at top left,#22c55e,#0ea5e9);
+            width:44px;height:44px;border-radius:10px;overflow:hidden;
+            background:radial-gradient(circle at top left, rgba(255, 255, 255, 0.8), rgba(253, 0, 210, 0.83));
             display:flex;align-items:center;justify-content:center;
         }
-        .brand-logo img{width:100%;height:100%;object-fit:cover;border-radius:16px;}
+        .brand-logo img{width:100%;height:100%;object-fit:cover;border-radius:10px;}
         .brand-text{display:flex;flex-direction:column;gap:3px;}
         .brand-title{font-size:19px;font-weight:600;letter-spacing:.03em;}
         .brand-sub{font-size:11px;color:var(--text-sub);}
@@ -153,6 +153,26 @@
             box-shadow:0 6px 14px rgba(15,23,42,0.35);
         }
         body.theme-light .pill-btn{background:#ffffff;}
+
+        /* 旋转动画关键帧 */
+        @keyframes spin-reset-once {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 默认不动 */
+        .btn-reset .icon-svg svg {
+            transform-origin: 50% 50%;
+        }
+
+        /* 鼠标悬停时转一圈 */
+        .btn-reset:hover .icon-svg svg {
+            animation: spin-reset-once 0.6s linear;
+        }
 
         /* 主卡片 */
         .card{
@@ -384,7 +404,7 @@
         /* 登录弹窗：居中小方块 */
         .modal-backdrop{
             position:fixed;inset:0;
-            background:rgba(15,23,42,0.65);
+            background: rgba(0, 0, 0, 0.47);
             display:flex;align-items:center;justify-content:center;
             padding:16px;z-index:40;
         }
@@ -426,12 +446,12 @@
         .auth-panel-actions{display:flex;gap:6px;justify-content:flex-end;}
         .auth-panel-msg{font-size:11px;min-height:1.2em;}
         .auth-panel-msg.success{color:#4ade80;}
-        .auth-panel-msg.error{color:#fecaca;}
+        .auth-panel-msg.error{color: #e80707;}
 
         /* 用户中心弹层 */
         .uc-backdrop{
             position:fixed;inset:0;
-            background:rgba(15,23,42,0.7);
+            background: rgba(0, 0, 0, 0.47);
             display:flex;align-items:center;justify-content:center;
             padding:20px 10px;z-index:30;
         }
@@ -551,7 +571,7 @@
                         <path d="M10.707 2.293a1 1 0 0 0-1.414 0l-7 7A1 1 0 0 0 3 10h1v7a1 1 0 0 0 1 1h3v-4h4v4h3a1 1 0 0 0 1-1v-7h1a1 1 0 0 0 .707-1.707l-7-7z"/>
                     </svg>
                 </span>
-                首页
+                Home
             </button>
 
             <button type="button" class="pill-btn pill-btn-primary" id="btnAuthOpen">
@@ -560,7 +580,7 @@
                         <path d="M10 2a3 3 0 0 1 3 3v1a3 3 0 1 1-6 0V5a3 3 0 0 1 3-3zm0 10c3.314 0 6 1.79 6 4v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1c0-2.21 2.686-4 6-4z"/>
                     </svg>
                 </span>
-                <span id="btnAuthLabel">登录</span>
+                <span id="btnAuthLabel">Login</span>
             </button>
         </div>
     </header>
@@ -570,7 +590,9 @@
             <div class="section-title">使用说明<span class="tag">GUIDE</span></div>
             <div class="section-text">
                 在下面粘贴文本或从文件导入，选择有效期后生成一个可分享的访问链接（以 <code>text/plain</code> 打开）。<br>
-                <span class="warning-label">警告：</span>请勿存储敏感信息，本工具仅适用于临时共享内容。
+                登录可管理已生成的内容。🐹<br>
+                <span class="warning-label">警告：</span>请勿存储敏感信息，本工具仅适用于临时共享内容。<br>
+                <span class="warning-label">警告：</span>你上传的内容文件，可能会在不通知的情况下被删除！
             </div>
         </section>
 
@@ -619,21 +641,21 @@
                 </section>
 
                 <section class="card-section" id="advancedSection">
-                    <div class="section-title">链接设置（需要登录）<span class="tag">LINK</span></div>
+                    <div class="section-title">Custom Link <span class="tag">LINK</span></div>
                     <div class="field-row">
                         <div class="field-block">
                             <div class="field-label">自定义 URL（可选）</div>
                             <div class="field-inline">
-                                <input id="customId" type="text" placeholder="例如：Lyn-Note-001">
+                                <input id="customId" type="text" placeholder="输入自定义内容...">
                             </div>
-                            <div class="hint" id="customHint">仅支持英文、数字、- 和 _；留空则自动分配随机 ID。</div>
+                            <div class="hint" id="customHint">仅支持A-Za-z0-9_- 。留空则自动分配随机 ID。</div>
                         </div>
                         <div class="field-block">
                             <div class="field-label">备注（可选）</div>
                             <div class="field-inline">
-                                <input id="remark" type="text" placeholder="例如：服务器日志 / 临时 token">
+                                <input id="remark" type="text" placeholder="输入自定义备注...">
                             </div>
-                            <div class="hint">仅在用户中心显示，方便你自己识别。</div>
+                            <div class="hint">仅在用户中心显示。</div>
                         </div>
                     </div>
                 </section>
@@ -649,7 +671,7 @@
                                         <path d="M4 4v4a1 1 0 0 0 1 1h4V7H6.414A4 4 0 1 1 10 14v2a6 6 0 1 0-6-6V4z"/>
                                     </svg>
                                 </span>
-                                重置
+                                重置 / 清空
                             </button>
                         </div>
                         <div class="action-row">
@@ -660,7 +682,7 @@
                                         <path d="M4 11a1 1 0 0 1 1 1v3h10v-3a1 1 0 1 1 2 0v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a1 1 0 0 1 1-1z"/>
                                     </svg>
                                 </span>
-                                <span class="text">上传</span>
+                                <span class="text">上传 / 保存</span>
                             </button>
                         </div>
                     </div>
@@ -745,7 +767,7 @@
                             <path d="M4 13a6 6 0 0 1 9.33-4.938 5 5 0 1 1 1.414 1.414A6 6 0 0 1 4 13z"/>
                         </svg>
                     </span>
-                    注册
+                    SIGN UP
                 </button>
                 <button type="submit" class="btn-primary btn-xs" id="btnDoLogin">
                     <span class="icon-svg">
@@ -753,7 +775,7 @@
                             <path d="M3 10a1 1 0 0 1 1-1h8.586L10.293 6.707a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4A1 1 0 0 1 10.293 13.293L12.586 11H4a1 1 0 0 1-1-1z"/>
                         </svg>
                     </span>
-                    登录
+                    LOG IN
                 </button>
             </div>
         </form>
@@ -772,7 +794,7 @@
                     </svg>
                 </span>
                 <div>
-                    <div class="uc-title-main">用户中心</div>
+                    <div class="uc-title-main">Manage / 📝</div>
                     <div class="uc-title-sub" id="ucSubtitle">查看、编辑和删除你创建的所有 Paste。</div>
                 </div>
             </div>
@@ -793,7 +815,7 @@
                             <path d="M5.293 7.293a1 1 0 0 1 1.414 0L9 9.586 6.707 11.88a1 1 0 0 1-1.414-1.414L6.586 10 5.293 8.707a1 1 0 0 1 0-1.414z"/>
                         </svg>
                     </span>
-                    退出
+                    LOG OUT
                 </button>
                 <button type="button" class="btn-secondary btn-xs" id="ucCloseBtn">
                     <span class="icon-svg">
@@ -1056,7 +1078,7 @@
         if(!ok){
             state.customSlugError=true;
             if($customHint){
-                $customHint.textContent="仅支持英文、数字、- 和 _。";
+                $customHint.textContent="仅支持A-Za-z0-9_- 。";
                 $customHint.classList.add("hint-error");
                 $customHint.classList.remove("hint-success");
             }
@@ -1101,7 +1123,7 @@
     // 登录状态 UI
     function applyAuthUI(){
         if($btnAuthLabel){
-            $btnAuthLabel.textContent=state.loggedIn?(state.username||"用户"):"登录";
+            $btnAuthLabel.textContent=state.loggedIn?(state.username||"用户"):"LogIn";
         }
         if($advancedSection){
             $advancedSection.style.display=state.loggedIn?"":"none";
@@ -1329,11 +1351,11 @@
 
                 let metaText=`创建：${formatDate(created)} · `;
                 if(!expires || ttlKey==="forever"){
-                    metaText+=`到期：Never(不过期)`;
+                    metaText+=`到期：Never🙌🏿`;
                 }else{
                     metaText+=`到期：${formatDate(expires)}`;
                     if(remain!=null && remain>=0){
-                        metaText+=` · 还有 ${remain} 天`;
+                        metaText+=` · 自动清除还有 ${remain} 天`;
                     }
                 }
                 meta.textContent=metaText;
