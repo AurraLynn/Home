@@ -1,0 +1,18 @@
+
+
+
+Card 项目结构说明
+
+项目根目录 / 仓库
+ Home                                          # 「Home」站点根目录（静态 + 局部函数）
+  │ └─ Card/                              # 卡片生成页面目录
+  │           └─ index.htm               # 前端页面：卡片制作 / 分享页面
+  │  
+  ├─ functions/                            # 仅作用于 Home 站点下的 Pages Functions
+  │         └─ C/
+  │                └─ [id].js                # 动态路由 /C/:id 详情页（自动跳转、预览等）
+  │
+  └─ functions/                             # 全局 API（根域名下的 Functions）
+              └─ api/
+                     ├─ history.js           # 历史记录 /api/history
+                     └─ share-create.js  # 创建分享卡 /api/share-create
