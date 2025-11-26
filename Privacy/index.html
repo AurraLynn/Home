@@ -2,74 +2,257 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>隐私 · 加密空间</title>
+    <title>AURA · 隐私空间</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Tailwind CDN，用来快速出 Lyn 风布局 -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#f97373',
-                        accent: '#38bdf8'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- 高级感字体：英文字 Poppins，标题 Playfair Display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+            rel="stylesheet">
 
     <style>
         * {
             box-sizing: border-box;
         }
 
-        body {
+        :root {
+            --bg-main: #050608;
+            --bg-panel: rgba(10, 12, 18, 0.98);
+            --bg-card: rgba(13, 16, 24, 0.98);
+            --border-soft: rgba(120, 126, 148, 0.45);
+            --accent-gold: #e9c46a;
+            --accent-gold-soft: rgba(233, 196, 106, 0.22);
+            --accent-blue: #64b5f6;
+            --accent-rose: #f48fb1;
+            --text-main: #e5e7eb;
+            --text-secondary: #9ca3af;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
             min-height: 100vh;
+        }
+
+        body {
+            font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: var(--text-main);
             background:
-                    radial-gradient(circle at top, rgba(56,189,248,0.18), transparent 55%),
-                    radial-gradient(circle at bottom, rgba(248,113,113,0.18), transparent 60%),
-                    #020617;
-            color: #e5e7eb;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                    radial-gradient(circle at 0% 0%, rgba(100, 181, 246, 0.18), transparent 55%),
+                    radial-gradient(circle at 100% 100%, rgba(244, 143, 177, 0.16), transparent 50%),
+                    radial-gradient(circle at 50% 120%, rgba(233, 196, 106, 0.16), transparent 50%),
+                    var(--bg-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 18px;
         }
 
-        .glass-panel {
-            background: radial-gradient(circle at top left, rgba(248,113,113,0.16), transparent 55%),
-                        rgba(15,23,42,0.92);
-            border-radius: 18px;
-            border: 1px solid rgba(148,163,184,0.45);
-            box-shadow:
-                    0 18px 40px rgba(15,23,42,0.95),
-                    0 0 40px rgba(56,189,248,0.18);
-            backdrop-filter: blur(20px);
-        }
-
-        .card-glass {
-            background: rgba(15,23,42,0.96);
-            border-radius: 14px;
-            border: 1px solid rgba(148,163,184,0.45);
-        }
-
-        .input-base {
+        .shell {
             width: 100%;
-            border-radius: 0.75rem;
-            border: 1px solid rgba(148,163,184,0.75);
-            background: rgba(15,23,42,0.92);
-            color: #e5e7eb;
-            font-size: 0.95rem;
-            padding: 0.6rem 0.9rem;
-            outline: none;
-            transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+            max-width: 1160px;
+            min-height: 540px;
+            display: grid;
+            grid-template-columns: 280px minmax(0, 1fr);
+            background: radial-gradient(circle at top left, rgba(233, 196, 106, 0.18), transparent 60%), var(--bg-panel);
+            border-radius: 22px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            box-shadow:
+                    0 30px 60px rgba(0, 0, 0, 0.85),
+                    0 0 60px rgba(100, 181, 246, 0.18);
+            overflow: hidden;
+            position: relative;
         }
-        .input-base:focus {
-            border-color: #38bdf8;
-            box-shadow: 0 0 0 1px rgba(56,189,248,0.45);
-            background: rgba(15,23,42,1);
+
+        /* 左侧品牌栏 */
+        .brand-side {
+            position: relative;
+            padding: 26px 22px 24px 26px;
+            border-right: 1px solid rgba(148, 163, 184, 0.5);
+            background:
+                    radial-gradient(circle at 0% 0%, rgba(100, 181, 246, 0.25), transparent 55%),
+                    radial-gradient(circle at 100% 100%, rgba(244, 143, 177, 0.25), transparent 60%),
+                    linear-gradient(160deg, #020617, #020617, #020617);
+        }
+
+        .brand-logo {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 26px;
+        }
+
+        .brand-main {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-mark {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            border: 1px solid rgba(248, 250, 252, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Playfair Display", serif;
+            font-size: 18px;
+            color: #f9fafb;
+            background: radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.6), transparent 65%), #020617;
+            box-shadow:
+                    0 0 0 1px rgba(15, 23, 42, 0.9),
+                    0 12px 25px rgba(0, 0, 0, 0.9);
+        }
+
+        .brand-title {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-title-main {
+            font-family: "Playfair Display", serif;
+            letter-spacing: 0.16em;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .brand-title-sub {
+            font-size: 0.7rem;
+            color: rgba(209, 213, 219, 0.8);
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .brand-divider {
+            margin-top: 6px;
+            height: 1px;
+            width: 90%;
+            background: linear-gradient(90deg, rgba(249, 250, 251, 0.8), transparent);
+        }
+
+        .brand-block {
+            margin-top: 22px;
+            padding-right: 6px;
+        }
+
+        .brand-heading-cn {
+            font-size: 1.2rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: #f9fafb;
+            margin-bottom: 6px;
+        }
+
+        .brand-heading-en {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.22em;
+            color: rgba(209, 213, 219, 0.7);
+            margin-bottom: 12px;
+        }
+
+        .brand-text {
+            font-size: 0.8rem;
+            color: rgba(209, 213, 219, 0.78);
+            line-height: 1.7;
+        }
+
+        .brand-badge {
+            position: absolute;
+            left: 24px;
+            bottom: 24px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: rgba(209, 213, 219, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #22c55e;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 1);
+        }
+
+        /* 右侧内容区 */
+        .content-side {
+            position: relative;
+            padding: 22px 24px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .content-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .content-top-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .content-title {
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: rgba(209, 213, 219, 0.88);
+        }
+
+        .content-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .pill-time {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.65);
+            background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.35), transparent 60%), #020617;
+            padding: 4px 11px;
+            font-size: 0.75rem;
+            gap: 8px;
+        }
+
+        .pill-time-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #22c55e;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 1);
+        }
+
+        .btn-ghost {
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            background: rgba(15, 23, 42, 0.95);
+            color: var(--text-main);
+            font-size: 0.75rem;
+            padding: 5px 11px;
+            cursor: pointer;
+            transition: border-color .15s ease, background .15s ease, transform .08s ease;
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--accent-blue);
+            background: rgba(15, 23, 42, 1);
+        }
+
+        .btn-ghost:active {
+            transform: translateY(1px);
         }
 
         .btn-main {
@@ -77,262 +260,505 @@
             border: none;
             outline: none;
             cursor: pointer;
-            padding: 0.55rem 1rem;
-            font-size: 0.93rem;
-            font-weight: 600;
+            padding: 7px 18px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
             color: #020617;
-            background: linear-gradient(135deg,#38bdf8,#22c55e);
+            background: linear-gradient(135deg, var(--accent-gold), #fef9c3);
             box-shadow:
-                    0 10px 22px rgba(56,189,248,0.45),
-                    0 0 16px rgba(34,197,94,0.38);
+                    0 14px 26px rgba(233, 196, 106, 0.55),
+                    0 0 20px rgba(233, 196, 106, 0.4);
             transition: transform .1s ease, box-shadow .1s ease, filter .1s ease;
         }
-        .btn-main:hover { filter: brightness(1.06); }
-        .btn-main:active {
-            transform: translateY(1px) scale(.99);
-            box-shadow:
-                    0 8px 18px rgba(56,189,248,0.4),
-                    0 0 14px rgba(34,197,94,0.32);
+
+        .btn-main:hover {
+            filter: brightness(1.02);
         }
 
-        .btn-chip {
-            border-radius: 999px;
-            border: 1px solid rgba(148,163,184,0.7);
-            background: rgba(15,23,42,0.98);
-            color: #e5e7eb;
-            font-size: 0.78rem;
-            padding: 0.25rem 0.65rem;
+        .btn-main:active {
+            transform: translateY(1px) scale(0.99);
+            box-shadow:
+                    0 10px 18px rgba(233, 196, 106, 0.5),
+                    0 0 16px rgba(233, 196, 106, 0.38);
         }
-        .btn-chip:hover {
-            border-color: #38bdf8;
+
+        .hint-small {
+            font-size: 0.73rem;
+            color: var(--text-secondary);
+        }
+
+        .hint-highlight {
+            color: var(--accent-gold);
+        }
+
+        /* 登录面板 */
+        #login-panel {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            animation: fadeIn .4s ease-out;
+        }
+
+        .login-card {
+            max-width: 420px;
+            padding: 18px 18px 14px;
+            margin-bottom: 10px;
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.16), transparent 60%), var(--bg-card);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, .9);
+        }
+
+        .login-title {
+            font-size: 1rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            color: #f9fafb;
+        }
+
+        .login-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .field-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-base {
+            width: 100%;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.75);
+            background: rgba(15, 23, 42, 0.95);
+            color: var(--text-main);
+            padding: 9px 40px 9px 13px;
+            font-size: 0.83rem;
+            outline: none;
+            transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+        }
+
+        .input-base:focus {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 1px rgba(233, 196, 106, 0.6);
+            background: rgba(15, 23, 42, 1);
+        }
+
+        #toggle-visibility {
+            position: absolute;
+            right: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            cursor: pointer;
+        }
+
+        #login-error {
+            margin-top: 6px;
+            font-size: 0.75rem;
+            color: #fb7185;
+            min-height: 1em;
+        }
+
+        .login-hint-box {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            border-radius: 14px;
+            border: 1px dashed rgba(148, 163, 184, 0.8);
+            background: rgba(15, 23, 42, 0.9);
+            padding: 10px 11px;
+            line-height: 1.6;
+        }
+
+        .login-footer {
+            margin-top: 6px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        /* 主应用面板 */
+        #app-panel {
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+            animation: fadeIn .4s ease-out;
+        }
+
+        .grid-main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 900px) {
+            .shell {
+                grid-template-columns: 1fr;
+            }
+            .brand-side {
+                display: none;
+            }
+        }
+
+        @media (max-width: 720px) {
+            body {
+                padding: 10px;
+            }
+            .shell {
+                border-radius: 18px;
+            }
+            .content-side {
+                padding: 16px 14px 14px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .grid-main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card-section {
+            border-radius: 16px;
+            border: 1px solid var(--border-soft);
+            background: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.06), transparent 55%), var(--bg-card);
+            padding: 11px 12px 10px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .card-title-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .card-title-text {
+            font-weight: 500;
+        }
+
+        .card-tag {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 2px 7px;
+            border-radius: 999px;
+            border: 1px solid rgba(156, 163, 175, 0.7);
+            color: rgba(209, 213, 219, 0.9);
+        }
+
+        .card-tag-gold {
+            border-color: rgba(233, 196, 106, 0.9);
+            background: var(--accent-gold-soft);
+            color: var(--accent-gold);
+        }
+
+        .card-desc {
+            font-size: 0.76rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            line-height: 1.6;
+        }
+
+        .textarea-main {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            background: rgba(15, 23, 42, 0.98);
+            color: var(--text-main);
+            font-size: 0.78rem;
+            padding: 7px 8px;
+            min-height: 110px;
+            resize: vertical;
+            outline: none;
+            transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+        }
+
+        .textarea-main:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 1px rgba(100, 181, 246, 0.6);
+            background: rgba(15, 23, 42, 1);
+        }
+
+        .card-footnote {
+            margin-top: 4px;
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+        }
+
+        .status-line {
+            margin-top: 2px;
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+        }
+
+        .status-success {
+            color: #4ade80;
+        }
+
+        .status-error {
+            color: #fb7185;
         }
 
         .shake {
-            animation: shake .28s ease-in-out;
+            animation: shake .22s ease-in-out;
         }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         @keyframes shake {
             0% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-3px); }
+            25% { transform: translateX(-4px); }
+            50% { transform: translateX(4px); }
+            75% { transform: translateX(-2px); }
             100% { transform: translateX(0); }
         }
     </style>
 </head>
-<body class="flex items-center justify-center p-4">
+<body>
+<div class="shell">
 
-<div class="w-full max-w-5xl">
-
-    <!-- 顶部小标签（统一 Lyn 风） -->
-    <div class="mb-4 flex items-center justify-between text-xs text-slate-400">
-        <div class="flex items-center gap-2">
-            <div class="h-6 rounded-full border border-slate-600/60 px-3 flex items-center gap-2 bg-slate-900/70">
-                <span class="inline-block h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]"></span>
-                <span>隐私 · Private Space</span>
+    <!-- 左侧品牌区 -->
+    <aside class="brand-side">
+        <div class="brand-logo">
+            <div class="brand-main">
+                <div class="brand-mark">A</div>
+                <div class="brand-title">
+                    <div class="brand-title-main">AURA</div>
+                    <div class="brand-title-sub">PRIVATE COLLECTION</div>
+                </div>
             </div>
-            <span class="hidden sm:inline">本地加密 · 云端只存密文</span>
+            <div class="brand-divider"></div>
         </div>
-        <span class="text-[11px]">Lyn · Personal Use Only</span>
-    </div>
 
-    <!-- 登录面板 -->
-    <div id="login-panel" class="glass-panel mx-auto max-w-lg px-6 pt-6 pb-4">
-        <div class="flex items-center gap-3 mb-3">
-            <div class="h-10 w-10 rounded-full bg-gradient-to-br from-rose-400/80 to-sky-400/80 flex items-center justify-center text-lg shadow-lg">
-                🔐
-            </div>
-            <div>
-                <div class="text-lg font-semibold flex items-center gap-2">
-                    隐私 · 加密空间
-                    <span class="text-[10px] rounded-full border border-sky-400/60 bg-sky-500/15 px-2 py-px text-sky-100">
-                        Master Password Only
-                    </span>
-                </div>
-                <div class="text-xs text-slate-400 mt-0.5">
-                    使用主密码解锁，主密码只在本地浏览器使用，不会发给 Cloudflare。
-                </div>
+        <div class="brand-block">
+            <div class="brand-heading-cn">隐私空间</div>
+            <div class="brand-heading-en">PERSONAL · ENCRYPTED VAULT</div>
+            <div class="brand-text">
+                用一把只有你知道的主密码，封存你的链接、备忘与零碎隐私。<br>
+                明文只存在于你的浏览器中，云端只保存加密后的密文。
             </div>
         </div>
 
-        <label for="master-password" class="block text-xs text-slate-400 mb-1.5">
-            主密码 / Master Password
-        </label>
-        <div class="relative mb-2.5">
-            <input id="master-password"
-                   type="password"
-                   class="input-base pr-10"
-                   placeholder="第一次使用时，在这里设置你的主密码">
-            <button id="toggle-visibility"
-                    type="button"
-                    class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-                👁
-            </button>
+        <div class="brand-badge">
+            <span class="brand-dot"></span>
+            <span>Client-side Encryption Only</span>
         </div>
+    </aside>
 
-        <button id="btn-unlock" class="btn-main w-full mt-1.5">
-            解锁隐私空间 / Unlock
-        </button>
+    <!-- 右侧内容区 -->
+    <main class="content-side">
 
-        <div id="login-error" class="mt-2 text-xs text-rose-400 min-h-[1.1rem]"></div>
-
-        <div class="mt-3 text-[11px] text-slate-400 leading-relaxed rounded-xl border border-slate-600/60 bg-slate-900/70 p-3">
-            · 初次使用：如果还没有数据，你当前输入的主密码将用于创建新的加密仓库。<br>
-            · 之后每次都要用同一个主密码解锁。<br>
-            · <span class="text-amber-300">主密码一旦忘记，数据无法恢复，没有找回按钮。</span><br>
-            · Cloudflare KV 中只保存密文（salt + iv + ciphertext），看不到你的明文。
-        </div>
-
-        <div class="mt-2 text-[11px] text-center text-slate-500">
-            建议：这个路径不要放在导航菜单，只留给自己知道的小入口。
-        </div>
-    </div>
-
-    <!-- 解锁后的主界面 -->
-    <div id="app-panel" class="glass-panel hidden px-5 pt-4 pb-4 mt-0">
-        <!-- 顶部栏 -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3.5">
-            <div>
-                <div class="flex items-center gap-2 mb-0.5">
-                    <div class="h-9 w-9 rounded-full bg-gradient-to-br from-rose-400/80 to-sky-400/80 flex items-center justify-center text-lg shadow-lg">
-                        🧬
-                    </div>
-                    <div>
-                        <div class="text-base font-semibold flex items-center gap-2">
-                            已解锁的隐私空间
-                            <span class="text-[10px] rounded-full border border-sky-400/60 bg-sky-500/15 px-2 py-px text-sky-100">
-                                Local AES-GCM · Cloud Ciphertext
-                            </span>
-                        </div>
-                        <div id="last-updated" class="text-[11px] text-slate-400 mt-0.5">
-                            上次保存时间：尚未保存
-                        </div>
-                    </div>
+        <!-- 顶部标题栏 -->
+        <header class="content-top">
+            <div class="content-top-left">
+                <div class="content-title">AURA · PRIVACY</div>
+                <div class="content-subtitle">
+                    私人使用 · Master Password 驱动的加密空间
                 </div>
             </div>
-
-            <div class="flex flex-col items-end gap-1">
-                <div class="flex items-center gap-2">
-                    <div class="pill-time flex items-center gap-2 rounded-full border border-slate-600/70 bg-slate-900/80 px-3 py-1 text-[11px]">
-                        <span class="inline-block h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]"></span>
-                        <span id="time-text">--:--:--</span>
-                    </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+                <div class="pill-time">
+                    <span class="pill-time-dot"></span>
+                    <span id="time-text">--:--:--</span>
                 </div>
-                <button id="btn-lock" class="btn-chip">
+                <button id="btn-lock" class="btn-ghost" style="display:none;">
                     重新上锁 / Lock
                 </button>
             </div>
-        </div>
+        </header>
 
-        <!-- 内容区域：两列卡片 -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
-            <!-- 左边：书签 + 备忘 -->
-            <div class="flex flex-col gap-3">
-                <section class="card-glass p-3.5">
-                    <div class="flex items-center justify-between mb-1.5">
-                        <div class="flex items-center gap-1.5">
-                            <span>🔗</span>
-                            <span class="text-sm font-semibold">书签 / Bookmarks</span>
-                        </div>
-                        <span class="text-[10px] text-sky-200/80 rounded-full border border-sky-400/60 bg-sky-500/10 px-2 py-px">
-                            常用链接
-                        </span>
-                    </div>
-                    <p class="text-[11px] text-slate-400 mb-2.5 leading-relaxed">
-                        推荐格式：每行一个记录，例如：<br>
-                        <code class="text-sky-200/90">个人主页 - https://aura.us.kg</code>
-                    </p>
-                    <textarea id="field-bookmarks"
-                              class="input-base min-h-[110px] text-xs resize-y"
-                              placeholder="例：&#10;个人主页 - https://aura.us.kg&#10;网盘 - https://xxxx&#10;管理面板提示 - 写个自己看得懂的暗号即可…"></textarea>
-                    <p class="mt-1 text-[11px] text-slate-400">
-                        提示：敏感面板地址可以写成“暗号提示”，不要直白写出真实域名也可以。
-                    </p>
-                </section>
+        <!-- 登录面板 -->
+        <section id="login-panel">
+            <div class="login-card">
+                <div class="login-title">MASTER PASSWORD</div>
+                <div class="login-subtitle">
+                    使用主密码解锁你的 AURA 隐私空间。主密码仅在本地参与加解密，不会传输到 Cloudflare。
+                </div>
 
-                <section class="card-glass p-3.5">
-                    <div class="flex items-center justify-between mb-1.5">
-                        <div class="flex items-center gap-1.5">
-                            <span>🧠</span>
-                            <span class="text-sm font-semibold">备忘录 / Notes</span>
-                        </div>
-                        <span class="text-[10px] text-slate-300/90">写给自己的话</span>
+                <label for="master-password" class="field-label">主密码 / Master Password</label>
+                <div class="input-wrapper">
+                    <input id="master-password"
+                           type="password"
+                           class="input-base"
+                           placeholder="第一次使用时，在这里设置你的主密码">
+                    <button type="button" id="toggle-visibility">👁</button>
+                </div>
+
+                <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                    <button id="btn-unlock" class="btn-main">
+                        解锁隐私空间
+                    </button>
+                    <div class="hint-small">
+                        首次无数据时，将自动创建新的加密仓库。
                     </div>
-                    <textarea id="field-notes"
-                              class="input-base min-h-[120px] text-xs resize-y"
-                              placeholder="写今天想记住的事、想跟未来自己说的话…"></textarea>
-                    <p class="mt-1 text-[11px] text-slate-400">
-                        特别重要且不能丢的内容，建议再同步一份到云笔记 / 本地硬盘。
-                    </p>
-                </section>
+                </div>
+
+                <div id="login-error"></div>
             </div>
 
-            <!-- 右边：账号线索 + 其它隐私信息 -->
-            <div class="flex flex-col gap-3">
-                <section class="card-glass p-3.5">
-                    <div class="flex items-center justify-between mb-1.5">
-                        <div class="flex items-center gap-1.5">
-                            <span>🛡</span>
-                            <span class="text-sm font-semibold">账号 & 密码线索</span>
-                        </div>
-                        <span class="text-[10px] text-rose-200/90 rounded-full border border-rose-400/70 bg-rose-500/15 px-2 py-px">
-                            建议只写提示
-                        </span>
-                    </div>
-                    <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">
-                        建议：真正明文密码放密码管理器，这里只写“规则 / 线索”。<br>
-                        例：<br>
-                        <code class="text-sky-200/90">
-                            邮箱A：账号 = 某个固定邮箱；密码规则 = 固定前缀 + 某年 + 特殊符号
-                        </code>
-                    </p>
-                    <textarea id="field-accounts"
-                              class="input-base min-h-[120px] text-xs resize-y"
-                              placeholder="例：&#10;邮箱A：账号 = xxxxx；密码规则 = 某个固定前缀 + 某年 + 特殊符号&#10;游戏账号：在密码管理器里，名字叫 “Game-Main”&#10;常用站点：全部集中在密码管理器某个分组…"></textarea>
-                </section>
+            <div class="login-hint-box">
+                · 初次使用：如云端还没有数据，你当前输入的主密码将用于创建新的加密仓库。<br>
+                · 之后每次解锁，都必须使用同一主密码。<br>
+                · <span class="hint-highlight">主密码一旦遗忘，数据无法恢复，系统不会记录它的任何副本。</span><br>
+                · 云端 KV 中仅保存 <code>salt / iv / ciphertext</code>，即密文数据。
+            </div>
 
-                <section class="card-glass p-3.5">
-                    <div class="flex items-center justify-between mb-1.5">
-                        <div class="flex items-center gap-1.5">
-                            <span>📋</span>
-                            <span class="text-sm font-semibold">电话 / 保险 / 卡片 / 其它</span>
-                        </div>
-                        <span class="text-[10px] text-slate-300/90">零碎但重要的东西</span>
-                    </div>
-                    <p class="text-[11px] text-slate-400 mb-2 leading-relaxed">
-                        可以记：重要电话（部分打码）、保险续费日期、账单日/还款日、卡片放在哪个抽屉、一些不适合写在手机通讯录里的备注等。
-                    </p>
-                    <textarea id="field-other"
-                              class="input-base min-h-[120px] text-xs resize-y"
-                              placeholder="例：&#10;信用卡A：账单日 05，最后还款 23&#10;保险X：续费每年10月，联系人某某&#10;门禁卡放在某个包 / 柜子里&#10;紧急联系人：xxx，电话 1xxx-xxx-xxxx（只自己能看懂的写法）"></textarea>
-                </section>
+            <div class="login-footer">
+                建议：本页地址不要放在公开导航，只作为你自己的隐蔽入口。
             </div>
-        </div>
+        </section>
 
-        <!-- 底部保存区域 -->
-        <div class="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div class="text-[11px] text-slate-400">
-                本页使用浏览器端 AES-GCM 加密，Cloudflare KV 只保存密文。
+        <!-- 主应用面板 -->
+        <section id="app-panel">
+            <div class="hint-small" id="last-updated">
+                上次保存时间：尚未保存
             </div>
-            <div class="flex flex-col items-end gap-1">
-                <button id="btn-save" class="btn-main min-w-[180px]">
-                    保存到云端（加密后）
-                </button>
-                <div id="save-status" class="text-[11px] text-slate-400 min-h-[1.1rem] text-right"></div>
+
+            <div class="grid-main">
+                <!-- 左列：书签 + 备忘 -->
+                <div style="display:flex; flex-direction: column; gap: 12px;">
+                    <article class="card-section">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <div class="card-title-icon">🔗</div>
+                                <div class="card-title-text">书签 / Bookmarks</div>
+                            </div>
+                            <div class="card-tag card-tag-gold">常用链接</div>
+                        </div>
+                        <div class="card-desc">
+                            可以记录常用入口、管理面板暗号等。推荐每行一条，例如：
+                            <br><code>个人主页 - https://aura.us.kg</code>
+                        </div>
+                        <textarea id="field-bookmarks"
+                                  class="textarea-main"
+                                  placeholder="例：&#10;个人主页 - https://aura.us.kg&#10;网盘暗号 - 写一个只有你看得懂的描述&#10;某后台入口 - 不写完整域名，只写提示"></textarea>
+                        <div class="card-footnote">
+                            提示：敏感地址也可以写，但尽量用“自己看得懂的提示语”代替明文 URL。
+                        </div>
+                    </article>
+
+                    <article class="card-section">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <div class="card-title-icon">📝</div>
+                                <div class="card-title-text">备忘录 / Notes</div>
+                            </div>
+                            <div class="card-tag">写给自己的话</div>
+                        </div>
+                        <textarea id="field-notes"
+                                  class="textarea-main"
+                                  placeholder="写今天想记住的事、要对未来自己说的话、一些不想放在公开笔记里的碎碎念…"></textarea>
+                        <div class="card-footnote">
+                            特别重要的内容，建议另外再做一份离线 / 云端备份。
+                        </div>
+                    </article>
+                </div>
+
+                <!-- 右列：账号线索 + 其它 -->
+                <div style="display:flex; flex-direction: column; gap: 12px;">
+                    <article class="card-section">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <div class="card-title-icon">🛡</div>
+                                <div class="card-title-text">账号 & 密码线索</div>
+                            </div>
+                            <div class="card-tag card-tag-gold">建议只写提示</div>
+                        </div>
+                        <div class="card-desc">
+                            真正的明文密码建议放专业密码管理器，这里只写“规则 / 线索”。<br>
+                            例：<code>邮箱A：账号 = 某个固定邮箱；密码 = 固定前缀 + 某年 + 特殊符号</code>
+                        </div>
+                        <textarea id="field-accounts"
+                                  class="textarea-main"
+                                  placeholder="例：&#10;邮箱A：账号 = xxxxx；密码规则 = 某个固定前缀 + 某年 + ！&#10;服务器面板：名称在密码管理器中叫 “Server-Main”&#10;社交账号：都归档在某个分组之下…"></textarea>
+                    </article>
+
+                    <article class="card-section">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <div class="card-title-icon">📂</div>
+                                <div class="card-title-text">电话 / 保险 / 卡片 / 其它</div>
+                            </div>
+                            <div class="card-tag">零碎但重要</div>
+                        </div>
+                        <div class="card-desc">
+                            适合记：部分打码的电话、保险续费日期、账单日/还款日、某张卡放在哪个包等零碎信息。
+                        </div>
+                        <textarea id="field-other"
+                                  class="textarea-main"
+                                  placeholder="例：&#10;信用卡A：账单日 05，最后还款 23&#10;保险X：续费每年10月，联系人某某&#10;门禁卡：放在某个包/抽屉左侧&#10;紧急联系人：xxx，电话 1xxx-xxx-xxxx（用只自己懂的方式写）"></textarea>
+                    </article>
+                </div>
             </div>
-        </div>
-    </div>
+
+            <footer style="display:flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px;">
+                <div class="hint-small">
+                    本页使用浏览器端 AES-GCM 加密，Cloudflare KV 仅保存密文数据。
+                </div>
+                <div style="display:flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+                    <button id="btn-save" class="btn-main">
+                        保存到云端（加密后）
+                    </button>
+                    <div id="save-status" class="status-line"></div>
+                </div>
+            </footer>
+        </section>
+
+    </main>
 </div>
 
 <script>
     // ============ 配置：API 路径 ============
-    const VAULT_API = "/api/vault";   // 对应 functions/api/vault.js
+    const VAULT_API = "/api/vault";
 
     // ============ DOM 引用 ============
     const loginPanel = document.getElementById("login-panel");
     const appPanel = document.getElementById("app-panel");
 
     const masterInput = document.getElementById("master-password");
-    const toggleVisibility = document.getElementById("toggle-visibility");
+    const toggleVisibilityBtn = document.getElementById("toggle-visibility");
     const btnUnlock = document.getElementById("btn-unlock");
     const loginError = document.getElementById("login-error");
 
@@ -348,12 +774,12 @@
     const fieldOther = document.getElementById("field-other");
 
     // ============ 状态 ============
-    let currentMasterPassword = null; // 只存在内存
+    let currentMasterPassword = null;
     let currentSaltBase64 = null;
     let vaultExists = false;
     let currentVault = null;
 
-    // ============ 工具：base64 ============
+    // ============ base64 工具 ============
     function base64ToBytes(b64) {
         const binary = atob(b64);
         const len = binary.length;
@@ -482,6 +908,16 @@
         };
     }
 
+    function showError(msg) {
+        loginError.textContent = msg;
+    }
+
+    function shake(el) {
+        el.classList.remove("shake");
+        void el.offsetWidth;
+        el.classList.add("shake");
+    }
+
     async function unlockWithPassword() {
         const pwd = masterInput.value.trim();
         if (!pwd) {
@@ -492,8 +928,8 @@
 
         loginError.textContent = "";
         saveStatus.textContent = "";
+        saveStatus.className = "status-line";
 
-        // 从 CF 获取当前密文
         let data;
         try {
             const resp = await fetch(VAULT_API, { method: "GET" });
@@ -504,21 +940,22 @@
             return;
         }
 
+        // 没有密文：第一次使用
         if (!data.exists) {
-            // 第一次使用
             vaultExists = false;
             currentVault = getEmptyVault();
             currentMasterPassword = pwd;
             currentSaltBase64 = null;
 
-            loginPanel.classList.add("hidden");
-            appPanel.classList.remove("hidden");
+            loginPanel.style.display = "none";
+            appPanel.style.display = "flex";
+            btnLock.style.display = "inline-flex";
             fillFormFromVault(currentVault);
             saveStatus.textContent = "提示：当前为新加密仓库，编辑后点击“保存到云端（加密后）”。";
             return;
         }
 
-        // 有密文 → 派生密钥解密
+        // 有密文：用主密码尝试解密
         try {
             const { salt, iv, ciphertext } = data;
             const { key, saltBase64 } = await deriveKeyFromPassword(pwd, salt);
@@ -532,8 +969,9 @@
 
             fillFormFromVault(currentVault);
 
-            loginPanel.classList.add("hidden");
-            appPanel.classList.remove("hidden");
+            loginPanel.style.display = "none";
+            appPanel.style.display = "flex";
+            btnLock.style.display = "inline-flex";
             saveStatus.textContent = "";
         } catch (e) {
             console.error(e);
@@ -545,10 +983,12 @@
     async function saveVault() {
         if (!currentMasterPassword) {
             saveStatus.textContent = "请先解锁隐私空间。";
+            saveStatus.className = "status-line status-error";
             return;
         }
 
         saveStatus.textContent = "正在加密并保存…";
+        saveStatus.className = "status-line";
 
         const vaultObj = buildVaultFromForm();
 
@@ -585,9 +1025,11 @@
             currentVault = vaultObj;
             lastUpdatedEl.textContent = "上次保存时间：" + vaultObj.meta.lastUpdated;
             saveStatus.textContent = "已成功加密并保存到 Cloudflare KV。";
+            saveStatus.className = "status-line status-success";
         } catch (e) {
             console.error(e);
             saveStatus.textContent = "保存失败，请检查网络或稍后再试。";
+            saveStatus.className = "status-line status-error";
         }
     }
 
@@ -600,30 +1042,22 @@
         masterInput.value = "";
         loginError.textContent = "";
         saveStatus.textContent = "";
+        saveStatus.className = "status-line";
 
-        appPanel.classList.add("hidden");
-        loginPanel.classList.remove("hidden");
+        appPanel.style.display = "none";
+        loginPanel.style.display = "flex";
+        btnLock.style.display = "none";
         masterInput.focus();
     }
 
-    function showError(msg) {
-        loginError.textContent = msg;
-    }
-
-    function shake(el) {
-        el.classList.remove("shake");
-        void el.offsetWidth;
-        el.classList.add("shake");
-    }
-
-    // ============ UI 事件 ============
-    toggleVisibility.addEventListener("click", () => {
+    // ============ 事件绑定 ============
+    toggleVisibilityBtn.addEventListener("click", () => {
         if (masterInput.type === "password") {
             masterInput.type = "text";
-            toggleVisibility.textContent = "🙈";
+            toggleVisibilityBtn.textContent = "🙈";
         } else {
             masterInput.type = "password";
-            toggleVisibility.textContent = "👁";
+            toggleVisibilityBtn.textContent = "👁";
         }
     });
 
@@ -637,7 +1071,7 @@
     btnSave.addEventListener("click", saveVault);
     btnLock.addEventListener("click", lockVault);
 
-    // 简单时间显示
+    // ============ 时间显示 ============
     function updateTime() {
         const now = new Date();
         const Y = now.getFullYear();
@@ -646,10 +1080,8 @@
         const h = String(now.getHours()).padStart(2, "0");
         const m = String(now.getMinutes()).padStart(2, "0");
         const s = String(now.getSeconds()).padStart(2, "0");
-
-        const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
-        const w = weekdays[now.getDay()];
-
+        const wNames = ["日", "一", "二", "三", "四", "五", "六"];
+        const w = wNames[now.getDay()];
         timeText.textContent = `${Y}-${M}-${D} 周${w} · ${h}:${m}:${s}`;
     }
     setInterval(updateTime, 1000);
