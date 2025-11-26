@@ -156,23 +156,11 @@
 
         /* 旋转动画关键帧 */
         @keyframes spin-reset-once {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
-
-        /* 默认不动 */
-        .btn-reset .icon-svg svg {
-            transform-origin: 50% 50%;
-        }
-
-        /* 鼠标悬停时转一圈 */
-        .btn-reset:hover .icon-svg svg {
-            animation: spin-reset-once 0.6s linear;
-        }
+        .btn-reset .icon-svg svg { transform-origin: 50% 50%; }
+        .btn-reset:hover .icon-svg svg { animation: spin-reset-once 0.6s linear; }
 
         /* 主卡片 */
         .card{
@@ -256,15 +244,11 @@
             border-color:#111827;
             box-shadow:0 4px 10px rgba(15,23,42,0.25);
         }
-        .ttl-btn:hover{
-            border-color:var(--accent2);
-        }
+        .ttl-btn:hover{ border-color:var(--accent2); }
         .ttl-btn[disabled]{opacity:.45;cursor:not-allowed;}
         .ttl-hint{font-size:11px;color:var(--text-sub);margin-top:6px;}
 
-        .textarea-wrap{
-            position:relative;
-        }
+        .textarea-wrap{ position:relative; }
         textarea{
             width:100%;
             min-height:220px;
@@ -356,9 +340,7 @@
             font-size:11px;
         }
         body.theme-light .upload-btn{background:#ffffff;}
-        .upload-btn:hover{
-            border-style:solid;
-        }
+        .upload-btn:hover{ border-style:solid; }
 
         .result-box{
             font-size:12px;color:var(--text-sub);
@@ -443,16 +425,6 @@
             color:inherit;padding:6px 10px;
         }
         body.theme-light .auth-panel-row input{background:#ffffff;}
-                .auth-remember{
-            display:flex;
-            align-items:center;
-            gap:6px;
-            font-size:11px;
-            opacity:.85;
-        }
-        .auth-remember input{
-            margin:0;
-        }
         .auth-panel-actions{display:flex;gap:6px;justify-content:flex-end;}
         .auth-panel-msg{font-size:11px;min-height:1.2em;}
         .auth-panel-msg.success{color:#4ade80;}
@@ -768,18 +740,14 @@
             <div class="auth-panel-row">
                 <input id="authUsername" type="text" placeholder="用户名" autocomplete="username">
                 <input id="authPassword" type="password" placeholder="密码（至少 6 位）" autocomplete="current-password">
-                            <form class="auth-panel-form" id="authForm">
-            <div class="auth-panel-row">
-                <input id="authUsername" type="text" placeholder="用户名" autocomplete="username">
-                <input id="authPassword" type="password" placeholder="密码（至少 6 位）" autocomplete="current-password">
-                <!-- ✅ 新增：记住登录状态（默认勾选） -->
-                <label class="auth-remember">
-                    <input type="checkbox" id="rememberMe" checked>
-                    <span>记住状态</span>
-                </label>
             </div>
-            <div class="auth-panel-actions">
-            </div>
+
+            <!-- ✨ 记住登录状态（默认已勾选） -->
+            <label style="display:flex;align-items:center;gap:6px;font-size:11px;opacity:.9;margin-top:2px;">
+                <input id="authRemember" type="checkbox" checked style="width:12px;height:12px;">
+                <span>记住登录状态</span>
+            </label>
+
             <div class="auth-panel-actions">
                 <button type="button" class="btn-secondary btn-xs" id="btnDoRegister">
                     <span class="icon-svg">
@@ -870,7 +838,7 @@
     }
 
     (function(){
-        let t="light"; // 默认白天模式
+        let t="light";
         try{
             const s=localStorage.getItem(THEME_KEY);
             if(s==="dark"||s==="light")t=s;
@@ -927,10 +895,7 @@
     const $authForm=qs("authForm");
     const $authUsername=qs("authUsername");
     const $authPassword=qs("authPassword");
-    const $authUsername=qs("authUsername");
-    const $authPassword=qs("authPassword");
-    const $rememberMe=qs("rememberMe");   // ✅ 新增：记住登录复选框
-    const $btnDoLogin=qs("btnDoLogin");
+    const $authRemember=qs("authRemember");  // ✨ 新增：记住登录
     const $btnDoLogin=qs("btnDoLogin");
     const $btnDoRegister=qs("btnDoRegister");
     const $authCloseBtn=qs("authCloseBtn");
@@ -951,7 +916,7 @@
         ttlKey:"7d",
         customSlugError:false,
         isSubmitting:false,
-        mode:"create",   // create | edit
+        mode:"create",
         originalSlug:null
     };
 
@@ -988,7 +953,6 @@
         return data;
     }
 
-    // 字节 + 行数统计
     function updateByteCount(){
         if(!$content||!$byteNum)return;
         let len=0;
@@ -1007,7 +971,6 @@
         $content.addEventListener("input",updateByteCount);
     }
 
-    // 文件导入
     if($uploadBtn&&$fileInput){
         $uploadBtn.addEventListener("click",e=>{
             e.preventDefault();
@@ -1041,7 +1004,6 @@
         });
     }
 
-    // 重置：清空内容 + 备注，不动 TTL
     if($btnResetContent){
         $btnResetContent.addEventListener("click",()=>{
             if($content)$content.value="";
@@ -1051,7 +1013,6 @@
         });
     }
 
-    // TTL
     const ttlText={
         "10m":"内容将在 10 分钟后过期。",
         "1d":"内容将在 1 天后过期。",
@@ -1080,7 +1041,6 @@
         });
     }
 
-    // 自定义 URL 校验
     function validateCustomSlug(){
         state.customSlugError=false;
         if(!$customId)return;
@@ -1119,7 +1079,6 @@
     }
     if($customId)$customId.addEventListener("input",validateCustomSlug);
 
-    // 回到创建模式（首页）
     function enterCreateMode(clear){
         state.mode="create";
         state.originalSlug=null;
@@ -1145,37 +1104,35 @@
         });
     }
 
-    // 登录状态 UI
     function applyAuthUI(){
-    if($btnAuthLabel){
-        $btnAuthLabel.textContent = state.loggedIn ? (state.username || "用户") : "登录";
-    }
+        if($btnAuthLabel){
+            $btnAuthLabel.textContent = state.loggedIn ? (state.username || "用户") : "登录";
+        }
 
-    // 高级设置：只有登录后才显示
-    if($advancedSection){
-        $advancedSection.style.display = state.loggedIn ? "" : "none";
-    }
+        if($advancedSection){
+            $advancedSection.style.display = state.loggedIn ? "" : "none";
+        }
 
-    // 未登录时禁止选择 Never，且如果当前是 forever 就退回 7d
-    if ($ttlForeverBtn) {
-        if (state.loggedIn) {
-            $ttlForeverBtn.disabled = false;
-        } else {
-            $ttlForeverBtn.disabled = true;
-            if (state.ttlKey === "forever") {
-                setTtl("7d");   // 强制切回 7 天
+        if ($ttlForeverBtn) {
+            if (state.loggedIn) {
+                $ttlForeverBtn.disabled = false;
+            } else {
+                $ttlForeverBtn.disabled = true;
+                if (state.ttlKey === "forever") {
+                    setTtl("7d");
+                }
             }
         }
+
+        validateCustomSlug();
     }
 
-    validateCustomSlug();
-}
     function setLoggedIn(username){
         state.loggedIn = true;
         state.username = username || "用户";
         try { localStorage.setItem("pbx_username", state.username); } catch(_) {}
 
-        // ✅ 已登录时默认改为「Never(不过期)」
+        // 登录后默认改为「Never(不过期)」
         setTtl("forever");
 
         applyAuthUI();
@@ -1204,7 +1161,6 @@
         }
     }
 
-    // 登录弹窗
     function openAuthModal(){
         if(!$authModal)return;
         $authModal.style.display="flex";
@@ -1215,6 +1171,8 @@
         if(!$authModal)return;
         $authModal.style.display="none";
         if($authForm)$authForm.reset();
+        // 默认勾选「记住登录」
+        if($authRemember) $authRemember.checked = true;
         setAuthTip("");
     }
     if($authCloseBtn)$authCloseBtn.addEventListener("click",closeAuthModal);
@@ -1224,7 +1182,6 @@
         });
     }
 
-    // 用户中心弹层
     function openUserCenter(){
         if(!$userCenter)return;
         $userCenter.style.display="flex";
@@ -1241,7 +1198,6 @@
         });
     }
 
-    // 顶部用户按钮
     if($btnAuthOpen){
         $btnAuthOpen.addEventListener("click",()=>{
             if(state.loggedIn)openUserCenter();
@@ -1249,28 +1205,23 @@
         });
     }
 
-        // 登录 / 注册
     if($authForm){
         $authForm.addEventListener("submit",async e=>{
             e.preventDefault();
             const u=$authUsername.value.trim();
             const p=$authPassword.value;
+            const remember = $authRemember ? $authRemember.checked : true; // ✨ 使用记住状态
 
             if(!u||!p){
                 setAuthTip("用户名和密码不能为空。","error");
                 return;
             }
-
-            // ✅ 新增：读取“记住登录状态”（默认 true）
-            const remember = $rememberMe ? $rememberMe.checked : true;
-
             setAuthTip("登录中…");
             try{
-                // ✅ 新增 remember 字段
                 const data=await postJSON(AUTH_BASE+"/login",{
                     username:u,
                     password:p,
-                    remember: remember
+                    remember
                 });
                 setLoggedIn(data.username||u);
                 setAuthTip("登录成功。","success");
@@ -1296,7 +1247,6 @@
         });
     }
 
-    // 用户中心列表工具
     function formatDate(d){
         if(!d)return"-";
         const dt=new Date(d);
@@ -1354,7 +1304,7 @@
                     const d=await r.json().catch(()=>null);
                     if(!d||d.ok===false)return;
                     const remain=calcRemainDays(d.expiresAt);
-                    if(remain!=null && remain<0)return; // 过期的不要
+                    if(remain!=null && remain<0)return;
                     valid.push(d);
                 }catch(_){}
             }));
@@ -1485,7 +1435,6 @@
         });
     }
 
-    // 编辑模式
     async function enterEditMode(slug){
         state.mode="edit";
         state.originalSlug=slug;
@@ -1521,7 +1470,6 @@
         }
     }
 
-    // 结果链接显示
     function showResultLink(slug){
         if(!$resultBox||!$viewLinkText)return;
         const url=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
@@ -1561,7 +1509,6 @@
         });
     }
 
-    // 提交
     if($form){
         $form.addEventListener("submit",async e=>{
             e.preventDefault();
@@ -1607,7 +1554,6 @@
                 if(!finalSlug)throw new Error("返回数据缺少 slug。");
                 showResultLink(finalSlug);
 
-                // 上传 / 更新成功后，清空内容 & 回到创建模式，但保留下方结果区域
                 if(state.mode==="edit"){
                     setStatus("更新成功，已回到主页。","success");
                 }else{
@@ -1628,10 +1574,8 @@
         });
     }
 
-    // 访问入口
     if($baseUrlText)$baseUrlText.textContent=VIEW_BASE+"/{id}";
 
-    // ESC 关闭弹窗
     document.addEventListener("keydown",e=>{
         if(e.key==="Escape"){
             if($userCenter&&$userCenter.style.display==="flex")closeUserCenter();
