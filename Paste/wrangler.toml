@@ -1,0 +1,13 @@
+name = "paste"                      # Worker 的名字（随便叫，自己认得就行）
+main = "src/index.js"               # 入口文件
+compatibility_date = "2024-01-01"
+
+# 路由：把 aura.us.kg/api/paste* 丢给这个 Worker
+[[routes]]
+pattern = "aura.us.kg/api/paste*"
+zone_name = "aura.us.kg"
+
+# KV 绑定：用你已有的 Paste_KV
+[[kv_namespaces]]
+binding = "Paste_KV"                     # 代码里用 env.Paste_KV
+id = "0cbff5cb99e74e18942a6d3c5efbe94c" # 你给我的那个 ID
