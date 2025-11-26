@@ -1122,17 +1122,29 @@
 
     // 登录状态 UI
     function applyAuthUI(){
-        if($btnAuthLabel){
-            $btnAuthLabel.textContent=state.loggedIn?(state.username||"用户"):"LogIn";
-        }
-        if($advancedSection){
-            $advancedSection.style.display=state.loggedIn?"":"none";
-        }
-        if($btnManageFromResult){
-            $btnManageFromResult.style.display = state.loggedIn ? "inline-flex" : "none";
-        }
-        validateCustomSlug();
+    if($btnAuthLabel){
+        $btnAuthLabel.textContent = state.loggedIn ? (state.username || "用户") : "登录";
     }
+
+    // 高级设置：只有登录后才显示
+    if($advancedSection){
+        $advancedSection.style.display = state.loggedIn ? "" : "none";
+    }
+
+    // 未登录时禁止选择 Never，且如果当前是 forever 就退回 7d
+    if ($ttlForeverBtn) {
+        if (state.loggedIn) {
+            $ttlForeverBtn.disabled = false;
+        } else {
+            $ttlForeverBtn.disabled = true;
+            if (state.ttlKey === "forever") {
+                setTtl("7d");   // 强制切回 7 天
+            }
+        }
+    }
+
+    validateCustomSlug();
+}
     function setLoggedIn(username){
         state.loggedIn = true;
         state.username = username || "用户";
