@@ -2,27 +2,27 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Lyn · Private Archive</title>
+    <title>LYN PRIVÉ · Private Vault</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- 高级感字体 -->
+    <!-- 字体：英文用 Poppins + Playfair，更有大牌感 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Playfair+Display:wght@500;600;700&display=swap"
         rel="stylesheet">
 
     <style>
         * { box-sizing: border-box; }
 
         :root {
-            --bg-main: #050608;
-            --bg-panel: rgba(7, 9, 14, 0.98);
-            --bg-card: rgba(10, 13, 20, 0.98);
-            --border-soft: rgba(120, 126, 148, 0.5);
+            --bg-main: #03040a;
+            --bg-card: rgba(7, 9, 16, 0.94);
+            --bg-glass: rgba(8, 11, 20, 0.94);
+            --border-soft: rgba(148, 163, 184, 0.55);
             --accent-gold: #e9c46a;
-            --accent-gold-soft: rgba(233, 196, 106, 0.22);
-            --accent-blue: #64b5f6;
+            --accent-gold-soft: rgba(233, 196, 106, 0.18);
+            --accent-blue: #7fb4ff;
             --accent-rose: #f48fb1;
             --text-main: #e5e7eb;
             --text-secondary: #9ca3af;
@@ -38,7 +38,7 @@
             font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             color: var(--text-main);
             background:
-                    radial-gradient(circle at 0% 0%, rgba(100, 181, 246, 0.18), transparent 55%),
+                    radial-gradient(circle at 0% 0%, rgba(127, 180, 255, 0.16), transparent 55%),
                     radial-gradient(circle at 100% 100%, rgba(244, 143, 177, 0.16), transparent 55%),
                     radial-gradient(circle at 50% 120%, rgba(233, 196, 106, 0.18), transparent 50%),
                     var(--bg-main);
@@ -50,49 +50,41 @@
 
         .shell {
             width: 100%;
-            max-width: 1180px;
-            min-height: 540px;
-            display: grid;
-            grid-template-columns: 280px minmax(0, 1fr);
-            background: radial-gradient(circle at top left, rgba(233, 196, 106, 0.16), transparent 60%), var(--bg-panel);
-            border-radius: 24px;
+            max-width: 1080px;
+            min-height: 520px;
+            background:
+                    radial-gradient(circle at top center, rgba(255, 255, 255, 0.06), transparent 55%),
+                    var(--bg-glass);
+            border-radius: 26px;
             border: 1px solid rgba(148, 163, 184, 0.65);
             box-shadow:
-                    0 32px 60px rgba(0, 0, 0, 0.9),
-                    0 0 60px rgba(100, 181, 246, 0.18);
+                    0 32px 70px rgba(0, 0, 0, 0.9),
+                    0 0 70px rgba(127, 180, 255, 0.18);
+            position: relative;
             overflow: hidden;
-            position: relative;
+            padding: 22px 24px 20px;
         }
 
-        /* ================= 左侧品牌栏 ================= */
-        .brand-side {
-            position: relative;
-            padding: 26px 22px 22px 26px;
-            border-right: 1px solid rgba(148, 163, 184, 0.6);
-            background:
-                    radial-gradient(circle at 0% 0%, rgba(100, 181, 246, 0.24), transparent 60%),
-                    radial-gradient(circle at 100% 100%, rgba(244, 143, 177, 0.24), transparent 60%),
-                    linear-gradient(160deg, #020617, #020617, #020617);
-        }
-
-        .brand-logo {
+        /* 顶部品牌条 */
+        .topbar {
             display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 26px;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
         }
 
-        .brand-main {
+        .brand {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
         .brand-mark {
-            width: 34px;
-            height: 34px;
+            width: 32px;
+            height: 32px;
             border-radius: 999px;
-            border: 1px solid rgba(248, 250, 252, 0.5);
+            border: 1px solid rgba(248, 250, 252, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -104,116 +96,33 @@
                     #020617;
             box-shadow:
                     0 0 0 1px rgba(15, 23, 42, 1),
-                    0 14px 28px rgba(0, 0, 0, 0.9);
-        }
-
-        .brand-title {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .brand-title-main {
-            font-family: "Playfair Display", serif;
-            letter-spacing: 0.22em;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-        }
-
-        .brand-title-sub {
-            font-size: 0.7rem;
-            color: rgba(209, 213, 219, 0.8);
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-        }
-
-        .brand-divider {
-            margin-top: 4px;
-            height: 1px;
-            width: 90%;
-            background: linear-gradient(90deg, rgba(249, 250, 251, 0.8), transparent);
-        }
-
-        .brand-block {
-            margin-top: 24px;
-            padding-right: 8px;
-        }
-
-        .brand-heading-cn {
-            font-size: 1.1rem;
-            letter-spacing: 0.24em;
-            text-transform: uppercase;
-            color: #f9fafb;
-            margin-bottom: 6px;
-        }
-
-        .brand-heading-en {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.22em;
-            color: rgba(209, 213, 219, 0.7);
-            margin-bottom: 12px;
+                    0 14px 26px rgba(0, 0, 0, 0.9);
         }
 
         .brand-text {
-            font-size: 0.8rem;
-            color: rgba(209, 213, 219, 0.8);
-            line-height: 1.7;
-        }
-
-        .brand-badge {
-            position: absolute;
-            left: 24px;
-            bottom: 22px;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.18em;
-            color: rgba(209, 213, 219, 0.85);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .brand-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 999px;
-            background: #22c55e;
-            box-shadow: 0 0 8px rgba(34, 197, 94, 1);
-        }
-
-        /* ================= 右侧内容区 ================= */
-        .content-side {
-            position: relative;
-            padding: 20px 24px 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .content-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 12px;
-        }
-
-        .content-top-left {
             display: flex;
             flex-direction: column;
             gap: 2px;
         }
 
-        .content-title {
-            font-size: 0.9rem;
+        .brand-main {
+            font-family: "Playfair Display", serif;
+            letter-spacing: 0.18em;
+            font-size: 0.85rem;
             text-transform: uppercase;
-            letter-spacing: 0.22em;
-            color: rgba(209, 213, 219, 0.9);
         }
 
-        .content-subtitle {
-            font-size: 0.78rem;
-            color: var(--text-secondary);
+        .brand-sub {
+            font-size: 0.7rem;
+            color: rgba(209, 213, 219, 0.8);
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
+        .top-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .pill-time {
@@ -228,8 +137,8 @@
         }
 
         .pill-time-dot {
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             border-radius: 999px;
             background: #22c55e;
             box-shadow: 0 0 8px rgba(34, 197, 94, 1);
@@ -238,10 +147,10 @@
         .btn-ghost {
             border-radius: 999px;
             border: 1px solid rgba(148, 163, 184, 0.7);
-            background: rgba(10, 13, 20, 0.95);
+            background: rgba(7, 10, 18, 0.95);
             color: var(--text-main);
             font-size: 0.75rem;
-            padding: 4px 10px;
+            padding: 4px 9px;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
@@ -249,14 +158,18 @@
             transition: border-color .15s ease, background .15s ease, transform .08s ease;
         }
 
+        .btn-ghost svg {
+            width: 14px;
+            height: 14px;
+            stroke: var(--text-main);
+        }
+
         .btn-ghost:hover {
             border-color: var(--accent-blue);
             background: rgba(15, 23, 42, 1);
         }
 
-        .btn-ghost:active {
-            transform: translateY(1px);
-        }
+        .btn-ghost:active { transform: translateY(1px); }
 
         .btn-main {
             border-radius: 999px;
@@ -276,7 +189,7 @@
             transition: transform .1s ease, box-shadow .1s ease, filter .1s ease;
         }
 
-        .btn-main:hover { filter: brightness(1.02); }
+        .btn-main:hover { filter: brightness(1.03); }
         .btn-main:active {
             transform: translateY(1px) scale(0.99);
             box-shadow:
@@ -285,49 +198,176 @@
         }
 
         .hint-small {
-            font-size: 0.73rem;
+            font-size: 0.72rem;
             color: var(--text-secondary);
         }
 
         .hint-highlight { color: var(--accent-gold); }
 
-        /* ================= 登录面板 ================= */
+        /* 中间内容区域：一个大玻璃柜 */
+        .vault-shell {
+            position: absolute;
+            inset: 70px 32px 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @media (max-width: 720px) {
+            .shell { padding: 18px 14px 16px; border-radius: 22px; }
+            .vault-shell { inset: 64px 10px 18px; }
+        }
+
+        .vault-card {
+            width: 100%;
+            max-width: 780px;
+            min-height: 380px;
+            border-radius: 24px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            background:
+                    radial-gradient(circle at top center, rgba(255, 255, 255, 0.08), transparent 60%),
+                    var(--bg-card);
+            box-shadow:
+                    0 26px 50px rgba(0, 0, 0, 0.9),
+                    0 0 40px rgba(148, 163, 184, 0.3);
+            padding: 20px 22px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vault-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                    radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.3), transparent 55%),
+                    radial-gradient(circle at 100% 100%, rgba(233, 196, 106, 0.2), transparent 55%);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .vault-inner {
+            position: relative;
+            z-index: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vault-title-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .vault-title-main {
+            font-family: "Playfair Display", serif;
+            font-size: 1.05rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
+        .vault-title-sub {
+            font-size: 0.73rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .vault-status {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-align: right;
+        }
+
+        /* 登录布局：中心密码徽章 */
         #login-panel {
             flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
             animation: fadeIn .4s ease-out;
         }
 
-        .login-card {
-            max-width: 440px;
-            padding: 18px 18px 14px;
-            border-radius: 18px;
-            border: 1px solid rgba(148, 163, 184, 0.6);
-            background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.16), transparent 60%), var(--bg-card);
-            box-shadow: 0 22px 44px rgba(0, 0, 0, .9);
+        .login-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
         }
 
-        .login-title {
-            font-size: 0.95rem;
-            letter-spacing: 0.2em;
+        .login-badge {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.8);
+            background:
+                    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.16), transparent 65%),
+                    #020617;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                    0 0 0 1px rgba(15, 23, 42, 1),
+                    0 24px 40px rgba(0, 0, 0, 0.9);
+        }
+
+        .login-badge-ring {
+            position: absolute;
+            inset: 10px;
+            border-radius: 999px;
+            border: 1px dashed rgba(148, 163, 184, 0.7);
+            opacity: 0.85;
+        }
+
+        .login-badge-inner {
+            position: relative;
+            width: 70px;
+            height: 70px;
+            border-radius: 999px;
+            border: 1px solid rgba(248, 250, 252, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.4), transparent 65%);
+        }
+
+        .login-badge-inner svg {
+            width: 30px;
+            height: 30px;
+            stroke: #f9fafb;
+        }
+
+        .login-title-cn {
+            font-size: 0.9rem;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
-            margin-bottom: 4px;
-            color: #f9fafb;
         }
 
-        .login-subtitle {
-            font-size: 0.8rem;
+        .login-title-en {
+            font-size: 0.72rem;
             color: var(--text-secondary);
-            margin-bottom: 12px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
+        .login-form {
+            max-width: 360px;
+            margin: 0 auto;
+            margin-top: 10px;
         }
 
         .field-label {
-            font-size: 0.75rem;
+            font-size: 0.73rem;
             color: var(--text-secondary);
-            margin-bottom: 4px;
+            margin-bottom: 5px;
         }
 
         .input-wrapper {
@@ -337,10 +377,10 @@
         .input-base {
             width: 100%;
             border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.75);
-            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(148, 163, 184, 0.8);
+            background: rgba(7, 10, 18, 0.96);
             color: var(--text-main);
-            padding: 9px 44px 9px 13px;
+            padding: 9px 42px 9px 14px;
             font-size: 0.83rem;
             outline: none;
             transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
@@ -348,8 +388,8 @@
 
         .input-base:focus {
             border-color: var(--accent-gold);
-            box-shadow: 0 0 0 1px rgba(233, 196, 106, 0.65);
-            background: rgba(15, 23, 42, 1);
+            box-shadow: 0 0 0 1px rgba(233, 196, 106, 0.6);
+            background: rgba(7, 10, 18, 1);
         }
 
         #toggle-visibility {
@@ -372,66 +412,43 @@
             stroke: var(--text-secondary);
         }
 
-        #toggle-visibility .icon-eye-closed {
-            display: none;
-        }
-
-        #toggle-visibility.show-closed .icon-eye-open {
-            display: none;
-        }
-
-        #toggle-visibility.show-closed .icon-eye-closed {
-            display: block;
-        }
+        #toggle-visibility .icon-eye-closed { display: none; }
+        #toggle-visibility.show-closed .icon-eye-open { display: none; }
+        #toggle-visibility.show-closed .icon-eye-closed { display: block; }
 
         #login-error {
             margin-top: 6px;
             font-size: 0.75rem;
             color: #fb7185;
             min-height: 1em;
+            text-align: center;
         }
 
-        .login-hint-box {
-            max-width: 440px;
-            font-size: 0.72rem;
-            color: var(--text-secondary);
-            border-radius: 14px;
-            border: 1px dashed rgba(148, 163, 184, 0.85);
-            background: rgba(15, 23, 42, 0.92);
-            padding: 10px 11px;
-            line-height: 1.6;
-        }
-
-        .login-footer {
-            max-width: 440px;
+        .login-hint {
+            margin-top: 10px;
             font-size: 0.7rem;
             color: var(--text-secondary);
+            text-align: center;
         }
 
-        /* ================= 主应用面板 ================= */
+        /* 主界面 */
         #app-panel {
             flex: 1;
             display: none;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
             animation: fadeIn .4s ease-out;
         }
 
-        .app-topline {
+        .app-header {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
-            gap: 10px;
-        }
-
-        .app-topline-left {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+            gap: 8px;
         }
 
         .app-greeting {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
         }
 
         .app-greeting span {
@@ -440,58 +457,58 @@
         }
 
         .app-last {
-            font-size: 0.73rem;
+            font-size: 0.72rem;
             color: var(--text-secondary);
         }
 
-        .grid-main {
-            flex: 1;
+        .tiles-grid {
+            margin-top: 10px;
             display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: 12px;
-        }
-
-        @media (max-width: 900px) {
-            .shell { grid-template-columns: 1fr; }
-            .brand-side { display: none; }
-        }
-
-        @media (max-width: 720px) {
-            body { padding: 10px; }
-            .shell { border-radius: 20px; }
-            .content-side { padding: 16px 14px 14px; }
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
         }
 
         @media (max-width: 640px) {
-            .grid-main { grid-template-columns: 1fr; }
+            .tiles-grid { grid-template-columns: 1fr; }
         }
 
-        .drawer {
-            border-radius: 18px;
-            border: 1px solid var(--border-soft);
-            background:
-                    radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.06), transparent 55%),
-                    var(--bg-card);
-            padding: 10px 12px 10px;
+        .tile {
             position: relative;
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            background:
+                    radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.08), transparent 55%),
+                    rgba(5, 8, 15, 0.96);
+            padding: 10px 11px 8px;
+            cursor: pointer;
             overflow: hidden;
+            transition: border-color .15s ease, box-shadow .15s ease, transform .08s ease, background .15s ease;
         }
 
-        .drawer-header {
+        .tile:hover {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 18px rgba(233, 196, 106, 0.3);
+            background:
+                    radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.1), transparent 55%),
+                    rgba(7, 11, 19, 1);
+        }
+
+        .tile:active { transform: translateY(1px); }
+
+        .tile-head {
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 8px;
-            margin-bottom: 4px;
         }
 
-        .drawer-info {
+        .tile-info {
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .drawer-icon {
+        .tile-icon {
             width: 24px;
             height: 24px;
             border-radius: 999px;
@@ -499,67 +516,75 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: radial-gradient(circle at 30% 0, rgba(255, 255, 255, 0.2), transparent 65%);
+            background: radial-gradient(circle at 30% 0, rgba(255, 255, 255, 0.18), transparent 70%);
         }
 
-        .drawer-icon svg {
+        .tile-icon svg {
             width: 14px;
             height: 14px;
-            stroke: rgba(229, 231, 235, 0.95);
+            stroke: #f9fafb;
         }
 
-        .drawer-title-main {
-            font-size: 0.86rem;
+        .tile-title {
+            font-size: 0.84rem;
             font-weight: 500;
         }
 
-        .drawer-title-sub {
+        .tile-sub {
             font-size: 0.7rem;
             color: var(--text-secondary);
         }
 
-        .drawer-tag {
-            font-size: 0.68rem;
+        .tile-tag {
+            font-size: 0.66rem;
             text-transform: uppercase;
-            letter-spacing: 0.12em;
-            padding: 2px 7px;
+            letter-spacing: 0.14em;
+            padding: 2px 6px;
             border-radius: 999px;
-            border: 1px solid rgba(156, 163, 175, 0.75);
+            border: 1px solid rgba(156, 163, 175, 0.85);
             color: rgba(209, 213, 219, 0.9);
         }
 
-        .drawer-tag-gold {
-            border-color: rgba(233, 196, 106, 0.95);
+        .tile-tag-gold {
+            border-color: rgba(233, 196, 106, 1);
             background: var(--accent-gold-soft);
             color: var(--accent-gold);
         }
 
-        .drawer-body {
+        .tile-preview {
             margin-top: 4px;
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .drawer-desc {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
-            line-height: 1.6;
+        .tile-content {
+            margin-top: 6px;
+            border-top: 1px solid rgba(55, 65, 81, 0.7);
+            padding-top: 5px;
+            display: none;
+        }
+
+        .tile.open .tile-content {
+            display: block;
         }
 
         .note-shell {
             position: relative;
-            border-radius: 14px;
+            border-radius: 12px;
             border: 1px solid rgba(148, 163, 184, 0.75);
-            background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.1), transparent 60%), rgba(15, 23, 42, 0.96);
-            overflow: hidden;
+            background: rgba(10, 13, 22, 0.96);
         }
 
         .note-label {
             position: absolute;
-            top: 7px;
-            right: 10px;
-            font-size: 0.66rem;
+            top: 6px;
+            right: 9px;
+            font-size: 0.64rem;
             text-transform: uppercase;
-            letter-spacing: 0.16em;
+            letter-spacing: 0.15em;
             color: rgba(148, 163, 184, 0.9);
         }
 
@@ -569,31 +594,17 @@
             background: transparent;
             color: var(--text-main);
             font-size: 0.78rem;
-            padding: 9px 8px 8px;
-            min-height: 110px;
+            padding: 8px 8px 7px;
+            min-height: 80px;
             resize: vertical;
             outline: none;
-        }
-
-        .drawer-footnote {
-            margin-top: 4px;
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-        }
-
-        .ribbon {
-            margin-top: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 8px;
-            border-top: 1px solid rgba(75, 85, 99, 0.6);
-            padding-top: 6px;
         }
 
         .status-line {
             font-size: 0.72rem;
             color: var(--text-secondary);
+            text-align: right;
+            margin-top: 4px;
         }
 
         .status-success { color: #4ade80; }
@@ -619,294 +630,251 @@
 </head>
 <body>
 <div class="shell">
-
-    <!-- ========== 左侧品牌：LYN PRIVÉ ========== -->
-    <aside class="brand-side">
-        <div class="brand-logo">
-            <div class="brand-main">
-                <div class="brand-mark">L</div>
-                <div class="brand-title">
-                    <div class="brand-title-main">LYN PRIVÉ</div>
-                    <div class="brand-title-sub">PERSONAL ARCHIVE</div>
-                </div>
-            </div>
-            <div class="brand-divider"></div>
-        </div>
-
-        <div class="brand-block">
-            <div class="brand-heading-cn">隐私柜</div>
-            <div class="brand-heading-en">CURATED BY LYN</div>
+    <!-- 顶部品牌条 -->
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-mark">L</div>
             <div class="brand-text">
-                这是一只只属于 Lyn 的私密抽屉。<br>
-                书签、备忘、账号线索与零碎生活，被主密码封存在一处。<br>
-                明文只在你的浏览器停留，云端只保留难以解读的密文。
+                <div class="brand-main">LYN PRIVÉ</div>
+                <div class="brand-sub">PRIVATE ARCHIVE</div>
             </div>
         </div>
-
-        <div class="brand-badge">
-            <span class="brand-dot"></span>
-            <span>CLIENT-SIDE ENCRYPTION ONLY</span>
+        <div class="top-right">
+            <div class="pill-time">
+                <span class="pill-time-dot"></span>
+                <span id="time-text">--:--:--</span>
+            </div>
+            <button id="btn-lock" class="btn-ghost" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 11V8a5 5 0 0 1 10 0v3"/>
+                    <rect x="5" y="11" width="14" height="10" rx="2" ry="2"/>
+                    <path d="M12 15v3"/>
+                </svg>
+                <span>Lock</span>
+            </button>
         </div>
-    </aside>
+    </header>
 
-    <!-- ========== 右侧：登录 + 主界面 ========== -->
-    <main class="content-side">
-
-        <!-- 顶部栏 -->
-        <header class="content-top">
-            <div class="content-top-left">
-                <div class="content-title">LYN · PRIVATE ARCHIVE</div>
-                <div class="content-subtitle">
-                    个人使用 · Master Password 驱动的加密空间
-                </div>
-            </div>
-            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
-                <div class="pill-time">
-                    <span class="pill-time-dot"></span>
-                    <span id="time-text">--:--:--</span>
-                </div>
-                <button id="btn-lock" class="btn-ghost" style="display:none;">
-                    <!-- svg 锁图标 -->
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M7 11V8a5 5 0 0 1 10 0v3"/>
-                        <rect x="5" y="11" width="14" height="10" rx="2" ry="2"/>
-                        <path d="M12 15v3"/>
-                    </svg>
-                    <span>Lock</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- 登录面板 -->
-        <section id="login-panel">
-            <div class="login-card">
-                <div class="login-title">MASTER PASSWORD</div>
-                <div class="login-subtitle">
-                    使用主密码解锁 Lyn 的隐私柜。主密码仅在本地参与加解密，不会传输到 Cloudflare。
-                </div>
-
-                <label for="master-password" class="field-label">主密码 / Master Password</label>
-                <div class="input-wrapper">
-                    <input id="master-password"
-                           type="password"
-                           class="input-base"
-                           placeholder="第一次使用时，在这里设置你的主密码">
-                    <button id="toggle-visibility" type="button" aria-label="Toggle password visibility">
-                        <!-- eye open -->
-                        <svg class="icon-eye-open" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"/>
-                            <circle cx="12" cy="12" r="3"/>
-                        </svg>
-                        <!-- eye closed -->
-                        <svg class="icon-eye-closed" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 3l18 18"/>
-                            <path d="M10.6 10.6A2 2 0 0 0 13.4 13.4"/>
-                            <path d="M9.9 4.24A10.82 10.82 0 0 1 12 4c7 0 11 8 11 8a16.3 16.3 0 0 1-2.11 3.34"/>
-                            <path d="M6.61 6.61A10.86 10.86 0 0 0 1 12s4 8 11 8a10.82 10.82 0 0 0 3.76-.67"/>
-                        </svg>
-                    </button>
-                </div>
-
-                <div style="margin-top: 10px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                    <button id="btn-unlock" class="btn-main">
-                        解锁 Lyn 的隐私柜
-                    </button>
-                    <div class="hint-small">
-                        首次无数据时，将自动创建新的加密仓库。
+    <!-- 中央玻璃保险柜 -->
+    <div class="vault-shell">
+        <div class="vault-card">
+            <div class="vault-inner">
+                <div class="vault-title-line">
+                    <div>
+                        <div class="vault-title-main">PRIVATE VAULT</div>
+                        <div class="vault-title-sub">CURATED BY LYN · CLIENT-SIDE ENCRYPTION</div>
                     </div>
-                </div>
-
-                <div id="login-error"></div>
-            </div>
-
-            <div class="login-hint-box">
-                · 初次使用：如云端还没有数据，你当前输入的主密码将用于创建新的加密仓库。<br>
-                · 之后每次解锁，都必须使用同一主密码。<br>
-                · <span class="hint-highlight">主密码一旦遗忘，数据无法恢复，系统不会记录它的任何副本。</span><br>
-                · 云端 KV 中仅保存 <code>salt / iv / ciphertext</code>，即密文数据。
-            </div>
-
-            <div class="login-footer">
-                建议：本页地址不要放在公开导航，只作为 Lyn 自己的隐蔽入口。
-            </div>
-        </section>
-
-        <!-- 主界面 -->
-        <section id="app-panel">
-            <div class="app-topline">
-                <div class="app-topline-left">
-                    <div class="app-greeting">Welcome back, <span>Lyn</span>.</div>
-                    <div id="last-updated" class="app-last">
+                    <div class="vault-status" id="last-updated">
                         上次保存时间：尚未保存
                     </div>
                 </div>
+
+                <!-- 登录面板 -->
+                <section id="login-panel">
+                    <div class="login-center">
+                        <div class="login-badge">
+                            <div class="login-badge-ring"></div>
+                            <div class="login-badge-inner">
+                                <!-- svg key -->
+                                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="7.5" cy="15.5" r="2.5"/>
+                                    <path d="M9.7 13.3 19 4a2.12 2.12 0 0 1 3 3l-9.3 9.3"/>
+                                    <path d="m10.5 16.5 2 2"/>
+                                    <path d="m9.5 17.5 2 2"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="login-title-cn">隐私柜</div>
+                        <div class="login-title-en">MASTER PASSWORD · LYN</div>
+                    </div>
+
+                    <div class="login-form">
+                        <div class="field-label">主密码 / Master Password</div>
+                        <div class="input-wrapper">
+                            <input id="master-password"
+                                   type="password"
+                                   class="input-base"
+                                   placeholder="第一次使用时，在这里设置你的主密码">
+                            <button id="toggle-visibility" type="button" aria-label="Toggle password visibility">
+                                <!-- eye open -->
+                                <svg class="icon-eye-open" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <!-- eye closed -->
+                                <svg class="icon-eye-closed" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 3l18 18"/>
+                                    <path d="M10.6 10.6A2 2 0 0 0 13.4 13.4"/>
+                                    <path d="M9.9 4.24A10.82 10.82 0 0 1 12 4c7 0 11 8 11 8a16.3 16.3 0 0 1-2.11 3.34"/>
+                                    <path d="M6.61 6.61A10.86 10.86 0 0 0 1 12s4 8 11 8a10.82 10.82 0 0 0 3.76-.67"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div style="margin-top: 10px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                            <button id="btn-unlock" class="btn-main">
+                                解锁 Lyn 的隐私柜
+                            </button>
+                            <div class="hint-small">
+                                首次无数据时，将自动创建新的加密仓库。
+                            </div>
+                        </div>
+
+                        <div id="login-error"></div>
+                        <div class="login-hint">
+                            主密码仅在本地参与加解密，不会传输到 Cloudflare；<br>
+                            <span class="hint-highlight">一旦遗忘，将无法恢复任何内容。</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 主界面 -->
+                <section id="app-panel">
+                    <div class="app-header">
+                        <div class="app-greeting">Welcome back, <span>Lyn</span>.</div>
+                    </div>
+
+                    <div class="tiles-grid">
+                        <!-- 书签 -->
+                        <article class="tile" data-tile="bookmarks">
+                            <div class="tile-head">
+                                <div class="tile-info">
+                                    <div class="tile-icon">
+                                        <!-- link svg -->
+                                        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M10.5 13.5 8 16a4 4 0 1 1-5.66-5.66L5 7.69"/>
+                                            <path d="M13.5 10.5 16 8a4 4 0 0 1 5.66 5.66L19 16.31"/>
+                                            <path d="M8.5 15.5 15.5 8.5"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="tile-title">书签格 · Links</div>
+                                        <div class="tile-sub">常用入口 / 暗号提示</div>
+                                    </div>
+                                </div>
+                                <div class="tile-tag tile-tag-gold">BOOKMARKS</div>
+                            </div>
+                            <div class="tile-preview" id="preview-bookmarks">尚无记录</div>
+                            <div class="tile-content">
+                                <div class="note-shell">
+                                    <div class="note-label">entries</div>
+                                    <textarea id="field-bookmarks"
+                                              class="textarea-main"
+                                              placeholder="例：&#10;主页 · https://aura.us.kg&#10;网盘 · 用一个只有你看得懂的描述&#10;某后台 · 不写完整域名，只写关键提示…"></textarea>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- 备忘 -->
+                        <article class="tile" data-tile="notes">
+                            <div class="tile-head">
+                                <div class="tile-info">
+                                    <div class="tile-icon">
+                                        <!-- note svg -->
+                                        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M6 3h9l5 5v13H6z"/>
+                                            <path d="M15 3v5h5"/>
+                                            <path d="M9 12h6"/>
+                                            <path d="M9 16h4"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="tile-title">备忘格 · Notes</div>
+                                        <div class="tile-sub">写给 Lyn 自己看的话</div>
+                                    </div>
+                                </div>
+                                <div class="tile-tag">MEMOS</div>
+                            </div>
+                            <div class="tile-preview" id="preview-notes">尚无记录</div>
+                            <div class="tile-content">
+                                <div class="note-shell">
+                                    <div class="note-label">notes</div>
+                                    <textarea id="field-notes"
+                                              class="textarea-main"
+                                              placeholder="记录当天的小事、计划、碎碎念…"></textarea>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- 账号线索 -->
+                        <article class="tile" data-tile="accounts">
+                            <div class="tile-head">
+                                <div class="tile-info">
+                                    <div class="tile-icon">
+                                        <!-- shield svg -->
+                                        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M12 3 5 6v6a8 8 0 0 0 7 7 8 8 0 0 0 7-7V6z"/>
+                                            <path d="M12 7v5"/>
+                                            <path d="M12 16h.01"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="tile-title">身份格 · Identity</div>
+                                        <div class="tile-sub">账号 & 密码线索</div>
+                                    </div>
+                                </div>
+                                <div class="tile-tag tile-tag-gold">HINTS</div>
+                            </div>
+                            <div class="tile-preview" id="preview-accounts">建议只写规则提示，不记录明文密码。</div>
+                            <div class="tile-content">
+                                <div class="note-shell">
+                                    <div class="note-label">patterns</div>
+                                    <textarea id="field-accounts"
+                                              class="textarea-main"
+                                              placeholder="例：&#10;邮箱A：账号 = xxxxx；密码规则 = 固定前缀 + 某年 + 符号&#10;服务器面板：在密码管理器中名称为 “Server-Main”…"></textarea>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- 零碎信息 -->
+                        <article class="tile" data-tile="other">
+                            <div class="tile-head">
+                                <div class="tile-info">
+                                    <div class="tile-icon">
+                                        <!-- folder svg -->
+                                        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M3 7h5l2 3h11v8a2 2 0 0 1-2 2H3z"/>
+                                            <path d="M3 7v10a2 2 0 0 0 2 2h14"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="tile-title">碎片格 · Fragments</div>
+                                        <div class="tile-sub">电话 / 保险 / 卡片 / 其它</div>
+                                    </div>
+                                </div>
+                                <div class="tile-tag">DETAILS</div>
+                            </div>
+                            <div class="tile-preview" id="preview-other">用于记录账单日、续费日、卡片位置等。</div>
+                            <div class="tile-content">
+                                <div class="note-shell">
+                                    <div class="note-label">fragments</div>
+                                    <textarea id="field-other"
+                                              class="textarea-main"
+                                              placeholder="例：&#10;信用卡A：账单日 05，最后还款 23&#10;保险X：续费每年10月，联系人某某&#10;门禁卡：放在某个包/抽屉的具体位置…"></textarea>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="status-line" id="save-status"></div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                        <div class="hint-small">
+                            本页使用浏览器端 AES-GCM 加密，Cloudflare KV 仅保存密文数据。
+                        </div>
+                        <button id="btn-save" class="btn-main">
+                            Save Encrypted
+                        </button>
+                    </div>
+                </section>
             </div>
-
-            <div class="grid-main">
-                <!-- 左列 -->
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                    <!-- 书签抽屉 -->
-                    <article class="drawer">
-                        <div class="drawer-header">
-                            <div class="drawer-info">
-                                <div class="drawer-icon">
-                                    <!-- link svg -->
-                                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M10.5 13.5 8 16a4 4 0 1 1-5.66-5.66L5 7.69"/>
-                                        <path d="M13.5 10.5 16 8a4 4 0 0 1 5.66 5.66L19 16.31"/>
-                                        <path d="M8.5 15.5 15.5 8.5"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <div class="drawer-title-main">书签抽屉 · Bookmarks</div>
-                                    <div class="drawer-title-sub">常用入口 & 暗号提示</div>
-                                </div>
-                            </div>
-                            <div class="drawer-tag drawer-tag-gold">LINKS</div>
-                        </div>
-                        <div class="drawer-body">
-                            <div class="drawer-desc">
-                                每行一条记录，例如：<br>
-                                <code>主页 · https://aura.us.kg</code> 或写成只有 Lyn 看得懂的暗号。
-                            </div>
-                            <div class="note-shell">
-                                <div class="note-label">entries</div>
-                                <textarea id="field-bookmarks"
-                                          class="textarea-main"
-                                          placeholder="例：&#10;主页 · https://aura.us.kg&#10;网盘 · 用一个只有你看得懂的描述&#10;某后台 · 不写完整域名，只写关键提示…"></textarea>
-                            </div>
-                            <div class="drawer-footnote">
-                                提示：真正敏感的地址，也可以用“半句提示 + 自己记得的联想”来写。
-                            </div>
-                        </div>
-                    </article>
-
-                    <!-- 备忘抽屉 -->
-                    <article class="drawer">
-                        <div class="drawer-header">
-                            <div class="drawer-info">
-                                <div class="drawer-icon">
-                                    <!-- note svg -->
-                                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M6 3h9l5 5v13H6z"/>
-                                        <path d="M15 3v5h5"/>
-                                        <path d="M9 12h6"/>
-                                        <path d="M9 16h4"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <div class="drawer-title-main">备忘抽屉 · Notes</div>
-                                    <div class="drawer-title-sub">写给自己看的私语</div>
-                                </div>
-                            </div>
-                            <div class="drawer-tag">MEMOS</div>
-                        </div>
-                        <div class="drawer-body">
-                            <div class="drawer-desc">
-                                记录当下的想法、计划、碎碎念——不需要给任何人解释，只需要自己看得懂。
-                            </div>
-                            <div class="note-shell">
-                                <div class="note-label">notes</div>
-                                <textarea id="field-notes"
-                                          class="textarea-main"
-                                          placeholder="可以写今天发生的小事、要记住的 deadline、想对未来自己说的几句话…"></textarea>
-                            </div>
-                            <div class="drawer-footnote">
-                                特别重要的东西，建议再额外做一份备份（本地 / 云笔记）。
-                            </div>
-                        </div>
-                    </article>
-                </div>
-
-                <!-- 右列 -->
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                    <!-- 账号线索抽屉 -->
-                    <article class="drawer">
-                        <div class="drawer-header">
-                            <div class="drawer-info">
-                                <div class="drawer-icon">
-                                    <!-- shield svg -->
-                                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M12 3 5 6v6a8 8 0 0 0 7 7 8 8 0 0 0 7-7V6z"/>
-                                        <path d="M12 7v5"/>
-                                        <path d="M12 16h.01"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <div class="drawer-title-main">身份抽屉 · Identity</div>
-                                    <div class="drawer-title-sub">账号 & 密码线索</div>
-                                </div>
-                            </div>
-                            <div class="drawer-tag drawer-tag-gold">HINTS</div>
-                        </div>
-                        <div class="drawer-body">
-                            <div class="drawer-desc">
-                                明文密码建议放密码管理器，这里只写“规则 / 线索”。<br>
-                                例如：<code>邮箱A：账号 = 某固定邮箱；密码 = 前缀 + 某年 + !</code>
-                            </div>
-                            <div class="note-shell">
-                                <div class="note-label">patterns</div>
-                                <textarea id="field-accounts"
-                                          class="textarea-main"
-                                          placeholder="例：&#10;邮箱A：账号 = xxxxx；密码规则 = 某个固定前缀 + 某年 + 特殊符号&#10;服务器面板：在密码管理器中名称为 “Server-Main”&#10;某平台账号：全部整理在某个分组…"></textarea>
-                            </div>
-                        </div>
-                    </article>
-
-                    <!-- 零碎信息抽屉 -->
-                    <article class="drawer">
-                        <div class="drawer-header">
-                            <div class="drawer-info">
-                                <div class="drawer-icon">
-                                    <!-- folder svg -->
-                                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M3 7h5l2 3h11v8a2 2 0 0 1-2 2H3z"/>
-                                        <path d="M3 7v10a2 2 0 0 0 2 2h14"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <div class="drawer-title-main">碎片抽屉 · Details</div>
-                                    <div class="drawer-title-sub">电话 / 保险 / 卡片 / 其它</div>
-                                </div>
-                            </div>
-                            <div class="drawer-tag">FRAGMENTS</div>
-                        </div>
-                        <div class="drawer-body">
-                            <div class="drawer-desc">
-                                适合写：部分打码的电话、保险续费日期、账单日/还款日、某张卡具体放在哪个包或抽屉里。
-                            </div>
-                            <div class="note-shell">
-                                <div class="note-label">fragments</div>
-                                <textarea id="field-other"
-                                          class="textarea-main"
-                                          placeholder="例：&#10;信用卡A：账单日 05，最后还款 23&#10;保险X：续费每年10月，联系人某某&#10;门禁卡：放在某个包/抽屉左侧&#10;紧急联系人：xxx，电话 1xxx-xxx-xxxx（用只自己懂的写法）"></textarea>
-                            </div>
-                        </div>
-                    </article>
-                </div>
-            </div>
-
-            <div class="ribbon">
-                <div class="hint-small">
-                    本页使用浏览器端 AES-GCM 加密，Cloudflare KV 只保存密文数据。
-                </div>
-                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
-                    <button id="btn-save" class="btn-main">
-                        Save Encrypted
-                    </button>
-                    <div id="save-status" class="status-line"></div>
-                </div>
-            </div>
-        </section>
-
-    </main>
+        </div>
+    </div>
 </div>
 
 <script>
-    // ============ 配置：API 路径 ============
     const VAULT_API = "/api/vault";
 
-    // ============ DOM 引用 ============
     const loginPanel = document.getElementById("login-panel");
     const appPanel = document.getElementById("app-panel");
 
@@ -926,13 +894,16 @@
     const fieldAccounts = document.getElementById("field-accounts");
     const fieldOther = document.getElementById("field-other");
 
-    // ============ 状态 ============
+    const previewBookmarks = document.getElementById("preview-bookmarks");
+    const previewNotes = document.getElementById("preview-notes");
+    const previewAccounts = document.getElementById("preview-accounts");
+    const previewOther = document.getElementById("preview-other");
+
     let currentMasterPassword = null;
     let currentSaltBase64 = null;
     let vaultExists = false;
     let currentVault = null;
 
-    // ============ base64 工具 ============
     function base64ToBytes(b64) {
         const binary = atob(b64);
         const len = binary.length;
@@ -951,7 +922,6 @@
         return btoa(binary);
     }
 
-    // ============ 密钥派生 & 加解密 ============
     async function deriveKeyFromPassword(password, saltBase64) {
         const enc = new TextEncoder();
         let salt;
@@ -1023,7 +993,6 @@
         return JSON.parse(json);
     }
 
-    // ============ 业务逻辑 ============
     function getEmptyVault() {
         return {
             bookmarks: "",
@@ -1036,11 +1005,19 @@
         };
     }
 
+    function updatePreviews() {
+        previewBookmarks.textContent = (fieldBookmarks.value.trim().split("\n")[0] || "尚无记录").slice(0, 60);
+        previewNotes.textContent = (fieldNotes.value.trim().split("\n")[0] || "尚无记录").slice(0, 60);
+        previewAccounts.textContent = (fieldAccounts.value.trim().split("\n")[0] || "建议只写规则提示，不记录明文密码。").slice(0, 80);
+        previewOther.textContent = (fieldOther.value.trim().split("\n")[0] || "用于记录账单日、续费日、卡片位置等。").slice(0, 80);
+    }
+
     function fillFormFromVault(vault) {
         fieldBookmarks.value = vault.bookmarks || "";
         fieldNotes.value = vault.notes || "";
         fieldAccounts.value = vault.accounts || "";
         fieldOther.value = vault.other || "";
+        updatePreviews();
 
         if (vault.meta && vault.meta.lastUpdated) {
             lastUpdatedEl.textContent = "上次保存时间：" + vault.meta.lastUpdated;
@@ -1094,7 +1071,6 @@
         }
 
         if (!data.exists) {
-            // 第一次使用
             vaultExists = false;
             currentVault = getEmptyVault();
             currentMasterPassword = pwd;
@@ -1108,7 +1084,6 @@
             return;
         }
 
-        // 有密文 → 尝试解密
         try {
             const { salt, iv, ciphertext } = data;
             const { key, saltBase64 } = await deriveKeyFromPassword(pwd, salt);
@@ -1198,12 +1173,29 @@
         saveStatus.className = "status-line";
 
         appPanel.style.display = "none";
-        loginPanel.style.display = "flex";
+        loginPanel.style.display = "block";
         btnLock.style.display = "none";
         masterInput.focus();
     }
 
-    // ============ 事件绑定 ============
+    // tile 展开/收起
+    const tiles = document.querySelectorAll(".tile");
+    tiles.forEach(tile => {
+        tile.addEventListener("click", (e) => {
+            // 避免点 textarea 的时候频繁折叠
+            if (e.target.tagName.toLowerCase() === "textarea") return;
+
+            tile.classList.toggle("open");
+        });
+    });
+
+    // textarea 输入时更新预览
+    fieldBookmarks.addEventListener("input", updatePreviews);
+    fieldNotes.addEventListener("input", updatePreviews);
+    fieldAccounts.addEventListener("input", updatePreviews);
+    fieldOther.addEventListener("input", updatePreviews);
+
+    // 事件绑定
     toggleVisibilityBtn.addEventListener("click", () => {
         if (masterInput.type === "password") {
             masterInput.type = "text";
@@ -1224,7 +1216,7 @@
     btnSave.addEventListener("click", saveVault);
     btnLock.addEventListener("click", lockVault);
 
-    // ============ 时间显示 ============
+    // 时间
     function updateTime() {
         const now = new Date();
         const Y = now.getFullYear();
