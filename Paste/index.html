@@ -443,6 +443,16 @@
             color:inherit;padding:6px 10px;
         }
         body.theme-light .auth-panel-row input{background:#ffffff;}
+                .auth-remember{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            font-size:11px;
+            opacity:.85;
+        }
+        .auth-remember input{
+            margin:0;
+        }
         .auth-panel-actions{display:flex;gap:6px;justify-content:flex-end;}
         .auth-panel-msg{font-size:11px;min-height:1.2em;}
         .auth-panel-msg.success{color:#4ade80;}
@@ -758,6 +768,17 @@
             <div class="auth-panel-row">
                 <input id="authUsername" type="text" placeholder="用户名" autocomplete="username">
                 <input id="authPassword" type="password" placeholder="密码（至少 6 位）" autocomplete="current-password">
+                            <form class="auth-panel-form" id="authForm">
+            <div class="auth-panel-row">
+                <input id="authUsername" type="text" placeholder="用户名" autocomplete="username">
+                <input id="authPassword" type="password" placeholder="密码（至少 6 位）" autocomplete="current-password">
+                <!-- ✅ 新增：记住登录状态（默认勾选） -->
+                <label class="auth-remember">
+                    <input type="checkbox" id="rememberMe" checked>
+                    <span>记住状态</span>
+                </label>
+            </div>
+            <div class="auth-panel-actions">
             </div>
             <div class="auth-panel-actions">
                 <button type="button" class="btn-secondary btn-xs" id="btnDoRegister">
@@ -906,6 +927,10 @@
     const $authForm=qs("authForm");
     const $authUsername=qs("authUsername");
     const $authPassword=qs("authPassword");
+    const $authUsername=qs("authUsername");
+    const $authPassword=qs("authPassword");
+    const $rememberMe=qs("rememberMe");   // ✅ 新增：记住登录复选框
+    const $btnDoLogin=qs("btnDoLogin");
     const $btnDoLogin=qs("btnDoLogin");
     const $btnDoRegister=qs("btnDoRegister");
     const $authCloseBtn=qs("authCloseBtn");
@@ -1224,16 +1249,29 @@
         });
     }
 
-    // 登录 / 注册
+        // 登录 / 注册
     if($authForm){
         $authForm.addEventListener("submit",async e=>{
             e.preventDefault();
             const u=$authUsername.value.trim();
             const p=$authPassword.value;
-            if(!u||!p){setAuthTip("用户名和密码不能为空。","error");return;}
+
+            if(!u||!p){
+                setAuthTip("用户名和密码不能为空。","error");
+                return;
+            }
+
+            // ✅ 新增：读取“记住登录状态”（默认 true）
+            const remember = $rememberMe ? $rememberMe.checked : true;
+
             setAuthTip("登录中…");
             try{
-                const data=await postJSON(AUTH_BASE+"/login",{username:u,password:p});
+                // ✅ 新增 remember 字段
+                const data=await postJSON(AUTH_BASE+"/login",{
+                    username:u,
+                    password:p,
+                    remember: remember
+                });
                 setLoggedIn(data.username||u);
                 setAuthTip("登录成功。","success");
                 setTimeout(closeAuthModal,300);
