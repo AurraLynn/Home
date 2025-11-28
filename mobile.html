@@ -129,6 +129,23 @@
             right: 14px;
             z-index: 6;
         }
+        /* 默认：静音状态（没有 is-unmuted 类）→ 有删除线 */
+.mute-label {
+    margin-left: 6px;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #e5e7eb;
+    opacity: 0.86;
+    text-decoration: line-through;   /* ⭐ 静音时：加删除线 */
+}
+
+/* 声音打开：按钮加上 .is-unmuted 类 → 去掉删除线 */
+.mute-pill.is-unmuted .mute-label {
+    color: #fde68a;
+    opacity: 1;
+    text-decoration: none;           /* ⭐ 取消删除线 */
+}
 
         .mute-pill {
             display: inline-flex;
@@ -233,15 +250,16 @@
         }
 
         /* ==================== 标题区域：Hey, I'm Lyn ==================== */
-        .hero-title {
-            font-family: "Poppins", -apple-system, BlinkMacSystemFont,
-            "PingFang SC", system-ui, sans-serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            line-height: 1.25;
-            color: #e5e7eb;
-        }
+           .hero-title {
+        font-family: "Poppins", -apple-system, BlinkMacSystemFont,
+        "PingFang SC", system-ui, sans-serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        line-height: 1.25;
+        color: #e5e7eb;
+        text-align: center;   /* ⭐ 新增这一行：标题居中 */
+    }
 
         .hero-name {
             font-weight: 700;
@@ -252,14 +270,15 @@
             text-shadow: 0 0 14px rgba(0, 0, 0, 0.7);
         }
 
-        .hero-subtitle {
-            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
-            "Microsoft Yahei", system-ui, sans-serif;
-            font-size: 0.82rem;
-            line-height: 1.7;
-            color: #a1a1aa;
-            letter-spacing: 0.01em;
-        }
+           .hero-subtitle {
+        font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+        "Microsoft Yahei", system-ui, sans-serif;
+        font-size: 0.82rem;
+        line-height: 1.7;
+        color: #a1a1aa;
+        letter-spacing: 0.01em;
+        text-align: center;   /* 副标题也居中 */
+    }
 
         /* ==================== 毒鸡汤卡片 ==================== */
         .dujitang-container {
@@ -651,11 +670,11 @@
     <!-- 右上角静音按钮（小药丸样式） -->
     <div class="mute-toggle">
         <button class="mute-pill is-muted" id="muteButton" aria-label="Toggle sound">
-            <!-- 简洁音量 SVG 图标 -->
-            <svg class="mute-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 9v6h3.5L12 19V5L7.5 9H4z"></path>
-            </svg>
-        </button>
+    <svg class="mute-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 9v6h3.5L12 19V5L7.5 9H4z"></path>
+    </svg>
+    <span class="mute-label" id="muteLabel">MUTED</span>
+    </button>
     </div>
 </div>
 
