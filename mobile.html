@@ -6,7 +6,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <!-- 页面标题 -->
+    <!-- 初始页面标题（加载完一言后会被 JS 覆盖） -->
     <title>Lyn · Main Page</title>
 
     <!-- 🌍 国外网站 / 通用 Open Graph 预览（Telegram、X 等） -->
@@ -104,7 +104,7 @@
         /* 顶部：ONLY HERE + 静音按钮 + 滑动提示 */
         .top-bar {
             position: absolute;
-            top: 12px;
+            top: 28px; /* ⬇️ 整体下移，避免被浏览器顶部挡住（原 12px） */
             left: 14px;
             right: 14px;
             display: flex;
@@ -246,7 +246,7 @@
 
         .swipe-hint {
             position: absolute;
-            top: 54px;
+            top: 70px; /* 跟着一起稍微下移一点（原 54px） */
             left: 50%;
             transform: translateX(-50%);
             padding: 4px 10px;
@@ -310,12 +310,12 @@
             color: rgba(249,250,251,0.35);
         }
 
-        /* 底部信息条 —— 这里改 bottom，把整块往上抬 */
+        /* 底部信息条 —— 往上抬，避免被底部工具栏挡住 */
         .bottom-panel {
             position: absolute;
             left: 18px;
             right: 18px;
-            bottom: 40px;  /* 原来是 14px，抬高避免被底部工具栏挡住 */
+            bottom: 40px;
             z-index: 3;
             padding: 10px 12px;
             border-radius: 18px;
@@ -432,15 +432,18 @@
             <span>ONLY HERE</span>
         </div>
 
+        <!-- 静音按钮 -->
         <button class="mute-btn" id="muteToggle" data-muted="true" aria-label="Toggle mute">
             <span class="mute-dot"></span>
             <span class="mute-label" id="muteLabel">MUTED</span>
             <span class="mute-icon">
+                <!-- 有声音：speaker with waves -->
                 <svg class="icon-sound" viewBox="0 0 24 24">
                     <path d="M4 9v6h3l4 3.5V5.5L7 9H4z"></path>
                     <path d="M17 9a4 4 0 010 6"></path>
                     <path d="M19 7a7 7 0 010 10"></path>
                 </svg>
+                <!-- 静音：speaker + cross -->
                 <svg class="icon-mute" viewBox="0 0 24 24">
                     <path d="M4 9v6h3l4 3.5V5.5L7 9H4z"></path>
                     <path d="M16 9l4 4m0-4l-4 4"></path>
@@ -480,6 +483,7 @@
 </div>
 
 <script>
+    // ======= 视频列表: bg1.MP4 ~ bg55.MP4 =======
     const baseUrl = "https://save.aura.us.kg/Mobile/bg";
     const totalVideos = 55;
     const videoSources = [];
@@ -507,23 +511,37 @@
     let hintHidden = false;
     let lastScrollTime = 0;
 
+    // ======= 一言 API（随视频切换更新文案 + 更新浏览器标题） =======
     const quoteApis = [
         "https://v1.hitokoto.cn/?encode=text",
         "https://api.btstu.cn/yan/api.php?charset=utf-8&encode=text"
     ];
 
     async function fetchQuote() {
+        // 默认文案
+        let finalText = "Just someone who loves to mess around on the internet, and gets quietly sad sometimes.";
+
         try {
             const api = quoteApis[Math.floor(Math.random() * quoteApis.length)];
             const res = await fetch(api, { cache: "no-store" });
             const text = await res.text();
-            const clean = text.trim().replace(/^[“"]|[”"]$/g, "");
+            const clean = text.trim().replace(/^[“\"]|[”\"]$/g, "");
             if (clean) {
-                quoteTextEl.textContent = clean;
-                return;
+                finalText = clean;
             }
-        } catch (e) {}
-        quoteTextEl.textContent = "Just someone who loves to mess around on the internet, and gets quietly sad sometimes.";
+        } catch (e) {
+            // 出错就用默认文案
+        }
+
+        // 更新底部文字
+        quoteTextEl.textContent = finalText;
+
+        // 更新浏览器标题：Lyn · Main Page · 一言（截断一下避免太长）
+        const maxLen = 28;
+        const short = finalText.length > maxLen
+            ? finalText.slice(0, maxLen) + "…"
+            : finalText;
+        document.title = "Lyn · Main Page · " + short;
     }
 
     function setVideo(index, withFlash = true) {
@@ -557,6 +575,7 @@
             swipeHint.classList.add('hidden');
         }
 
+        // 每次切换视频刷新一言 & 标题
         fetchQuote();
     }
 
@@ -575,6 +594,7 @@
         setVideo(idx, withFlash);
     }
 
+    // 更新静音状态 + 按钮文案
     function updateMuteState(muted) {
         videoEl.muted = muted;
         muteBtn.dataset.muted = muted ? "true" : "false";
@@ -587,6 +607,7 @@
         videoEl.play().catch(() => {});
     });
 
+    // 滚轮切换（PC 调试）+节流
     phoneFrame.addEventListener('wheel', (e) => {
         e.preventDefault();
         const now = Date.now();
@@ -595,6 +616,7 @@
         setRandomVideo(true);
     }, { passive: false });
 
+    // 触摸滑动切换（手机）
     let touchStartY = 0;
     phoneFrame.addEventListener('touchstart', (e) => {
         if (!e.touches || e.touches.length === 0) return;
@@ -616,6 +638,7 @@
         setRandomVideo(true);
     }, { passive: true });
 
+    // 初始化：随机视频 + 默认静音 + 初始一言（会顺便更新标题）
     setRandomVideo(false);
     updateMuteState(true);
     fetchQuote();
