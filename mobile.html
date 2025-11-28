@@ -65,8 +65,8 @@
             overflow: hidden;
             background: #02010a;
             box-shadow:
-                    0 30px 80px rgba(0, 0, 0, 0.95),
-                    0 0 0 1px rgba(255, 255, 255, 0.06);
+                0 30px 80px rgba(0, 0, 0, 0.95),
+                0 0 0 1px rgba(255, 255, 255, 0.06);
             touch-action: none;
         }
 
@@ -89,7 +89,7 @@
             position: absolute;
             inset: 0;
             background:
-                    linear-gradient(to bottom, rgba(0,0,0,0.68), rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.9) 100%);
+                linear-gradient(to bottom, rgba(0,0,0,0.68), rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.9) 100%);
             pointer-events: none;
         }
 
@@ -116,24 +116,29 @@
         .brand-pill {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
+            gap: 4px;
+            padding: 3px 9px;
             border-radius: 999px;
             border: 1px solid rgba(156, 163, 175, 0.55);
             backdrop-filter: blur(12px);
             background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(15,23,42,0.4));
-            font-size: 10px;
+            font-size: 9px;
             letter-spacing: 0.18em;
             text-transform: uppercase;
             color: #e5e7eb;
+            transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease, border-color 0.25s ease;
         }
 
-        /* 静音按钮：瘦身版，和 ONLY HERE 高度接近 */
+        .brand-pill:hover {
+            transform: translateY(-0.5px);
+            border-color: rgba(209, 213, 219, 0.9);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.7);
+        }
+
+        /* 静音按钮：小号 pill + 互动效果 */
         .mute-btn {
             position: relative;
-            /* 不要固定 min-width，让它自然适应内容 */
-            /* min-width: 88px; 删除这一行 */
-            padding: 4px 10px; /* 和 brand-pill 一致 */
+            padding: 3px 9px;
             border-radius: 999px;
             border: 1px solid rgba(148,163,184,0.8);
             background: radial-gradient(circle at 20% 0%, rgba(249,250,251,0.16), rgba(15,23,42,0.96));
@@ -143,35 +148,71 @@
             cursor: pointer;
             backdrop-filter: blur(14px);
             box-shadow:
-                    0 4px 18px rgba(0,0,0,0.85),
-                    0 0 0 1px rgba(15,23,42,0.8);
-            gap: 4px; /* 间距稍微收紧一点 */
+                0 3px 12px rgba(0,0,0,0.8),
+                0 0 0 1px rgba(15,23,42,0.8);
+            gap: 4px;
+            transition: background 0.25s ease, box-shadow 0.25s ease,
+                        transform 0.15s ease, border-color 0.25s ease, opacity 0.2s ease;
+        }
+
+        .mute-btn:hover {
+            transform: translateY(-0.5px);
+            box-shadow:
+                0 5px 18px rgba(0,0,0,0.9),
+                0 0 0 1px rgba(31,41,55,1);
+        }
+
+        .mute-btn:active {
+            transform: translateY(0) scale(0.97);
+            box-shadow:
+                0 2px 8px rgba(0,0,0,0.7),
+                0 0 0 1px rgba(15,23,42,0.9);
+        }
+
+        .mute-btn[data-muted="false"] {
+            border-color: var(--accent-gold);
+            background: radial-gradient(circle at 10% 0%, rgba(250,250,250,0.25), rgba(15,23,42,0.96));
+            box-shadow:
+                0 4px 18px rgba(0,0,0,0.95),
+                0 0 0 1px rgba(55,65,81,1);
         }
 
         .mute-dot {
-            width: 5px;   /* 比原来 6 略小一点 */
-            height: 5px;
+            width: 4px;
+            height: 4px;
             border-radius: 999px;
             background: var(--accent-gold);
-            box-shadow: 0 0 8px rgba(233, 183, 101, 0.9);
+            box-shadow: 0 0 6px rgba(233, 183, 101, 0.9);
+            opacity: 0.7;
+            transition: opacity 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .mute-btn[data-muted="false"] .mute-dot {
+            opacity: 1;
+            box-shadow: 0 0 10px rgba(233,183,101,1);
         }
 
         .mute-label {
-            font-size: 9px;
+            font-size: 8px;
             letter-spacing: 0.16em;
             text-transform: uppercase;
             color: rgba(229,231,235,0.78);
+            transition: color 0.25s ease;
+        }
+
+        .mute-btn[data-muted="false"] .mute-label {
+            color: var(--accent-gold);
         }
 
         .mute-icon {
             position: relative;
-            width: 12px;   /* 原来 14 → 12 */
-            height: 12px;
+            width: 10px;
+            height: 10px;
         }
 
         .mute-icon svg {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             fill: none;
             stroke-width: 1.6;
             stroke-linecap: round;
@@ -201,10 +242,6 @@
         .mute-btn[data-muted="false"] .icon-mute {
             opacity: 0;
             transform: scale(0.8);
-        }
-
-        .mute-btn[data-muted="false"] .mute-label {
-            color: var(--accent-gold);
         }
 
         .swipe-hint {
@@ -273,12 +310,12 @@
             color: rgba(249,250,251,0.35);
         }
 
-        /* 底部信息条 */
+        /* 底部信息条 —— 这里改 bottom，把整块往上抬 */
         .bottom-panel {
             position: absolute;
             left: 18px;
             right: 18px;
-            bottom: 14px;
+            bottom: 40px;  /* 原来是 14px，抬高避免被底部工具栏挡住 */
             z-index: 3;
             padding: 10px 12px;
             border-radius: 18px;
@@ -395,18 +432,15 @@
             <span>ONLY HERE</span>
         </div>
 
-        <!-- 静音按钮：带小黄点 -->
         <button class="mute-btn" id="muteToggle" data-muted="true" aria-label="Toggle mute">
             <span class="mute-dot"></span>
-            <span class="mute-label">MUTE</span>
+            <span class="mute-label" id="muteLabel">MUTED</span>
             <span class="mute-icon">
-                <!-- 有声音：speaker with waves -->
                 <svg class="icon-sound" viewBox="0 0 24 24">
                     <path d="M4 9v6h3l4 3.5V5.5L7 9H4z"></path>
                     <path d="M17 9a4 4 0 010 6"></path>
                     <path d="M19 7a7 7 0 010 10"></path>
                 </svg>
-                <!-- 静音：speaker + cross -->
                 <svg class="icon-mute" viewBox="0 0 24 24">
                     <path d="M4 9v6h3l4 3.5V5.5L7 9H4z"></path>
                     <path d="M16 9l4 4m0-4l-4 4"></path>
@@ -449,7 +483,6 @@
     const baseUrl = "https://save.aura.us.kg/Mobile/bg";
     const totalVideos = 55;
     const videoSources = [];
-
     for (let i = 1; i <= totalVideos; i++) {
         videoSources.push({
             src: baseUrl + i + ".MP4",
@@ -459,6 +492,7 @@
 
     const videoEl = document.getElementById('bgVideo');
     const muteBtn = document.getElementById('muteToggle');
+    const muteLabelEl = document.getElementById('muteLabel');
     const flashLayer = document.getElementById('flashLayer');
     const swipeHint = document.getElementById('swipeHint');
     const clipTitleEl = document.getElementById('clipTitle');
@@ -544,6 +578,7 @@
     function updateMuteState(muted) {
         videoEl.muted = muted;
         muteBtn.dataset.muted = muted ? "true" : "false";
+        muteLabelEl.textContent = muted ? "MUTED" : "MUTE";
     }
 
     muteBtn.addEventListener('click', () => {
@@ -561,7 +596,6 @@
     }, { passive: false });
 
     let touchStartY = 0;
-
     phoneFrame.addEventListener('touchstart', (e) => {
         if (!e.touches || e.touches.length === 0) return;
         touchStartY = e.touches[0].clientY;
