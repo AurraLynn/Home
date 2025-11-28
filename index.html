@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyn · Main Page</title>
+    <!-- 🌍 国外网站 / 通用 Open Graph 预览（Telegram、X 等） -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Lyn · Main Page">
+    <meta property="og:description" content="Just someone who loves to mess around on the internet.">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:url" content="https://aura.us.kg">
+
+    <!-- 🇨🇳 国内网站 / 微信 / QQ / 微博 使用的描述和图片 -->
+    <meta name="description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
+    <meta itemprop="name" content="Lyn · Main Page">
+    <meta itemprop="image" content="https://save.aura.us.kg/Picture/Fm2.png">
+
+    <!-- 网站图标 -->
+    <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
+
+    <!-- 设备类型检测：如为移动端，自动跳转到 mobile.html -->
+    <script>
+        (function () {
+            var ua = (navigator.userAgent || navigator.vendor || window.opera || "").toLowerCase();
+            var isMobileDevice = /android|iphone|ipad|ipod|mobile|windows phone/i.test(ua);
+            if (isMobileDevice) {
+                window.location.href = "mobile.html";
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg-dark: #050508;
+            --bg-gradient: radial-gradient(circle at 20% 50%, #1a1b2e 0%, #000000 100%);
+            --text-main: #e0e0e0;
+            --text-muted: #6f7285;
+            --accent-gold: #eebb4d; /* 高级金 */
+            --card-radius: 32px;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background: var(--bg-dark);
+            background-image: var(--bg-gradient);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 主容器：最大宽度限制，居中 */
+        .app-container {
+            position: relative; /* 给竖直光做定位参照 */
+            width: 90vw;
+            height: 85vh;
+            max-width: 1400px;
+            display: flex;
+            gap: 8vw;
+            align-items: center;
+            padding: 0 4vw;
+        }
+
+        /* --- 左侧视频卡片 (手机形态) --- */
+        .video-card {
+            position: relative;
+            width: 400px; /* 基准宽度 */
+            aspect-ratio: 9 / 16;
+            border-radius: var(--card-radius);
+            background: #000;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.6);
+            overflow: hidden;
+            flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.05);
+            transform: translateZ(0); /* 硬件加速 */
+            z-index: 2;
+        }
+
+        #bg-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none; /* 禁止直接操作 */
+            opacity: 0.9; /* 稍微压暗一点点增加质感 */
+        }
+
+        /* 视频与文案中间那条竖直的光 */
+        .light-beam {
+            position: absolute;
+            top: 20%;
+            bottom: 20%;
+            /* 放在视频与文案之间，大概容器中偏左一点 */
+            left: 37%;
+            width: 1px;
+
+            background: linear-gradient(
+                    to bottom,
+                    rgb(111, 114, 133) 0%,
+                    rgb(111, 114, 133) 35%,
+                    rgb(197, 139, 53) 50%,
+                    rgb(111, 114, 133) 65%,
+                    rgb(111, 114, 133) 100%
+            );
+            background-size: 100% 300%;
+
+            box-shadow:
+                    0 0 15px rgba(255, 255, 255, 0.4),
+                    0 0 2px rgba(255, 255, 255, 0.8);
+
+            animation: flowDown 6s linear infinite,
+            flicker 4s ease-in-out infinite alternate;
+            z-index: 1;
+        }
+
+        @keyframes flowDown {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 0% 100%; }
+        }
+
+        @keyframes flicker {
+            0%   { opacity: 0.5; box-shadow: 0 0 10px rgba(255,255,255,0.2); }
+            50%  { opacity: 1;   box-shadow: 0 0 20px rgba(255,255,255,0.6); }
+            100% { opacity: 0.6; box-shadow: 0 0 12px rgba(255,255,255,0.3); }
+        }
+
+        /* 视频遮罩与UI层 */
+        .video-overlay-ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.6) 100%);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-tag {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-main {
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.18);
+            letter-spacing: 0.2em;
+        }
+
+        .tag-pill {
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 9px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* 音频按钮（SVG 图标） */
+        .audio-btn {
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .audio-btn svg {
+            width: 13px;
+            height: 13px;
+            fill: currentColor;
+        }
+
+        .audio-btn:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .audio-btn.muted {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .card-footer-text {
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.4;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* --- 右侧内容区 --- */
+        .content-side {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-width: 700px;
+            z-index: 2;
+        }
+
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 60px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 20px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .logo-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 30% 30%, #050508 0%, #000 100%);
+            box-shadow:
+                    0 0 0 1px rgba(255,255,255,0.08),
+                    0 0 14px rgb(234, 179, 8);
+            overflow: hidden;
+        }
+
+        /* 去掉之前的 ::after 高光层，不再需要 */
+        .logo-dot::after {
+            content: none;
+        }
+
+        /* 让 SVG 正好铺满这个 24x24 的圆 */
+        .logo-dot svg {
+            width: 18px;
+            height: 18px;
+            display: block;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-muted);
+            position: relative;
+            padding-bottom: 2px;
+            text-transform: uppercase;
+        }
+
+        .nav-links a::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 0;
+            height: 1px;
+            background: var(--accent-gold);
+            transition: width 0.25s ease;
+        }
+
+        .nav-links a:hover {
+            color: #e5e5e5;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .btn-outline {
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .hero-section {
+            margin-bottom: 10px;
+        }
+
+        .sub-label {
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 500;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            letter-spacing: -1px;
+        }
+
+        h1 .highlight {
+            color: var(--accent-gold);
+            position: relative;
+        }
+
+        .prose {
+            font-size: 20px;
+            line-height: 1.9;
+            color: rgba(255, 255, 255, 0.44);
+            margin-bottom: 12px;
+        }
+
+        .prose p {
+            margin-bottom: 12px;
+        }
+
+        /* Hitokoto 区域：标题在上，下面是一言内容框，整体贴近分割线 */
+        .hitokoto-block {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+            font-size: 12px;
+            color: #999;
+            margin-top: 30px;   /* 和上方正文拉开 */
+            margin-bottom: 6px; /* 靠近下面的分割线 */
+        }
+
+        /* 标题用回之前的颜色（金色风格） */
+        .hitokoto-title {
+            font-size: 11px;
+            color: var(--accent-gold);
+        }
+
+        /* 一言内容：改成和 NO RECORDS 那种框一致风格 */
+        .hitokoto-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 4px;              /* ✅ 跟 .pill-badge 一样的小圆角 */
+            border: 1px solid #333;          /* ✅ 同款描边 */
+            background: rgba(0,0,0,0.35);    /* 稍微一点底色，不要太亮 */
+            backdrop-filter: blur(8px);
+            max-width: 520px;
+        }
+
+        .hitokoto-pill-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #eebb4d; /* 小黄点 */
+            box-shadow: 0 0 10px rgb(238, 187, 77);
+            flex-shrink: 0;
+        }
+
+        /* 一言文字风格，向 NO RECORDS 靠拢 */
+        .hitokoto-text {
+            line-height: 1.7;
+            font-size: 11px;                 /* 字号稍微压一点 */
+            letter-spacing: 1px;             /* 有一点字间距，显得高级 */
+            text-transform: uppercase;       /* 全大写 */
+            color: rgba(245, 245, 245, 0.91);
+        }
+
+        /* 底部信息网格 */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 30px;
+        }
+
+        .meta-col h3 {
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .meta-col p {
+            font-size: 13px;
+            color: #e0e0e0;
+            margin-bottom: 8px;
+        }
+
+        .meta-sub {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .pill-badge {
+            display: inline-flex;           /* 改成 inline-flex 才能放小黄点 */
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #333;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.78);
+            margin-top: 15px;
+            letter-spacing: 0.7px;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(8px);
+        }
+        .pill-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #facc15; /* 小黄点 */
+            box-shadow: 0 0 10px rgba(250, 204, 21, 0.9);
+            flex-shrink: 0;
+        }
+
+        /* 滚动提示动画 */
+        .scroll-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1px;
+            height: 30px;
+            background: linear-gradient(to bottom, #fff, transparent);
+            opacity: 0.5;
+            animation: drop 2s infinite;
+        }
+
+        @keyframes drop {
+            0% { transform: translate(-50%, -100%); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translate(-50%, 100%); opacity: 0; }
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 1024px) {
+            .app-container {
+                flex-direction: column;
+                height: auto;
+                padding: 40px 20px;
+                width: 100vw;
+            }
+            .video-card {
+                width: 80vw;
+                max-width: 360px;
+            }
+            .content-side {
+                max-width: 100%;
+            }
+            .nav-header, .meta-grid {
+                justify-content: center;
+                text-align: center;
+            }
+            .meta-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            h1 { font-size: 2.5rem; }
+            .hitokoto-block {
+                align-items: flex-start;
+            }
+            .light-beam {
+                left: 50%;
+                top: 10%;
+                bottom: 10%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- 中间那条竖直的光 -->
+    <div class="light-beam"></div>
+
+    <!-- 左侧：9:16 视频卡片 -->
+    <div class="video-card" id="videoContainer">
+        <video id="bg-video" playsinline webkit-playsinline disablePictureInPicture>
+            <!-- 视频由 JS 加载 -->
+        </video>
+
+        <!-- UI 覆盖层 -->
+        <div class="video-overlay-ui">
+            <div class="card-header">
+                <div class="brand-tag">
+                    <span class="brand-main">ONLY HERE</span>
+                </div>
+                <!-- 静音按钮：SVG 图标 -->
+                <button class="audio-btn" id="muteBtn" type="button">
+                    <svg id="icon-vol" viewBox="0 0 24 24">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zM16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.75 2.5-2.27 2.5-4.03zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                    </svg>
+                    <svg id="icon-mute" viewBox="0 0 24 24" style="display:none;">
+                        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                    </svg>
+                    <span id="audioText">AUDIO</span>
+                </button>
+            </div>
+
+            <div class="card-footer-text">
+                <div style="opacity:0.7; font-size:10px; margin-bottom:4px;">NOW PLAYING</div>
+                <div id="videoName">LOST FRAGMENTS #RANDOM</div>
+                <div class="scroll-hint"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧：内容区 -->
+    <div class="content-side">
+        <!-- 顶部导航 -->
+        <div class="nav-header">
+            <div class="logo-area">
+                <div class="logo-dot" aria-hidden="true">
+                    <svg viewBox="0 0 32 32">
+                        <!-- 外圈金色圆环 -->
+                        <circle cx="16" cy="16" r="11.5"
+                                fill="none"
+                                stroke="url(#logo-gold-grad)"
+                                stroke-width="1.6"
+                                stroke-linecap="round" />
+                        <!-- 右下缺口：一条短线，像被切走一块 -->
+                        <path d="M21 22.5 L25 18.5"
+                              stroke="url(#logo-gold-grad)"
+                              stroke-width="1.6"
+                              stroke-linecap="round" />
+                        <!-- 内部小点，像一点亮着的状态灯 -->
+                        <circle cx="12" cy="13" r="1.6"
+                                fill="#fef9c3" />
+                        <defs>
+                            <!-- 金色渐变 -->
+                            <linearGradient id="logo-gold-grad" x1="6" y1="6" x2="26" y2="26">
+                                <stop offset="0%"  stop-color="#fef3c7"/>
+                                <stop offset="40%" stop-color="#facc15"/>
+                                <stop offset="100%" stop-color="#b45309"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <span>LYN·HOME</span>
+            </div>
+            <div class="nav-links">
+                <a href="/Card">CARD</a>
+                <a href="/Paste">PASTE</a>
+                <a href="/Privacy">PRIVACY</a>
+            </div>
+            <div class="btn-outline">SMALL SPACE</div>
+        </div>
+
+        <!-- 主要文字 -->
+        <div class="hero-section">
+            <!-- 副标题：乱码解码 -->
+            <div class="sub-label" id="subLabel"></div>
+
+            <!-- 标题两行：乱码解码 -->
+            <h1>
+                <span id="titleLine1"></span><br>
+                <span class="highlight" id="titleLine2"></span>
+            </h1>
+
+            <div class="prose">
+                <p style="font-size: 13px; margin-bottom: 200px;">
+                    Here lie all the messages I typed, read twice, and never sent.
+                </p>
+            </div>
+        </div>
+
+        <!-- 文案区：标题 + 一言内容框，贴着分割线上方 -->
+        <div class="hitokoto-block" id="hitokotoBlock">
+            <div class="hitokoto-title">
+                左边那块竖直的光，是被拖长的日子：
+            </div>
+            <div class="hitokoto-pill">
+                <span class="hitokoto-pill-dot"></span>
+                <span class="hitokoto-text" id="hitokotoText"></span>
+            </div>
+        </div>
+
+        <!-- 底部信息 -->
+        <div class="meta-grid">
+            <div class="meta-col">
+                <h3>Moods</h3>
+                <div class="pill-badge">
+                    <span class="pill-dot"></span>
+                    <span>NO RECORDS, NO AUDIENCE, ONLY YOU</span>
+                </div>
+            </div>
+            <div class="meta-col">
+                <h3>Format & Source</h3>
+                <p>Desktop · vertical reel of soft disasters</p>
+                <p class="meta-sub">/Picgo/Mobile/.Mv / 被剪辑过的日常，像循环播放的遗憾样本。</p>
+                <p style="margin-top: 10px; font-size: 10px; opacity: 0.5;">
+                    Page crafted by AurraLynn.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* ========= 文本乱码解码特效 ========= */
+    class TextScrambler {
+        constructor(el, finalText) {
+            this.el = el;
+            this.finalText = finalText;
+            this.chars = '!@#$%^&*()_+-=<>?/[]{}~';
+            this.frame = 0;
+            this.frameRequest = null;
+            this.queue = [];
+        }
+
+        start() {
+            this.queue = [];
+            const length = this.finalText.length;
+            const baseEnd = 40;
+            const extra = 120; // 更慢一点
+
+            for (let i = 0; i < length; i++) {
+                const to = this.finalText[i];
+                const end = baseEnd + Math.floor(Math.random() * extra);
+                this.queue.push({ to, end, char: null });
+            }
+
+            this.frame = 0;
+            this.update();
+        }
+
+        update() {
+            let output = '';
+            let complete = 0;
+
+            for (let i = 0; i < this.queue.length; i++) {
+                const item = this.queue[i];
+                if (this.frame >= item.end) {
+                    complete++;
+                    output += item.to;
+                } else {
+                    if (!item.char || this.frame % 2 === 0) {
+                        item.char = this.randomChar();
+                    }
+                    output += item.char;
+                }
+            }
+
+            this.el.textContent = output;
+
+            if (complete === this.queue.length) {
+                cancelAnimationFrame(this.frameRequest);
+                return;
+            }
+
+            this.frameRequest = requestAnimationFrame(this.update.bind(this));
+            this.frame++;
+        }
+
+        randomChar() {
+            return this.chars[Math.floor(Math.random() * this.chars.length)];
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        /* ========= 标题 + 副标题 乱码效果 ========= */
+        const subLabelEl = document.getElementById('subLabel');
+        const titleLine1El = document.getElementById('titleLine1');
+        const titleLine2El = document.getElementById('titleLine2');
+
+        const subText = "AFTER MIDNIGHT ONLY";
+        const title1Text = "A private chamber";
+        const title2Text = "for secrets & shadows";
+
+        const s1 = new TextScrambler(subLabelEl, subText);
+        const s2 = new TextScrambler(titleLine1El, title1Text);
+        const s3 = new TextScrambler(titleLine2El, title2Text);
+
+        setTimeout(() => {
+            s1.start();
+            s2.start();
+            s3.start();
+        }, 500);
+
+        /* ========= 视频逻辑 ========= */
+        const video = document.getElementById('bg-video');
+        const muteBtn = document.getElementById('muteBtn');
+        const audioText = document.getElementById('audioText');
+        const iconVol = document.getElementById('icon-vol');
+        const iconMute = document.getElementById('icon-mute');
+        const videoContainer = document.getElementById('videoContainer');
+        const videoNameDisplay = document.getElementById('videoName');
+
+        const totalVideos = 55;
+        const baseUrl = 'https://save.aura.us.kg/Mobile/';
+
+        let isMuted = false;
+        let currentIndex = 1;
+
+        function getRandomVideoIndex() {
+            return Math.floor(Math.random() * totalVideos) + 1;
+        }
+
+        function updateMuteUI(muted) {
+            isMuted = muted;
+            video.muted = muted;
+            if (muted) {
+                audioText.innerText = "MUTED";
+                muteBtn.classList.add('muted');
+                iconVol.style.display = "none";
+                iconMute.style.display = "inline-block";
+            } else {
+                audioText.innerText = "AUDIO";
+                muteBtn.classList.remove('muted');
+                iconVol.style.display = "inline-block";
+                iconMute.style.display = "none";
+            }
+        }
+
+        function loadVideo(index) {
+            if (index < 1) index = 55;
+            if (index > 55) index = 1;
+            currentIndex = index;
+
+            const videoName = `bg${index}.MP4`;
+            video.src = baseUrl + videoName;
+            videoNameDisplay.innerText = `LOST FRAGMENTS #${index} / 55`;
+
+            video.volume = 0.7;
+            video.muted = isMuted;
+
+            video.load();
+            const playPromise = video.play();
+
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    // 自动播放被拦截：降级为静音播放
+                    updateMuteUI(true);
+                    video.play();
+                });
+            }
+        }
+
+        // 初始化
+        updateMuteUI(false); // 默认有声
+        let startIndex = getRandomVideoIndex();
+        loadVideo(startIndex);
+
+        // 静音按钮
+        muteBtn.addEventListener('click', () => {
+            updateMuteUI(!isMuted);
+        });
+
+        // 播放结束自动下一条
+        video.addEventListener('ended', () => {
+            let nextIndex = getRandomVideoIndex();
+            if (nextIndex === currentIndex) nextIndex = nextIndex + 1;
+            loadVideo(nextIndex);
+        });
+
+        // 鼠标滚轮切换（仅视频区域）
+        let isScrolling = false;
+        videoContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            if (isScrolling) return;
+            isScrolling = true;
+
+            setTimeout(() => {
+                isScrolling = false;
+            }, 800);
+
+            if (e.deltaY > 0) {
+                loadVideo(currentIndex + 1);
+            } else {
+                loadVideo(currentIndex - 1);
+            }
+        }, { passive: false });
+
+        // 仅视频区域禁止右键
+        videoContainer.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            return false;
+        });
+
+        // 禁用空格暂停全局页面
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && e.target === document.body) {
+                e.preventDefault();
+            }
+        });
+
+        /* ========= 一言 API (https://v1.hitokoto.cn/?c=j) ========= */
+        const hitokotoTextEl = document.getElementById('hitokotoText');
+        const hitokotoBlockEl = document.getElementById('hitokotoBlock');
+
+        if (hitokotoTextEl && hitokotoBlockEl) {
+            // 封装成一个函数，方便重复调用
+            function fetchHitokoto() {
+                fetch('https://v1.hitokoto.cn/?c=j')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.hitokoto) {
+                            const text = data.hitokoto;
+
+                            // 显示到页面：大写 + 框里
+                            hitokotoTextEl.textContent = text.toUpperCase();
+
+                            // 同时更新网页标题
+                            const shortText = text.length > 18 ? text.slice(0, 18) + '…' : text;
+                            document.title = 'Lyn · Main Page ~ ' + shortText;
+
+                            // 确保容器是显示的（防止之前因为失败被隐藏）
+                            hitokotoBlockEl.style.display = '';
+                        } else {
+                            // 没取到内容就暂时不更新，不强行隐藏
+                            console.warn('Hitokoto: empty data');
+                        }
+                    })
+                    .catch((err) => {
+                        console.warn('Hitokoto error:', err);
+                        // 接口偶尔挂掉就当这 10 秒不更新，等下一次
+                    });
+            }
+
+            // 页面加载后先来一句
+            fetchHitokoto();
+
+            // 每 10 秒刷新一次（10000ms）
+            setInterval(fetchHitokoto, 10000);
+        }
+    });
+</script>
+</body>
+</html>
