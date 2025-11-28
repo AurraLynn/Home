@@ -46,7 +46,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS（主要用于少量工具类） -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.15/lib/index.min.js"></script>
 
     <!-- Font Awesome 图标（心、刷新、小历史等） -->
     <link
@@ -111,6 +111,8 @@
             height: 100vh;
             position: relative;
             z-index: 1;
+            border-radius: 24px;         /* 背景视频整体圆角 */
+            overflow: hidden;            /* 裁剪视频到圆角 */
         }
 
         .video-player {
@@ -120,55 +122,54 @@
             object-position: center;
         }
 
-        /* ===== 滑动提示：顶部三点 + 文案 “滑动切换视频” ===== */
-        .swipe-indicator {
-            position: absolute;          /* 粘在视频层上面 */
-            top: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 5;
-            display: flex;
-            flex-direction: column;
+        /* 视频右上角静音按钮（小药丸样式） */
+        .mute-toggle {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            z-index: 6;
+        }
+
+        .mute-pill {
+            display: inline-flex;
             align-items: center;
-            gap: 4px;
-            opacity: 0.85;
-            pointer-events: none;        /* 不挡手势和点击 */
-            transition: opacity 0.3s ease;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.78);
+            border: 1px solid rgba(148, 163, 184, 0.75);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            cursor: pointer;
+            transition:
+                    background 0.2s ease,
+                    transform 0.2s ease,
+                    box-shadow 0.2s ease,
+                    border-color 0.2s ease;
         }
 
-        .swipe-dots {
-            display: flex;
-            gap: 4px;
+        .mute-pill:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.7);
+            background: rgba(15, 23, 42, 0.92);
         }
 
-        .swipe-dot {
-            width: 4px;
-            height: 4px;
-            background: #ffffff;
-            border-radius: 50%;
-            animation: swipeDotPulse 1.5s infinite;
+        .mute-pill .mute-icon {
+            width: 14px;
+            height: 14px;
+            fill: #e5e7eb;
+            transition: fill 0.2s ease, transform 0.2s ease;
         }
 
-        .swipe-dot:nth-child(2) {
-            animation-delay: 0.3s;
+        .mute-pill.is-unmuted {
+            background: rgba(250, 250, 250, 0.16);
+            border-color: #facc15;
         }
 
-        .swipe-dot:nth-child(3) {
-            animation-delay: 0.6s;
-        }
-
-        .swipe-text {
-            font-size: 12px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-top: 4px;
-            color: rgba(249, 250, 251, 0.9);
-        }
-
-        @keyframes swipeDotPulse {
-            0%   { transform: scale(1); }
-            50%  { transform: scale(1.5); }
-            100% { transform: scale(1); }
+        .mute-pill.is-unmuted .mute-icon {
+            fill: #fde68a;
+            transform: scale(1.05);
         }
 
         /* ==================== 第二层：底部卡片面板 ==================== */
@@ -218,13 +219,13 @@
             justify-content: center;
             padding-top: 10px;
             padding-bottom: 10px;
-            transform: translateY(-10px);   /* 关键：整体往上抬 6px */
+            transform: translateY(-10px);   /* 关键：整体往上抬一点 */
         }
 
-        /* 小白条本体，稍微缩小一点 */
+        /* 小白条本体 */
         .ios-slide-bar {
-            width: 44px;   /* 原来 60px -> 缩短一点 */
-            height: 4px;   /* 原来 6px -> 更细一点 */
+            width: 44px;
+            height: 4px;
             background: rgba(248, 250, 252, 0.9);
             border-radius: 999px;
             box-shadow: 0 0 8px rgba(148, 163, 184, 0.9);
@@ -411,6 +412,54 @@
             transform: rotate(360deg) !important;
         }
 
+        /* ==================== 鸡汤下方导航区域 ==================== */
+        .nav-links {
+            margin-top: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .nav-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 14px;
+            border-radius: 999px;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #e5e7eb;
+            text-decoration: none;
+            white-space: nowrap;
+            border: 1px solid rgba(148, 163, 184, 0.75);
+            background: radial-gradient(
+                    circle at top left,
+                    rgba(148, 163, 184, 0.22),
+                    rgba(15, 23, 42, 0.94)
+            );
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition:
+                    background 0.2s ease,
+                    transform 0.2s ease,
+                    box-shadow 0.2s ease,
+                    border-color 0.2s ease;
+        }
+
+        .nav-pill:hover {
+            transform: translateY(-1px);
+            border-color: #facc15;
+            background: radial-gradient(
+                    circle at top left,
+                    rgba(248, 250, 252, 0.26),
+                    rgba(15, 23, 42, 1)
+            );
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.7);
+        }
+
         /* ==================== 历史记录 / 评论区 ==================== */
         .history-wrapper {
             margin-top: 22px;
@@ -592,21 +641,21 @@
     </style>
 </head>
 <body>
-<!-- ==================== 顶层：背景视频 & 滑动提示 ==================== -->
+<!-- ==================== 顶层：背景视频 ==================== -->
 <div class="video-layer" id="videoLayer">
     <video class="video-player" id="videoPlayer" autoplay loop playsinline muted>
         <!-- 视频地址后面会被 JS 替换为随机 bg1~bgN -->
         <source src="https://save.aura.us.kg/Mobile/bg1.MP4" type="video/mp4" />
     </video>
 
-    <!-- 顶部滑动提示：三个点 + “滑动切换视频” -->
-    <div class="swipe-indicator" id="swipeHint">
-        <div class="swipe-dots">
-            <div class="swipe-dot"></div>
-            <div class="swipe-dot"></div>
-            <div class="swipe-dot"></div>
-        </div>
-        <span class="swipe-text">滑动切换视频</span>
+    <!-- 右上角静音按钮（小药丸样式） -->
+    <div class="mute-toggle">
+        <button class="mute-pill is-muted" id="muteButton" aria-label="Toggle sound">
+            <!-- 简洁音量 SVG 图标 -->
+            <svg class="mute-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 9v6h3.5L12 19V5L7.5 9H4z"></path>
+            </svg>
+        </button>
     </div>
 </div>
 
@@ -648,6 +697,16 @@
                     <span>Another one</span>
                 </button>
             </div>
+        </div>
+
+        <!-- 鸡汤下方导航区域 -->
+        <div class="nav-links">
+            <a href="/Card" class="nav-pill">CARD</a>
+            <a href="/Paste" class="nav-pill">PASTE</a>
+            <a href="/Privacy" class="nav-pill">PRIVACY</a>
+            <a href="https://bkomjowukswt.ap-northeast-1.clawcloudrun.com" class="nav-pill" target="_blank" rel="noopener noreferrer">
+                QingLong
+            </a>
         </div>
 
         <!-- 历史记录（评论区） -->
@@ -718,10 +777,11 @@
     const videoPlayer = document.getElementById("videoPlayer");
     const videoLayer = document.getElementById("videoLayer");
     const itemLayer = document.getElementById("itemLayer");
-    const swipeHint = document.getElementById("swipeHint");
 
     const slideBar = document.querySelector(".ios-slide-bar");
     const slideBarWrapper = document.querySelector(".slide-bar-wrapper");
+
+    const muteButton = document.getElementById("muteButton");
 
     const dujitangText = document.getElementById("dujitangText");
     const authorInfo = document.getElementById("authorInfo");
@@ -790,10 +850,7 @@
         if (newHeight > MAX_HEIGHT) newHeight = MAX_HEIGHT;
 
         itemLayer.style.height = newHeight + "px";
-
-        // ratio 用于控制是否静音（当前阈值设成 1.0，相当于拖动不影响静音）
-        const ratio = newHeight / (window.innerHeight || 1);
-        videoPlayer.muted = ratio > 1.0; // 如果以后要恢复拖动控制静音，改成 ratio > 0.35 之类
+        // 删除“收起第二层控制播放”的逻辑，视频始终自动播放，由静音按钮单独控制
     }
 
     // 结束拖动，恢复平滑过渡效果
@@ -806,7 +863,7 @@
         }, 260);
     }
 
-    // 点击小白条：在“较低”和“默认高度”之间切换
+    // 点击小白条：在“较低”和“默认高度”之间切换（不再控制静音）
     function togglePanelByClick() {
         const h = itemLayer.getBoundingClientRect().height;
         const mid = (MIN_HEIGHT + DEFAULT_HEIGHT) / 2;
@@ -815,12 +872,10 @@
             // 从低位（接近最小） → 回到默认高度（40%）
             itemLayer.style.height = DEFAULT_HEIGHT + "px";
             itemLayer.classList.remove("collapsed");
-            videoPlayer.muted = true;
         } else {
             // 从较高 → 收到最低高度（15%）
             itemLayer.style.height = MIN_HEIGHT + "px";
             itemLayer.classList.add("collapsed");
-            videoPlayer.muted = false;
         }
     }
 
@@ -836,9 +891,7 @@
             togglePanelByClick();
         });
 
-// ======== 触摸拖动（移动端）：改绑到 slideBarWrapper，且非 passive，防止内容滑动 ========
-
-// 把拖动起点、过程、结束拆成三个函数，方便绑定到 wrapper
+        // 触摸拖动（移动端）：绑定到 slideBarWrapper
         function handleTouchStartOnBar(e) {
             if (e.touches && e.touches.length > 0) {
                 e.preventDefault(); // 阻止一开始就触发滚动
@@ -852,7 +905,6 @@
             movePanelDrag(e.touches[0].clientY);
         }
 
-        // 👇 就是这个函数改了，手机上“点击小白条”也会生效
         function handleTouchEndOnBar(e) {
             // 先结束拖动
             endPanelDrag();
@@ -866,7 +918,6 @@
             dragMoved = false;
         }
 
-// 用整个 slideBarWrapper 当“手势区域”，比细小白条更好点中
         if (slideBarWrapper) {
             slideBarWrapper.addEventListener("touchstart", handleTouchStartOnBar, { passive: false });
             slideBarWrapper.addEventListener("touchmove", handleTouchMoveOnBar, { passive: false });
@@ -1072,14 +1123,7 @@
             `Today has passed: <strong>${clamped.toFixed(1)}%</strong><br>🫧&nbsp;${hint}`;
     }
 
-    // 隐藏“滑动切换视频”提示
-    function hideSwipeHint() {
-        if (swipeHint) {
-            swipeHint.style.display = "none";
-        }
-    }
-
-    // ========== 移动端：上下滑切换视频 ==========
+    // ========== 移动端：上下滑切换视频（仅保留功能，已删除提示 UI） ==========
     let touchStartY = null;
     videoLayer.addEventListener("touchstart", (e) => {
         if (e.touches && e.touches.length > 0) {
@@ -1094,7 +1138,6 @@
         const threshold = 40; // 滑动阈值
 
         if (Math.abs(diffY) > threshold) {
-            hideSwipeHint();
             if (diffY < 0) {
                 // 上滑：下一段视频
                 playNextVideo();
@@ -1110,7 +1153,6 @@
     videoLayer.addEventListener("wheel", (e) => {
         const delta = e.deltaY;
         if (Math.abs(delta) < 20) return;
-        hideSwipeHint();
         if (delta > 0) {
             playNextVideo();
         } else {
@@ -1120,10 +1162,8 @@
 
     document.addEventListener("keydown", (e) => {
         if (e.key === "ArrowUp") {
-            hideSwipeHint();
             playPrevVideo();
         } else if (e.key === "ArrowDown") {
-            hideSwipeHint();
             playNextVideo();
         }
     });
@@ -1206,10 +1246,10 @@
                 <div class="like-btn ${liked ? "active" : ""}" data-id="${item.id}">
                   <i class="fa ${liked ? "fa-heart" : "fa-heart-o"}"></i>
                   ${
-                likeCount > 0
-                    ? `<span class="like-count">${likeCount}</span>`
-                    : ""
-            }
+                    likeCount > 0
+                        ? `<span class="like-count">${likeCount}</span>`
+                        : ""
+                }
                 </div>
               </div>
               <span class="comment-time">${timeText}</span>
@@ -1331,6 +1371,16 @@
         }
     }
 
+    // ==================== 静音按钮逻辑 ====================
+    function syncMuteButton() {
+        if (!muteButton) return;
+        if (videoPlayer.muted) {
+            muteButton.classList.remove("is-unmuted");
+        } else {
+            muteButton.classList.add("is-unmuted");
+        }
+    }
+
     // ==================== 初始化 ====================
     document.addEventListener("DOMContentLoaded", async () => {
         // 计算面板高度对应的 px 值
@@ -1343,12 +1393,21 @@
         // 视频自然结束后自动播放下一段
         videoPlayer.addEventListener("ended", playNextVideo);
 
-        // 面板初始高度：默认高度（35%）
+        // 面板初始高度：默认高度（40%）
         itemLayer.style.height = DEFAULT_HEIGHT + "px";
         itemLayer.classList.remove("collapsed");
 
         // 初始设置：视频静音（避免一进页面就响）
         videoPlayer.muted = true;
+        syncMuteButton();
+
+        // 静音按钮点击切换
+        if (muteButton) {
+            muteButton.addEventListener("click", () => {
+                videoPlayer.muted = !videoPlayer.muted;
+                syncMuteButton();
+            });
+        }
 
         // 底部时间 & 今日已过进度（每 30 秒更新一次）
         updateMobileTimeAndProgress();
