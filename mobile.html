@@ -1,647 +1,1386 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <!-- 基础编码与视口 -->
     <meta charset="UTF-8">
-    <!-- 适配移动端 -->
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- 初始页面标题（加载完一言后会被 JS 覆盖） -->
-    <title>Lyn · Main Page</title>
+    <!-- 页面标题（浏览器标签显示，后面会被鸡汤动态覆盖） -->
+    <title>Lynn</title>
 
-    <!-- 🌍 国外网站 / 通用 Open Graph 预览（Telegram、X 等） -->
+    <!-- ===== 国内：微信、QQ、抖音、微博等通用卡片（Open Graph） ===== -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Lyn · Main Page">
-    <meta property="og:description" content="Just someone who loves to mess around on the internet.">
-    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:site_name" content="Lynn">
+    <meta property="og:title" content="Lynn">
+    <meta property="og:description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/Fm2.png">
     <meta property="og:url" content="https://aura.us.kg">
 
-    <!-- 🇨🇳 国内网站 / 微信 / QQ / 微博 使用的描述和图片 -->
+    <!-- WeChat / QQ 等预览补充：明确图片信息，增加被识别概率 -->
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <!-- 备用字段：部分国内应用会读取 -->
+    <meta name="image" content="https://save.aura.us.kg/Picture/Fm2.png">
+    <link rel="image_src" href="https://save.aura.us.kg/Picture/Fm2.png">
+
+    <!-- 基础 SEO + 微信兼容 -->
     <meta name="description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
-    <meta itemprop="name" content="Lyn · Main Page">
     <meta itemprop="image" content="https://save.aura.us.kg/Picture/Fm2.png">
 
-    <!-- 网站图标 -->
+    <!-- ===== 国外：Twitter / X 专用（英文预览 + bg.jpg） ===== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Lynn">
+    <meta name="twitter:description" content="Just someone who loves to mess around on the internet.">
+    <meta name="twitter:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta name="twitter:url" content="https://aura.us.kg">
+    <meta name="twitter:site" content="@wsm_Lyn">
+    <meta name="twitter:creator" content="@wsm_Lyn">
+
+    <!-- 浏览器标签图标 -->
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
 
-    <!-- 字体 -->
+    <!-- 标题英文字体：Poppins，用于“Hey, I'm Lyn”等 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <style>
-        :root {
-            --bg-main: #050509;
-            --accent-gold: #e9b765;
-            --accent-gold-soft: rgba(233, 183, 101, 0.32);
-            --text-main: #f5f5f5;
-            --text-muted: #9ca3af;
-            --text-soft: #6b7280;
+    <!-- Tailwind CSS（主要用于少量工具类） -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome 图标（心、刷新、小历史等） -->
+    <link
+            href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"
+            rel="stylesheet"
+    />
+
+    <!-- Tailwind 主题扩展（可选） -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#8B5CF6",
+                        secondary: "#EC4899",
+                        dark: "#111827",
+                        light: "#F9FAFB",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "system-ui", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+
+    <!-- Tailwind 自定义工具类（暂时没大量用到） -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.35);
+            }
+            .glass-effect {
+                background: rgba(255, 255, 255, 0.08);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.16);
+            }
         }
+    </style>
 
+    <!-- 页面自定义样式 -->
+    <style>
+        /* 全局基础设置 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+            "PingFang SC", "Microsoft Yahei", system-ui, sans-serif;
         }
 
         body {
-            min-height: 100vh;
-            background: radial-gradient(circle at 10% 0%, #111827 0%, #02010a 55%, #000 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-            overflow: hidden;
+            background: #000;
+            overflow: hidden;   /* 禁止整体滚动，底部卡片自己滚 */
+            height: 100vh;
         }
 
-        /* 9:16 高度的“手机屏幕” */
-        .phone-frame {
-            position: relative;
-            width: min(100vw, 420px);
-            aspect-ratio: 9 / 16;
-            border-radius: 34px;
-            overflow: hidden;
-            background: #02010a;
-            box-shadow:
-                0 30px 80px rgba(0, 0, 0, 0.95),
-                0 0 0 1px rgba(255, 255, 255, 0.06);
-            touch-action: none;
-        }
-
-        /* 背景视频层 */
+        /* ==================== 顶层：全屏视频 ==================== */
         .video-layer {
-            position: absolute;
-            inset: 0;
-            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
         }
 
-        .video-layer video {
+        .video-player {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            filter: saturate(1.05) contrast(1.02) brightness(0.9);
-            transition: filter 0.5s ease;
+            object-position: center;
         }
 
-        .video-overlay {
-            position: absolute;
-            inset: 0;
-            background:
-                linear-gradient(to bottom, rgba(0,0,0,0.68), rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.9) 100%);
-            pointer-events: none;
-        }
-
-        .noise-layer {
-            position: absolute;
-            inset: -20px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='3' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.13'/%3E%3C/svg%3E");
-            mix-blend-mode: soft-light;
-            pointer-events: none;
-        }
-
-        /* 顶部：ONLY HERE + 静音按钮 + 滑动提示 */
-        .top-bar {
-            position: absolute;
-            top: 28px; /* ⬇️ 整体下移，避免被浏览器顶部挡住（原 12px） */
-            left: 14px;
-            right: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            z-index: 5;
-        }
-
-        .brand-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 3px 9px;
-            border-radius: 999px;
-            border: 1px solid rgba(156, 163, 175, 0.55);
-            backdrop-filter: blur(12px);
-            background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(15,23,42,0.4));
-            font-size: 9px;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: #e5e7eb;
-            transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease, border-color 0.25s ease;
-        }
-
-        .brand-pill:hover {
-            transform: translateY(-0.5px);
-            border-color: rgba(209, 213, 219, 0.9);
-            box-shadow: 0 4px 14px rgba(0,0,0,0.7);
-        }
-
-        /* 静音按钮：小号 pill + 互动效果 */
-        .mute-btn {
-            position: relative;
-            padding: 3px 9px;
-            border-radius: 999px;
-            border: 1px solid rgba(148,163,184,0.8);
-            background: radial-gradient(circle at 20% 0%, rgba(249,250,251,0.16), rgba(15,23,42,0.96));
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            backdrop-filter: blur(14px);
-            box-shadow:
-                0 3px 12px rgba(0,0,0,0.8),
-                0 0 0 1px rgba(15,23,42,0.8);
-            gap: 4px;
-            transition: background 0.25s ease, box-shadow 0.25s ease,
-                        transform 0.15s ease, border-color 0.25s ease, opacity 0.2s ease;
-        }
-
-        .mute-btn:hover {
-            transform: translateY(-0.5px);
-            box-shadow:
-                0 5px 18px rgba(0,0,0,0.9),
-                0 0 0 1px rgba(31,41,55,1);
-        }
-
-        .mute-btn:active {
-            transform: translateY(0) scale(0.97);
-            box-shadow:
-                0 2px 8px rgba(0,0,0,0.7),
-                0 0 0 1px rgba(15,23,42,0.9);
-        }
-
-        .mute-btn[data-muted="false"] {
-            border-color: var(--accent-gold);
-            background: radial-gradient(circle at 10% 0%, rgba(250,250,250,0.25), rgba(15,23,42,0.96));
-            box-shadow:
-                0 4px 18px rgba(0,0,0,0.95),
-                0 0 0 1px rgba(55,65,81,1);
-        }
-
-        .mute-dot {
-            width: 4px;
-            height: 4px;
-            border-radius: 999px;
-            background: var(--accent-gold);
-            box-shadow: 0 0 6px rgba(233, 183, 101, 0.9);
-            opacity: 0.7;
-            transition: opacity 0.25s ease, box-shadow 0.25s ease;
-        }
-
-        .mute-btn[data-muted="false"] .mute-dot {
-            opacity: 1;
-            box-shadow: 0 0 10px rgba(233,183,101,1);
-        }
-
-        .mute-label {
-            font-size: 8px;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            color: rgba(229,231,235,0.78);
-            transition: color 0.25s ease;
-        }
-
-        .mute-btn[data-muted="false"] .mute-label {
-            color: var(--accent-gold);
-        }
-
-        .mute-icon {
-            position: relative;
-            width: 10px;
-            height: 10px;
-        }
-
-        .mute-icon svg {
-            width: 10px;
-            height: 10px;
-            fill: none;
-            stroke-width: 1.6;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            position: absolute;
-            inset: 0;
-            transition: opacity 0.25s ease, transform 0.25s ease;
-        }
-
-        .icon-sound {
-            stroke: #e5e7eb;
-            opacity: 0;
-            transform: scale(0.8);
-        }
-
-        .icon-mute {
-            stroke: #e5e7eb;
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .mute-btn[data-muted="false"] .icon-sound {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .mute-btn[data-muted="false"] .icon-mute {
-            opacity: 0;
-            transform: scale(0.8);
-        }
-
-        .swipe-hint {
-            position: absolute;
-            top: 70px; /* 跟着一起稍微下移一点（原 54px） */
+        /* ===== 滑动提示：顶部三点 + 文案 “滑动切换视频” ===== */
+        .swipe-indicator {
+            position: absolute;          /* 粘在视频层上面 */
+            top: 16px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 10px;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid rgba(148, 163, 184, 0.6);
-            backdrop-filter: blur(12px);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            z-index: 4;
-            animation: hintFloat 3s ease-in-out infinite;
-        }
-
-        .swipe-hint-dot {
-            width: 4px;
-            height: 12px;
-            border-radius: 999px;
-            background: var(--accent-gold-soft);
-        }
-
-        .swipe-hint.hidden {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.4s ease;
-        }
-
-        /* 中间文案 */
-        .center-copy {
-            position: absolute;
-            left: 20px;
-            right: 20px;
-            top: 24%;
-            transform: translateY(-30%);
-            z-index: 3;
-            color: var(--text-main);
-        }
-
-        .tagline {
-            font-family: 'Barlow Condensed', system-ui, sans-serif;
-            font-size: 12px;
-            letter-spacing: 0.30em;
-            text-transform: uppercase;
-            color: var(--text-soft);
-        }
-
-        .main-title {
-            margin-top: 12px;
-            font-family: 'Barlow Condensed', system-ui, sans-serif;
-            font-size: 28px;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            line-height: 1.3;
-        }
-
-        .main-title span.dim {
-            color: rgba(249,250,251,0.35);
-        }
-
-        /* 底部信息条 —— 往上抬，避免被底部工具栏挡住 */
-        .bottom-panel {
-            position: absolute;
-            left: 18px;
-            right: 18px;
-            bottom: 40px;
-            z-index: 3;
-            padding: 10px 12px;
-            border-radius: 18px;
-            background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(15,23,42,0.8));
-            border: 1px solid rgba(31, 41, 55, 0.9);
-            backdrop-filter: blur(16px);
+            z-index: 5;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            opacity: 0.85;
+            pointer-events: none;        /* 不挡手势和点击 */
+            transition: opacity 0.3s ease;
+        }
+
+        .swipe-dots {
+            display: flex;
             gap: 4px;
         }
 
-        .bottom-title {
-            font-size: 10px;
-            letter-spacing: 0.18em;
+        .swipe-dot {
+            width: 4px;
+            height: 4px;
+            background: #ffffff;
+            border-radius: 50%;
+            animation: swipeDotPulse 1.5s infinite;
+        }
+
+        .swipe-dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .swipe-dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        .swipe-text {
+            font-size: 12px;
+            letter-spacing: 1px;
             text-transform: uppercase;
-            color: var(--accent-gold);
-        }
-
-        .bottom-sub {
-            font-size: 11px;
-            color: var(--text-muted);
-            min-height: 1.4em;
-        }
-
-        .clip-row {
             margin-top: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 10px;
-            color: rgba(209,213,219,0.9);
+            color: rgba(249, 250, 251, 0.9);
         }
 
-        .clip-title {
-            text-transform: uppercase;
-            letter-spacing: 0.16em;
+        @keyframes swipeDotPulse {
+            0%   { transform: scale(1); }
+            50%  { transform: scale(1.5); }
+            100% { transform: scale(1); }
         }
 
-        .clip-index {
-            font-family: 'Barlow Condensed', system-ui, sans-serif;
-            letter-spacing: 0.22em;
+        /* ==================== 第二层：底部卡片面板 ==================== */
+        .item-layer {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 45vh;  /* 初始高度会在 JS 中被 DEFAULT_RATIO 覆盖 */
+            background: linear-gradient(
+                    180deg,
+                    rgba(15, 23, 42, 0.96) 0%,
+                    rgba(24, 24, 35, 0.96) 45%,
+                    rgba(15, 23, 42, 0.98) 100%
+            );
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            z-index: 3;
+            overflow: hidden;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            transition: height 0.25s ease;
         }
 
-        .clip-index span {
-            opacity: 0.65;
+        .item-layer.collapsed {
+            /* 折叠状态的高度由 JS 控制为 MIN_HEIGHT */
         }
 
-        .flash-layer {
+        /* 面板内部内容区域：自己滚动 */
+        .item-content {
             position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 50% 40%, rgba(249,250,251,0.32), transparent 60%);
-            opacity: 0;
-            pointer-events: none;
-            z-index: 2;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            /* 顶部留的空间减小一点，让内容整体上去 */
+            padding: 7px 16px 18px;
+            overflow-y: auto;
         }
 
-        .flash-layer.show {
-            animation: flash 0.35s ease-out;
+        /* 小白条容器再往上“顶一格”，几乎贴着第二层圆角边缘 */
+        .slide-bar-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            transform: translateY(-10px);   /* 关键：整体往上抬 6px */
         }
 
-        @keyframes hintFloat {
+        /* 小白条本体，稍微缩小一点 */
+        .ios-slide-bar {
+            width: 44px;   /* 原来 60px -> 缩短一点 */
+            height: 4px;   /* 原来 6px -> 更细一点 */
+            background: rgba(248, 250, 252, 0.9);
+            border-radius: 999px;
+            box-shadow: 0 0 8px rgba(148, 163, 184, 0.9);
+            cursor: pointer;
+        }
+
+        /* ==================== 标题区域：Hey, I'm Lyn ==================== */
+        .hero-title {
+            font-family: "Poppins", -apple-system, BlinkMacSystemFont,
+            "PingFang SC", system-ui, sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            line-height: 1.25;
+            color: #e5e7eb;
+        }
+
+        .hero-name {
+            font-weight: 700;
+            background: linear-gradient(135deg, #f97316, #ec4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 14px rgba(0, 0, 0, 0.7);
+        }
+
+        .hero-subtitle {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+            "Microsoft Yahei", system-ui, sans-serif;
+            font-size: 0.82rem;
+            line-height: 1.7;
+            color: #a1a1aa;
+            letter-spacing: 0.01em;
+        }
+
+        /* ==================== 毒鸡汤卡片 ==================== */
+        .dujitang-container {
+            margin-top: 18px;
+            padding: 20px 16px 52px;
+            border-radius: 16px;
+            background: radial-gradient(
+                    circle at top left,
+                    rgba(255, 255, 255, 0),
+                    transparent 60%
+            ),
+            radial-gradient(
+                    circle at bottom right,
+                    rgba(255, 255, 255, 0),
+                    transparent 60%
+            ),
+            rgba(0, 0, 0, 0.07);
+            color: #ffffff;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 鸡汤文字的“呼吸”动画 */
+        #dujitangText {
+            font-size: 17px;
+            line-height: 1.7;
+            text-align: center;
+            margin-bottom: 18px;
+            opacity: 0.8;
+            animation: breatheText 4.5s ease-in-out infinite;
+        }
+
+        @keyframes breatheText {
             0% {
-                transform: translate(-50%, 0);
+                opacity: 0.65;
+                filter: brightness(0.85);
             }
             50% {
-                transform: translate(-50%, -4px);
+                opacity: 1;
+                filter: brightness(1.12);
             }
             100% {
-                transform: translate(-50%, 0);
+                opacity: 0.7;
+                filter: brightness(0.9);
             }
         }
 
-        @keyframes flash {
-            0% {
-                opacity: 0;
-            }
-            25% {
-                opacity: 0.5;
-            }
-            100% {
-                opacity: 0;
-            }
+        /* 鸡汤作者信息区域 */
+        .author-info {
+            margin-top: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            color: rgba(249, 250, 251, 0.9);
+            font-size: 13px;
+            gap: 4px;
         }
 
-        @media (max-width: 360px) {
-            .main-title {
-                font-size: 24px;
-            }
-            .bottom-panel {
-                padding: 8px 10px;
-            }
+        .author-info span:first-child {
+            opacity: 0.7;
+        }
+
+        .author-name {
+            font-weight: 500;
+        }
+
+        /* 鸡汤卡片底部操作区：左边红心，右边 “Another one” */
+        .action-row {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* ========== 红心点赞区域（与“换一条”同风格） ========== */
+        .like-area {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(6px);
+            color: rgba(255, 255, 255, 0.76);
+            font-size: 13px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0);
+            transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
+        }
+
+        .like-area i {
+            color: rgba(218, 6, 6, 0.84);  /* 红色心形图标 */
+            transition: transform 0.22s ease, color 0.2s ease;
+        }
+
+        .like-area.active i {
+            transform: scale(1.25);
+        }
+
+        /* 红心数字：细一点、稍微小一号 */
+        .like-count {
+            font-weight: 400;
+            font-size: 13px;
+        }
+
+        /* 悬浮在红心区域：背景变红，略微上移，文字更亮 */
+        .like-area:hover {
+            background: rgb(159, 14, 14);
+            transform: translateY(-1px);
+            color: #ffffff;
+        }
+
+        .like-area:hover i {
+            color: #fee2e2;
+        }
+
+        /* “换一条 / Another one” 按钮 */
+        .another-one-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 14px;
+            border-radius: 999px;
+            border: none;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(6px);
+            color: #f9fafb;
+            font-size: 13px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0);
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .another-one-btn i {
+            margin-right: 8px;
+            font-size: 14px;
+            transition: transform 0.5s ease;
+        }
+
+        .another-one-btn:hover {
+            background: rgb(159, 14, 14);
+            transform: translateY(-1px);
+        }
+
+        .spin {
+            transform: rotate(360deg) !important;
+        }
+
+        /* ==================== 历史记录 / 评论区 ==================== */
+        .history-wrapper {
+            margin-top: 22px;
+            background: radial-gradient(
+                    circle at top left,
+                    rgba(255, 255, 255, 0),
+                    transparent 55%
+            ),
+            radial-gradient(
+                    circle at bottom right,
+                    rgba(255, 255, 255, 0),
+                    transparent 55%
+            ),
+            rgba(0, 0, 0, 0.12);
+            border-radius: 16px;
+            padding: 14px 12px 4px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0);
+        }
+
+        .history-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #e5e7eb;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .history-subtitle {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 6px;
+        }
+
+        .history-title span {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        #historyContainer {
+            margin-top: 4px;
+        }
+
+        .comment-item {
+            display: flex;
+            padding: 10px 4px;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.8);
+        }
+
+        .avatar-container {
+            margin-right: 10px;
+            position: relative;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #111827;
+            border: 2px solid rgba(148, 163, 184, 0.7);
+        }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            gap: 6px;
+        }
+
+        .username {
+            font-weight: 500;
+            font-size: 13px;
+            color: #e5e7eb;
+        }
+
+        .comment-text {
+            font-size: 13px;
+            color: #d1d5db;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .comment-actions {
+            display: flex;
+            align-items: center;
+            font-size: 11px;
+            color: #9ca3af;
+            justify-content: space-between;
+        }
+
+        .comment-actions-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .like-btn {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .like-btn i {
+            margin-right: 4px;
+            font-size: 14px;
+            color: #6b7280;
+            transition: color 0.18s ease, transform 0.18s ease;
+        }
+
+        .like-btn.active i {
+            color: #f97373;
+            transform: scale(1.2);
+        }
+
+        .like-btn .like-count {
+            font-size: 11px;
+            color: #e5e7eb;
+        }
+
+        .comment-time {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px 10px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .empty-state i {
+            font-size: 36px;
+            margin-bottom: 8px;
+            color: #4b5563;
+        }
+
+        .mobile-footer {
+            border-top: 1px solid rgba(31, 41, 55, 0.8);
+            margin-top: 6px;
+            padding: 8px 4px 2px;
+            font-size: 11px;
+            color: #9ca3af;
+            text-align: center;
+        }
+
+        .mobile-footer span {
+            color: #e5e7eb;
+            font-weight: 500;
+            margin-left: 4px;
+        }
+
+        .mobile-day-progress {
+            margin-top: 4px;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #d1d5db;
+        }
+
+        .mobile-day-progress strong {
+            color: #facc15;
+            font-weight: 600;
+        }
+
+        /* 底部卡片内部滚动条样式（窄一点，美化一下） */
+        .item-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        .item-content::-webkit-scrollbar-thumb {
+            background-color: rgba(148, 163, 184, 0.7);
+            border-radius: 999px;
         }
     </style>
 </head>
 <body>
-<div class="phone-frame" id="phoneFrame">
-    <div class="video-layer">
-        <video id="bgVideo"
-               playsinline
-               webkit-playsinline
-               muted
-               loop
-               autoplay
-               preload="metadata"></video>
+<!-- ==================== 顶层：背景视频 & 滑动提示 ==================== -->
+<div class="video-layer" id="videoLayer">
+    <video class="video-player" id="videoPlayer" autoplay loop playsinline muted>
+        <!-- 视频地址后面会被 JS 替换为随机 bg1~bgN -->
+        <source src="https://save.aura.us.kg/Mobile/bg1.MP4" type="video/mp4" />
+    </video>
+
+    <!-- 顶部滑动提示：三个点 + “滑动切换视频” -->
+    <div class="swipe-indicator" id="swipeHint">
+        <div class="swipe-dots">
+            <div class="swipe-dot"></div>
+            <div class="swipe-dot"></div>
+            <div class="swipe-dot"></div>
+        </div>
+        <span class="swipe-text">滑动切换视频</span>
     </div>
+</div>
 
-    <div class="video-overlay"></div>
-    <div class="noise-layer"></div>
-    <div class="flash-layer" id="flashLayer"></div>
-
-    <!-- 顶部条 -->
-    <div class="top-bar">
-        <div class="brand-pill">
-            <span>ONLY HERE</span>
+<!-- ==================== 第二层：底部卡片（面板） ==================== -->
+<div class="item-layer" id="itemLayer">
+    <div class="item-content">
+        <!-- 小白条：拖动 / 点击控制面板高度（本身粘在顶部） -->
+        <div class="slide-bar-wrapper">
+            <div class="ios-slide-bar"></div>
         </div>
 
-        <!-- 静音按钮 -->
-        <button class="mute-btn" id="muteToggle" data-muted="true" aria-label="Toggle mute">
-            <span class="mute-dot"></span>
-            <span class="mute-label" id="muteLabel">MUTED</span>
-            <span class="mute-icon">
-                <!-- 有声音：speaker with waves -->
-                <svg class="icon-sound" viewBox="0 0 24 24">
-                    <path d="M4 9v6h3l4 3.5V5.5L7 9H4z"></path>
-                    <path d="M17 9a4 4 0 010 6"></path>
-                    <path d="M19 7a7 7 0 010 10"></path>
-                </svg>
-                <!-- 静音：speaker + cross -->
-                <svg class="icon-mute" viewBox="0 0 24 24">
-                    <path d="M4 9v6h3l4 3.5V5.5L7 9H4z"></path>
-                    <path d="M16 9l4 4m0-4l-4 4"></path>
-                </svg>
-            </span>
-        </button>
-    </div>
-
-    <!-- 滑动提示 -->
-    <div class="swipe-hint" id="swipeHint">
-        <div class="swipe-hint-dot"></div>
-        <span>SWIPE UP / DOWN TO SWITCH</span>
-    </div>
-
-    <!-- 中间文案 -->
-    <div class="center-copy">
-        <div class="tagline">A PRIVATE CHAMBER FOR QUIET NIGHTS</div>
-        <div class="main-title">
-            LONG NIGHTS,<br>
-            <span class="dim">UNSENT</span> MESSAGES
+        <!-- 标题 & 简介 -->
+        <div class="text-center mb-4">
+            <h1 class="hero-title text-shadow">
+                Hey, I'm <span class="hero-name">Lyn</span>
+            </h1>
+            <p class="hero-subtitle mt-2">
+                Just someone who loves to mess around on the internet.
+            </p>
         </div>
-    </div>
 
-    <!-- 底部信息条 -->
-    <div class="bottom-panel">
-        <div class="bottom-title">NO RECORDS, NO AUDIENCE, ONLY YOU</div>
-        <div class="bottom-sub" id="quoteText">
-            Just someone who loves to mess around on the internet, and gets quietly sad sometimes.
+        <!-- 毒鸡汤卡片 -->
+        <div class="dujitang-container" id="dujitangContainer">
+            <p id="dujitangText">正在加载鸡汤...</p>
+
+            <div class="author-info" id="authorInfo">
+                <span>——</span>
+                <span class="author-name" id="authorName"></span>
+            </div>
+
+            <!-- 底部操作：左红心 + 右“Another one”按钮 -->
+            <div class="action-row">
+                <div class="like-area" id="likeArea">
+                    <i class="fa fa-heart"></i>
+                    <span class="like-count" id="dujitangLikeCount">0</span>
+                </div>
+                <button class="another-one-btn" id="anotherOneBtn">
+                    <i class="fa fa-refresh"></i>
+                    <span>Another one</span>
+                </button>
+            </div>
         </div>
-        <div class="clip-row">
-            <div class="clip-title" id="clipTitle">LOST FRAGMENTS 01</div>
-            <div class="clip-index" id="clipIndex">
-                <span id="clipCurrent">01</span> / <span id="clipTotal">55</span>
+
+        <!-- 历史记录（评论区） -->
+        <div class="history-wrapper mt-6">
+            <div class="history-title">
+                <div>灵魂挨打记录册</div>
+                <span id="historySummary">载入中...</span>
+            </div>
+            <div class="history-subtitle">
+                今天又被生活教育了多少次？
+            </div>
+            <div id="historyContainer">
+                <div class="empty-state" id="emptyState">
+                    <i class="fa fa-history"></i>
+                    <p>暂无记录，可能大善人罢工了,先来一碗鸡汤吧～</p>
+                </div>
+            </div>
+            <div class="mobile-footer">
+                © 2025 | Lyn' Homepage
+                <span id="mobileCurrentTime">Current time: --:--</span>
+                <div id="mobileDayProgress" class="mobile-day-progress">
+                    Today has passed: --.-%<br>
+                    🫧 时间是海绵里的水，挤挤总会有的
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // ======= 视频列表: bg1.MP4 ~ bg55.MP4 =======
-    const baseUrl = "https://save.aura.us.kg/Mobile/bg";
-    const totalVideos = 55;
-    const videoSources = [];
-    for (let i = 1; i <= totalVideos; i++) {
-        videoSources.push({
-            src: baseUrl + i + ".MP4",
-            label: "LOST FRAGMENTS " + String(i).padStart(2, "0")
+    // ==================== 全局配置 ====================
+
+    // 可用背景视频总数：会随机播放 bg1~bgN
+    const VIDEO_TOTAL = 52;
+    function getVideoUrl(index) {
+        return `https://save.aura.us.kg/Mobile/bg${index}.MP4`;
+    }
+
+    // 毒鸡汤 API 列表（随机优先其中一个，失败再换）
+    const DUJITANG_API_LIST = [
+        "https://api.btstu.cn/yan/api.php?charset=utf-8&encode=json",
+        "https://apis.tianapi.com/dujitang/index?key=a2d8a53cf5636e81dd87e373065fdc6c",
+    ];
+
+    // 历史记录接口（你 Worker 侧自己实现）
+    const HISTORY_API = "/api/history";
+    const MAX_HISTORY = 100;
+
+    // “今日已过”进度条提示文案
+    const DAY_HINTS = [
+        [0,10,"时间是海绵里的水，挤挤总会有的"],
+        [10,25,"一日之计在于晨，抓住早晨的时光"],
+        [25,40,"上午时光宝贵，专注当下最重要"],
+        [40,50,"不知不觉已过半，下午继续加油"],
+        [50,65,"下午时光，保持精力，效率翻倍"],
+        [65,75,"傍晚时分，总结一天的收获"],
+        [75,85,"夜晚是思考的好时机，整理思绪"],
+        [85,95,"今日即将结束，准备迎接新的一天"],
+        [95,100,"今天即将过去，晚安，做个好梦"]
+    ];
+
+    // 底部面板高度比例：最矮 13%，最高 95%，默认 40%
+    const MIN_RATIO = 0.15;   // 面板最小高度占屏幕 15%
+    const MAX_RATIO = 0.95;   // 面板最大高度占屏幕 95%
+    const DEFAULT_RATIO = 0.40; // 初始高度 40%
+
+    // ==================== DOM 引用 ====================
+    const videoPlayer = document.getElementById("videoPlayer");
+    const videoLayer = document.getElementById("videoLayer");
+    const itemLayer = document.getElementById("itemLayer");
+    const swipeHint = document.getElementById("swipeHint");
+
+    const slideBar = document.querySelector(".ios-slide-bar");
+    const slideBarWrapper = document.querySelector(".slide-bar-wrapper");
+
+    const dujitangText = document.getElementById("dujitangText");
+    const authorInfo = document.getElementById("authorInfo");
+    const authorNameEl = document.getElementById("authorName");
+    const dujitangLikeCount = document.getElementById("dujitangLikeCount");
+    const likeArea = document.getElementById("likeArea");
+    const anotherOneBtn = document.getElementById("anotherOneBtn");
+
+    const historyContainer = document.getElementById("historyContainer");
+    const emptyState = document.getElementById("emptyState");
+    const historySummary = document.getElementById("historySummary");
+    const mobileCurrentTime = document.getElementById("mobileCurrentTime");
+    const mobileDayProgress = document.getElementById("mobileDayProgress");
+
+    let currentDujitang = null;   // 当前毒鸡汤信息
+    let currentVideoIndex = 1;    // 当前视频编号
+
+    // ==================== 底部面板：拖动逻辑 ====================
+
+    let MIN_HEIGHT = 0;
+    let MAX_HEIGHT = 0;
+    let DEFAULT_HEIGHT = 0;
+
+    let isDraggingPanel = false;
+    let dragStartY = 0;
+    let dragStartHeight = 0;
+    let dragMoved = false;
+
+    // 根据屏幕高度计算三个状态对应的真实 px 高度
+    function recalcHeights() {
+        const vh = window.innerHeight || 800;
+        MIN_HEIGHT = vh * MIN_RATIO;
+        MAX_HEIGHT = vh * MAX_RATIO;
+        DEFAULT_HEIGHT = vh * DEFAULT_RATIO;
+
+        // 如果已经有高度，则把当前高度夹在新范围内
+        const rect = itemLayer.getBoundingClientRect();
+        let h = rect.height || DEFAULT_HEIGHT;
+        if (h < MIN_HEIGHT) h = MIN_HEIGHT;
+        if (h > MAX_HEIGHT) h = MAX_HEIGHT;
+        itemLayer.style.height = h + "px";
+    }
+
+    window.addEventListener("resize", recalcHeights);
+
+    // 开始拖动（记录起点）
+    function startPanelDrag(startY) {
+        if (!itemLayer) return;
+        isDraggingPanel = true;
+        dragMoved = false;
+        dragStartY = startY;
+        dragStartHeight = itemLayer.getBoundingClientRect().height;
+        itemLayer.style.transition = "none";
+        itemLayer.classList.remove("collapsed");
+    }
+
+    // 拖动过程中根据手指 / 鼠标位置更新高度
+    function movePanelDrag(currentY) {
+        if (!isDraggingPanel) return;
+        const dy = currentY - dragStartY;
+        if (Math.abs(dy) > 3) dragMoved = true;
+
+        // 上拉 dy<0 → 高度增大；下拉 dy>0 → 高度减小
+        let newHeight = dragStartHeight - dy;
+        if (newHeight < MIN_HEIGHT) newHeight = MIN_HEIGHT;
+        if (newHeight > MAX_HEIGHT) newHeight = MAX_HEIGHT;
+
+        itemLayer.style.height = newHeight + "px";
+
+        // ratio 用于控制是否静音（当前阈值设成 1.0，相当于拖动不影响静音）
+        const ratio = newHeight / (window.innerHeight || 1);
+        videoPlayer.muted = ratio > 1.0; // 如果以后要恢复拖动控制静音，改成 ratio > 0.35 之类
+    }
+
+    // 结束拖动，恢复平滑过渡效果
+    function endPanelDrag() {
+        if (!isDraggingPanel) return;
+        isDraggingPanel = false;
+        itemLayer.style.transition = "height 0.25s ease";
+        setTimeout(() => {
+            itemLayer.style.transition = "";
+        }, 260);
+    }
+
+    // 点击小白条：在“较低”和“默认高度”之间切换
+    function togglePanelByClick() {
+        const h = itemLayer.getBoundingClientRect().height;
+        const mid = (MIN_HEIGHT + DEFAULT_HEIGHT) / 2;
+
+        if (h <= mid) {
+            // 从低位（接近最小） → 回到默认高度（40%）
+            itemLayer.style.height = DEFAULT_HEIGHT + "px";
+            itemLayer.classList.remove("collapsed");
+            videoPlayer.muted = true;
+        } else {
+            // 从较高 → 收到最低高度（15%）
+            itemLayer.style.height = MIN_HEIGHT + "px";
+            itemLayer.classList.add("collapsed");
+            videoPlayer.muted = false;
+        }
+    }
+
+    // 绑定小白条点击 & 拖动事件
+    if (slideBar) {
+        // 点击：折叠 / 展开
+        slideBar.addEventListener("click", function () {
+            if (dragMoved) {
+                // 如果刚刚是拖动，就不再触发点击折叠逻辑
+                dragMoved = false;
+                return;
+            }
+            togglePanelByClick();
+        });
+
+// ======== 触摸拖动（移动端）：改绑到 slideBarWrapper，且非 passive，防止内容滑动 ========
+
+// 把拖动起点、过程、结束拆成三个函数，方便绑定到 wrapper
+        function handleTouchStartOnBar(e) {
+            if (e.touches && e.touches.length > 0) {
+                e.preventDefault(); // 阻止一开始就触发滚动
+                startPanelDrag(e.touches[0].clientY);
+            }
+        }
+
+        function handleTouchMoveOnBar(e) {
+            if (!isDraggingPanel || !e.touches || e.touches.length === 0) return;
+            e.preventDefault(); // 拖动过程中禁用 item-content 的滚动
+            movePanelDrag(e.touches[0].clientY);
+        }
+
+        // 👇 就是这个函数改了，手机上“点击小白条”也会生效
+        function handleTouchEndOnBar(e) {
+            // 先结束拖动
+            endPanelDrag();
+
+            // 如果几乎没有移动，就当成点击：收起 / 展开
+            if (!dragMoved) {
+                togglePanelByClick();
+            }
+
+            // 重置标记，避免影响下一次手势
+            dragMoved = false;
+        }
+
+// 用整个 slideBarWrapper 当“手势区域”，比细小白条更好点中
+        if (slideBarWrapper) {
+            slideBarWrapper.addEventListener("touchstart", handleTouchStartOnBar, { passive: false });
+            slideBarWrapper.addEventListener("touchmove", handleTouchMoveOnBar, { passive: false });
+            ["touchend", "touchcancel"].forEach(evt => {
+                slideBarWrapper.addEventListener(evt, handleTouchEndOnBar, { passive: false });
+            });
+        }
+
+        // 鼠标拖动（PC 调试用）
+        slideBar.addEventListener("mousedown", function (e) {
+            e.preventDefault();
+            startPanelDrag(e.clientY);
+
+            function onMove(ev) {
+                movePanelDrag(ev.clientY);
+            }
+            function onUp() {
+                endPanelDrag();
+                document.removeEventListener("mousemove", onMove);
+                document.removeEventListener("mouseup", onUp);
+            }
+            document.addEventListener("mousemove", onMove);
+            document.addEventListener("mouseup", onUp);
         });
     }
 
-    const videoEl = document.getElementById('bgVideo');
-    const muteBtn = document.getElementById('muteToggle');
-    const muteLabelEl = document.getElementById('muteLabel');
-    const flashLayer = document.getElementById('flashLayer');
-    const swipeHint = document.getElementById('swipeHint');
-    const clipTitleEl = document.getElementById('clipTitle');
-    const clipCurrentEl = document.getElementById('clipCurrent');
-    const clipTotalEl = document.getElementById('clipTotal');
-    const phoneFrame = document.getElementById('phoneFrame');
-    const quoteTextEl = document.getElementById('quoteText');
-
-    clipTotalEl.textContent = String(totalVideos).padStart(2, '0');
-
-    let currentIndex = -1;
-    let hintHidden = false;
-    let lastScrollTime = 0;
-
-    // ======= 一言 API（随视频切换更新文案 + 更新浏览器标题） =======
-    const quoteApis = [
-        "https://v1.hitokoto.cn/?encode=text",
-        "https://api.btstu.cn/yan/api.php?charset=utf-8&encode=text"
+    // ==================== 作者列表（古风又怪 50 组） ====================
+    const FUNNY_AUTHORS = [
+        "甄姬（宫里传出来的）",
+        "曹阿瞒（夜里偷笑版）",
+        "荀令君（酒后乱评版）",
+        "司马懿（装病躺平中）",
+        "貂蝉（小窗悄悄写的）",
+        "吕奉先（温柔乡里写的）",
+        "诸葛村夫（草庐手抄稿）",
+        "王右丞（河畔摸鱼时）",
+        "李太白（醉后乱题一通）",
+        "杜二甫（饭后散步随口说）",
+        "白乐天（泡茶等水开时）",
+        "韩退之（骂人前先写好）",
+        "东坡居士（卷土重来版）",
+        "苏小妹（在旁边偷偷改）",
+        "程咬金（三板斧写完）",
+        "包黑子（升堂前随手记）",
+        "展小楼（路过顺手签名）",
+        "黄药师（桃花岛闲得慌）",
+        "老顽童（忘了第几版）",
+        "一灯大师（灯下瞎写的）",
+        "周伯通（左右互搏写成）",
+        "段公子（练六脉时乱刻）",
+        "扫地僧（打扫到一半写）",
+        "少林后厨大勺（菜没翻完）",
+        "武当山道童（偷懒偷写）",
+        "全真小师叔（闭关偷开门）",
+        "瑶池值班仙女（加班手记）",
+        "月老（红线打结时写的）",
+        "城隍爷（夜巡顺手批注）",
+        "判官甲（生死簿边角料）",
+        "孟婆（汤里多加一勺时）",
+        "土地公（晒谷场上瞎写）",
+        "河神（打水漂时感叹）",
+        "龙王三太子（被罚抄写版）",
+        "哪吒（三头六臂一起写）",
+        "太上老君（炼丹走火版）",
+        "玉皇大帝（批公文打瞌睡）",
+        "皇城脚下说书人（加戏中）",
+        "茶楼掌柜（找零找错时）",
+        "酒肆跑堂小二（偷听八卦）",
+        "胭脂铺掌柜娘子（边画眉边写）",
+        "说书老先生（敲醒木时编的）",
+        "江南摆渡翁（半渡半睡时）",
+        "驿站打更人（三更困成狗）",
+        "城门守夜兵（数星星写的）",
+        "破庙里那尊石像（久坐生花）",
+        "路边卦摊先生（抓阄选字）",
+        "桥头卖糖葫芦的（手黏上纸）",
+        "乡下老黄牛（蹄印盖章版）",
+        "隔壁村的无名高人（不肯署名）"
     ];
 
-    async function fetchQuote() {
-        // 默认文案
-        let finalText = "Just someone who loves to mess around on the internet, and gets quietly sad sometimes.";
+    function getRandomAuthorName() {
+        const idx = Math.floor(Math.random() * FUNNY_AUTHORS.length);
+        return FUNNY_AUTHORS[idx];
+    }
 
-        try {
-            const api = quoteApis[Math.floor(Math.random() * quoteApis.length)];
-            const res = await fetch(api, { cache: "no-store" });
-            const text = await res.text();
-            const clean = text.trim().replace(/^[“\"]|[”\"]$/g, "");
-            if (clean) {
-                finalText = clean;
+    // 随机点赞量：555 ~ 999999
+    function getRandomLikeCount() {
+        const min = 555;
+        const max = 999999;
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // ==================== 视频切换逻辑 ====================
+    function playVideoByIndex(index) {
+        if (index < 1) index = VIDEO_TOTAL;
+        if (index > VIDEO_TOTAL) index = VIDEO_TOTAL;
+        currentVideoIndex = index;
+        const src = getVideoUrl(currentVideoIndex);
+        videoPlayer.src = src;
+        videoPlayer.play().catch(() => {});
+    }
+
+    function playNextVideo() {
+        let next = currentVideoIndex + 1;
+        if (next > VIDEO_TOTAL) next = 1;
+        playVideoByIndex(next);
+    }
+
+    function playPrevVideo() {
+        let prev = currentVideoIndex - 1;
+        if (prev < 1) prev = VIDEO_TOTAL;
+        playVideoByIndex(prev);
+    }
+
+    // ==================== 鸡汤文字“乱码打字机”效果 ====================
+    function randChar() {
+        const chars =
+            "!@#￥%*…6#¥…&*()_-+=<>?{}[]~|ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        return chars[Math.floor(Math.random() * chars.length)];
+    }
+
+    function animateGibberishToText(element, text) {
+        const gibSpeed = 45;     // 打乱码速度
+        const resolveSpeed = 55; // 把乱码逐个还原为真字符的速度
+
+        element.textContent = "";
+        let display = "";
+        let index = 0;
+
+        // 先打一遍乱码
+        function typeGib() {
+            if (index < text.length) {
+                display += randChar();
+                element.textContent = display;
+                index++;
+                setTimeout(typeGib, gibSpeed);
+            } else {
+                // 再一位一位替换成真实文本
+                let resolveIndex = 0;
+                let chars = element.textContent.split("");
+
+                function resolveNext() {
+                    if (resolveIndex < text.length) {
+                        chars[resolveIndex] = text.charAt(resolveIndex);
+                        chars.length = Math.max(chars.length, text.length);
+                        element.textContent = chars.join("");
+                        resolveIndex++;
+                        setTimeout(resolveNext, resolveSpeed);
+                    }
+                }
+                resolveNext();
             }
+        }
+
+        typeGib();
+        // 返回整个动画大致时长（用于控制作者延迟出现）
+        return text.length * (gibSpeed + resolveSpeed) + 400;
+    }
+
+    // 北京时间格式化（显示为 YYYY-MM-DD HH:mm (GMT+8)）
+    function formatBeijingTime(ts) {
+        if (!ts) return "";
+        const d = new Date(ts);
+        if (isNaN(d.getTime())) {
+            return ts;
+        }
+        const utc = d.getTime() + d.getTimezoneOffset() * 60000;
+        const bj = new Date(utc + 8 * 3600000);
+        const y = bj.getFullYear();
+        const m = String(bj.getMonth() + 1).padStart(2, "0");
+        const day = String(bj.getDate()).padStart(2, "0");
+        const hh = String(bj.getHours()).padStart(2, "0");
+        const mm = String(bj.getMinutes()).padStart(2, "0");
+        return `${y}-${m}-${day} ${hh}:${mm} (GMT+8)`;
+    }
+
+    function getDayHint(progress) {
+        for (let i = 0; i < DAY_HINTS.length; i++) {
+            const [min, max, text] = DAY_HINTS[i];
+            if (progress >= min && progress < max) {
+                return text;
+            }
+        }
+        return DAY_HINTS[DAY_HINTS.length - 1][2];
+    }
+
+    // 更新底部时间 + 今日已过进度（统一按北京时间）
+    function updateMobileTimeAndProgress() {
+        const now = new Date();
+        const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+        const bj = new Date(utc + 8 * 3600000);
+
+        const hh = String(bj.getHours()).padStart(2, "0");
+        const mm = String(bj.getMinutes()).padStart(2, "0");
+        mobileCurrentTime.textContent = `Current time: ${hh}:${mm}`;
+
+        const seconds = bj.getHours() * 3600 + bj.getMinutes() * 60 + bj.getSeconds();
+        const progress = (seconds / 86400) * 100;
+        const clamped = Math.max(0, Math.min(progress, 100));
+        const hint = getDayHint(clamped);
+
+        mobileDayProgress.innerHTML =
+            `Today has passed: <strong>${clamped.toFixed(1)}%</strong><br>🫧&nbsp;${hint}`;
+    }
+
+    // 隐藏“滑动切换视频”提示
+    function hideSwipeHint() {
+        if (swipeHint) {
+            swipeHint.style.display = "none";
+        }
+    }
+
+    // ========== 移动端：上下滑切换视频 ==========
+    let touchStartY = null;
+    videoLayer.addEventListener("touchstart", (e) => {
+        if (e.touches && e.touches.length > 0) {
+            touchStartY = e.touches[0].clientY;
+        }
+    }, { passive: true });
+
+    videoLayer.addEventListener("touchend", (e) => {
+        if (touchStartY === null) return;
+        const endY = e.changedTouches[0].clientY;
+        const diffY = endY - touchStartY;
+        const threshold = 40; // 滑动阈值
+
+        if (Math.abs(diffY) > threshold) {
+            hideSwipeHint();
+            if (diffY < 0) {
+                // 上滑：下一段视频
+                playNextVideo();
+            } else {
+                // 下滑：上一段视频
+                playPrevVideo();
+            }
+        }
+        touchStartY = null;
+    }, { passive: true });
+
+    // ========== PC：滚轮 / 键盘切换视频 ==========
+    videoLayer.addEventListener("wheel", (e) => {
+        const delta = e.deltaY;
+        if (Math.abs(delta) < 20) return;
+        hideSwipeHint();
+        if (delta > 0) {
+            playNextVideo();
+        } else {
+            playPrevVideo();
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowUp") {
+            hideSwipeHint();
+            playPrevVideo();
+        } else if (e.key === "ArrowDown") {
+            hideSwipeHint();
+            playNextVideo();
+        }
+    });
+
+    // ==================== 历史记录（从 KV 拉 & 渲染） ====================
+    async function fetchHistoryFromServer() {
+        try {
+            const res = await fetch(HISTORY_API);
+            if (!res.ok) throw new Error("history api error");
+            const data = await res.json();
+            if (!Array.isArray(data)) return [];
+            return data;
         } catch (e) {
-            // 出错就用默认文案
+            console.error("获取历史记录失败", e);
+            return [];
         }
-
-        // 更新底部文字
-        quoteTextEl.textContent = finalText;
-
-        // 更新浏览器标题：Lyn · Main Page · 一言（截断一下避免太长）
-        const maxLen = 28;
-        const short = finalText.length > maxLen
-            ? finalText.slice(0, maxLen) + "…"
-            : finalText;
-        document.title = "Lyn · Main Page · " + short;
     }
 
-    function setVideo(index, withFlash = true) {
-        if (!videoSources.length) return;
-
-        const safeIndex = ((index % videoSources.length) + videoSources.length) % videoSources.length;
-        currentIndex = safeIndex;
-        const info = videoSources[safeIndex];
-
-        videoEl.pause();
-        videoEl.src = info.src;
-        videoEl.load();
-
-        const onCanPlay = () => {
-            videoEl.play().catch(() => {});
-            videoEl.removeEventListener('canplay', onCanPlay);
-        };
-        videoEl.addEventListener('canplay', onCanPlay);
-
-        clipTitleEl.textContent = info.label;
-        clipCurrentEl.textContent = String(safeIndex + 1).padStart(2, '0');
-
-        if (withFlash) {
-            flashLayer.classList.remove('show');
-            void flashLayer.offsetWidth;
-            flashLayer.classList.add('show');
+    async function appendHistoryToServer(content, author, likeCount) {
+        try {
+            const body = {
+                content,
+                author,
+                likeCount,
+                isUserComment: false,
+            };
+            await fetch(HISTORY_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
+        } catch (e) {
+            console.error("写入历史记录失败", e);
         }
-
-        if (!hintHidden) {
-            hintHidden = true;
-            swipeHint.classList.add('hidden');
-        }
-
-        // 每次切换视频刷新一言 & 标题
-        fetchQuote();
     }
 
-    function setRandomVideo(withFlash = true) {
-        if (videoSources.length === 0) return;
-        if (videoSources.length === 1) {
-            setVideo(0, withFlash);
+    function renderHistory(history) {
+        if (!Array.isArray(history) || history.length === 0) {
+            historyContainer.innerHTML = "";
+            historyContainer.appendChild(emptyState);
+            emptyState.style.display = "block";
+            historySummary.textContent = "没有发现更多...";
             return;
         }
 
-        let idx;
-        do {
-            idx = Math.floor(Math.random() * videoSources.length);
-        } while (idx === currentIndex);
+        emptyState.style.display = "none";
+        historyContainer.innerHTML = "";
 
-        setVideo(idx, withFlash);
+        historySummary.textContent = `共 ${history.length} 条（当前只保留 ${MAX_HISTORY} 条）`;
+
+        history.forEach((item) => {
+            const commentItem = document.createElement("div");
+            commentItem.className = "comment-item";
+
+            const authorString = item.author || "路过的灵魂打工人";
+            const username = authorString;
+
+            // 随机头像：tx1~tx41
+            const idx =
+                typeof item.avatarIndex === "number"
+                    ? item.avatarIndex
+                    : Math.floor(Math.random() * 41) + 1;
+            const avatarUrl = `https://save.aura.us.kg/Mobile/tx${idx}.jpg`;
+
+            const liked = !!item.liked;
+            const likeCount = item.likeCount || 0;
+            const timeText = formatBeijingTime(item.timestamp);
+
+            commentItem.innerHTML = `
+          <div class="avatar-container">
+            <img src="${avatarUrl}" alt="${username}" class="avatar" />
+          </div>
+          <div class="comment-content">
+            <div class="user-info">
+              <span class="username">${username}</span>
+            </div>
+            <p class="comment-text">${item.content}</p>
+            <div class="comment-actions">
+              <div class="comment-actions-left">
+                <div class="like-btn ${liked ? "active" : ""}" data-id="${item.id}">
+                  <i class="fa ${liked ? "fa-heart" : "fa-heart-o"}"></i>
+                  ${
+                likeCount > 0
+                    ? `<span class="like-count">${likeCount}</span>`
+                    : ""
+            }
+                </div>
+              </div>
+              <span class="comment-time">${timeText}</span>
+            </div>
+          </div>
+        `;
+
+            historyContainer.appendChild(commentItem);
+        });
+
+        // 评论里的点赞只做前端特效，不回写 KV
+        historyContainer.querySelectorAll(".like-btn").forEach((btn) => {
+            btn.addEventListener("click", function () {
+                this.classList.toggle("active");
+                const icon = this.querySelector("i");
+                const countSpan = this.querySelector(".like-count");
+                let count = countSpan ? parseInt(countSpan.textContent) || 0 : 0;
+
+                if (this.classList.contains("active")) {
+                    icon.className = "fa fa-heart";
+                    count++;
+                } else {
+                    icon.className = "fa fa-heart-o";
+                    count = Math.max(0, count - 1);
+                }
+
+                if (countSpan) {
+                    if (count > 0) {
+                        countSpan.textContent = count;
+                    } else {
+                        countSpan.remove();
+                    }
+                } else if (count > 0) {
+                    const newSpan = document.createElement("span");
+                    newSpan.className = "like-count";
+                    newSpan.textContent = count;
+                    this.appendChild(newSpan);
+                }
+            });
+        });
     }
 
-    // 更新静音状态 + 按钮文案
-    function updateMuteState(muted) {
-        videoEl.muted = muted;
-        muteBtn.dataset.muted = muted ? "true" : "false";
-        muteLabelEl.textContent = muted ? "MUTED" : "MUTE";
+    // ==================== 获取毒鸡汤 & 更新卡片 ====================
+    async function fetchDujitangText() {
+        // 随机决定先尝试哪个 API
+        const firstIsBt = Math.random() < 0.5;
+        const apis = firstIsBt
+            ? [DUJITANG_API_LIST[0], DUJITANG_API_LIST[1]]
+            : [DUJITANG_API_LIST[1], DUJITANG_API_LIST[0]];
+
+        for (const apiUrl of apis) {
+            try {
+                const res = await fetch(apiUrl);
+                const data = await res.json();
+                // btstu 格式
+                if (apiUrl.includes("api.btstu.cn")) {
+                    if (data && data.text) return data.text;
+                    // tianapi 格式
+                } else if (apiUrl.includes("apis.tianapi.com")) {
+                    if (data && data.code === 200 && data.result && data.result.content) {
+                        return data.result.content;
+                    }
+                }
+            } catch (e) {
+                console.warn("某个鸡汤 API 失败，尝试下一个", e);
+            }
+        }
+
+        // 所有 API 都挂了
+        return "锅烂了啦！暂时无法熬制鸡汤 😭";
     }
 
-    muteBtn.addEventListener('click', () => {
-        const isMuted = videoEl.muted;
-        updateMuteState(!isMuted);
-        videoEl.play().catch(() => {});
+    async function updateDujitangCard() {
+        // 初始化文案
+        dujitangText.textContent = "正在加加加载...";
+        authorNameEl.textContent = "";
+        authorInfo.querySelector("span").textContent = "——";
+
+        anotherOneBtn.disabled = true;
+
+        try {
+            const text = await fetchDujitangText();
+            const authorName = getRandomAuthorName();
+            const likes = getRandomLikeCount();
+
+            // 把当前鸡汤的前半句写进 <title>，方便浏览器标签显示
+            try {
+                const maxTitleLength = 22;
+                let shortQuote = text;
+                if (text.length > maxTitleLength) {
+                    shortQuote = text.substring(0, maxTitleLength).trim() + "…";
+                }
+                document.title = `Lynn - ${shortQuote}`;
+            } catch (e) {}
+
+            const duration = animateGibberishToText(dujitangText, text);
+            dujitangLikeCount.textContent = likes.toLocaleString();
+
+            // 等打字动画跑完再显示作者
+            setTimeout(() => {
+                authorNameEl.textContent = authorName;
+                authorInfo.querySelector("span").textContent = "——";
+            }, duration);
+
+            currentDujitang = {
+                content: text,
+                author: authorName,
+                likeCount: likes,
+            };
+
+            // 将本次鸡汤写入 KV 历史
+            appendHistoryToServer(text, authorName, likes);
+        } catch (e) {
+            console.error("更新鸡汤失败", e);
+            dujitangText.textContent = "获取失败，请点击下方按钮重试";
+            authorNameEl.textContent = "系统提示（来自 502 的关怀）";
+        } finally {
+            anotherOneBtn.disabled = false;
+        }
+    }
+
+    // ==================== 初始化 ====================
+    document.addEventListener("DOMContentLoaded", async () => {
+        // 计算面板高度对应的 px 值
+        recalcHeights();
+
+        // 随机选择一个起始视频
+        currentVideoIndex = Math.floor(Math.random() * VIDEO_TOTAL) + 1;
+        playVideoByIndex(currentVideoIndex);
+
+        // 视频自然结束后自动播放下一段
+        videoPlayer.addEventListener("ended", playNextVideo);
+
+        // 面板初始高度：默认高度（35%）
+        itemLayer.style.height = DEFAULT_HEIGHT + "px";
+        itemLayer.classList.remove("collapsed");
+
+        // 初始设置：视频静音（避免一进页面就响）
+        videoPlayer.muted = true;
+
+        // 底部时间 & 今日已过进度（每 30 秒更新一次）
+        updateMobileTimeAndProgress();
+        setInterval(updateMobileTimeAndProgress, 30 * 1000);
+
+        // 加载历史记录
+        const history = await fetchHistoryFromServer();
+        renderHistory(history);
+
+        // 加载第一碗鸡汤
+        updateDujitangCard();
+
+        // “Another one” 按钮：旋转图标 + 刷新鸡汤
+        anotherOneBtn.addEventListener("click", () => {
+            const icon = anotherOneBtn.querySelector("i");
+            icon.classList.add("spin");
+            setTimeout(() => icon.classList.remove("spin"), 550);
+            updateDujitangCard();
+        });
+
+        // 红心点赞：只在前端本地累加一下数字 + 动画
+        likeArea.addEventListener("click", () => {
+            likeArea.classList.add("active");
+            let count = parseInt(
+                dujitangLikeCount.textContent.replace(/,/g, "") || "0",
+                10
+            );
+            count++;
+            dujitangLikeCount.textContent = count.toLocaleString();
+            setTimeout(() => likeArea.classList.remove("active"), 220);
+        });
     });
-
-    // 滚轮切换（PC 调试）+节流
-    phoneFrame.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        const now = Date.now();
-        if (now - lastScrollTime < 800) return;
-        lastScrollTime = now;
-        setRandomVideo(true);
-    }, { passive: false });
-
-    // 触摸滑动切换（手机）
-    let touchStartY = 0;
-    phoneFrame.addEventListener('touchstart', (e) => {
-        if (!e.touches || e.touches.length === 0) return;
-        touchStartY = e.touches[0].clientY;
-    }, { passive: true });
-
-    phoneFrame.addEventListener('touchend', (e) => {
-        if (!e.changedTouches || e.changedTouches.length === 0) return;
-        const endY = e.changedTouches[0].clientY;
-        const deltaY = endY - touchStartY;
-        const threshold = 40;
-
-        if (Math.abs(deltaY) < threshold) return;
-
-        const now = Date.now();
-        if (now - lastScrollTime < 800) return;
-        lastScrollTime = now;
-
-        setRandomVideo(true);
-    }, { passive: true });
-
-    // 初始化：随机视频 + 默认静音 + 初始一言（会顺便更新标题）
-    setRandomVideo(false);
-    updateMuteState(true);
-    fetchQuote();
 </script>
 </body>
 </html>
