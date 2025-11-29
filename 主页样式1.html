@@ -1,908 +1,911 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <!-- 适配移动端 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Paste 管理 · 节点自动识别示例</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- 页面初始标题（会在获取到毒鸡汤后被 JS 动态改掉） -->
-    <title>Lynn - </title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+      "Segoe UI", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+      padding: 24px 12px;
+    }
+    .page {
+      max-width: 840px;
+      margin: 0 auto;
+    }
+    .page-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
 
-    <!-- 🌍 国外网站 / 通用 Open Graph 预览（Telegram、X 等） -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Lynn">
-    <meta property="og:description" content="Just someone who loves to mess around on the internet.">
-    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
-    <meta property="og:url" content="https://aura.us.kg">
+    /* ===== 卡片列表 ===== */
+    .paste-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
 
-    <!-- 🇨🇳 国内网站 / 微信 / QQ / 微博 使用的描述和图片 -->
-    <meta name="description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
-    <meta itemprop="name" content="Lynn">
-    <meta itemprop="image" content="https://save.aura.us.kg/Picture/Fm2.png">
+    .paste-card {
+      background: radial-gradient(circle at 0 0, rgba(248, 250, 252, 0.08), transparent 55%);
+      border-radius: 18px;
+      padding: 10px 12px 10px;
+      border: 1px solid rgba(31, 41, 55, 0.85);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.58);
+    }
 
-    <!-- 网站图标 -->
-    <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
+    .paste-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 8px;
+    }
+    .paste-title {
+      font-size: 14px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .paste-meta {
+      font-size: 11px;
+      color: #9ca3af;
+      white-space: nowrap;
+    }
 
-    <!-- Tailwind & Font Awesome -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    .paste-body {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .paste-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #111827;
+      color: #e5e7eb;
+      width: fit-content;
+    }
+    .paste-url {
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: #020617;
+      color: #9ca3af;
+      width: fit-content;
+    }
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#dd5656',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+    .paste-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
 
-    <!-- 设备类型检测：如为移动端，自动跳转到 mobile.html -->
-    <script>
-        (function () {
-            var ua = (navigator.userAgent || navigator.vendor || window.opera || "").toLowerCase();
-            var isMobileDevice = /android|iphone|ipad|ipod|mobile|windows phone/i.test(ua);
-            if (isMobileDevice) {
-                window.location.href = "mobile.html";
-            }
-        })();
-    </script>
+    .btn {
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: #020617;
+      color: #e5e7eb;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+    }
+    .btn:hover {
+      background: #111827;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+      transform: translateY(-0.5px);
+    }
+    .btn.danger {
+      border-color: rgba(248, 113, 113, 0.85);
+      color: #fecaca;
+      background: #450a0a;
+    }
+    .btn.danger:hover {
+      background: #7f1d1d;
+    }
 
-    <!-- Tailwind 自定义动画工具类 -->
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .animate-float {
-                animation:
-                        cardFadeIn 1s ease-out forwards,
-                        float 4s ease-in-out infinite 1.2s;
-            }
+    .client-btn-icon {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+    }
 
-            @keyframes float {
-                0% { transform: translateY(0px); }
-                50% { transform: translateY(-5px); }
-                100% { transform: translateY(0px); }
-            }
+    /* ===== 节点客户端弹窗 ===== */
 
-            @keyframes cardFadeIn {
-                from {
-                    opacity: 0;
-                    transform: translateY(10px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
+    .node-modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.65);
+      z-index: 999;
+    }
 
-            .card-breathe {
-                animation: breathe 4s ease-in-out infinite;
-            }
+    .node-modal-inner {
+      background: #020617;
+      color: #e5e7eb;
+      border-radius: 16px;
+      padding: 16px 18px 14px;
+      width: min(680px, 94vw);
+      max-height: 82vh;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border: 1px solid rgba(30, 64, 175, 0.85);
+    }
 
-            @keyframes breathe {
-                0% {
-                    opacity: 0.75;
-                    filter: brightness(0.85);
-                }
-                50% {
-                    opacity: 1;
-                    filter: brightness(1.15);
-                }
-                100% {
-                    opacity: 0.75;
-                    filter: brightness(0.85);
-                }
-            }
-        }
-    </style>
+    .node-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
 
-    <!-- 其他样式 -->
-    <style>
-        @keyframes bodyFadeIn {
-            from { opacity: 0; }
-            to   { opacity: 1; }
-        }
+    .node-modal-close {
+      border: none;
+      background: transparent;
+      color: #9ca3af;
+      cursor: pointer;
+      font-size: 16px;
+    }
 
-        body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background-color: #f0f0f0;
-            background-image: url('https://save.aura.us.kg/Picture/bg.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            position: relative;
-            opacity: 0;
-            animation: bodyFadeIn 3.2s ease-out forwards;
-        }
+    .node-modal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
 
-        body::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background-color: rgba(0, 0, 0, 0.27);
-            z-index: -1;
-        }
+    .client-tile {
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      background: radial-gradient(circle at 0 0, rgba(248, 250, 252, 0.09), transparent 55%);
+      border-radius: 12px;
+      padding: 9px 8px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s;
+      position: relative;
+    }
 
-        .top {
-            text-align: center;
-            padding-top: 60px;
-        }
+    .client-tile:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.58);
+      border-color: rgba(248, 250, 252, 0.7);
+    }
 
-        .date-display {
-            display: inline-flex;
-            gap: 8px;
-            align-items: flex-start;
-            color: rgba(228, 10, 10, 0.65);
-            font-weight: 800;
-        }
+    .client-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.96);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2px;
+    }
 
-        .month {
-            font-size: 6.8rem;
-            line-height: 0.82;
-            position: relative;
-        }
+    .client-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: #e5e7eb;
+    }
 
-        .month::after {
-            content: "";
-            width: 8px;
-            height: 8px;
-            background-color: currentColor;
-            right: -18px;
-            bottom: 6px;
-            position: absolute;
-            border-radius: 2px;
-            transform: rotate(15deg);
-        }
+    .client-name {
+      font-size: 12px;
+      font-weight: 600;
+    }
 
-        .right-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            margin-left: 40px;
-            font-weight: 700;
-            font-size: 1rem;
-        }
+    .client-sub {
+      font-size: 11px;
+      color: #9ca3af;
+    }
 
-        .middle {
-            flex: 1;
-            padding: 20px;
-        }
+    .node-modal-preview {
+      margin-top: 8px;
+      border-radius: 10px;
+      background: #020617;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      padding: 8px;
+    }
 
-        .bottom {
-            text-align: center;
-            padding-bottom: 60px;
-            position: relative; /* 作为绝对定位参照 */
-        }
+    .node-preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
 
-        .card-wrapper {
-            width: min(92%, 450px);
-            margin: 0 auto 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            position: relative;
-            z-index: 1;
-        }
+    #node-preview-copy {
+      border: none;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #1f2937;
+      color: #e5e7eb;
+      cursor: pointer;
+      font-size: 11px;
+    }
 
-        .name-bubble {
-            position: relative;
-            padding: 16px 24px 12px;
-            border-radius: 999px;
-            background: rgba(0, 0, 0, 0.32);
-            color: #ffffff;
-            font-size: 0.9rem;
-            letter-spacing: 0.08em;
-            box-shadow: 0 16px 40px rgba(255, 255, 255, 0.16);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            opacity: 0;
-            animation: bodyFadeIn 0.9s ease-out forwards, float 4s ease-in-out infinite 0.6s;
-        }
+    #node-preview-copy:hover {
+      background: #374151;
+    }
 
-        .name-bubble::before {
-            content: "✦";
-            font-size: 0.8rem;
-            opacity: 0.9;
-        }
+    #node-preview-text {
+      margin: 0;
+      font-size: 11px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 220px;
+      overflow: auto;
+    }
 
-        .name-bubble span {
-            position: relative;
-            z-index: 2;
-        }
+    @media (max-width: 640px) {
+      .node-modal-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
 
-        .name-progress-track {
-            position: absolute;
-            left: 24px;
-            right: 24px;
-            top: 3px;
-            height: 1px;
-            pointer-events: none;
-        }
-
-        .name-progress-rail {
-            position: absolute;
-            inset: 0;
-            border-radius: 999px;
-            background: linear-gradient(
-                    90deg,
-                    rgba(255, 255, 255, 0.15),
-                    rgba(255, 255, 255, 0.05)
-            );
-            opacity: 0.85;
-        }
-
-        #nameProgressFill {
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: 0%;
-            border-radius: 999px;
-            background: linear-gradient(90deg, #ffb9d9, #fff5da);
-            box-shadow: 0 0 6px rgba(255,200,220,0.8);
-            transform-origin: left center;
-            transition: width 0.6s ease-out;
-        }
-
-        #progressStar {
-            position: absolute;
-            top: 50%;
-            left: 0%;
-            width: 5px;
-            height: 5px;
-            border-radius: 999px;
-            background: radial-gradient(circle at 30% 30%, #ffffff, #ffe8ff 45%, rgba(255,255,255,0) 72%);
-            box-shadow:
-                    0 0 6px rgba(255,255,255,0.9),
-                    0 0 10px rgba(255,190,230,0.75);
-            transform: translate(-50%, -50%);
-            animation: starBeat 1.8s ease-in-out infinite;
-        }
-
-        @keyframes starBeat {
-            0% { transform: translate(-50%, -50%) scale(0.9); }
-            50% { transform: translate(-50%, -52%) scale(1.1); }
-            100% { transform: translate(-50%, -50%) scale(0.9); }
-        }
-
-        .floating-card {
-            width: 100%;
-            margin: 0 auto 0;
-            padding: 20px 18px;
-            border-radius: 16px;
-            position: relative;
-            z-index: 10;
-            display: block;
-            background: rgba(0, 0, 0, 0.18);
-            border: 1px solid rgba(255, 255, 255, 0);
-            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.22);
-        }
-
-        .floating-card:hover {
-            transform: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.45);
-        }
-
-        .card-content {
-            position: relative;
-            z-index: 2;
-        }
-
-        .like-button {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #f5f5f5;
-            background: rgba(255, 255, 255, 0.11);
-            border: none;
-            border-radius: 20px;
-            padding: 8px 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            position: relative;
-        }
-
-        .like-button:hover {
-            background: rgba(255,255,255,0.12);
-            transform: translateY(-2px);
-        }
-
-        .like-button i {
-            color: rgba(255, 0, 0, 0.77);
-        }
-
-        .like-count {
-            font-weight: 600;
-        }
-
-        /* “我可是有声音的哦”气泡 */
-        .sound-tip {
-            position: absolute;
-            z-index: 30;
-            pointer-events: none;
-            opacity: 0;
-            transform: translate(-50%, 8px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        .sound-tip.show {
-            opacity: 1;
-            transform: translate(-50%, -4px);
-        }
-
-        .sound-tip-inner {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 0.7rem;
-            line-height: 1.4;
-            color: #ffffff;
-            background: rgba(0, 0, 0, 0.83);
-            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.11);
-            white-space: nowrap;
-        }
-
-        .sound-tip-inner::after {
-            content: "";
-            position: absolute;
-            top: -1px;
-            left: 20px;
-            transform: translateY(-100%);
-            border-width: 6px;
-            border-style: solid;
-            border-color: transparent transparent rgba(0, 0, 0, 0.98) transparent;
-        }
-
-        .bubble-emoji {
-            font-size: 0.8rem;
-        }
-
-        /* 今日已过提示气泡（PC 用） */
-        .progress-hint-bubble {
-            position: absolute;
-            z-index: 20;
-            pointer-events: none;
-            opacity: 0;
-            transform: translate(-50%, 10px);
-            transition: opacity 0.35s ease, transform 0.35s ease;
-        }
-
-        .progress-hint-bubble-inner {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 0.5rem;
-            line-height: 1.4;
-            color: #ffffff;
-            background: linear-gradient(
-                    135deg,
-                    rgba(255, 255, 255, 0.57) 0%,
-                    rgba(220, 0, 181, 0.62) 100%
-            );
-            border: 1px solid rgba(88, 202, 82, 0);
-            box-shadow:
-                    0 8px 24px rgba(255, 255, 255, 0),
-                    0 0 14px rgba(88, 202, 82, 0);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            white-space: pre-wrap;
-            word-break: break-word;
-            max-width: 240px;
-        }
-
-        .progress-hint-bubble-inner::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border-width: 6px;
-            border-style: solid;
-            border-color: rgba(220, 0, 181, 0.6) transparent transparent transparent;
-        }
-
-        .copyright {
-            color: #ccc;
-            font-size: 0.8rem;
-        }
-
-        .current-time {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #ffffff;
-            text-shadow: 0 0 4px rgba(255, 255, 255, 0.81);
-        }
-
-        #quoteContent {
-            font-size: 0.9rem !important;
-            line-height: 1.5;
-        }
-
-        #quoteAuthor {
-            font-size: 0.7rem !important;
-            line-height: 1.4;
-        }
-    </style>
+  </style>
 </head>
+<body>
+<div class="page">
+  <div class="page-title">🔗 我的链接管理（示例）</div>
 
-<body class="bg-gray-50">
-<!-- 顶部日期 -->
-<div class="top">
-    <div id="dateDisplay" class="date-display"></div>
+  <div class="paste-list">
+    <!-- 示例：普通文本，不是节点，不会出现客户端按钮 -->
+    <div class="paste-card"
+         data-paste-id="note-1"
+         data-paste-content="Here lie all the messages I typed, read twice, and never sent.">
+      <div class="paste-header">
+        <span class="paste-title">🐹 Lyn · Note</span>
+        <span class="paste-meta">创建：2025-11-26 10:01 · 到期：2025-12-01</span>
+      </div>
+      <div class="paste-body">
+        <div class="paste-tag">Just text</div>
+        <div class="paste-url">https://aura.us.kg/api/paste/note-1</div>
+      </div>
+      <div class="paste-actions">
+        <button class="btn">✏️ 编辑</button>
+        <button class="btn">📋 复制</button>
+        <button class="btn">🔗 打开</button>
+        <button class="btn danger">🗑 删除</button>
+        <!-- 客户端按钮：默认隐藏，识别到是节点后显示 -->
+        <button class="btn client-btn" style="display:none;">
+          <svg viewBox="0 0 24 24" class="client-btn-icon" aria-hidden="true">
+            <path d="M4 5h16a1 1 0 0 1 1 1v9H3V6a1 1 0 0 1 1-1zm-1 12h18v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-1z"></path>
+          </svg>
+          <span>客户端</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 示例：节点文本，这条会自动识别并显示“客户端”按钮 -->
+    <div class="paste-card"
+         data-paste-id="Forever"
+         data-paste-content="vmess://YXV0bzo3MDM5NmE4OC1iYTQzLTQ2NDItOTI4Ni00MzdmYzJkYjRiMWFAdHcxZy5qaWVxYS54eXo6ODA?path=/&remarks=TW%201G%20%E5%AE%B6%E5%AE%BD/Netflix%20TCP&obfsParam=tms.dingtalk.com&obfs=http&tfo=1&alterId=0">
+      <div class="paste-header">
+        <span class="paste-title">🐹 Lyn · Forever</span>
+        <span class="paste-meta">创建：2025-11-26 11:01 · 到期：Never🙌🏽</span>
+      </div>
+      <div class="paste-body">
+        <div class="paste-tag">Forever</div>
+        <div class="paste-url">https://aura.us.kg/api/paste/Forever</div>
+      </div>
+      <div class="paste-actions">
+        <button class="btn">✏️ 编辑</button>
+        <button class="btn">📋 复制</button>
+        <button class="btn">🔗 打开</button>
+        <button class="btn danger">🗑 删除</button>
+
+        <!-- 这颗按钮会被 JS 打开 display，位置就像你截图中“删除”右边 -->
+        <button class="btn client-btn" style="display:none;">
+          <svg viewBox="0 0 24 24" class="client-btn-icon" aria-hidden="true">
+            <path d="M4 5h16a1 1 0 0 1 1 1v9H3V6a1 1 0 0 1 1-1zm-1 12h18v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-1z"></path>
+          </svg>
+          <span>客户端</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- 中部留白 -->
-<div class="middle">
-    <br><br><br><br><br><br><br><br><br><br>
-    <br><br><br><br><br>
-</div>
-
-<!-- 底部内容 -->
-<div class="bottom">
-    <!-- 今日进度提示气泡（PC 使用） -->
-    <div id="progressHintBubble" class="progress-hint-bubble">
-        <div class="progress-hint-bubble-inner">
-            <span class="bubble-emoji">🫧</span>
-            <span id="progressHintText">时间是海绵里的水，挤挤总会有的</span>
-        </div>
+<!-- ===== 节点客户端弹窗 HTML ===== -->
+<div id="node-modal" class="node-modal">
+  <div class="node-modal-inner">
+    <div class="node-modal-header">
+      <span id="node-modal-title">节点 · 客户端格式</span>
+      <button id="node-modal-close" class="node-modal-close">✕</button>
     </div>
 
-    <div class="card-wrapper">
-        <!-- 姓名气泡 + 顶部进度条 -->
-        <div class="name-bubble">
-            <div class="name-progress-track">
-                <div class="name-progress-rail"></div>
-                <div id="nameProgressFill"></div>
-                <div id="progressStar"></div>
-            </div>
-            <span>Hey, I’m Lyn. I like messing around.</span>
+    <div class="node-modal-grid">
+      <button class="client-tile" data-format="v2rayn">
+        <div class="client-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 4h16v16H4z"></path>
+          </svg>
         </div>
+        <div class="client-name">V2RayN</div>
+        <div class="client-sub">vmess 链接</div>
+      </button>
 
-        <!-- 毒鸡汤卡片 -->
-        <div class="floating-card animate-float">
-            <div class="card-content">
-                <p id="quoteContent" class="mb-4 text-gray-100 card-breathe">熬制鸡汤中...</p>
-                <p id="quoteAuthor" class="text-right text-gray-300 mb-5 opacity-80" style="font-size: 0.9rem; letter-spacing: 0.5px;">——</p>
-
-                <div class="flex justify-between items-center">
-                    <!-- 红心按钮：点赞 + 播放音乐 -->
-                    <button id="likeButton" class="like-button">
-                        <i class="fa fa-heart"></i>
-                        <span class="like-count" id="likeCount">--</span>
-                    </button>
-
-                    <button id="refreshButton" class="like-button">
-                        <i class="fa fa-refresh"></i>
-                        <span>Another one</span>
-                    </button>
-                </div>
-            </div>
+      <button class="client-tile" data-format="clash">
+        <div class="client-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="8"></circle>
+          </svg>
         </div>
+        <div class="client-name">Clash</div>
+        <div class="client-sub">YAML 节点</div>
+      </button>
+
+      <button class="client-tile" data-format="singbox">
+        <div class="client-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 5h14v6H5zM5 13h8v6H5z"></path>
+          </svg>
+        </div>
+        <div class="client-name">Sing-box</div>
+        <div class="client-sub">outbound JSON</div>
+      </button>
     </div>
 
-    <!-- “我可是有声音的哦” 气泡：在悬浮卡片外部（卡片下面），指向红心 -->
-    <div id="soundTip" class="sound-tip">
-        <div class="sound-tip-inner">
-            <span class="bubble-emoji">❤️</span>
-            <span>I actually have sound!</span>
-        </div>
+    <div class="node-modal-preview">
+      <div class="node-preview-header">
+        <span id="node-preview-label">预览：V2RayN</span>
+        <button id="node-preview-copy">复制当前格式</button>
+      </div>
+      <pre id="node-preview-text"></pre>
     </div>
-
-    <!-- 底部版权 + 当前时间 -->
-    <div class="copyright">
-        © 2025 | Lyn' Homepage
-        <span id="currentTime" class="current-time"></span>
-    </div>
+  </div>
 </div>
 
 <script>
-    function updateDate() {
-        const n = new Date();
-        const m = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-        const w = ["星期日","星期一","星期二","星期三","星期四","星期五","星期六"];
-        const dateDisplay = document.getElementById('dateDisplay');
+  // ========== Base64 工具 ==========
+  function addBase64Padding(str) {
+    const pad = str.length % 4;
+    if (pad === 2) return str + '==';
+    if (pad === 3) return str + '=';
+    if (pad === 1) return str + '===';
+    return str;
+  }
+  function b64Decode(str) {
+    return atob(addBase64Padding(str));
+  }
+  function base64Utf8(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
 
-        dateDisplay.innerHTML = `
-            <span class="month">${m[n.getMonth()]}</span>
-            <div class="right-group">
-                <span>${String(n.getDate()).padStart(2,"0")}</span>
-                <span>${w[n.getDay()]}</span>
-            </div>
-        `;
+  // ========== 各协议解析 ==========
+
+  function normalizeVmess(raw) {
+    let text = raw.trim();
+    if (text.startsWith('vmess://')) return text;
+    // 处理 dm1lc3M6Ly9... 整串 Base64
+    try {
+      const decoded = b64Decode(text);
+      if (decoded.startsWith('vmess://')) return decoded;
+    } catch (e) {}
+    return null;
+  }
+
+  function parseVmess(raw) {
+    const normalized = normalizeVmess(raw);
+    if (!normalized) return null;
+    const body = normalized.slice('vmess://'.length);
+
+    // ① JSON 模式
+    try {
+      const jsonStr = b64Decode(body);
+      const d = JSON.parse(jsonStr);
+      return {
+        proto: 'vmess',
+        name: d.ps || '',
+        server: d.add,
+        port: Number(d.port),
+        uuid: d.id,
+        alterId: Number(d.aid || 0),
+        security: d.security || 'auto',
+        network: d.net || 'tcp',
+        host: d.host || '',
+        path: d.path || '',
+        tls: d.tls === 'tls',
+        sni: d.sni || ''
+      };
+    } catch (e) {}
+
+    // ② URI 模式
+    let url;
+    try { url = new URL(normalized); } catch (e) { return null; }
+
+    let security = 'auto';
+    let uuid = '';
+    if (url.username) {
+      try {
+        const userDecoded = b64Decode(url.username);
+        const parts = userDecoded.split(':');
+        if (parts.length === 2) { security = parts[0]; uuid = parts[1]; }
+        else { uuid = userDecoded; }
+      } catch (e) {}
     }
 
-    updateDate();
-    setInterval(updateDate, 86400000);
+    const params = url.searchParams;
+    const remarks = params.get('remarks') ? decodeURIComponent(params.get('remarks')) : '';
+    const path = params.get('path') || '/';
+    const obfs = params.get('obfs') || 'tcp';
+    const obfsParam = params.get('obfsParam') || '';
+    const alterId = Number(params.get('alterId') || 0);
+    const tlsParam = params.get('tls');
+    const network = obfs === 'http' ? 'ws' : obfs;
+    const tls = tlsParam === '1' || tlsParam === 'tls';
 
-    const funnyAuthors = [
-        "甄姬(公里传出来的)",
-        "貂蝉（帷幕后小声说的）",
-        "小乔（东风里飘来的）",
-        "王昭君（出塞路上感叹的）",
-        "西施（浣纱时顺口一说）",
-        "杨玉环（长生殿里叹气的）",
-        "上古算命先生（卦摊边上念叨的）",
-        "城门守夜人（三更半夜敲锣时说的）",
-        "茶馆说书人（拍案之前憋出来的）",
-        "江湖游侠（路过酒馆随口的）",
-        "落第书生（科场门口哭着讲的）",
-        "庙前石狮子（听多了自己悟的）",
-        "村口王大娘（晒谷时顺嘴一提）",
-        "河边洗衣妇（拍衣裳时骂出来的）",
-        "戏台跑龙套（后台换戏时编的）",
-        "说书老先生（翻错笔记时看到的）",
-        "城隍庙小鬼（值夜无聊写的）",
-        "月老（打结的时候手滑写的）",
-        "孟婆（汤里多放了一勺时说的）",
-        "判官（翻错生死簿时感叹的）",
-        "土地公（巡视田地时嘀咕的）",
-        "山里老狐（成精未满时练手的）",
-        "河神（退潮时闲得发慌写的）",
-        "驿站伙计（趁客人睡着时记下的）",
-        "路边石碑（风吹雨打后悟出来的）",
-        "城西老槐树（被雷劈之前想通的）",
-        "酒肆掌柜（兑水时突然醒悟的）",
-        "桥头卖糖葫芦的（边串山楂边编的）",
-        "说亲媒婆（翻车之后总结的）",
-        "边关老兵（守城无聊时刻下的）",
-        "道观扫地童子（偷听课后记的）",
-        "佛前供灯人（添油时想到的）",
-        "画中仕女（困在画里憋出的）",
-        "破庙里那尊断臂石佛",
-        "祠堂门口的歪脖子香炉",
-        "城东算命摊上那只破罗盘",
-        "千年古井里的回声",
-        "纸鸢线头那点风声",
-        "楼船夜雨中的残灯",
-        "梁上蹲着听书的老鼠",
-        "灯下磨墨的寒门学子",
-        "篝火旁烤鱼的渔夫",
-        "廊下数珠的老妪",
-        "墙角晒书的穷秀才",
-        "船头望月的舟子",
-        "雪夜围炉的猎户",
-        "驿路吹角的更夫",
-        "河堤放牛的牧童",
-        "村口对弈的老棋手",
-        "油纸伞下走神的闺秀"
-    ];
+    return {
+      proto: 'vmess',
+      name: remarks,
+      server: url.hostname,
+      port: Number(url.port || 80),
+      uuid,
+      alterId,
+      security,
+      network,
+      host: obfsParam,
+      path,
+      tls,
+      sni: ''
+    };
+  }
 
-    const hints = [
-        [0,10,"时间是海绵里的水，挤挤总会有的"],
-        [10,25,"一日之计在于晨，抓住早晨的时光"],
-        [25,40,"上午时光宝贵，专注当下最重要"],
-        [40,50,"不知不觉已过半，下午继续加油"],
-        [50,65,"下午时光，保持精力，效率翻倍"],
-        [65,75,"傍晚时分，总结一天的收获"],
-        [75,85,"夜晚是思考的好时机，整理思绪"],
-        [85,95,"今日即将结束，准备迎接新的一天"],
-        [95,100,"今天即将过去，晚安，做个好梦"]
-    ];
+  function parseVless(raw) {
+    const text = raw.trim();
+    if (!text.startsWith('vless://')) return null;
+    let url;
+    try { url = new URL(text); } catch (e) { return null; }
 
-    // 音乐列表 & 播放控制
-    const musicList = [
-        "https://save.aura.us.kg/Music/%E8%AF%8D%E4%B8%8D%E8%BE%BE%E6%84%8F%20-%20%E6%9E%97%E5%BF%86%E8%8E%B2.mp3",
-        "https://save.aura.us.kg/Music/%E4%BC%8D%E7%8F%82%E7%8E%A5%20-%20%E6%B4%9B%E5%B8%8C%E6%9E%81%E9%99%90.mp3",
-        "https://save.aura.us.kg/Music/%E6%B4%8B%E6%BE%9C%E4%B8%80%20-%20%E8%B0%81.mp3"
-    ];
-    let currentAudio = null;
-    let soundTipTimer = null;
+    const p = url.searchParams;
+    const name = url.hash ? decodeURIComponent(url.hash.slice(1)) : '';
+    const network = p.get('type') || 'tcp';
+    const path = p.get('path') || '/';
+    const host = p.get('host') || p.get('sni') || '';
+    const security = p.get('security') || 'none';
+    const tls = security === 'tls' || security === 'reality';
+    const sni = p.get('sni') || '';
 
-    function generateRandomLikes() {
-        const min = 1299;
-        const max = 999999;
-        return Math.floor(Math.random() * (max - min + 1)) + min;
+    return {
+      proto: 'vless',
+      name,
+      server: url.hostname,
+      port: Number(url.port || (tls ? 443 : 80)),
+      uuid: url.username,
+      alterId: 0,
+      security,
+      network,
+      path,
+      host,
+      tls,
+      sni
+    };
+  }
+
+  function parseTrojan(raw) {
+    const text = raw.trim();
+    if (!text.startsWith('trojan://')) return null;
+    let url;
+    try { url = new URL(text); } catch (e) { return null; }
+
+    const p = url.searchParams;
+    const name = url.hash ? decodeURIComponent(url.hash.slice(1)) : '';
+    const security = p.get('security') || 'tls';
+    const tls = security === 'tls';
+    const sni = p.get('sni') || '';
+    const network = p.get('type') || 'tcp';
+    const path = p.get('path') || '/';
+    const host = p.get('host') || sni;
+
+    return {
+      proto: 'trojan',
+      name,
+      server: url.hostname,
+      port: Number(url.port || 443),
+      uuid: '',
+      password: url.username,
+      method: '',
+      network,
+      path,
+      host,
+      tls,
+      sni,
+      alterId: 0,
+      security
+    };
+  }
+
+  function parseSS(raw) {
+    let text = raw.trim();
+    if (!text.startsWith('ss://')) return null;
+    text = text.slice('ss://'.length);
+
+    let name = '';
+    const hashIndex = text.indexOf('#');
+    if (hashIndex >= 0) {
+      name = decodeURIComponent(text.slice(hashIndex + 1));
+      text = text.slice(0, hashIndex);
     }
 
-    function getHintText(progress) {
-        for (let i = 0; i < hints.length; i++) {
-            const [min, max, text] = hints[i];
-            if (progress >= min && progress < max) {
-                return text;
-            }
+    let userInfoPart = '';
+    let serverPart = '';
+
+    if (text.includes('@')) {
+      const parts = text.split('@');
+      userInfoPart = parts[0];
+      serverPart = parts[1];
+      if (!userInfoPart.includes(':')) {
+        try { userInfoPart = b64Decode(userInfoPart); } catch (e) {}
+      }
+    } else {
+      try {
+        const decoded = b64Decode(text);
+        if (!decoded.includes('@')) return null;
+        const parts = decoded.split('@');
+        userInfoPart = parts[0];
+        serverPart = parts[1];
+      } catch (e) { return null; }
+    }
+
+    const [method, password] = userInfoPart.split(':');
+    const [server, portStr] = serverPart.split(':');
+
+    return {
+      proto: 'ss',
+      name,
+      server,
+      port: Number(portStr),
+      method,
+      password,
+      uuid: '',
+      alterId: 0,
+      security: method,
+      network: 'tcp',
+      host: '',
+      path: '',
+      tls: false,
+      sni: ''
+    };
+  }
+
+  function parseAnyNode(raw) {
+    if (!raw) return null;
+    const text = raw.trim();
+    if (!text) return null;
+    const cleaned = text.replace(/\s+/g, '');
+
+    if (cleaned.startsWith('vmess://') || cleaned.startsWith('dm1lc3M6Ly')) {
+      const n = parseVmess(cleaned);
+      if (n) return n;
+    }
+    if (cleaned.startsWith('vless://')) {
+      const n = parseVless(cleaned);
+      if (n) return n;
+    }
+    if (cleaned.startsWith('trojan://')) {
+      const n = parseTrojan(cleaned);
+      if (n) return n;
+    }
+    if (cleaned.startsWith('ss://')) {
+      const n = parseSS(cleaned);
+      if (n) return n;
+    }
+    return null;
+  }
+
+  // ========== 各客户端格式 ==========
+  function toV2rayN(node) {
+    if (node.proto !== 'vmess') {
+      return '// 当前协议不是 vmess，V2RayN 不适用';
+    }
+    const obj = {
+      v: "2",
+      ps: node.name || "",
+      add: node.server,
+      port: String(node.port),
+      id: node.uuid,
+      aid: String(node.alterId || 0),
+      net: node.network || "tcp",
+      type: "none",
+      host: node.host || "",
+      path: node.path || "",
+      tls: node.tls ? "tls" : "",
+      sni: node.sni || ""
+    };
+    return 'vmess://' + base64Utf8(JSON.stringify(obj));
+  }
+
+  function toClashNode(node) {
+    const name = node.name || (node.server + ':' + node.port);
+    if (node.proto === 'vmess') {
+      const lines = [
+        `- name: "${name}"`,
+        `  type: vmess`,
+        `  server: ${node.server}`,
+        `  port: ${node.port}`,
+        `  uuid: ${node.uuid}`,
+        `  alterId: ${node.alterId || 0}`,
+        `  cipher: ${node.security || 'auto'}`,
+        `  udp: true`
+      ];
+      if (node.network === 'ws') {
+        lines.push(`  network: ws`);
+        lines.push(`  ws-opts:`);
+        lines.push(`    path: "${node.path || '/'}"`);
+        if (node.host) {
+          lines.push(`    headers:`);
+          lines.push(`      Host: ${node.host}`);
         }
-        return hints[hints.length - 1][2];
+      }
+      if (node.tls) {
+        lines.push(`  tls: true`);
+        if (node.sni) lines.push(`  servername: ${node.sni}`);
+      }
+      return lines.join('\n');
     }
 
-    // PC 端：更新顶部进度提示气泡
-    function updateProgressHint(progress) {
-        const bubble = document.getElementById('progressHintBubble');
-        const bubbleText = document.getElementById('progressHintText');
-        const star = document.getElementById('progressStar');
-        const bottom = document.querySelector('.bottom');
-        const nameBubble = document.querySelector('.name-bubble');
-
-        const clamped = Math.max(0, Math.min(progress, 100));
-        const percentText = clamped.toFixed(1) + '%';
-
-        if (!bubble || !bubbleText || !star || !bottom || !nameBubble) return;
-
-        // 显示「今日已过 xx.x%」
-        bubbleText.innerHTML = `Today has passed: ${percentText}<br>${getHintText(clamped)}`;
-
-        const starRect = star.getBoundingClientRect();
-        const bottomRect = bottom.getBoundingClientRect();
-        const nameRect = nameBubble.getBoundingClientRect();
-
-        const x = starRect.left + starRect.width / 2;
-        const left = x - bottomRect.left;
-        const bubbleTop = nameRect.top - bottomRect.top - 47;
-
-        bubble.style.left = `${left}px`;
-        bubble.style.top = `${bubbleTop}px`;
-        bubble.style.opacity = 1;
-        bubble.style.transform = 'translate(-50%,0)';
-    }
-
-    function updateDayProgress() {
-        const now = new Date();
-        const hours = now.getHours();
-        const minutes = now.getMinutes();
-        const seconds = now.getSeconds();
-
-        const currentSeconds = hours * 3600 + minutes * 60 + seconds;
-        const totalSeconds = 24 * 3600;
-
-        const progress = (currentSeconds / totalSeconds) * 100;
-        const fill = document.getElementById('nameProgressFill');
-        const star = document.getElementById('progressStar');
-        const clamped = Math.max(0, Math.min(progress, 100));
-
-        if (fill) fill.style.width = clamped + '%';
-        if (star) star.style.left = clamped + '%';
-
-        updateProgressHint(clamped);
-    }
-
-    function getRandomAuthor() {
-        return funnyAuthors[Math.floor(Math.random() * funnyAuthors.length)];
-    }
-
-    function randChar() {
-        const chars = "!@#……&NHL¥*^_^&*)(#@!YTB$%^&*()_+}{|:?><~`12==++**&&>?:{}|_+)(*&^%$#@%%$$##@@!!0-=[];',./";
-        return chars[Math.floor(Math.random() * chars.length)];
-    }
-
-    function animateGibberishToText(element, text) {
-        const gibSpeed = 55;
-        const resolveSpeed = 70;
-
-        element.textContent = '';
-        let display = '';
-        let index = 0;
-
-        function typeGib() {
-            if (index < text.length) {
-                display += randChar();
-                element.textContent = display;
-                index++;
-                setTimeout(typeGib, gibSpeed);
-            } else {
-                let resolveIndex = 0;
-                let chars = element.textContent.split('');
-
-                function resolveNext() {
-                    if (resolveIndex < text.length) {
-                        chars[resolveIndex] = text.charAt(resolveIndex);
-                        chars.length = Math.max(chars.length, text.length);
-                        element.textContent = chars.join('');
-                        resolveIndex++;
-                        setTimeout(resolveNext, resolveSpeed);
-                    }
-                }
-                resolveNext();
-            }
+    if (node.proto === 'vless') {
+      const lines = [
+        `- name: "${name}"`,
+        `  type: vless`,
+        `  server: ${node.server}`,
+        `  port: ${node.port}`,
+        `  uuid: ${node.uuid}`,
+        `  udp: true`
+      ];
+      if (node.network === 'ws') {
+        lines.push(`  network: ws`);
+        lines.push(`  ws-opts:`);
+        lines.push(`    path: "${node.path || '/'}"`);
+        if (node.host) {
+          lines.push(`    headers:`);
+          lines.push(`      Host: ${node.host}`);
         }
-
-        typeGib();
-        const totalDuration = text.length * (gibSpeed + resolveSpeed) + 400;
-        return totalDuration;
+      }
+      if (node.tls) {
+        lines.push(`  tls: true`);
+        if (node.sni) lines.push(`  servername: ${node.sni}`);
+      }
+      return lines.join('\n');
     }
 
-    async function fetchFromBtstu() {
-        const res = await fetch("https://api.btstu.cn/yan/api.php?charset=utf-8&encode=json");
-        const data = await res.json();
-        return data.text || data.data || "鸡汤熬制失败了呢。☹️";
+    if (node.proto === 'trojan') {
+      const lines = [
+        `- name: "${name}"`,
+        `  type: trojan`,
+        `  server: ${node.server}`,
+        `  port: ${node.port}`,
+        `  password: "${node.password}"`,
+        `  udp: true`
+      ];
+      if (node.tls) {
+        lines.push(`  sni: ${node.sni || node.host || node.server}`);
+      }
+      return lines.join('\n');
     }
 
-    async function fetchFromTianapi() {
-        // 使用你之前正常的 key（去掉错误的 KEY 前缀）
-        const res = await fetch("https://apis.tianapi.com/dujitang/index?key=a2d8a53cf5636e81dd87e373065fdc6c");
-        const data = await res.json();
-
-        if (data && data.code === 200 && data.result && data.result.content) {
-            return data.result.content;
-        }
-        throw new Error("鸡汤熬干了啦。☹️");
+    if (node.proto === 'ss') {
+      const lines = [
+        `- name: "${name}"`,
+        `  type: ss`,
+        `  server: ${node.server}`,
+        `  port: ${node.port}`,
+        `  cipher: ${node.method}`,
+        `  password: "${node.password}"`,
+        `  udp: true`
+      ];
+      return lines.join('\n');
     }
 
-    async function fetchQuoteText() {
-        const firstBtstu = Math.random() < 0.5;
+    return '# Unsupported proto: ' + node.proto;
+  }
 
-        try {
-            return firstBtstu ? await fetchFromBtstu() : await fetchFromTianapi();
-        } catch (e1) {
-            try {
-                return firstBtstu ? await fetchFromTianapi() : await fetchFromBtstu();
-            } catch (e2) {
-                return "锅烂了啦!暂时无法熬制鸡汤😭。";
-            }
-        }
+  function toSingBoxOutbound(node) {
+    const tag = node.name || (node.server + ':' + node.port);
+
+    if (node.proto === 'vmess') {
+      const out = {
+        type: "vmess",
+        tag,
+        server: node.server,
+        server_port: node.port,
+        uuid: node.uuid,
+        security: node.security || "auto",
+        alter_id: node.alterId || 0,
+        tls: { enabled: !!node.tls }
+      };
+      if (node.network === 'ws') {
+        out.transport = {
+          type: "ws",
+          path: node.path || "/",
+          headers: node.host ? { Host: node.host } : undefined
+        };
+      }
+      return JSON.stringify(out, null, 2);
     }
 
-    async function updateCardContent() {
-        const contentElement = document.getElementById('quoteContent');
-        const authorElement = document.getElementById('quoteAuthor');
-        const likeCountElement = document.getElementById('likeCount');
-
-        contentElement.textContent = "正在熬制中...";
-        authorElement.textContent = "——";
-        authorElement.style.opacity = "0.4";
-
-        try {
-            const quoteText = await fetchQuoteText();
-            const author = getRandomAuthor();
-            const likes = generateRandomLikes();
-
-            // ✅ 浏览器标签标题继续根据毒鸡汤内容动态更新
-            try {
-                const maxTitleLength = 40;
-                let shortQuote = quoteText;
-                if (quoteText.length > maxTitleLength) {
-                    shortQuote = quoteText.substring(0, maxTitleLength).trim() + '…';
-                }
-                document.title = `Lynn - ${shortQuote}`;
-            } catch (err) {}
-
-            contentElement.style.transition = "none";
-            const totalDuration = animateGibberishToText(contentElement, quoteText);
-            likeCountElement.textContent = likes;
-
-            setTimeout(() => {
-                authorElement.textContent = `—— ${author}`;
-                authorElement.style.transition = "opacity 0.8s ease, text-shadow 0.8s ease";
-                authorElement.style.opacity = "0.75";
-            }, totalDuration);
-        } catch (error) {
-            contentElement.textContent = "获取内容失败，请点击刷新按钮重试";
-            authorElement.textContent = "—— 系统";
-            authorElement.style.opacity = "0.7";
-        }
+    if (node.proto === 'vless') {
+      const out = {
+        type: "vless",
+        tag,
+        server: node.server,
+        server_port: node.port,
+        uuid: node.uuid,
+        flow: "",
+        tls: { enabled: !!node.tls, server_name: node.sni || node.host || undefined }
+      };
+      if (node.network === 'ws') {
+        out.transport = {
+          type: "ws",
+          path: node.path || "/",
+          headers: node.host ? { Host: node.host } : undefined
+        };
+      }
+      return JSON.stringify(out, null, 2);
     }
 
-    function updateCurrentTime() {
-        const now = new Date();
-        const hours = now.getHours();
-        const minutes = now.getMinutes();
-        const formatted = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}`;
-        const currentTimeEl = document.getElementById('currentTime');
-        if (currentTimeEl) {
-            currentTimeEl.textContent = `Current time: ${formatted}`;
-        }
+    if (node.proto === 'trojan') {
+      const out = {
+        type: "trojan",
+        tag,
+        server: node.server,
+        server_port: node.port,
+        password: node.password,
+        tls: { enabled: true, server_name: node.sni || node.host || undefined }
+      };
+      return JSON.stringify(out, null, 2);
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        updateDayProgress();
-        setInterval(updateDayProgress, 60000);
+    if (node.proto === 'ss') {
+      const out = {
+        type: "shadowsocks",
+        tag,
+        server: node.server,
+        server_port: node.port,
+        method: node.method,
+        password: node.password
+      };
+      return JSON.stringify(out, null, 2);
+    }
 
-        const bottom = document.querySelector('.bottom');
-        const likeButton = document.getElementById('likeButton');
-        const heartIcon = likeButton ? likeButton.querySelector('i') : null;
-        const floatingCard = document.querySelector('.floating-card');
-        const soundTip = document.getElementById('soundTip');
+    return '// Unsupported proto: ' + node.proto;
+  }
 
-        // 计算“我可是有声音的哦”气泡位置（在悬浮卡片下方，指向红心）
-        function positionSoundTip() {
-            if (!bottom || !heartIcon || !floatingCard || !soundTip) return;
+  // ========== 弹窗 & 复制 ==========
+  const currentNodeFormats = { v2rayn: '', clash: '', singbox: '' };
+  let currentPreviewFormat = 'v2rayn';
 
-            const iconRect = heartIcon.getBoundingClientRect();
-            const cardRect = floatingCard.getBoundingClientRect();
-            const bottomRect = bottom.getBoundingClientRect();
+  function openNodeModal(node) {
+    const modal = document.getElementById('node-modal');
+    const title = document.getElementById('node-modal-title');
+    const previewLabel = document.getElementById('node-preview-label');
+    const previewText = document.getElementById('node-preview-text');
 
-            // 气泡水平位置：大致对齐红心中心，略做偏移
-            const x = iconRect.left + iconRect.width / 2 - bottomRect.left + 60;
+    title.textContent = '节点 · ' + node.proto.toUpperCase() + ' · ' + (node.name || node.server);
 
-            // 气泡垂直位置：放在卡片底部往下 15 像素（完全不遮挡卡片）
-            const y = cardRect.bottom - bottomRect.top + 15;
+    currentNodeFormats.v2rayn = toV2rayN(node);
+    currentNodeFormats.clash = toClashNode(node);
+    currentNodeFormats.singbox = toSingBoxOutbound(node);
 
-            soundTip.style.left = `${x}px`;
-            soundTip.style.top = `${y}px`;
-        }
+    currentPreviewFormat = 'v2rayn';
+    previewLabel.textContent = '预览：V2RayN';
+    previewText.textContent = currentNodeFormats.v2rayn;
 
-        // 显示提示气泡 5 秒
-        function showSoundTip() {
-            if (!soundTip) return;
-            positionSoundTip();
-            soundTip.classList.add('show');
-            if (soundTipTimer) clearTimeout(soundTipTimer);
-            soundTipTimer = setTimeout(() => {
-                soundTip.classList.remove('show');
-            }, 5000);
-        }
+    modal.style.display = 'flex';
+  }
 
-        window.addEventListener('resize', function() {
-            // 尺寸变化时，重新计算今日进度气泡和声音提示气泡位置
-            updateDayProgress();
-            positionSoundTip();
+  function closeNodeModal() {
+    document.getElementById('node-modal').style.display = 'none';
+  }
+
+  function copyText(text) {
+    if (!text) {
+      alert('没有可复制的内容');
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        alert('已复制到剪贴板');
+      }).catch(function () {
+        alert('复制失败，请检查浏览器权限');
+      });
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        alert('已复制到剪贴板');
+      } catch (e) {
+        alert('复制失败，请手动复制');
+      }
+      document.body.removeChild(ta);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // 1. 遍历每条 paste-card，自动识别是否为节点
+    document.querySelectorAll('.paste-card').forEach(function (card) {
+      const rawContent = card.getAttribute('data-paste-content') || '';
+      const node = parseAnyNode(rawContent);
+      if (!node) return; // 不是节点
+
+      // 把 node 对象挂在这条卡片上
+      card.__node = node;
+
+      // 显示客户端按钮
+      const btn = card.querySelector('.client-btn');
+      if (btn) {
+        btn.style.display = 'inline-flex';
+        btn.addEventListener('click', function () {
+          openNodeModal(card.__node);
         });
-
-        const likeCountElement = document.getElementById('likeCount');
-        if (likeCountElement) {
-            likeCountElement.textContent = generateRandomLikes();
-        }
-
-        updateCardContent();
-
-        if (likeButton) {
-            likeButton.addEventListener('click', function() {
-                // 点赞 +1
-                const likeCountElement = document.getElementById('likeCount');
-                let currentLikes = parseInt(likeCountElement.textContent) || 0;
-                currentLikes++;
-                likeCountElement.textContent = currentLikes;
-
-                const heartIcon = this.querySelector('i');
-                heartIcon.style.transform = 'scale(1.3)';
-                heartIcon.style.transition = 'transform 0.3s ease';
-                setTimeout(() => {
-                    heartIcon.style.transform = 'scale(1)';
-                }, 300);
-
-                // 随机播放音乐
-                const randomUrl = musicList[Math.floor(Math.random() * musicList.length)];
-                try {
-                    if (currentAudio) {
-                        currentAudio.pause();
-                        currentAudio.currentTime = 0;
-                    }
-                    currentAudio = new Audio(randomUrl);
-                    currentAudio.play().catch(() => {});
-                } catch (e) {}
-            });
-        }
-
-        const refreshButton = document.getElementById('refreshButton');
-        if (refreshButton) {
-            refreshButton.addEventListener('click', function() {
-                const refreshIcon = this.querySelector('i');
-                refreshIcon.style.transform = 'rotate(360deg)';
-                refreshIcon.style.transition = 'transform 0.5s ease';
-                setTimeout(() => {
-                    refreshIcon.style.transform = 'rotate(0)';
-                }, 500);
-
-                updateCardContent();
-            });
-        }
-
-        updateCurrentTime();
-        setInterval(updateCurrentTime, 1000);
-
-        // --- 声音气泡逻辑 ---
-        // 进入页面先提示一次
-        showSoundTip();
-        // 之后每 30 秒弹出一次（不用存变量了，简单调用即可）
-        setInterval(showSoundTip, 30000);
+      }
     });
+
+    // 2. 弹窗关闭逻辑
+    const modal = document.getElementById('node-modal');
+    const closeBtn = document.getElementById('node-modal-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeNodeModal);
+    }
+    if (modal) {
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeNodeModal();
+      });
+    }
+
+    // 3. 点击客户端图标：切换预览 + 自动复制
+    document.querySelectorAll('.client-tile').forEach(function (tile) {
+      tile.addEventListener('click', function () {
+        const fmt = tile.getAttribute('data-format'); // v2rayn / clash / singbox
+        const labelMap = { v2rayn: 'V2RayN', clash: 'Clash', singbox: 'Sing-box' };
+        currentPreviewFormat = fmt;
+        document.getElementById('node-preview-label').textContent =
+          '预览：' + (labelMap[fmt] || fmt);
+        document.getElementById('node-preview-text').textContent =
+          currentNodeFormats[fmt] || '';
+
+        copyText(currentNodeFormats[fmt] || '');
+      });
+    });
+
+    // 4. “复制当前格式”按钮
+    const previewCopyBtn = document.getElementById('node-preview-copy');
+    if (previewCopyBtn) {
+      previewCopyBtn.addEventListener('click', function () {
+        copyText(currentNodeFormats[currentPreviewFormat] || '');
+      });
+    }
+  });
 </script>
 </body>
 </html>
