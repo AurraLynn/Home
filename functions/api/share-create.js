@@ -11,18 +11,39 @@ function randomId(len = 8) {
   return out;
 }
 
+/**
+ * 解析前端传来的 expire 选项：
+ *   - "1d"  → 1 天
+ *   - "7d"  → 7 天
+ *   - "30d" → 30 天
+ *   - "forever" / 其它 → 永不过期
+ *
+ * 返回：
+ *   {
+ *     expireAt: 毫秒时间戳 或 null,
+ *     ttlSeconds: 秒数 或 null （用于 KV 的 expirationTtl）
+ *   }
+ */
 function parseExpire(expire) {
   const now = Date.now();
+
   switch (expire) {
-    case "1d":
-      return now + 1 * 24 * 60 * 60 * 1000;
-    case "7d":
-      return now + 7 * 24 * 60 * 60 * 1000;
-    case "30d":
-      return now + 30 * 24 * 60 * 60 * 1000;
+    case "1d": {
+      const ms = 1 * 24 * 60 * 60 * 1000;
+      return { expireAt: now + ms, ttlSeconds: ms / 1000 };
+    }
+    case "7d": {
+      const ms = 7 * 24 * 60 * 60 * 1000;
+      return { expireAt: now + ms, ttlSeconds: ms / 1000 };
+    }
+    case "30d": {
+      const ms = 30 * 24 * 60 * 60 * 1000;
+      return { expireAt: now + ms, ttlSeconds: ms / 1000 };
+    }
     case "forever":
     default:
-      return null;
+      // 永不过期：不设置 expireAt / expirationTtl
+      return { expireAt: null, ttlSeconds: null };
   }
 }
 
@@ -72,7 +93,7 @@ export async function onRequest(context) {
   const description = (payload.description || "").toString().trim();
   const image = (payload.image || "").toString().trim();
   const targetRaw = (payload.target || "").toString();
-  const expire = (payload.expire || "7d").toString();
+  const expire = (payload.expire || "7d").toString(); // "1d" | "7d" | "30d" | "forever"
 
   if (!targetRaw.trim()) {
     return new Response(
@@ -91,20 +112,30 @@ export async function onRequest(context) {
 
   const target = norm.value;
   const mode = "url"; // 现在只允许链接
-  const expireAt = parseExpire(expire);
+
+  // 解析有效期：得到 expireAt（给自己用）+ ttlSeconds（给 KV 用）
+  const { expireAt, ttlSeconds } = parseExpire(expire);
 
   const id = randomId(8);
+  const now = Date.now();
+
   const card = {
     title,
     description,
     image,
     target,
     mode,
-    expireAt,
-    createdAt: Date.now()
+    expireAt,      // 逻辑过期时间（毫秒），给 /C/[id].js 用来判断 & 懒删除
+    createdAt: now
   };
 
-  await env.Card_KV.put(id, JSON.stringify(card));
+  // KV 写入选项：如果有 ttlSeconds，就设置 expirationTtl
+  const kvOptions = {};
+  if (ttlSeconds && Number.isFinite(ttlSeconds) && ttlSeconds > 0) {
+    kvOptions.expirationTtl = ttlSeconds; // 单位：秒
+  }
+
+  await env.Card_KV.put(id, JSON.stringify(card), kvOptions);
 
   const url = new URL(request.url);
   const shareUrl = `${url.origin}/C/${id}`;
