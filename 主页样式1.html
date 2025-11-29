@@ -2,281 +2,122 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>Paste 管理 · 节点自动识别示例</title>
+  <title>Paste 管理 · 节点客户端链接示例</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;
+      background:#020617;color:#e5e7eb;padding:24px 12px
     }
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-      "Segoe UI", sans-serif;
-      background: #020617;
-      color: #e5e7eb;
-      padding: 24px 12px;
+    .page{max-width:840px;margin:0 auto}
+    .page-title{font-size:18px;font-weight:600;margin-bottom:16px}
+    .paste-list{display:flex;flex-direction:column;gap:12px}
+    .paste-card{
+      background:radial-gradient(circle at 0 0,rgba(248,250,252,.08),transparent 55%);
+      border-radius:18px;padding:10px 12px;
+      border:1px solid rgba(31,41,55,.85);
+      box-shadow:0 12px 30px rgba(0,0,0,.58)
     }
-    .page {
-      max-width: 840px;
-      margin: 0 auto;
+    .paste-header{
+      display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:6px;gap:8px
     }
-    .page-title {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 16px;
+    .paste-title{font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+    .paste-meta{font-size:11px;color:#9ca3af;white-space:nowrap}
+    .paste-body{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+    .paste-tag{
+      display:inline-flex;align-items:center;padding:2px 10px;border-radius:999px;
+      font-size:11px;background:#111827;color:#e5e7eb;width:fit-content
     }
+    .paste-url{
+      font-size:12px;padding:3px 10px;border-radius:999px;
+      background:#020617;color:#9ca3af;width:fit-content
+    }
+    .paste-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+    .btn{
+      border:1px solid rgba(148,163,184,.6);
+      background:#020617;color:#e5e7eb;
+      cursor:pointer;font-size:12px;padding:4px 10px;border-radius:999px;
+      display:inline-flex;align-items:center;gap:4px;
+      transition:background .12s,box-shadow .12s,transform .12s
+    }
+    .btn:hover{background:#111827;box-shadow:0 6px 14px rgba(0,0,0,.4);transform:translateY(-.5px)}
+    .btn.danger{border-color:rgba(248,113,113,.85);color:#fecaca;background:#450a0a}
+    .btn.danger:hover{background:#7f1d1d}
+    .client-btn-icon{width:14px;height:14px;fill:currentColor}
 
-    /* ===== 卡片列表 ===== */
-    .paste-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    /* 弹窗 */
+    .node-modal{
+      position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+      background:rgba(15,23,42,.65);z-index:999
     }
-
-    .paste-card {
-      background: radial-gradient(circle at 0 0, rgba(248, 250, 252, 0.08), transparent 55%);
-      border-radius: 18px;
-      padding: 10px 12px 10px;
-      border: 1px solid rgba(31, 41, 55, 0.85);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.58);
+    .node-modal-inner{
+      background:#020617;color:#e5e7eb;border-radius:16px;
+      padding:16px 18px 14px;width:min(680px,94vw);max-height:82vh;
+      box-shadow:0 24px 48px rgba(0,0,0,.55);
+      display:flex;flex-direction:column;gap:10px;
+      border:1px solid rgba(30,64,175,.85)
     }
-
-    .paste-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-      gap: 8px;
+    .node-modal-header{
+      display:flex;justify-content:space-between;align-items:center;
+      font-size:13px;margin-bottom:6px
     }
-    .paste-title {
-      font-size: 14px;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+    .node-modal-close{
+      border:none;background:transparent;color:#9ca3af;cursor:pointer;font-size:16px
     }
-    .paste-meta {
-      font-size: 11px;
-      color: #9ca3af;
-      white-space: nowrap;
+    .node-modal-grid{
+      display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px
     }
-
-    .paste-body {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-bottom: 8px;
+    .client-tile{
+      border:1px solid rgba(148,163,184,.55);
+      background:radial-gradient(circle at 0 0,rgba(248,250,252,.09),transparent 55%);
+      border-radius:12px;padding:9px 8px;text-align:left;
+      display:flex;flex-direction:column;gap:4px;
+      cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s
     }
-    .paste-tag {
-      display: inline-flex;
-      align-items: center;
-      padding: 2px 10px;
-      border-radius: 999px;
-      font-size: 11px;
-      background: #111827;
-      color: #e5e7eb;
-      width: fit-content;
+    .client-tile:hover{
+      transform:translateY(-1px);
+      box-shadow:0 14px 30px rgba(0,0,0,.58);
+      border-color:rgba(248,250,252,.7)
     }
-    .paste-url {
-      font-size: 12px;
-      padding: 3px 10px;
-      border-radius: 999px;
-      background: #020617;
-      color: #9ca3af;
-      width: fit-content;
+    .client-icon{
+      width:26px;height:26px;border-radius:999px;
+      background:rgba(15,23,42,.96);display:flex;align-items:center;justify-content:center;
+      margin-bottom:2px
     }
-
-    .paste-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 4px;
+    .client-icon svg{width:18px;height:18px;fill:#e5e7eb}
+    .client-name{font-size:12px;font-weight:600}
+    .client-sub{font-size:11px;color:#9ca3af}
+    .node-modal-preview{
+      margin-top:8px;border-radius:10px;background:#020617;
+      border:1px solid rgba(31,41,55,.9);padding:8px
     }
-
-    .btn {
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      background: #020617;
-      color: #e5e7eb;
-      cursor: pointer;
-      font-size: 12px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      transition: background 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+    .node-preview-header{
+      display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:4px;font-size:11px;color:#9ca3af
     }
-    .btn:hover {
-      background: #111827;
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
-      transform: translateY(-0.5px);
+    #node-preview-copy{
+      border:none;padding:4px 10px;border-radius:999px;
+      background:#1f2937;color:#e5e7eb;cursor:pointer;font-size:11px
     }
-    .btn.danger {
-      border-color: rgba(248, 113, 113, 0.85);
-      color: #fecaca;
-      background: #450a0a;
+    #node-preview-copy:hover{background:#374151}
+    #node-preview-text{
+      margin:0;font-size:11px;white-space:pre-wrap;word-break:break-all;
+      max-height:220px;overflow:auto
     }
-    .btn.danger:hover {
-      background: #7f1d1d;
+    @media (max-width:640px){
+      .node-modal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
-
-    .client-btn-icon {
-      width: 14px;
-      height: 14px;
-      fill: currentColor;
-    }
-
-    /* ===== 节点客户端弹窗 ===== */
-
-    .node-modal {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(15, 23, 42, 0.65);
-      z-index: 999;
-    }
-
-    .node-modal-inner {
-      background: #020617;
-      color: #e5e7eb;
-      border-radius: 16px;
-      padding: 16px 18px 14px;
-      width: min(680px, 94vw);
-      max-height: 82vh;
-      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      border: 1px solid rgba(30, 64, 175, 0.85);
-    }
-
-    .node-modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-      margin-bottom: 6px;
-    }
-
-    .node-modal-close {
-      border: none;
-      background: transparent;
-      color: #9ca3af;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    .node-modal-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-    }
-
-    .client-tile {
-      border: 1px solid rgba(148, 163, 184, 0.55);
-      background: radial-gradient(circle at 0 0, rgba(248, 250, 252, 0.09), transparent 55%);
-      border-radius: 12px;
-      padding: 9px 8px;
-      text-align: left;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      cursor: pointer;
-      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s;
-      position: relative;
-    }
-
-    .client-tile:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.58);
-      border-color: rgba(248, 250, 252, 0.7);
-    }
-
-    .client-icon {
-      width: 26px;
-      height: 26px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.96);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 2px;
-    }
-
-    .client-icon svg {
-      width: 18px;
-      height: 18px;
-      fill: #e5e7eb;
-    }
-
-    .client-name {
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .client-sub {
-      font-size: 11px;
-      color: #9ca3af;
-    }
-
-    .node-modal-preview {
-      margin-top: 8px;
-      border-radius: 10px;
-      background: #020617;
-      border: 1px solid rgba(31, 41, 55, 0.9);
-      padding: 8px;
-    }
-
-    .node-preview-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
-      font-size: 11px;
-      color: #9ca3af;
-    }
-
-    #node-preview-copy {
-      border: none;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: #1f2937;
-      color: #e5e7eb;
-      cursor: pointer;
-      font-size: 11px;
-    }
-
-    #node-preview-copy:hover {
-      background: #374151;
-    }
-
-    #node-preview-text {
-      margin: 0;
-      font-size: 11px;
-      white-space: pre-wrap;
-      word-break: break-all;
-      max-height: 220px;
-      overflow: auto;
-    }
-
-    @media (max-width: 640px) {
-      .node-modal-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
   </style>
 </head>
 <body>
 <div class="page">
-  <div class="page-title">🔗 我的链接管理（示例）</div>
+  <div class="page-title">🔗 我的链接管理（客户端接口示例）</div>
 
   <div class="paste-list">
-    <!-- 示例：普通文本，不是节点，不会出现客户端按钮 -->
+
+    <!-- 示例1：普通文本，不是节点，不会显示“客户端”按钮 -->
     <div class="paste-card"
          data-paste-id="note-1"
          data-paste-content="Here lie all the messages I typed, read twice, and never sent.">
@@ -293,17 +134,16 @@
         <button class="btn">📋 复制</button>
         <button class="btn">🔗 打开</button>
         <button class="btn danger">🗑 删除</button>
-        <!-- 客户端按钮：默认隐藏，识别到是节点后显示 -->
         <button class="btn client-btn" style="display:none;">
-          <svg viewBox="0 0 24 24" class="client-btn-icon" aria-hidden="true">
-            <path d="M4 5h16a1 1 0 0 1 1 1v9H3V6a1 1 0 0 1 1-1zm-1 12h18v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-1z"></path>
+          <svg viewBox="0 0 24 24" class="client-btn-icon">
+            <path d="M4 5h16a1 1 0 0 1 1 1v9H3V6a1 1 0 0 1 1-1zm-1 12h18v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-1z"/>
           </svg>
           <span>客户端</span>
         </button>
       </div>
     </div>
 
-    <!-- 示例：节点文本，这条会自动识别并显示“客户端”按钮 -->
+    <!-- 示例2：节点文本，会识别为 vmess，显示“客户端”按钮 -->
     <div class="paste-card"
          data-paste-id="Forever"
          data-paste-content="vmess://YXV0bzo3MDM5NmE4OC1iYTQzLTQ2NDItOTI4Ni00MzdmYzJkYjRiMWFAdHcxZy5qaWVxYS54eXo6ODA?path=/&remarks=TW%201G%20%E5%AE%B6%E5%AE%BD/Netflix%20TCP&obfsParam=tms.dingtalk.com&obfs=http&tfo=1&alterId=0">
@@ -320,63 +160,56 @@
         <button class="btn">📋 复制</button>
         <button class="btn">🔗 打开</button>
         <button class="btn danger">🗑 删除</button>
-
-        <!-- 这颗按钮会被 JS 打开 display，位置就像你截图中“删除”右边 -->
         <button class="btn client-btn" style="display:none;">
-          <svg viewBox="0 0 24 24" class="client-btn-icon" aria-hidden="true">
-            <path d="M4 5h16a1 1 0 0 1 1 1v9H3V6a1 1 0 0 1 1-1zm-1 12h18v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-1z"></path>
+          <svg viewBox="0 0 24 24" class="client-btn-icon">
+            <path d="M4 5h16a1 1 0 0 1 1 1v9H3V6a1 1 0 0 1 1-1zm-1 12h18v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-1z"/>
           </svg>
           <span>客户端</span>
         </button>
       </div>
     </div>
+
   </div>
 </div>
 
-<!-- ===== 节点客户端弹窗 HTML ===== -->
+<!-- 弹窗：客户端图标 + 链接预览 -->
 <div id="node-modal" class="node-modal">
   <div class="node-modal-inner">
     <div class="node-modal-header">
-      <span id="node-modal-title">节点 · 客户端格式</span>
+      <span id="node-modal-title">节点 · 客户端链接</span>
       <button id="node-modal-close" class="node-modal-close">✕</button>
     </div>
 
     <div class="node-modal-grid">
       <button class="client-tile" data-format="v2rayn">
         <div class="client-icon">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 4h16v16H4z"></path>
-          </svg>
+          <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/></svg>
         </div>
         <div class="client-name">V2RayN</div>
-        <div class="client-sub">vmess 链接</div>
+        <div class="client-sub">vmess 链接接口</div>
       </button>
 
       <button class="client-tile" data-format="clash">
         <div class="client-icon">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="8"></circle>
-          </svg>
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
         </div>
         <div class="client-name">Clash</div>
-        <div class="client-sub">YAML 节点</div>
+        <div class="client-sub">YAML 节点接口</div>
       </button>
 
       <button class="client-tile" data-format="singbox">
         <div class="client-icon">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M5 5h14v6H5zM5 13h8v6H5z"></path>
-          </svg>
+          <svg viewBox="0 0 24 24"><path d="M5 5h14v6H5zM5 13h8v6H5z"/></svg>
         </div>
         <div class="client-name">Sing-box</div>
-        <div class="client-sub">outbound JSON</div>
+        <div class="client-sub">outbound 接口</div>
       </button>
     </div>
 
     <div class="node-modal-preview">
       <div class="node-preview-header">
-        <span id="node-preview-label">预览：V2RayN</span>
-        <button id="node-preview-copy">复制当前格式</button>
+        <span id="node-preview-label">预览：V2RayN 链接</span>
+        <button id="node-preview-copy">复制当前链接</button>
       </div>
       <pre id="node-preview-text"></pre>
     </div>
@@ -384,527 +217,184 @@
 </div>
 
 <script>
-  // ========== Base64 工具 ==========
-  function addBase64Padding(str) {
-    const pad = str.length % 4;
-    if (pad === 2) return str + '==';
-    if (pad === 3) return str + '=';
-    if (pad === 1) return str + '===';
-    return str;
-  }
-  function b64Decode(str) {
-    return atob(addBase64Padding(str));
-  }
-  function base64Utf8(str) {
-    return btoa(unescape(encodeURIComponent(str)));
-  }
+  /* ======= Base64 工具 ======= */
+  function addBase64Padding(str){const p=str.length%4;if(p===2)return str+'==';if(p===3)return str+'=';if(p===1)return str+'===';return str;}
+  function b64Decode(str){return atob(addBase64Padding(str));}
 
-  // ========== 各协议解析 ==========
-
-  function normalizeVmess(raw) {
-    let text = raw.trim();
-    if (text.startsWith('vmess://')) return text;
-    // 处理 dm1lc3M6Ly9... 整串 Base64
-    try {
-      const decoded = b64Decode(text);
-      if (decoded.startsWith('vmess://')) return decoded;
-    } catch (e) {}
+  /* ======= 协议解析：vmess / vless / trojan / ss ======= */
+  function normalizeVmess(raw){
+    let t=raw.trim();
+    if(t.startsWith('vmess://')) return t;
+    try{const d=b64Decode(t);if(d.startsWith('vmess://'))return d;}catch(e){}
+    return null;
+  }
+  function parseVmess(raw){
+    const n=normalizeVmess(raw);if(!n)return null;
+    const body=n.slice('vmess://'.length);
+    // JSON 模式
+    try{
+      const j=b64Decode(body);const d=JSON.parse(j);
+      return{proto:'vmess',name:d.ps||'',server:d.add,port:+d.port,uuid:d.id,
+        alterId:+(d.aid||0),security:d.security||'auto',network:d.net||'tcp',
+        host:d.host||'',path:d.path||'',tls:d.tls==='tls',sni:d.sni||''};
+    }catch(e){}
+    // URI 模式
+    let url;try{url=new URL(n);}catch(e){return null;}
+    let security='auto',uuid='';
+    if(url.username){
+      try{
+        const u=b64Decode(url.username);const parts=u.split(':');
+        if(parts.length===2){security=parts[0];uuid=parts[1];}else uuid=u;
+      }catch(e){}
+    }
+    const p=url.searchParams;
+    const remarks=p.get('remarks')?decodeURIComponent(p.get('remarks')):'';
+    const path=p.get('path')||'/';
+    const obfs=p.get('obfs')||'tcp';
+    const obfsParam=p.get('obfsParam')||'';
+    const alterId=+(p.get('alterId')||0);
+    const tlsParam=p.get('tls');
+    const network=obfs==='http'?'ws':obfs;
+    const tls=tlsParam==='1'||tlsParam==='tls';
+    return{proto:'vmess',name:remarks,server:url.hostname,port:+(url.port||80),
+      uuid,alterId,security,network,host:obfsParam,path,tls,sni:''};
+  }
+  function parseVless(raw){
+    const t=raw.trim();if(!t.startsWith('vless://'))return null;
+    let url;try{url=new URL(t);}catch(e){return null;}
+    const p=url.searchParams;
+    const name=url.hash?decodeURIComponent(url.hash.slice(1)):'';
+    const network=p.get('type')||'tcp';
+    const path=p.get('path')||'/';
+    const host=p.get('host')||p.get('sni')||'';
+    const security=p.get('security')||'none';
+    const tls=security==='tls'||security==='reality';
+    const sni=p.get('sni')||'';
+    return{proto:'vless',name,server:url.hostname,port:+(url.port||(tls?443:80)),
+      uuid:url.username,alterId:0,security,network,path,host,tls,sni};
+  }
+  function parseTrojan(raw){
+    const t=raw.trim();if(!t.startsWith('trojan://'))return null;
+    let url;try{url=new URL(t);}catch(e){return null;}
+    const p=url.searchParams;
+    const name=url.hash?decodeURIComponent(url.hash.slice(1)):'';
+    const security=p.get('security')||'tls';
+    const tls=security==='tls';
+    const sni=p.get('sni')||'';
+    const network=p.get('type')||'tcp';
+    const path=p.get('path')||'/';
+    const host=p.get('host')||sni;
+    return{proto:'trojan',name,server:url.hostname,port:+(url.port||443),
+      uuid:'',password:url.username,method:'',network,path,host,tls,sni,
+      alterId:0,security};
+  }
+  function parseSS(raw){
+    let t=raw.trim();if(!t.startsWith('ss://'))return null;
+    t=t.slice('ss://'.length);
+    let name='';const idx=t.indexOf('#');
+    if(idx>=0){name=decodeURIComponent(t.slice(idx+1));t=t.slice(0,idx);}
+    let user='',serverPart='';
+    if(t.includes('@')){
+      const parts=t.split('@');user=parts[0];serverPart=parts[1];
+      if(!user.includes(':')){try{user=b64Decode(user);}catch(e){}}
+    }else{
+      try{
+        const d=b64Decode(t);if(!d.includes('@'))return null;
+        const parts=d.split('@');user=parts[0];serverPart=parts[1];
+      }catch(e){return null;}
+    }
+    const [method,password]=user.split(':');
+    const [server,portStr]=serverPart.split(':');
+    return{proto:'ss',name,server,port:+portStr,method,password,
+      uuid:'',alterId:0,security:method,network:'tcp',host:'',path:'',tls:false,sni:''};
+  }
+  function parseAnyNode(raw){
+    if(!raw)return null;const t=raw.trim();if(!t)return null;
+    const c=t.replace(/\s+/g,'');
+    if(c.startsWith('vmess://')||c.startsWith('dm1lc3M6Ly')){const n=parseVmess(c);if(n)return n;}
+    if(c.startsWith('vless://')){const n=parseVless(c);if(n)return n;}
+    if(c.startsWith('trojan://')){const n=parseTrojan(c);if(n)return n;}
+    if(c.startsWith('ss://')){const n=parseSS(c);if(n)return n;}
     return null;
   }
 
-  function parseVmess(raw) {
-    const normalized = normalizeVmess(raw);
-    if (!normalized) return null;
-    const body = normalized.slice('vmess://'.length);
-
-    // ① JSON 模式
-    try {
-      const jsonStr = b64Decode(body);
-      const d = JSON.parse(jsonStr);
-      return {
-        proto: 'vmess',
-        name: d.ps || '',
-        server: d.add,
-        port: Number(d.port),
-        uuid: d.id,
-        alterId: Number(d.aid || 0),
-        security: d.security || 'auto',
-        network: d.net || 'tcp',
-        host: d.host || '',
-        path: d.path || '',
-        tls: d.tls === 'tls',
-        sni: d.sni || ''
-      };
-    } catch (e) {}
-
-    // ② URI 模式
-    let url;
-    try { url = new URL(normalized); } catch (e) { return null; }
-
-    let security = 'auto';
-    let uuid = '';
-    if (url.username) {
-      try {
-        const userDecoded = b64Decode(url.username);
-        const parts = userDecoded.split(':');
-        if (parts.length === 2) { security = parts[0]; uuid = parts[1]; }
-        else { uuid = userDecoded; }
-      } catch (e) {}
-    }
-
-    const params = url.searchParams;
-    const remarks = params.get('remarks') ? decodeURIComponent(params.get('remarks')) : '';
-    const path = params.get('path') || '/';
-    const obfs = params.get('obfs') || 'tcp';
-    const obfsParam = params.get('obfsParam') || '';
-    const alterId = Number(params.get('alterId') || 0);
-    const tlsParam = params.get('tls');
-    const network = obfs === 'http' ? 'ws' : obfs;
-    const tls = tlsParam === '1' || tlsParam === 'tls';
-
-    return {
-      proto: 'vmess',
-      name: remarks,
-      server: url.hostname,
-      port: Number(url.port || 80),
-      uuid,
-      alterId,
-      security,
-      network,
-      host: obfsParam,
-      path,
-      tls,
-      sni: ''
-    };
+  /* ======= 构造客户端接口链接：/api/paste-client/:id?client=xxx ======= */
+  function buildClientLink(pasteId,clientKey){
+    const origin=window.location.origin||'';
+    return origin+'/api/paste-client/'+encodeURIComponent(pasteId)+'?client='+encodeURIComponent(clientKey);
   }
 
-  function parseVless(raw) {
-    const text = raw.trim();
-    if (!text.startsWith('vless://')) return null;
-    let url;
-    try { url = new URL(text); } catch (e) { return null; }
+  const currentLinks={v2rayn:'',clash:'',singbox:''};
+  let currentFormat='v2rayn';
 
-    const p = url.searchParams;
-    const name = url.hash ? decodeURIComponent(url.hash.slice(1)) : '';
-    const network = p.get('type') || 'tcp';
-    const path = p.get('path') || '/';
-    const host = p.get('host') || p.get('sni') || '';
-    const security = p.get('security') || 'none';
-    const tls = security === 'tls' || security === 'reality';
-    const sni = p.get('sni') || '';
+  function openNodeModal(pasteId,node){
+    const modal=document.getElementById('node-modal');
+    const title=document.getElementById('node-modal-title');
+    const label=document.getElementById('node-preview-label');
+    const text=document.getElementById('node-preview-text');
 
-    return {
-      proto: 'vless',
-      name,
-      server: url.hostname,
-      port: Number(url.port || (tls ? 443 : 80)),
-      uuid: url.username,
-      alterId: 0,
-      security,
-      network,
-      path,
-      host,
-      tls,
-      sni
-    };
+    title.textContent='节点 · '+node.proto.toUpperCase()+' · '+(node.name||node.server);
+
+    currentLinks.v2rayn=buildClientLink(pasteId,'v2rayn');
+    currentLinks.clash =buildClientLink(pasteId,'clash');
+    currentLinks.singbox=buildClientLink(pasteId,'singbox');
+
+    currentFormat='v2rayn';
+    label.textContent='预览：V2RayN 链接';
+    text.textContent=currentLinks.v2rayn;
+
+    modal.style.display='flex';
   }
+  function closeNodeModal(){document.getElementById('node-modal').style.display='none';}
 
-  function parseTrojan(raw) {
-    const text = raw.trim();
-    if (!text.startsWith('trojan://')) return null;
-    let url;
-    try { url = new URL(text); } catch (e) { return null; }
-
-    const p = url.searchParams;
-    const name = url.hash ? decodeURIComponent(url.hash.slice(1)) : '';
-    const security = p.get('security') || 'tls';
-    const tls = security === 'tls';
-    const sni = p.get('sni') || '';
-    const network = p.get('type') || 'tcp';
-    const path = p.get('path') || '/';
-    const host = p.get('host') || sni;
-
-    return {
-      proto: 'trojan',
-      name,
-      server: url.hostname,
-      port: Number(url.port || 443),
-      uuid: '',
-      password: url.username,
-      method: '',
-      network,
-      path,
-      host,
-      tls,
-      sni,
-      alterId: 0,
-      security
-    };
-  }
-
-  function parseSS(raw) {
-    let text = raw.trim();
-    if (!text.startsWith('ss://')) return null;
-    text = text.slice('ss://'.length);
-
-    let name = '';
-    const hashIndex = text.indexOf('#');
-    if (hashIndex >= 0) {
-      name = decodeURIComponent(text.slice(hashIndex + 1));
-      text = text.slice(0, hashIndex);
-    }
-
-    let userInfoPart = '';
-    let serverPart = '';
-
-    if (text.includes('@')) {
-      const parts = text.split('@');
-      userInfoPart = parts[0];
-      serverPart = parts[1];
-      if (!userInfoPart.includes(':')) {
-        try { userInfoPart = b64Decode(userInfoPart); } catch (e) {}
-      }
-    } else {
-      try {
-        const decoded = b64Decode(text);
-        if (!decoded.includes('@')) return null;
-        const parts = decoded.split('@');
-        userInfoPart = parts[0];
-        serverPart = parts[1];
-      } catch (e) { return null; }
-    }
-
-    const [method, password] = userInfoPart.split(':');
-    const [server, portStr] = serverPart.split(':');
-
-    return {
-      proto: 'ss',
-      name,
-      server,
-      port: Number(portStr),
-      method,
-      password,
-      uuid: '',
-      alterId: 0,
-      security: method,
-      network: 'tcp',
-      host: '',
-      path: '',
-      tls: false,
-      sni: ''
-    };
-  }
-
-  function parseAnyNode(raw) {
-    if (!raw) return null;
-    const text = raw.trim();
-    if (!text) return null;
-    const cleaned = text.replace(/\s+/g, '');
-
-    if (cleaned.startsWith('vmess://') || cleaned.startsWith('dm1lc3M6Ly')) {
-      const n = parseVmess(cleaned);
-      if (n) return n;
-    }
-    if (cleaned.startsWith('vless://')) {
-      const n = parseVless(cleaned);
-      if (n) return n;
-    }
-    if (cleaned.startsWith('trojan://')) {
-      const n = parseTrojan(cleaned);
-      if (n) return n;
-    }
-    if (cleaned.startsWith('ss://')) {
-      const n = parseSS(cleaned);
-      if (n) return n;
-    }
-    return null;
-  }
-
-  // ========== 各客户端格式 ==========
-  function toV2rayN(node) {
-    if (node.proto !== 'vmess') {
-      return '// 当前协议不是 vmess，V2RayN 不适用';
-    }
-    const obj = {
-      v: "2",
-      ps: node.name || "",
-      add: node.server,
-      port: String(node.port),
-      id: node.uuid,
-      aid: String(node.alterId || 0),
-      net: node.network || "tcp",
-      type: "none",
-      host: node.host || "",
-      path: node.path || "",
-      tls: node.tls ? "tls" : "",
-      sni: node.sni || ""
-    };
-    return 'vmess://' + base64Utf8(JSON.stringify(obj));
-  }
-
-  function toClashNode(node) {
-    const name = node.name || (node.server + ':' + node.port);
-    if (node.proto === 'vmess') {
-      const lines = [
-        `- name: "${name}"`,
-        `  type: vmess`,
-        `  server: ${node.server}`,
-        `  port: ${node.port}`,
-        `  uuid: ${node.uuid}`,
-        `  alterId: ${node.alterId || 0}`,
-        `  cipher: ${node.security || 'auto'}`,
-        `  udp: true`
-      ];
-      if (node.network === 'ws') {
-        lines.push(`  network: ws`);
-        lines.push(`  ws-opts:`);
-        lines.push(`    path: "${node.path || '/'}"`);
-        if (node.host) {
-          lines.push(`    headers:`);
-          lines.push(`      Host: ${node.host}`);
-        }
-      }
-      if (node.tls) {
-        lines.push(`  tls: true`);
-        if (node.sni) lines.push(`  servername: ${node.sni}`);
-      }
-      return lines.join('\n');
-    }
-
-    if (node.proto === 'vless') {
-      const lines = [
-        `- name: "${name}"`,
-        `  type: vless`,
-        `  server: ${node.server}`,
-        `  port: ${node.port}`,
-        `  uuid: ${node.uuid}`,
-        `  udp: true`
-      ];
-      if (node.network === 'ws') {
-        lines.push(`  network: ws`);
-        lines.push(`  ws-opts:`);
-        lines.push(`    path: "${node.path || '/'}"`);
-        if (node.host) {
-          lines.push(`    headers:`);
-          lines.push(`      Host: ${node.host}`);
-        }
-      }
-      if (node.tls) {
-        lines.push(`  tls: true`);
-        if (node.sni) lines.push(`  servername: ${node.sni}`);
-      }
-      return lines.join('\n');
-    }
-
-    if (node.proto === 'trojan') {
-      const lines = [
-        `- name: "${name}"`,
-        `  type: trojan`,
-        `  server: ${node.server}`,
-        `  port: ${node.port}`,
-        `  password: "${node.password}"`,
-        `  udp: true`
-      ];
-      if (node.tls) {
-        lines.push(`  sni: ${node.sni || node.host || node.server}`);
-      }
-      return lines.join('\n');
-    }
-
-    if (node.proto === 'ss') {
-      const lines = [
-        `- name: "${name}"`,
-        `  type: ss`,
-        `  server: ${node.server}`,
-        `  port: ${node.port}`,
-        `  cipher: ${node.method}`,
-        `  password: "${node.password}"`,
-        `  udp: true`
-      ];
-      return lines.join('\n');
-    }
-
-    return '# Unsupported proto: ' + node.proto;
-  }
-
-  function toSingBoxOutbound(node) {
-    const tag = node.name || (node.server + ':' + node.port);
-
-    if (node.proto === 'vmess') {
-      const out = {
-        type: "vmess",
-        tag,
-        server: node.server,
-        server_port: node.port,
-        uuid: node.uuid,
-        security: node.security || "auto",
-        alter_id: node.alterId || 0,
-        tls: { enabled: !!node.tls }
-      };
-      if (node.network === 'ws') {
-        out.transport = {
-          type: "ws",
-          path: node.path || "/",
-          headers: node.host ? { Host: node.host } : undefined
-        };
-      }
-      return JSON.stringify(out, null, 2);
-    }
-
-    if (node.proto === 'vless') {
-      const out = {
-        type: "vless",
-        tag,
-        server: node.server,
-        server_port: node.port,
-        uuid: node.uuid,
-        flow: "",
-        tls: { enabled: !!node.tls, server_name: node.sni || node.host || undefined }
-      };
-      if (node.network === 'ws') {
-        out.transport = {
-          type: "ws",
-          path: node.path || "/",
-          headers: node.host ? { Host: node.host } : undefined
-        };
-      }
-      return JSON.stringify(out, null, 2);
-    }
-
-    if (node.proto === 'trojan') {
-      const out = {
-        type: "trojan",
-        tag,
-        server: node.server,
-        server_port: node.port,
-        password: node.password,
-        tls: { enabled: true, server_name: node.sni || node.host || undefined }
-      };
-      return JSON.stringify(out, null, 2);
-    }
-
-    if (node.proto === 'ss') {
-      const out = {
-        type: "shadowsocks",
-        tag,
-        server: node.server,
-        server_port: node.port,
-        method: node.method,
-        password: node.password
-      };
-      return JSON.stringify(out, null, 2);
-    }
-
-    return '// Unsupported proto: ' + node.proto;
-  }
-
-  // ========== 弹窗 & 复制 ==========
-  const currentNodeFormats = { v2rayn: '', clash: '', singbox: '' };
-  let currentPreviewFormat = 'v2rayn';
-
-  function openNodeModal(node) {
-    const modal = document.getElementById('node-modal');
-    const title = document.getElementById('node-modal-title');
-    const previewLabel = document.getElementById('node-preview-label');
-    const previewText = document.getElementById('node-preview-text');
-
-    title.textContent = '节点 · ' + node.proto.toUpperCase() + ' · ' + (node.name || node.server);
-
-    currentNodeFormats.v2rayn = toV2rayN(node);
-    currentNodeFormats.clash = toClashNode(node);
-    currentNodeFormats.singbox = toSingBoxOutbound(node);
-
-    currentPreviewFormat = 'v2rayn';
-    previewLabel.textContent = '预览：V2RayN';
-    previewText.textContent = currentNodeFormats.v2rayn;
-
-    modal.style.display = 'flex';
-  }
-
-  function closeNodeModal() {
-    document.getElementById('node-modal').style.display = 'none';
-  }
-
-  function copyText(text) {
-    if (!text) {
-      alert('没有可复制的内容');
-      return;
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(function () {
-        alert('已复制到剪贴板');
-      }).catch(function () {
-        alert('复制失败，请检查浏览器权限');
-      });
-    } else {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      try {
-        document.execCommand('copy');
-        alert('已复制到剪贴板');
-      } catch (e) {
-        alert('复制失败，请手动复制');
-      }
+  function copyText(text){
+    if(!text){alert('没有可复制的内容');return;}
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(()=>alert('已复制到剪贴板'))
+        .catch(()=>alert('复制失败，请检查浏览器权限'));
+    }else{
+      const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);
+      ta.select();try{document.execCommand('copy');alert('已复制到剪贴板');}
+      catch(e){alert('复制失败，请手动复制');}
       document.body.removeChild(ta);
     }
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    // 1. 遍历每条 paste-card，自动识别是否为节点
-    document.querySelectorAll('.paste-card').forEach(function (card) {
-      const rawContent = card.getAttribute('data-paste-content') || '';
-      const node = parseAnyNode(rawContent);
-      if (!node) return; // 不是节点
-
-      // 把 node 对象挂在这条卡片上
-      card.__node = node;
-
-      // 显示客户端按钮
-      const btn = card.querySelector('.client-btn');
-      if (btn) {
-        btn.style.display = 'inline-flex';
-        btn.addEventListener('click', function () {
-          openNodeModal(card.__node);
-        });
+  document.addEventListener('DOMContentLoaded',()=>{
+    // 1. 遍历每条卡片，识别节点，显示客户端按钮
+    document.querySelectorAll('.paste-card').forEach(card=>{
+      const raw=card.getAttribute('data-paste-content')||'';
+      const node=parseAnyNode(raw);
+      if(!node)return;
+      const pasteId=card.getAttribute('data-paste-id')||'';
+      const btn=card.querySelector('.client-btn');
+      if(btn){
+        btn.style.display='inline-flex';
+        btn.addEventListener('click',()=>openNodeModal(pasteId,node));
       }
     });
 
-    // 2. 弹窗关闭逻辑
-    const modal = document.getElementById('node-modal');
-    const closeBtn = document.getElementById('node-modal-close');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', closeNodeModal);
-    }
-    if (modal) {
-      modal.addEventListener('click', function (e) {
-        if (e.target === modal) closeNodeModal();
-      });
-    }
+    // 2. 弹窗关闭
+    const modal=document.getElementById('node-modal');
+    document.getElementById('node-modal-close').addEventListener('click',closeNodeModal);
+    modal.addEventListener('click',e=>{if(e.target===modal)closeNodeModal();});
 
-    // 3. 点击客户端图标：切换预览 + 自动复制
-    document.querySelectorAll('.client-tile').forEach(function (tile) {
-      tile.addEventListener('click', function () {
-        const fmt = tile.getAttribute('data-format'); // v2rayn / clash / singbox
-        const labelMap = { v2rayn: 'V2RayN', clash: 'Clash', singbox: 'Sing-box' };
-        currentPreviewFormat = fmt;
-        document.getElementById('node-preview-label').textContent =
-          '预览：' + (labelMap[fmt] || fmt);
-        document.getElementById('node-preview-text').textContent =
-          currentNodeFormats[fmt] || '';
-
-        copyText(currentNodeFormats[fmt] || '');
+    // 3. 点击客户端图标：切换预览 + 复制链接
+    document.querySelectorAll('.client-tile').forEach(tile=>{
+      tile.addEventListener('click',()=>{
+        const fmt=tile.getAttribute('data-format');
+        const map={v2rayn:'V2RayN',clash:'Clash',singbox:'Sing-box'};
+        currentFormat=fmt;
+        document.getElementById('node-preview-label').textContent='预览：'+(map[fmt]||fmt)+' 链接';
+        document.getElementById('node-preview-text').textContent=currentLinks[fmt]||'';
+        copyText(currentLinks[fmt]||'');
       });
     });
 
-    // 4. “复制当前格式”按钮
-    const previewCopyBtn = document.getElementById('node-preview-copy');
-    if (previewCopyBtn) {
-      previewCopyBtn.addEventListener('click', function () {
-        copyText(currentNodeFormats[currentPreviewFormat] || '');
-      });
-    }
+    // 4. “复制当前链接”按钮
+    document.getElementById('node-preview-copy').addEventListener('click',()=>{
+      copyText(currentLinks[currentFormat]||'');
+    });
   });
 </script>
 </body>
