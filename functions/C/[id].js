@@ -40,7 +40,7 @@ function renderPage(options) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)}</title>
 
-  <!-- OG / WeChat / QQ 预览 -->
+  <!-- OG / WeChat / QQ 预览：这里保留标题 + 描述 + 预览图 -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(desc)}">
@@ -304,13 +304,11 @@ function renderPage(options) {
         }
       }, 1000);
 
-      // 「立即打开」按钮：保留系统分享功能，但只分享短链接（不带标题 text）
+      // 「立即打开」按钮：实际调用系统分享，但只分享 URL
       if (shareBtn) {
         if (!navigator.share) {
-          // 不支持 Web Share API 的时候，禁用按钮
           shareBtn.disabled = true;
           shareBtn.style.opacity = "0.6";
-          // 文案还是显示“立即打开”，但点了没反应；提示交给下面 info 文案
         }
 
         shareBtn.addEventListener("click", function () {
@@ -321,11 +319,10 @@ function renderPage(options) {
             return;
           }
 
-          // ✅ 只分享短链接，不带 title / text
+          // ✅ 只传 url，不传 text，复制时尽量只拿到链接
           navigator.share({
             url: cardUrl
           }).catch(function (err) {
-            // 用户取消不算错误
             console.log("share canceled or failed", err);
           });
         });
