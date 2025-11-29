@@ -285,14 +285,7 @@
         .byte-count{font-size:11px;color:var(--text-sub);}
         .byte-num{color:var(--accent2);font-weight:600;}
 
-        /* 新增：字节行 + 右侧小药丸 */
-        .byte-row{
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:8px;
-            flex-wrap:wrap;
-        }
+        /* 原本字节 + 小药丸，现在只用作右侧小药丸样式 */
         .byte-actions{
             display:flex;
             align-items:center;
@@ -345,7 +338,12 @@
             margin-top:4px;
         }
 
-        .upload-row{margin-top:4px;align-items:center;gap:8px;}
+        .upload-row{
+            margin-top:4px;
+            align-items:center;
+            gap:8px;
+            justify-content:space-between;
+        }
         .upload-btn{
             display:inline-flex;align-items:center;gap:4px;
             padding:4px 10px;border-radius:999px;
@@ -525,6 +523,22 @@
         }
         .uc-item-actions{margin-top:4px;display:flex;flex-wrap:wrap;gap:6px;}
 
+        /* 解码按钮交互：点击时变黑 + 替换图标 */
+        .base64-decode-btn.decode-active{
+            background:#000000;
+            color:#f9fafb;
+            border-color:#000000;
+        }
+        .base64-decode-btn .decode-icon-active{
+            display:none;
+        }
+        .base64-decode-btn.decode-active .decode-icon-normal{
+            display:none;
+        }
+        .base64-decode-btn.decode-active .decode-icon-active{
+            display:inline-flex;
+        }
+
         @media(max-width:780px){
             body{padding:22px 10px;}
             .card{padding:14px 12px 12px;border-radius:18px;}
@@ -604,35 +618,14 @@
                         </div>
                     </div>
 
-                    <!-- 这一行：左侧显示字节数，右侧 Base64 小药丸 -->
-                    <div class="field byte-row">
+                    <!-- 字节统计：单独一行 -->
+                    <div class="field">
                         <span class="byte-count">
                             已输入 <span class="byte-num" id="byteNum">0</span> 字节
                         </span>
-
-                        <div class="byte-actions">
-                            <button type="button" class="btn-secondary btn-xs" id="btnBase64Encode">
-                                <span class="icon-svg">
-                                    <svg viewBox="0 0 20 20">
-                                        <path d="M4 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2a1 1 0 1 1-2 0V4H6v12h8v-2a1 1 0 1 1 2 0v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4z"/>
-                                        <path d="M11 7a1 1 0 0 1 1-1h4.5a.5.5 0 0 1 .5.5V11a1 1 0 1 1-2 0V9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L13.586 8H12a1 1 0 0 1-1-1z"/>
-                                    </svg>
-                                </span>
-                                Base64 编码
-                            </button>
-
-                            <button type="button" class="btn-secondary btn-xs" id="btnBase64Decode">
-                                <span class="icon-svg">
-                                    <svg viewBox="0 0 20 20">
-                                        <path d="M4 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2a1 1 0 1 1-2 0V4H6v12h8v-2a1 1 0 1 1 2 0v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4z"/>
-                                        <path d="M15 13a1 1 0 0 1-1 1h-1.586l2.293 2.293a1 1 0 0 1-1.414 1.414L11 15.414 8.707 17.707a1 1 0 0 1-1.414-1.414L9.586 14H8a1 1 0 1 1 0-2h6a1 1 0 0 1 1 1z"/>
-                                    </svg>
-                                </span>
-                                Base64 解码
-                            </button>
-                        </div>
                     </div>
 
+                    <!-- 导入文本行 + 右侧 Base64 小药丸 -->
                     <div class="field">
                         <div class="field-inline upload-row">
                             <label class="upload-btn" id="uploadBtn">
@@ -642,11 +635,40 @@
                                         <path d="M10 2a1 1 0 0 1 .7.29l3 3a1 1 0 1 1-1.4 1.42L11 5.41V14a1 1 0 1 1-2 0V5.41L7.7 6.71A1 1 0 0 1 6.3 5.29l3-3A1 1 0 0 1 10 2z"/>
                                     </svg>
                                 </span>
-                                <span id="uploadBtnText">从文件导入文本</span>
+                                <span id="uploadBtnText">导入文本</span>
                             </label>
-                            <input type="file" id="fileInput" style="display:none" accept=".txt,.log,.md,.json,.js,.ts,.py,.sh,.ini,.cfg,.sql,.xml,.html,.css,.yml,.yaml,text/*">
-                            <span class="hint" id="fileHint">支持文本文件，内容将自动写入上方文本框。</span>
+
+                            <div class="byte-actions">
+                                <button type="button" class="btn-secondary btn-xs" id="btnBase64Encode">
+                                    <span class="icon-svg">
+                                        <svg viewBox="0 0 20 20">
+                                            <path d="M4 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2a1 1 0 1 1-2 0V4H6v12h8v-2a1 1 0 1 1 2 0v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4z"/>
+                                            <path d="M11 7a1 1 0 0 1 1-1h4.5a.5.5 0 0 1 .5.5V11a1 1 0 1 1-2 0V9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L13.586 8H12a1 1 0 0 1-1-1z"/>
+                                        </svg>
+                                    </span>
+                                    Base64 编码
+                                </button>
+
+                                <button type="button" class="btn-secondary btn-xs base64-decode-btn" id="btnBase64Decode">
+                                    <span class="icon-svg decode-icon-normal">
+                                        <!-- 常规解码图标：向下箭头 -->
+                                        <svg viewBox="0 0 20 20">
+                                            <path d="M10 2a1 1 0 0 1 1 1v9.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4A1 1 0 1 1 6.707 10.293L9 12.586V3a1 1 0 0 1 1-1z"/>
+                                        </svg>
+                                    </span>
+                                    <span class="icon-svg decode-icon-active">
+                                        <!-- 点击后高亮的图标：带底座的箭头 -->
+                                        <svg viewBox="0 0 20 20">
+                                            <path d="M4 15a1 1 0 0 1 1-1h10a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1z"/>
+                                            <path d="M10 2a1 1 0 0 1 1 1v7.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4A1 1 0 1 1 6.707 8.293L9 10.586V3a1 1 0 0 1 1-1z"/>
+                                        </svg>
+                                    </span>
+                                    Base64 解码
+                                </button>
+                            </div>
                         </div>
+
+                        <span class="hint" id="fileHint">支持文本文件，内容将自动写入上方文本框。</span>
                     </div>
                 </section>
 
@@ -930,7 +952,7 @@
     const $uploadBtn=qs("uploadBtn");
     const $btnResetContent=qs("btnResetContent");
 
-    // 新增：Base64 按钮
+    // Base64 按钮
     const $btnBase64Encode = qs("btnBase64Encode");
     const $btnBase64Decode = qs("btnBase64Decode");
 
@@ -941,7 +963,7 @@
     const $authForm=qs("authForm");
     const $authUsername=qs("authUsername");
     const $authPassword=qs("authPassword");
-    const $authRemember=qs("authRemember");  // ✨ 新增：记住登录
+    const $authRemember=qs("authRemember");
     const $btnDoLogin=qs("btnDoLogin");
     const $btnDoRegister=qs("btnDoRegister");
     const $authCloseBtn=qs("authCloseBtn");
@@ -1097,7 +1119,7 @@
         });
     }
 
-    // Base64 解码按钮
+    // Base64 解码按钮 + 交互高亮
     if ($btnBase64Decode) {
         $btnBase64Decode.addEventListener("click", () => {
             if (!$content) return;
@@ -1114,6 +1136,12 @@
             $content.value = decoded;
             updateByteCount();
             setStatus("已使用 Base64 解码当前内容。", "success");
+
+            // 点击后短暂高亮：变黑 + 换图标
+            $btnBase64Decode.classList.add("decode-active");
+            setTimeout(() => {
+                $btnBase64Decode.classList.remove("decode-active");
+            }, 300);
         });
     }
 
@@ -1275,7 +1303,6 @@
         if(!$authModal)return;
         $authModal.style.display="none";
         if($authForm)$authForm.reset();
-        // 默认勾选「记住登录」
         if($authRemember) $authRemember.checked = true;
         setAuthTip("");
     }
@@ -1314,7 +1341,7 @@
             e.preventDefault();
             const u=$authUsername.value.trim();
             const p=$authPassword.value;
-            const remember = $authRemember ? $authRemember.checked : true; // ✨ 使用记住状态
+            const remember = $authRemember ? $authRemember.checked : true;
 
             if(!u||!p){
                 setAuthTip("用户名和密码不能为空。","error");
