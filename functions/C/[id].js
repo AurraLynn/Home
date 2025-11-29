@@ -4,38 +4,32 @@ function escapeHtml(str) {
   if (!str) return "";
   return String(str).replace(/[&<>"']/g, (ch) => {
     switch (ch) {
-      case "&":
-        return "&amp;";
-      case "<":
-        return "&lt;";
-      case ">":
-        return "&gt;";
-      case '"':
-        return "&quot;";
-      case "'":
-        return "&#39;";
-      default:
-        return ch;
+      case "&":  return "&amp;";
+      case "<":  return "&lt;";
+      case ">":  return "&gt;";
+      case '"':  return "&quot;";
+      case "'":  return "&#39;";
+      default:   return ch;
     }
   });
 }
 
 function renderPage(options) {
-  const card = options.card || null;
-  const url = options.url; // 当前短链接（干净版）
+  const card    = options.card || null;
+  const url     = options.url;      // 当前短链接（干净版）
   const expired = !!options.expired;
 
-  const title = card && card.title ? card.title : "Lyn's Card";
-  const desc =
-    card && card.description
-      ? card.description
-      : expired
-      ? "This link has expired."
-      : "A card shared by Lyn.";
-  const image =
-    card && card.image
-      ? card.image
-      : "https://save.aura.us.kg/Picture/Preview/YL1.png";
+  const title = card && card.title
+    ? card.title
+    : "Lyn · Card";
+  const desc = card && card.description
+    ? card.description
+    : (expired ? "This link has expired." : "A card shared by Lyn.");
+  const image = card && card.image
+    ? card.image
+    : "https://save.aura.us.kg/Picture/Preview/YL1.png";
+
+  const cardTarget = card && card.target ? card.target : "";
 
   const html = `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -179,7 +173,10 @@ function renderPage(options) {
   </style>
 </head>
 <body>
-  <div class="shell">
+  <!-- 把目标链接和过期状态放在 data-* 里，脚本再读，避免字符串转义问题 -->
+  <div class="shell" id="card-root"
+       data-target="${escapeHtml(cardTarget)}"
+       data-expired="${expired ? "1" : "0"}">
     <div class="card">
       <div class="title">${escapeHtml(title)}</div>
       <div class="subtitle">${expired ? "Link status" : "A card shared by Lyn"}</div>
@@ -211,7 +208,7 @@ function renderPage(options) {
       ${
         !expired
           ? '<div class="link-box" id="link-box">' +
-              escapeHtml(card ? card.target : "") +
+              escapeHtml(cardTarget) +
             '</div>'
           : ''
       }
@@ -230,8 +227,11 @@ function renderPage(options) {
 
   <script>
     (function () {
-      var card    = ${card ? JSON.stringify({ target: card.target }) : "null"};
-      var expired = ${expired ? "true" : "false"};
+      var rootEl = document.getElementById("card-root");
+      if (!rootEl) return;
+
+      var cardTarget = rootEl.getAttribute("data-target") || "";
+      var expired    = rootEl.getAttribute("data-expired") === "1";
 
       var envInfo   = document.getElementById("env-info");
       var badgeText = document.getElementById("badge-text");
@@ -240,14 +240,14 @@ function renderPage(options) {
       var copyBtn   = document.getElementById("copy-btn");
       var wxWarning = document.getElementById("wx-warning");
 
-      if (!card || expired) {
+      if (!cardTarget || expired) {
         if (envInfo) envInfo.textContent = "This link is invalid or has expired.";
         return;
       }
 
       var ua = navigator.userAgent || "";
       var isWeChat = /MicroMessenger/i.test(ua);
-      var isQQ     = /QQ\//i.test(ua);
+      var isQQ     = /QQ\\//i.test(ua);
 
       if (isWeChat || isQQ) {
         if (envInfo) {
@@ -283,33 +283,27 @@ function renderPage(options) {
         if (seconds >= 0 && cdNum) cdNum.textContent = String(seconds);
         if (seconds <= 0) {
           clearInterval(timer);
-          try { window.location.href = card.target; } catch (e) {}
+          try { window.location.href = cardTarget; } catch (e) {}
         }
       }, 1000);
 
-      // 「立即打开」=> 调起系统分享，只传 URL
+      // 「立即打开」=> 调起系统分享，只传短链接
       if (shareBtn) {
-        if (!navigator.share) {
-          shareBtn.disabled = true;
-          shareBtn.style.opacity = "0.6";
-        }
-
         shareBtn.addEventListener("click", function () {
-          if (!navigator.share) {
-            if (envInfo) envInfo.textContent = "当前浏览器不支持系统分享，请使用复制链接。";
-            return;
+          if (navigator.share) {
+            navigator.share({
+              url: cardUrl      // ✅ 只传 URL，复制时就是短链接
+            }).catch(function (err) {
+              console.log("share canceled or failed", err);
+            });
+          } else {
+            // 不支持系统分享时，直接跳到目标链接，保证有反应
+            try { window.location.href = cardTarget; } catch (e) {}
           }
-
-          navigator.share({
-            // 只传 url，系统获取到的 payload 就是链接本身
-            url: cardUrl
-          }).catch(function (err) {
-            console.log("share canceled or failed", err);
-          });
         });
       }
 
-      // 页面里的「复制链接」按钮：直接复制短链接
+      // 「复制链接」按钮：直接复制短链接
       if (copyBtn) {
         copyBtn.addEventListener("click", function () {
           var textToCopy = cardUrl;
@@ -342,7 +336,7 @@ export async function onRequest(context) {
   const { env, params, request } = context;
   const id = params && params.id ? String(params.id) : "";
 
-  const reqUrl = new URL(request.url);
+  const reqUrl   = new URL(request.url);
   const cleanUrl = reqUrl.origin + reqUrl.pathname; // 短链接本身
 
   if (!id) {
