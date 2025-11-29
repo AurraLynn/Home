@@ -1,44 +1,46 @@
 // functions/C/[id].js
 
 function escapeHtml(str) {
-  if (!str) return "";
-  return String(str).replace(/[&<>"']/g, (ch) => {
-    switch (ch) {
-      case "&":  return "&amp;";
-      case "<":  return "&lt;";
-      case ">":  return "&gt;";
-      case '"':  return "&quot;";
-      case "'":  return "&#39;";
-      default:   return ch;
-    }
-  });
+    if (!str) return "";
+    return String(str).replace(/[&<>"']/g, (ch) => {
+        switch (ch) {
+            case "&":
+                return "&amp;";
+            case "<":
+                return "&lt;";
+            case ">":
+                return "&gt;";
+            case '"':
+                return "&quot;";
+            case "'":
+                return "&#39;";
+            default:
+                return ch;
+        }
+    });
 }
 
 function renderPage(options) {
-  const card    = options.card || null;
-  const url     = options.url;      // 当前短链接（干净版）
-  const expired = !!options.expired;
+    const card = options.card || null;
+    const url = options.url;           // 干净的短链接（无查询参数）
+    const expired = !!options.expired;
 
-  const title = card && card.title
-    ? card.title
-    : "Lyn · Card";
-  const desc = card && card.description
-    ? card.description
-    : (expired ? "This link has expired." : "A card shared by Lyn.");
-  const image = card && card.image
-    ? card.image
-    : "https://save.aura.us.kg/Picture/Preview/YL1.png";
+    const title = card && card.title ? card.title : "Lyn · Card";
+    const desc = card && card.description
+        ? card.description
+        : (expired ? "This link has expired." : "A card shared by Lyn.");
+    const image = card && card.image
+        ? card.image
+        : "https://save.aura.us.kg/Picture/Preview/YL1.png";
 
-  const cardTarget = card && card.target ? card.target : "";
-
-  const html = `<!DOCTYPE html>
+    const html = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)}</title>
 
-  <!-- 预览用：标题 + 描述 + 图片 + URL -->
+  <!-- OG / WeChat / QQ 预览 -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(desc)}">
@@ -58,7 +60,10 @@ function renderPage(options) {
       justify-content: center;
       padding: 16px;
     }
-    .shell { width: 100%; max-width: 480px; }
+    .shell {
+      width: 100%;
+      max-width: 480px;
+    }
     .card {
       background: #ffffff;
       border-radius: 20px;
@@ -95,7 +100,7 @@ function renderPage(options) {
       height: 7px;
       border-radius: 999px;
       background: #22c55e;
-      box-shadow: 0 0 8px rgba(34, 197, 94, .9);
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
     }
     .info {
       font-size: 12px;
@@ -110,7 +115,9 @@ function renderPage(options) {
       margin-bottom: 12px;
       color: #111827;
     }
-    .countdown strong { font-size: 16px; }
+    .countdown strong {
+      font-size: 16px;
+    }
     .btn-row {
       display: flex;
       flex-wrap: wrap;
@@ -128,8 +135,14 @@ function renderPage(options) {
       align-items: center;
       gap: 6px;
     }
-    .btn-primary   { background:#111827; color:#f9fafb; }
-    .btn-secondary { background:#e5e7eb; color:#111827; }
+    .btn-primary {
+      background: #111827;
+      color: #f9fafb;
+    }
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
     .link-box {
       font-size: 11px;
       color: #6b7280;
@@ -158,6 +171,7 @@ function renderPage(options) {
       color: #9ca3af;
       text-align: center;
     }
+    /* 微信 / QQ 强提示块 */
     .wx-strong {
       margin: 6px 0 10px;
       padding: 10px 12px;
@@ -173,10 +187,7 @@ function renderPage(options) {
   </style>
 </head>
 <body>
-  <!-- 把目标链接和过期状态放在 data-* 里，脚本再读，避免字符串转义问题 -->
-  <div class="shell" id="card-root"
-       data-target="${escapeHtml(cardTarget)}"
-       data-expired="${expired ? "1" : "0"}">
+  <div class="shell">
     <div class="card">
       <div class="title">${escapeHtml(title)}</div>
       <div class="subtitle">${expired ? "Link status" : "A card shared by Lyn"}</div>
@@ -190,10 +201,11 @@ function renderPage(options) {
 
       ${
         !expired
-          ? '<div class="countdown">将在 <strong id="countdown-num">3</strong> 秒后尝试打开链接</div>'
-          : '<div class="countdown" id="countdown-num" style="display:none;"></div>'
-      }
+            ? '<div class="countdown">将在 <strong id="countdown-num">3</strong> 秒后尝试打开链接</div>'
+            : '<div class="countdown" id="countdown-num" style="display:none;"></div>'
+    }
 
+      <!-- 微信 / QQ 强提示 -->
       <div class="wx-strong" id="wx-warning" style="display:none;">
         检测到你在 <strong>微信 / QQ</strong> 内打开。<br>
         如 <strong>3 秒后仍未跳转</strong>，请点击右上角
@@ -207,17 +219,15 @@ function renderPage(options) {
 
       ${
         !expired
-          ? '<div class="link-box" id="link-box">' +
-              escapeHtml(cardTarget) +
-            '</div>'
-          : ''
-      }
+            ? '<div class="link-box" id="link-box">' + escapeHtml(card ? card.target : "") + '</div>'
+            : ''
+    }
 
       ${
         expired
-          ? '<div class="text-box">链接不存在或已失效，如果是你自己生成的链接，可以在 Card Maker 中重新创建一个新的。</div>'
-          : ''
-      }
+            ? '<div class="text-box">链接不存在或已失效，如果是你自己生成的链接，可以在 Lyn · Card Maker 中重新创建一个新的。</div>'
+            : ''
+    }
 
       <div class="footer">
         Lyn&#39;s Card · Powered by Cloudflare Pages
@@ -227,45 +237,48 @@ function renderPage(options) {
 
   <script>
     (function () {
-      var rootEl = document.getElementById("card-root");
-      if (!rootEl) return;
+      var card = ${card ? JSON.stringify({ target: card.target }) : "null"};
+      var expired = ${expired ? "true" : "false"};
 
-      var cardTarget = rootEl.getAttribute("data-target") || "";
-      var expired    = rootEl.getAttribute("data-expired") === "1";
-
-      var envInfo   = document.getElementById("env-info");
+      var envInfo = document.getElementById("env-info");
       var badgeText = document.getElementById("badge-text");
-      var cdNum     = document.getElementById("countdown-num");
-      var shareBtn  = document.getElementById("share-btn");
-      var copyBtn   = document.getElementById("copy-btn");
+      var cdNum = document.getElementById("countdown-num");
+      var shareBtn = document.getElementById("share-btn");
+      var copyBtn = document.getElementById("copy-btn");
       var wxWarning = document.getElementById("wx-warning");
 
-      if (!cardTarget || expired) {
-        if (envInfo) envInfo.textContent = "This link is invalid or has expired.";
+      if (!card || expired) {
+        if (envInfo) {
+          envInfo.textContent = "This link is invalid or has expired.";
+        }
         return;
       }
 
       var ua = navigator.userAgent || "";
       var isWeChat = /MicroMessenger/i.test(ua);
-      var isQQ     = /QQ\\//i.test(ua);
+      var isQQ = /QQ\\//i.test(ua);
 
       if (isWeChat || isQQ) {
         if (envInfo) {
           envInfo.textContent =
             "当前在微信 / QQ 内打开，本页面会尝试自动跳转，如无法跳转请按提示在浏览器中打开。";
         }
-        if (badgeText) badgeText.textContent = "WeChat / QQ detected";
-        if (wxWarning) wxWarning.style.display = "block";
+        if (badgeText) {
+          badgeText.textContent = "WeChat / QQ detected";
+        }
+        if (wxWarning) {
+          wxWarning.style.display = "block";
+        }
       } else {
         if (envInfo) {
           envInfo.textContent = "如果没有自动跳转，可以点击下方按钮分享或复制。";
         }
       }
 
-      // 当前页面完整 URL（可能带 ?qq_xxx）
+      // 当前页面完整 URL（可能会被 QQ / 微信加上 ?qq_xxx）
       var rawUrl = window.location.href;
 
-      // 干净短链接：只保留 origin + pathname
+      // 构造「干净短链接」：只保留 origin + pathname，去掉所有 ? 和 #
       var cardUrl;
       try {
         var u = new URL(rawUrl);
@@ -274,39 +287,56 @@ function renderPage(options) {
         cardUrl = rawUrl.split("#")[0].split("?")[0];
       }
 
-      // 3 秒自动跳转到真实目标链接
+      // 3 秒自动跳转到目标链接
       var seconds = 3;
       if (cdNum) cdNum.textContent = String(seconds);
 
       var timer = setInterval(function () {
         seconds -= 1;
-        if (seconds >= 0 && cdNum) cdNum.textContent = String(seconds);
+        if (seconds >= 0 && cdNum) {
+          cdNum.textContent = String(seconds);
+        }
         if (seconds <= 0) {
           clearInterval(timer);
-          try { window.location.href = cardTarget; } catch (e) {}
+          try {
+            window.location.href = card.target;
+          } catch (e) {}
         }
       }, 1000);
 
-      // 「立即打开」=> 调起系统分享，只传短链接
+      // 系统分享按钮
       if (shareBtn) {
+        // 如果浏览器不支持 Web Share API，就禁用按钮并提示
+        if (!navigator.share) {
+          shareBtn.disabled = true;
+          shareBtn.style.opacity = "0.6";
+          shareBtn.textContent = "系统分享不可用";
+        }
+
         shareBtn.addEventListener("click", function () {
-          if (navigator.share) {
-            navigator.share({
-              url: cardUrl      // ✅ 只传 URL，复制时就是短链接
-            }).catch(function (err) {
-              console.log("share canceled or failed", err);
-            });
-          } else {
-            // 不支持系统分享时，直接跳到目标链接，保证有反应
-            try { window.location.href = cardTarget; } catch (e) {}
+          if (!navigator.share) {
+            if (envInfo) {
+              envInfo.textContent = "当前浏览器不支持系统分享，请使用复制链接。";
+            }
+            return;
           }
+
+          navigator.share({
+            title: document.title || "Lyn · Card",
+            text: "A card shared by Lyn",
+            url: cardUrl
+          }).catch(function (err) {
+            // 用户取消不算错误，这里就不提示了，只在调试时看控制台
+            console.log("share canceled or failed", err);
+          });
         });
       }
 
-      // 「复制链接」按钮：直接复制短链接
+      // 复制链接按钮：复制干净短链接
       if (copyBtn) {
         copyBtn.addEventListener("click", function () {
           var textToCopy = cardUrl;
+
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(textToCopy).then(function () {
               if (envInfo) envInfo.textContent = "已复制卡片链接，可以粘贴到浏览器或聊天中。";
@@ -323,42 +353,43 @@ function renderPage(options) {
 </body>
 </html>`;
 
-  return new Response(html, {
-    status: expired ? 410 : 200,
-    headers: {
-      "content-type": "text/html; charset=utf-8",
-      "cache-control": "no-store",
-    },
-  });
+    return new Response(html, {
+        status: expired ? 410 : 200,
+        headers: {
+            "content-type": "text/html; charset=utf-8",
+            "cache-control": "no-store",
+        },
+    });
 }
 
 export async function onRequest(context) {
-  const { env, params, request } = context;
-  const id = params && params.id ? String(params.id) : "";
+    const { env, params, request } = context;
+    const id = params && params.id ? String(params.id) : "";
 
-  const reqUrl   = new URL(request.url);
-  const cleanUrl = reqUrl.origin + reqUrl.pathname; // 短链接本身
+    // 干净短链接（不带查询）
+    const reqUrl = new URL(request.url);
+    const cleanUrl = reqUrl.origin + reqUrl.pathname;
 
-  if (!id) {
-    return renderPage({ url: cleanUrl, expired: true });
-  }
+    if (!id) {
+        return renderPage({ url: cleanUrl, expired: true });
+    }
 
-  const data = await env.Card_KV.get(id);
-  if (!data) {
-    return renderPage({ url: cleanUrl, expired: true });
-  }
+    const data = await env.Card_KV.get(id);
+    if (!data) {
+        return renderPage({ url: cleanUrl, expired: true });
+    }
 
-  let card;
-  try {
-    card = JSON.parse(data);
-  } catch (e) {
-    return renderPage({ url: cleanUrl, expired: true });
-  }
+    let card;
+    try {
+        card = JSON.parse(data);
+    } catch (e) {
+        return renderPage({ url: cleanUrl, expired: true });
+    }
 
-  const now = Date.now();
-  if (card.expireAt && card.expireAt > 0 && now > card.expireAt) {
-    return renderPage({ card, url: cleanUrl, expired: true });
-  }
+    const now = Date.now();
+    if (card.expireAt && card.expireAt > 0 && now > card.expireAt) {
+        return renderPage({ card, url: cleanUrl, expired: true });
+    }
 
-  return renderPage({ card, url: cleanUrl, expired: false });
+    return renderPage({ card, url: cleanUrl, expired: false });
 }
