@@ -230,7 +230,7 @@ function renderPage(options) {
     }
 
       <div class="footer">
-        Lyn&#39;s Card · Powered by Cloudflare Pages
+        Lyn · Card · Powered by Cloudflare Pages
       </div>
     </div>
   </div>
