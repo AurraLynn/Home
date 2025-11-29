@@ -301,7 +301,18 @@
         }
         .btn-primary:hover{box-shadow:0 10px 24px rgba(37,99,235,0.5);}
         .btn-primary.btn-disabled{opacity:.5;cursor:not-allowed;box-shadow:none;}
+        /* 只改登录弹窗里的 LOG IN 按钮，不影响上传按钮 */
+        .auth-panel #btnDoLogin{
+            background: rgb(41, 195, 30);              /* 登录按钮底色：纯黑 */
+            border-color: rgba(0, 0, 0, 0.42);
+            color:#f9fafb;                   /* 字体颜色保持浅色 */
+            box-shadow:0 8px 20px rgba(255, 255, 255, 0);
+        }
 
+        /* 可选：悬停时稍微亮一点 */
+        .auth-panel #btnDoLogin:hover{
+            background: rgba(255, 0, 207, 0.29);
+        }
         .btn-secondary{
             background:var(--layer-soft);
             color:var(--text-main);
@@ -587,8 +598,9 @@
 
             <button type="button" class="pill-btn pill-btn-primary" id="btnAuthOpen">
                 <span class="icon-svg">
-                    <!-- 登录图标（scan-face） -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scan-face-icon lucide-scan-face"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01"/><path d="M15 9h.01"/></svg>
+                    <svg viewBox="0 0 20 20">
+                        <path d="M10 2a3 3 0 0 1 3 3v1a3 3 0 1 1-6 0V5a3 3 0 0 1 3-3zm0 10c3.314 0 6 1.79 6 4v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1c0-2.21 2.686-4 6-4z"/>
+                    </svg>
                 </span>
                 <span id="btnAuthLabel">Login</span>
             </button>
@@ -623,38 +635,114 @@
                             已输入 <span class="byte-num" id="byteNum">0</span> 字节
                         </span>
                     </div>
-
                     <!-- 导入文本行 + 右侧 Base64 小药丸 -->
                     <div class="field">
                         <div class="field-inline upload-row">
-                            <label class="upload-btn" id="uploadBtn">
-                                <span class="icon-svg">
-                                    <!-- 上传图标（你替换后的 A-large-small） -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alarge-small-icon lucide-a-large-small"><path d="m15 16 2.536-7.328a1.02 1.02 0 0 1 1.928 0L22 16"/><path d="M15.697 14h5.606"/><path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16"/><path d="M3.304 13h6.392"/></svg>
-                                </span>
+                            <!-- ✅ 只有一个导入按钮 -->
+                            <label class="upload-btn" id="uploadBtn" for="fileInput">
+    <span class="icon-svg">
+        <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-alarge-small-icon lucide-a-large-small"
+                style="fill:none;"
+        >
+            <path d="m15 16 2.536-7.328a1.02 1.02 0 0 1 1.928 0L22 16" />
+            <path d="M15.697 14h5.606" />
+            <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
+            <path d="M3.304 13h6.392" />
+        </svg>
+    </span>
                                 <span id="uploadBtnText">导入文本</span>
                             </label>
-                            <input type="file" id="fileInput" accept=".txt,.log,.conf,.json,.yml,.yaml,.ini,.cfg,.md,.html,.js,.ts,.py,.go,.java,.c,.cpp,.sh,.bat,.ps1,.rs,.php,.rb,.lua,.toml,.ini" style="display:none;">
+
+                            <!-- ✅ 隐藏的文件选择框，只保留这一个 -->
+                            <input
+                                    type="file"
+                                    id="fileInput"
+                                    accept=".txt,.log,.conf,.json,.md,.yaml,.yml,.ini,.cfg,.csv,.html,.js,.ts,.py,.go,.rs,.php,.java,.c,.cpp,.sh,.bat,.ps1,.rb,.lua,.sql,.xml"
+                                    style="display:none;">
 
                             <!-- ✅ 右侧 Base64 小药丸按钮 -->
                             <div class="byte-actions">
+                                <!-- Base64 编码：使用你给的上箭头 SVG -->
                                 <button type="button" class="btn-secondary btn-xs" id="btnBase64Encode">
-                                    <span class="icon-svg">
-                                        <!-- 编码图标：A-Arrow-Up -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-aarrow-up-icon lucide-a-arrow-up"><path d="m14 11 4-4 4 4"/><path d="M18 16V7"/><path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16"/><path d="M3.304 13h6.392"/></svg>
-                                    </span>
+        <span class="icon-svg">
+            <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="#000000"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-aarrow-up-icon lucide-a-arrow-up"
+                    style="fill:none;"
+            >
+                <path d="m14 11 4-4 4 4" />
+                <path d="M18 16V7" />
+                <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
+                <path d="M3.304 13h6.392" />
+            </svg>
+        </span>
                                     Base64 编码
                                 </button>
 
+                                <!-- Base64 解码：使用你给的下箭头 SVG -->
                                 <button type="button" class="btn-secondary btn-xs base64-decode-btn" id="btnBase64Decode">
+                                    <!-- 默认状态图标 -->
                                     <span class="icon-svg decode-icon-normal">
-                                        <!-- 解码图标：A-Arrow-Down -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-aarrow-down-icon lucide-a-arrow-down"><path d="m14 12 4 4 4-4"/><path d="M18 16V7"/><path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16"/><path d="M3.304 13h6.392"/></svg>
-                                    </span>
+            <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="#000000"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-aarrow-down-icon lucide-a-arrow-down"
+                    style="fill:none;"
+            >
+                <path d="m14 12 4 4 4-4" />
+                <path d="M18 16V7" />
+                <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
+                <path d="M3.304 13h6.392" />
+            </svg>
+        </span>
+
+                                    <!-- 激活状态图标（点击后高亮，这里先用同一套，需要的话再单独设计一套高亮版） -->
                                     <span class="icon-svg decode-icon-active">
-                                        <!-- 点击后高亮的图标（保持同款，也可以继续用 down 版本） -->
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-aarrow-down-icon lucide-a-arrow-down"><path d="m14 12 4 4 4-4"/><path d="M18 16V7"/><path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16"/><path d="M3.304 13h6.392"/></svg>
-                                    </span>
+            <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="#000000"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-aarrow-down-icon lucide-a-arrow-down"
+                    style="fill:none;"
+            >
+                <path d="m14 12 4 4 4-4" />
+                <path d="M18 16V7" />
+                <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
+                <path d="M3.304 13h6.392" />
+            </svg>
+        </span>
+
                                     Base64 解码
                                 </button>
                             </div>
@@ -670,7 +758,7 @@
                         <div class="ttl-group" id="ttlGroup">
                             <button type="button" class="ttl-btn" data-ttl="10m">10 Min</button>
                             <button type="button" class="ttl-btn" data-ttl="1d">1 Day</button>
-                            <button type="button" class="ttl-btn" data-ttl="7d">7 Day</button>
+                            <button type="button" class="ttl-btn active" data-ttl="7d">7 Day</button>
                             <button type="button" class="ttl-btn" data-ttl="30d">30 Day</button>
                             <button type="button" class="ttl-btn" data-ttl="forever" id="ttlForeverBtn">Never</button>
                         </div>
@@ -744,8 +832,10 @@
                                     </button>
                                     <button type="button" class="btn-secondary btn-sm" id="btnOpenView">
                                         <span class="icon-svg">
-                                            <!-- 打开图标：eye -->
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-icon lucide-eye"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                                            <svg viewBox="0 0 20 20">
+                                                <path d="M4 5a2 2 0 0 1 2-2h4a1 1 0 1 1 0 2H6v10h8v-4a1 1 0 1 1 2 0v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5z"/>
+                                                <path d="M11 4a1 1 0 0 1 1-1h4.5a.5.5 0 0 1 .5.5V8a1 1 0 1 1-2 0V6.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L13.586 5H12a1 1 0 0 1-1-1z"/>
+                                            </svg>
                                         </span>
                                         Open
                                     </button>
@@ -804,21 +894,53 @@
 
             <div class="auth-panel-actions">
                 <button type="button" class="btn-secondary btn-xs" id="btnDoRegister">
-                    <span class="icon-svg">
-                        <!-- 注册图标 -->
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round-plus-icon lucide-user-round-plus"><path d="M2 21a8 8 0 0 1 13.292-6"/><circle cx="10" cy="8" r="5"/><path d="M19 16v6"/><path d="M22 19h-6"/></svg>
-                    </span>
+    <span class="icon-svg">
+        <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-user-round-plus-icon lucide-user-round-plus"
+                style="fill:none;"
+        >
+            <path d="M2 21a8 8 0 0 1 13.292-6" />
+            <circle cx="10" cy="8" r="5" />
+            <path d="M19 16v6" />
+            <path d="M22 19h-6" />
+        </svg>
+    </span>
                     SIGN UP
-                </button>
-                <button type="submit" class="btn-primary btn-xs" id="btnDoLogin">
-                    <span class="icon-svg">
-                        <!-- 登录按钮图标已经在上面主按钮里换了，这里可以复用/保持原样 -->
-                        <svg viewBox="0 0 20 20">
-                            <path d="M3 10a1 1 0 0 1 1-1h8.586L10.293 6.707a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4A1 1 0 0 1 10.293 13.293L12.586 11H4a1 1 0 0 1-1-1z"/>
-                        </svg>
-                    </span>
-                    LOG IN
-                </button>
+                    <button type="submit" class="btn-primary btn-xs" id="btnDoLogin">
+    <span class="icon-svg">
+        <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-scan-face-icon lucide-scan-face"
+                style="fill:none;"
+        >
+            <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+            <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+            <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+            <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+            <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+            <path d="M9 9h.01" />
+            <path d="M15 9h.01" />
+        </svg>
+    </span>
+                        LOG IN
+                    </button>
             </div>
         </form>
         <div class="auth-panel-msg" id="authMsg"></div>
@@ -915,7 +1037,6 @@
     const VIEW_BASE=location.origin+"/api/paste";
     const API_BASE=location.origin+"/api/paste";
     const AUTH_BASE=location.origin+"/api/auth";
-    const SUB_BASE=location.origin+"/api/sub";
     const qs=id=>document.getElementById(id);
 
     const $content=qs("content");
@@ -1484,10 +1605,28 @@
                 const btnEdit=document.createElement("button");
                 btnEdit.type="button";
                 btnEdit.className="btn-secondary btn-xs";
-                btnEdit.innerHTML=`<span class="icon-svg">
-                    <!-- 编辑图标：user-pen -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-pen-icon lucide-user-pen"><path d="M11.5 15H7a4 4 0 0 0-4 4v2"/><path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><circle cx="10" cy="7" r="4"/></svg>
-                </span>编辑`;
+                btnEdit.innerHTML = `
+    <span class="icon-svg">
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-user-pen-icon lucide-user-pen"
+            style="fill:none;"
+        >
+            <path d="M11.5 15H7a4 4 0 0 0-4 4v2" />
+            <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />
+            <circle cx="10" cy="7" r="4" />
+        </svg>
+    </span>
+    编辑
+`;
                 btnEdit.addEventListener("click",()=>{
                     closeUserCenter();
                     enterEditMode(slug);
@@ -1511,21 +1650,52 @@
                 const btnOpen=document.createElement("button");
                 btnOpen.type="button";
                 btnOpen.className="btn-secondary btn-xs";
-                btnOpen.innerHTML=`<span class="icon-svg">
-                    <!-- eye 图标 -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-icon lucide-eye"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
-                </span>打开`;
+                btnOpen.innerHTML = `
+    <span class="icon-svg">
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-eye-icon lucide-eye"
+            style="fill:none;"
+        >
+            <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+            <circle cx="12" cy="12" r="3" />
+        </svg>
+    </span>
+    打开
+`;
                 btnOpen.addEventListener("click",()=>{window.open(viewUrl,"_blank","noopener");});
 
                 const btnDel=document.createElement("button");
                 btnDel.type="button";
                 btnDel.className="btn-danger btn-xs";
-                btnDel.innerHTML=`<span class="icon-svg">
-                    <!-- 删除图标（垃圾桶） -->
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                    </svg>
-                </span>删除`;
+                btnDel.innerHTML = `
+    <span class="icon-svg">
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="size-6"
+            style="fill:none;"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+            />
+        </svg>
+    </span>
+    删除
+`;
                 btnDel.addEventListener("click",async ()=>{
                     if(!confirm("确认删除该链接？"))return;
                     try{
@@ -1598,36 +1768,8 @@
 
     function showResultLink(slug){
         if(!$resultBox||!$viewLinkText)return;
-
-        // 访问链接
         const url=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
         $viewLinkText.textContent=url;
-
-        // 通用订阅链接：同一个 slug，走 /api/sub
-        const subUrl = `${SUB_BASE}/${encodeURIComponent(slug)}`;
-
-        // 在结果框中插入一行「通用订阅」
-        const box = $resultBox ? $resultBox.querySelector(".result-box") : null;
-        if (box) {
-            let subRow = box.querySelector(".result-sub-row");
-            if (!subRow) {
-                subRow = document.createElement("div");
-                subRow.className = "result-main result-sub-row";
-                subRow.style.marginTop = "4px";
-                subRow.innerHTML = '<span class="result-label">通用订阅</span> <span class="result-link"></span>';
-                const actions = box.querySelector(".result-actions");
-                if (actions) {
-                    box.insertBefore(subRow, actions);
-                } else {
-                    box.appendChild(subRow);
-                }
-            }
-            const linkSpan = subRow.querySelector(".result-link");
-            if (linkSpan) {
-                linkSpan.textContent = subUrl;
-            }
-        }
-
         $resultBox.style.display="block";
         if($btnManageFromResult){
             $btnManageFromResult.style.display = state.loggedIn ? "inline-flex" : "none";
