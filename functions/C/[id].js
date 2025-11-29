@@ -10,7 +10,7 @@ function escapeHtml(str) {
                 return "&lt;";
             case ">":
                 return "&gt;";
-            case '"':
+            case "\"":
                 return "&quot;";
             case "'":
                 return "&#39;";
@@ -362,6 +362,15 @@ function renderPage(options) {
     });
 }
 
+// 安全删除：删除失败也不影响主流程
+async function safeDelete(env, id) {
+    try {
+        await env.Card_KV.delete(id);
+    } catch (e) {
+        // 可以在调试时 console.log(e)，线上静默忽略
+    }
+}
+
 export async function onRequest(context) {
     const { env, params, request } = context;
     const id = params && params.id ? String(params.id) : "";
@@ -376,6 +385,7 @@ export async function onRequest(context) {
 
     const data = await env.Card_KV.get(id);
     if (!data) {
+        // 可能是从未存在，或者 KV TTL 已过期
         return renderPage({ url: cleanUrl, expired: true });
     }
 
@@ -383,13 +393,18 @@ export async function onRequest(context) {
     try {
         card = JSON.parse(data);
     } catch (e) {
+        // 数据格式坏掉，顺手删除
+        await safeDelete(env, id);
         return renderPage({ url: cleanUrl, expired: true });
     }
 
     const now = Date.now();
     if (card.expireAt && card.expireAt > 0 && now > card.expireAt) {
+        // 逻辑上已过期 → 删除 KV 中的内容
+        await safeDelete(env, id);
         return renderPage({ card, url: cleanUrl, expired: true });
     }
 
+    // 未过期 → 正常展示
     return renderPage({ card, url: cleanUrl, expired: false });
 }
