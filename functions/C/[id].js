@@ -213,7 +213,7 @@ function renderPage(options) {
       </div>
 
       <div class="btn-row" id="btn-row">
-        ${!expired ? '<button class="btn btn-primary" id="share-btn">系统分享</button>' : ''}
+        ${!expired ? '<button class="btn btn-primary" id="share-btn">立即打开</button>' : ''}
         ${!expired ? '<button class="btn btn-secondary" id="copy-btn">复制链接</button>' : ''}
       </div>
 
@@ -304,13 +304,13 @@ function renderPage(options) {
         }
       }, 1000);
 
-      // 系统分享按钮
+      // 「立即打开」按钮：保留系统分享功能，但只分享短链接（不带标题 text）
       if (shareBtn) {
-        // 如果浏览器不支持 Web Share API，就禁用按钮并提示
         if (!navigator.share) {
+          // 不支持 Web Share API 的时候，禁用按钮
           shareBtn.disabled = true;
           shareBtn.style.opacity = "0.6";
-          shareBtn.textContent = "系统分享不可用";
+          // 文案还是显示“立即打开”，但点了没反应；提示交给下面 info 文案
         }
 
         shareBtn.addEventListener("click", function () {
@@ -321,12 +321,11 @@ function renderPage(options) {
             return;
           }
 
+          // ✅ 只分享短链接，不带 title / text
           navigator.share({
-            title: document.title || "Lyn's Card",
-            text: "A card shared by Lyn",
             url: cardUrl
           }).catch(function (err) {
-            // 用户取消不算错误，这里就不提示了，只在调试时看控制台
+            // 用户取消不算错误
             console.log("share canceled or failed", err);
           });
         });
