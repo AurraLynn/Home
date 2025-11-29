@@ -225,7 +225,7 @@ function renderPage(options) {
 
       ${
         expired
-            ? '<div class="text-box">链接不存在或已失效，如果是你自己生成的链接，可以在 Lyn\'s Card Maker 中重新创建一个新的。</div>'
+            ? '<div class="text-box">链接不存在或已失效，如果是你自己生成的链接，可以在 Lyn\\'s Card Maker 中重新创建一个新的。</div>'
             : ''
     }
 
@@ -275,7 +275,10 @@ function renderPage(options) {
         }
       }
 
-      // 所有环境都尝试 3 秒自动跳转
+      // 当前卡片短链接，例如 https://aura.us.kg/C/pmiu66aa
+      var cardUrl = window.location.href.split("#")[0];
+
+      // 所有环境都尝试 3 秒自动跳转到目标链接
       var seconds = 3;
       if (cdNum) cdNum.textContent = String(seconds);
 
@@ -302,15 +305,17 @@ function renderPage(options) {
 
       if (copyBtn) {
         copyBtn.addEventListener("click", function () {
-          var textToCopy = card.target;
+          // ✅ 这里改成复制当前卡片链接，而不是目标链接
+          var textToCopy = cardUrl;
+
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(textToCopy).then(function () {
-              if (envInfo) envInfo.textContent = "已复制到剪贴板，可以粘贴到浏览器或聊天中。";
+              if (envInfo) envInfo.textContent = "已复制卡片链接，可以粘贴到浏览器或聊天中。";
             }).catch(function () {
-              if (envInfo) envInfo.textContent = "复制失败，请长按上方链接手动复制。";
+              if (envInfo) envInfo.textContent = "复制失败，请长按地址栏链接手动复制。";
             });
           } else {
-            if (envInfo) envInfo.textContent = "当前环境不支持一键复制，请长按上方链接手动复制。";
+            if (envInfo) envInfo.textContent = "当前环境不支持一键复制，请长按地址栏链接手动复制。";
           }
         });
       }
