@@ -247,7 +247,7 @@ function renderPage(options) {
 
       var ua = navigator.userAgent || "";
       var isWeChat = /MicroMessenger/i.test(ua);
-      var isQQ     = /QQ\\//i.test(ua);
+      var isQQ     = /QQ\//i.test(ua);
 
       if (isWeChat || isQQ) {
         if (envInfo) {
@@ -287,7 +287,7 @@ function renderPage(options) {
         }
       }, 1000);
 
-      // 「立即打开」=> 调起系统分享，但只分享 URL
+      // 「立即打开」=> 调起系统分享，只传 URL
       if (shareBtn) {
         if (!navigator.share) {
           shareBtn.disabled = true;
@@ -301,7 +301,7 @@ function renderPage(options) {
           }
 
           navigator.share({
-            // 只传 url，复制动作就只拿到链接
+            // 只传 url，系统获取到的 payload 就是链接本身
             url: cardUrl
           }).catch(function (err) {
             console.log("share canceled or failed", err);
@@ -309,7 +309,7 @@ function renderPage(options) {
         });
       }
 
-      // 复制链接按钮：直接写入剪贴板（纯短链接）
+      // 页面里的「复制链接」按钮：直接复制短链接
       if (copyBtn) {
         copyBtn.addEventListener("click", function () {
           var textToCopy = cardUrl;
