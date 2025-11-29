@@ -1,35 +1,43 @@
 // functions/C/[id].js
 
 function escapeHtml(str) {
-    if (!str) return "";
-    return String(str).replace(/[&<>"']/g, (ch) => {
-        switch (ch) {
-            case "&":  return "&amp;";
-            case "<":  return "&lt;";
-            case ">":  return "&gt;";
-            case '"':  return "&quot;";
-            case "'":  return "&#39;";
-            default:   return ch;
-        }
-    });
+  if (!str) return "";
+  return String(str).replace(/[&<>"']/g, (ch) => {
+    switch (ch) {
+      case "&":
+        return "&amp;";
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case '"':
+        return "&quot;";
+      case "'":
+        return "&#39;";
+      default:
+        return ch;
+    }
+  });
 }
 
 function renderPage(options) {
-    const card    = options.card || null;
-    const url     = options.url;      // 干净短链接（无 query）
-    const expired = !!options.expired;
+  const card = options.card || null;
+  const url = options.url; // 当前短链接（干净版）
+  const expired = !!options.expired;
 
-    const title = card && card.title
-        ? card.title
-        : "Lyn's Card";
-    const desc = card && card.description
-        ? card.description
-        : (expired ? "This link has expired." : "A card shared by Lyn.");
-    const image = card && card.image
-        ? card.image
-        : "https://save.aura.us.kg/Picture/Preview/YL1.png";
+  const title = card && card.title ? card.title : "Lyn's Card";
+  const desc =
+    card && card.description
+      ? card.description
+      : expired
+      ? "This link has expired."
+      : "A card shared by Lyn.";
+  const image =
+    card && card.image
+      ? card.image
+      : "https://save.aura.us.kg/Picture/Preview/YL1.png";
 
-    const html = `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -89,10 +97,11 @@ function renderPage(options) {
       margin: 0 auto 14px;
     }
     .badge-dot {
-      width: 7px; height: 7px;
+      width: 7px;
+      height: 7px;
       border-radius: 999px;
       background: #22c55e;
-      box-shadow: 0 0 8px rgba(34,197,94,.9);
+      box-shadow: 0 0 8px rgba(34, 197, 94, .9);
     }
     .info {
       font-size: 12px;
@@ -195,7 +204,7 @@ function renderPage(options) {
       </div>
 
       <div class="btn-row" id="btn-row">
-        ${!expired ? '<button class="btn btn-primary" id="share-btn">立即打开</button>'    : ''}
+        ${!expired ? '<button class="btn btn-primary" id="share-btn">立即打开</button>' : ''}
         ${!expired ? '<button class="btn btn-secondary" id="copy-btn">复制链接</button>' : ''}
       </div>
 
@@ -209,7 +218,7 @@ function renderPage(options) {
 
       ${
         expired
-          ? '<div class="text-box">链接不存在或已失效，如果是你自己生成的链接，可以在 Lyn\\'s Card Maker 中重新创建一个新的。</div>'
+          ? '<div class="text-box">链接不存在或已失效，如果是你自己生成的链接，可以在 Card Maker 中重新创建一个新的。</div>'
           : ''
       }
 
@@ -236,7 +245,7 @@ function renderPage(options) {
         return;
       }
 
-      var ua     = navigator.userAgent || "";
+      var ua = navigator.userAgent || "";
       var isWeChat = /MicroMessenger/i.test(ua);
       var isQQ     = /QQ\\//i.test(ua);
 
@@ -292,7 +301,7 @@ function renderPage(options) {
           }
 
           navigator.share({
-            // 只传 url，iOS 的「拷贝」动作拿到的就是纯链接
+            // 只传 url，复制动作就只拿到链接
             url: cardUrl
           }).catch(function (err) {
             console.log("share canceled or failed", err);
@@ -320,43 +329,42 @@ function renderPage(options) {
 </body>
 </html>`;
 
-    return new Response(html, {
-        status: expired ? 410 : 200,
-        headers: {
-            "content-type": "text/html; charset=utf-8",
-            "cache-control": "no-store",
-        },
-    });
+  return new Response(html, {
+    status: expired ? 410 : 200,
+    headers: {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "no-store",
+    },
+  });
 }
 
 export async function onRequest(context) {
-    const { env, params, request } = context;
-    const id = params && params.id ? String(params.id) : "";
+  const { env, params, request } = context;
+  const id = params && params.id ? String(params.id) : "";
 
-    // 干净短链接（不带 query/hash）
-    const reqUrl  = new URL(request.url);
-    const cleanUrl = reqUrl.origin + reqUrl.pathname;
+  const reqUrl = new URL(request.url);
+  const cleanUrl = reqUrl.origin + reqUrl.pathname; // 短链接本身
 
-    if (!id) {
-        return renderPage({ url: cleanUrl, expired: true });
-    }
+  if (!id) {
+    return renderPage({ url: cleanUrl, expired: true });
+  }
 
-    const data = await env.Card_KV.get(id);
-    if (!data) {
-        return renderPage({ url: cleanUrl, expired: true });
-    }
+  const data = await env.Card_KV.get(id);
+  if (!data) {
+    return renderPage({ url: cleanUrl, expired: true });
+  }
 
-    let card;
-    try {
-        card = JSON.parse(data);
-    } catch (e) {
-        return renderPage({ url: cleanUrl, expired: true });
-    }
+  let card;
+  try {
+    card = JSON.parse(data);
+  } catch (e) {
+    return renderPage({ url: cleanUrl, expired: true });
+  }
 
-    const now = Date.now();
-    if (card.expireAt && card.expireAt > 0 && now > card.expireAt) {
-        return renderPage({ card, url: cleanUrl, expired: true });
-    }
+  const now = Date.now();
+  if (card.expireAt && card.expireAt > 0 && now > card.expireAt) {
+    return renderPage({ card, url: cleanUrl, expired: true });
+  }
 
-    return renderPage({ card, url: cleanUrl, expired: false });
+  return renderPage({ card, url: cleanUrl, expired: false });
 }
