@@ -634,29 +634,29 @@
                     <div class="btn-row">
                         <!-- Copy 按钮：B 组 · 两个重叠方块 -->
                         <button class="btn-copy" id="btn-copy">
-    <span class="btn-copy-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24">
-        <!-- 后面的方块 -->
-        <rect x="8" y="8" width="8" height="8" rx="2"></rect>
-          <!-- 前面的方块 -->
-        <rect x="5" y="5" width="8" height="8" rx="2"></rect>
-      </svg>
-    </span>
+                            <span class="btn-copy-icon" aria-hidden="true">
+                              <svg viewBox="0 0 24 24">
+                                <!-- 后面的方块 -->
+                                <rect x="8" y="8" width="8" height="8" rx="2"></rect>
+                                <!-- 前面的方块 -->
+                                <rect x="5" y="5" width="8" height="8" rx="2"></rect>
+                              </svg>
+                            </span>
                             <span>Copy Link</span>
                         </button>
 
                         <!-- Share 按钮：B 组 · 三个点连线 -->
                         <button class="btn-share" id="btn-share">
-    <span class="btn-share-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24">
-        <!-- 三个点 -->
-        <circle cx="6" cy="12" r="1.5" fill="currentColor" />
-        <circle cx="12" cy="7" r="1.5" fill="currentColor" />
-        <circle cx="18" cy="12" r="1.5" fill="currentColor" />
-          <!-- 连线 -->
-        <path d="M7.3 11l3.4-2.3M13.3 8.7L16.7 11" stroke-linecap="round" />
-      </svg>
-    </span>
+                            <span class="btn-share-icon" aria-hidden="true">
+                              <svg viewBox="0 0 24 24">
+                                <!-- 三个点 -->
+                                <circle cx="6" cy="12" r="1.5" fill="currentColor" />
+                                <circle cx="12" cy="7" r="1.5" fill="currentColor" />
+                                <circle cx="18" cy="12" r="1.5" fill="currentColor" />
+                                <!-- 连线 -->
+                                <path d="M7.3 11l3.4-2.3M13.3 8.7L16.7 11" stroke-linecap="round" />
+                              </svg>
+                            </span>
                             <span>Share Link</span>
                         </button>
                     </div>
@@ -916,19 +916,17 @@
                 return;
             }
 
-            // ✅ 这里强制优先使用“当前短链接”
-            // 兼容几种后端返回写法：shareUrl / shortUrl / id / key / slug 等
+            // ✅ 强制使用短链接（/C/:id），尽量不让前端拿到目标链接
             let shortUrl =
                 data.shareUrl ||
                 data.shortUrl ||
                 (data.id ? `${location.origin}/C/${data.id}` : "") ||
                 (data.key ? `${location.origin}/C/${data.key}` : "") ||
                 (data.slug ? `${location.origin}/C/${data.slug}` : "") ||
-                (data.url && data.url.includes("/C/") ? data.url : "") ||
-                ""; // 最后兜底
+                (data.url && data.url.includes("/C/") ? data.url : "");
 
-            // 如果后端只返回目标链接，那就自己拼一个随机提示，至少不展示目标
             if (!shortUrl) {
+                // 兜底：至少不会把目标链接暴露给用户
                 shortUrl = `${location.origin}/C/UNKNOWN`;
             }
 
@@ -948,7 +946,7 @@
         if (!url) return;
         try {
             await navigator.clipboard.writeText(url);
-            statusEl.textContent = "已复制当前卡片短链接 🎉";
+            statusEl.textContent = "已复制卡片链接 🎉";
         } catch (e) {
             statusEl.textContent = "复制失败，请手动复制链接。";
         }
