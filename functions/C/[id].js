@@ -1,4 +1,4 @@
-// functions/C/[id].js 
+// functions/C/[id].js
 
 function escapeHtml(str) {
     if (!str) return "";
@@ -225,7 +225,7 @@ function renderPage(options) {
 
       ${
         expired
-            ? '<div class="text-box">链接不存在或已失效，如果是你自己生成的链接，可以在 Lyn\\'s Card Maker 中重新创建一个新的。</div>'
+            ? '<div class="text-box">链接不存在或已失效，如果是你自己生成的链接，可以在 Lyn\'s Card Maker 中重新创建一个新的。</div>'
             : ''
     }
 
@@ -278,7 +278,7 @@ function renderPage(options) {
       // 当前卡片短链接，例如 https://aura.us.kg/C/pmiu66aa
       var cardUrl = window.location.href.split("#")[0];
 
-      // 所有环境都尝试 3 秒自动跳转到目标链接
+      // 所有环境都尝试 3 秒自动跳转
       var seconds = 3;
       if (cdNum) cdNum.textContent = String(seconds);
 
@@ -305,7 +305,7 @@ function renderPage(options) {
 
       if (copyBtn) {
         copyBtn.addEventListener("click", function () {
-          // ✅ 这里改成复制当前卡片链接，而不是目标链接
+          // ✅ 改成复制当前卡片链接，而不是目标链接
           var textToCopy = cardUrl;
 
           if (navigator.clipboard && navigator.clipboard.writeText) {
