@@ -22,7 +22,7 @@ function escapeHtml(str) {
 
 function renderPage(options) {
     const card = options.card || null;
-    const url = options.url;           // 这里已经是「无查询参数」的干净链接
+    const url = options.url;           // 干净的短链接（无查询参数）
     const expired = !!options.expired;
 
     const title = card && card.title ? card.title : "Lyn's Card";
@@ -213,7 +213,7 @@ function renderPage(options) {
       </div>
 
       <div class="btn-row" id="btn-row">
-        ${!expired ? '<button class="btn btn-primary" id="open-btn">立即打开</button>' : ''}
+        ${!expired ? '<button class="btn btn-primary" id="share-btn">系统分享</button>' : ''}
         ${!expired ? '<button class="btn btn-secondary" id="copy-btn">复制链接</button>' : ''}
       </div>
 
@@ -243,7 +243,7 @@ function renderPage(options) {
       var envInfo = document.getElementById("env-info");
       var badgeText = document.getElementById("badge-text");
       var cdNum = document.getElementById("countdown-num");
-      var openBtn = document.getElementById("open-btn");
+      var shareBtn = document.getElementById("share-btn");
       var copyBtn = document.getElementById("copy-btn");
       var wxWarning = document.getElementById("wx-warning");
 
@@ -271,24 +271,23 @@ function renderPage(options) {
         }
       } else {
         if (envInfo) {
-          envInfo.textContent = "如果没有自动跳转，可以点击下方按钮手动打开。";
+          envInfo.textContent = "如果没有自动跳转，可以点击下方按钮分享或复制。";
         }
       }
 
       // 当前页面完整 URL（可能会被 QQ / 微信加上 ?qq_xxx）
       var rawUrl = window.location.href;
 
-      // ✅ 构造「干净短链接」：只保留 origin + pathname，去掉所有 ? 和 #
+      // 构造「干净短链接」：只保留 origin + pathname，去掉所有 ? 和 #
       var cardUrl;
       try {
         var u = new URL(rawUrl);
         cardUrl = u.origin + u.pathname;
       } catch (e) {
-        // 兼容极端情况
         cardUrl = rawUrl.split("#")[0].split("?")[0];
       }
 
-      // 所有环境都尝试 3 秒自动跳转到目标链接
+      // 3 秒自动跳转到目标链接
       var seconds = 3;
       if (cdNum) cdNum.textContent = String(seconds);
 
@@ -305,17 +304,37 @@ function renderPage(options) {
         }
       }, 1000);
 
-      if (openBtn) {
-        openBtn.addEventListener("click", function () {
-          try {
-            window.location.href = card.target;
-          } catch (e) {}
+      // 系统分享按钮
+      if (shareBtn) {
+        // 如果浏览器不支持 Web Share API，就禁用按钮并提示
+        if (!navigator.share) {
+          shareBtn.disabled = true;
+          shareBtn.style.opacity = "0.6";
+          shareBtn.textContent = "系统分享不可用";
+        }
+
+        shareBtn.addEventListener("click", function () {
+          if (!navigator.share) {
+            if (envInfo) {
+              envInfo.textContent = "当前浏览器不支持系统分享，请使用复制链接。";
+            }
+            return;
+          }
+
+          navigator.share({
+            title: document.title || "Lyn's Card",
+            text: "A card shared by Lyn",
+            url: cardUrl
+          }).catch(function (err) {
+            // 用户取消不算错误，这里就不提示了，只在调试时看控制台
+            console.log("share canceled or failed", err);
+          });
         });
       }
 
+      // 复制链接按钮：复制干净短链接
       if (copyBtn) {
         copyBtn.addEventListener("click", function () {
-          // ✅ 复制的永远是干净的短链接，不带任何 ? 参数
           var textToCopy = cardUrl;
 
           if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -347,7 +366,7 @@ export async function onRequest(context) {
     const { env, params, request } = context;
     const id = params && params.id ? String(params.id) : "";
 
-    // 这里也顺便把 og:url 用的 URL 处理干净：去掉查询参数和 hash
+    // 干净短链接（不带查询）
     const reqUrl = new URL(request.url);
     const cleanUrl = reqUrl.origin + reqUrl.pathname;
 
