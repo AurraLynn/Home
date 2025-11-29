@@ -285,6 +285,21 @@
         .byte-count{font-size:11px;color:var(--text-sub);}
         .byte-num{color:var(--accent2);font-weight:600;}
 
+        /* 新增：字节行 + 右侧小药丸 */
+        .byte-row{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:8px;
+            flex-wrap:wrap;
+        }
+        .byte-actions{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            margin-left:auto;
+        }
+
         .btn-primary{
             font-weight:500;
             background:linear-gradient(90deg,var(--accent),var(--accent2));
@@ -588,9 +603,36 @@
                             <div class="line-counter" id="lineCounter">0 行</div>
                         </div>
                     </div>
-                    <div class="field">
-                        <span class="byte-count">已输入 <span class="byte-num" id="byteNum">0</span> 字节</span>
+
+                    <!-- 这一行：左侧显示字节数，右侧 Base64 小药丸 -->
+                    <div class="field byte-row">
+                        <span class="byte-count">
+                            已输入 <span class="byte-num" id="byteNum">0</span> 字节
+                        </span>
+
+                        <div class="byte-actions">
+                            <button type="button" class="btn-secondary btn-xs" id="btnBase64Encode">
+                                <span class="icon-svg">
+                                    <svg viewBox="0 0 20 20">
+                                        <path d="M4 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2a1 1 0 1 1-2 0V4H6v12h8v-2a1 1 0 1 1 2 0v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4z"/>
+                                        <path d="M11 7a1 1 0 0 1 1-1h4.5a.5.5 0 0 1 .5.5V11a1 1 0 1 1-2 0V9.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L13.586 8H12a1 1 0 0 1-1-1z"/>
+                                    </svg>
+                                </span>
+                                Base64 编码
+                            </button>
+
+                            <button type="button" class="btn-secondary btn-xs" id="btnBase64Decode">
+                                <span class="icon-svg">
+                                    <svg viewBox="0 0 20 20">
+                                        <path d="M4 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2a1 1 0 1 1-2 0V4H6v12h8v-2a1 1 0 1 1 2 0v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4z"/>
+                                        <path d="M15 13a1 1 0 0 1-1 1h-1.586l2.293 2.293a1 1 0 0 1-1.414 1.414L11 15.414 8.707 17.707a1 1 0 0 1-1.414-1.414L9.586 14H8a1 1 0 1 1 0-2h6a1 1 0 0 1 1 1z"/>
+                                    </svg>
+                                </span>
+                                Base64 解码
+                            </button>
+                        </div>
                     </div>
+
                     <div class="field">
                         <div class="field-inline upload-row">
                             <label class="upload-btn" id="uploadBtn">
@@ -888,6 +930,10 @@
     const $uploadBtn=qs("uploadBtn");
     const $btnResetContent=qs("btnResetContent");
 
+    // 新增：Base64 按钮
+    const $btnBase64Encode = qs("btnBase64Encode");
+    const $btnBase64Decode = qs("btnBase64Decode");
+
     const $btnHome=qs("btnHome");
     const $btnAuthOpen=qs("btnAuthOpen");
     const $btnAuthLabel=qs("btnAuthLabel");
@@ -939,6 +985,24 @@
         $authMsg.classList.remove("success","error");
         if(type)$authMsg.classList.add(type);
     }
+
+    // ===== Base64 UTF-8 安全编码 / 解码 =====
+    function base64EncodeUtf8(str) {
+        try {
+            return btoa(unescape(encodeURIComponent(str)));
+        } catch (_) {
+            return null;
+        }
+    }
+
+    function base64DecodeUtf8(str) {
+        try {
+            return decodeURIComponent(escape(atob(str)));
+        } catch (_) {
+            return null;
+        }
+    }
+
     async function postJSON(url,body){
         const res=await fetch(url,{
             method:"POST",
@@ -1010,6 +1074,46 @@
             if($remark)$remark.value="";
             updateByteCount();
             setStatus("已重置输入。");
+        });
+    }
+
+    // Base64 编码按钮
+    if ($btnBase64Encode) {
+        $btnBase64Encode.addEventListener("click", () => {
+            if (!$content) return;
+            const v = $content.value;
+            if (!v) {
+                setStatus("没有可编码的内容。", "error");
+                return;
+            }
+            const encoded = base64EncodeUtf8(v);
+            if (encoded == null) {
+                setStatus("Base64 编码失败，内容可能包含不支持的字符。", "error");
+                return;
+            }
+            $content.value = encoded;
+            updateByteCount();
+            setStatus("已使用 Base64 编码当前内容。", "success");
+        });
+    }
+
+    // Base64 解码按钮
+    if ($btnBase64Decode) {
+        $btnBase64Decode.addEventListener("click", () => {
+            if (!$content) return;
+            const v = $content.value;
+            if (!v) {
+                setStatus("没有可解码的内容。", "error");
+                return;
+            }
+            const decoded = base64DecodeUtf8(v);
+            if (decoded == null) {
+                setStatus("Base64 解码失败，文本可能不是合法的 Base64。", "error");
+                return;
+            }
+            $content.value = decoded;
+            updateByteCount();
+            setStatus("已使用 Base64 解码当前内容。", "success");
         });
     }
 
