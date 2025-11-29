@@ -22,7 +22,7 @@ function escapeHtml(str) {
 
 function renderPage(options) {
     const card = options.card || null;
-    const url = options.url;
+    const url = options.url;           // 这里已经是「无查询参数」的干净链接
     const expired = !!options.expired;
 
     const title = card && card.title ? card.title : "Lyn's Card";
@@ -275,10 +275,20 @@ function renderPage(options) {
         }
       }
 
-      // 当前卡片短链接，例如 https://aura.us.kg/C/pmiu66aa
-      var cardUrl = window.location.href.split("#")[0];
+      // 当前页面完整 URL（可能会被 QQ / 微信加上 ?qq_xxx）
+      var rawUrl = window.location.href;
 
-      // 所有环境都尝试 3 秒自动跳转
+      // ✅ 构造「干净短链接」：只保留 origin + pathname，去掉所有 ? 和 #
+      var cardUrl;
+      try {
+        var u = new URL(rawUrl);
+        cardUrl = u.origin + u.pathname;
+      } catch (e) {
+        // 兼容极端情况
+        cardUrl = rawUrl.split("#")[0].split("?")[0];
+      }
+
+      // 所有环境都尝试 3 秒自动跳转到目标链接
       var seconds = 3;
       if (cdNum) cdNum.textContent = String(seconds);
 
@@ -305,7 +315,7 @@ function renderPage(options) {
 
       if (copyBtn) {
         copyBtn.addEventListener("click", function () {
-          // ✅ 改成复制当前卡片链接，而不是目标链接
+          // ✅ 复制的永远是干净的短链接，不带任何 ? 参数
           var textToCopy = cardUrl;
 
           if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -336,28 +346,31 @@ function renderPage(options) {
 export async function onRequest(context) {
     const { env, params, request } = context;
     const id = params && params.id ? String(params.id) : "";
-    const url = new URL(request.url).toString();
+
+    // 这里也顺便把 og:url 用的 URL 处理干净：去掉查询参数和 hash
+    const reqUrl = new URL(request.url);
+    const cleanUrl = reqUrl.origin + reqUrl.pathname;
 
     if (!id) {
-        return renderPage({ url: url, expired: true });
+        return renderPage({ url: cleanUrl, expired: true });
     }
 
     const data = await env.Card_KV.get(id);
     if (!data) {
-        return renderPage({ url: url, expired: true });
+        return renderPage({ url: cleanUrl, expired: true });
     }
 
     let card;
     try {
         card = JSON.parse(data);
     } catch (e) {
-        return renderPage({ url: url, expired: true });
+        return renderPage({ url: cleanUrl, expired: true });
     }
 
     const now = Date.now();
     if (card.expireAt && card.expireAt > 0 && now > card.expireAt) {
-        return renderPage({ card, url: url, expired: true });
+        return renderPage({ card, url: cleanUrl, expired: true });
     }
 
-    return renderPage({ card, url: url, expired: false });
+    return renderPage({ card, url: cleanUrl, expired: false });
 }
