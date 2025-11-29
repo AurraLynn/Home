@@ -1,401 +1,975 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>Paste 管理 · 节点客户端链接示例</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;
-      background:#020617;color:#e5e7eb;padding:24px 12px
-    }
-    .page{max-width:840px;margin:0 auto}
-    .page-title{font-size:18px;font-weight:600;margin-bottom:16px}
-    .paste-list{display:flex;flex-direction:column;gap:12px}
-    .paste-card{
-      background:radial-gradient(circle at 0 0,rgba(248,250,252,.08),transparent 55%);
-      border-radius:18px;padding:10px 12px;
-      border:1px solid rgba(31,41,55,.85);
-      box-shadow:0 12px 30px rgba(0,0,0,.58)
-    }
-    .paste-header{
-      display:flex;justify-content:space-between;align-items:center;
-      margin-bottom:6px;gap:8px
-    }
-    .paste-title{font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
-    .paste-meta{font-size:11px;color:#9ca3af;white-space:nowrap}
-    .paste-body{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
-    .paste-tag{
-      display:inline-flex;align-items:center;padding:2px 10px;border-radius:999px;
-      font-size:11px;background:#111827;color:#e5e7eb;width:fit-content
-    }
-    .paste-url{
-      font-size:12px;padding:3px 10px;border-radius:999px;
-      background:#020617;color:#9ca3af;width:fit-content
-    }
-    .paste-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-    .btn{
-      border:1px solid rgba(148,163,184,.6);
-      background:#020617;color:#e5e7eb;
-      cursor:pointer;font-size:12px;padding:4px 10px;border-radius:999px;
-      display:inline-flex;align-items:center;gap:4px;
-      transition:background .12s,box-shadow .12s,transform .12s
-    }
-    .btn:hover{background:#111827;box-shadow:0 6px 14px rgba(0,0,0,.4);transform:translateY(-.5px)}
-    .btn.danger{border-color:rgba(248,113,113,.85);color:#fecaca;background:#450a0a}
-    .btn.danger:hover{background:#7f1d1d}
-    .client-btn-icon{width:14px;height:14px;fill:currentColor}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Card Maker</title>
 
-    /* 弹窗 */
-    .node-modal{
-      position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-      background:rgba(15,23,42,.65);z-index:999
-    }
-    .node-modal-inner{
-      background:#020617;color:#e5e7eb;border-radius:16px;
-      padding:16px 18px 14px;width:min(680px,94vw);max-height:82vh;
-      box-shadow:0 24px 48px rgba(0,0,0,.55);
-      display:flex;flex-direction:column;gap:10px;
-      border:1px solid rgba(30,64,175,.85)
-    }
-    .node-modal-header{
-      display:flex;justify-content:space-between;align-items:center;
-      font-size:13px;margin-bottom:6px
-    }
-    .node-modal-close{
-      border:none;background:transparent;color:#9ca3af;cursor:pointer;font-size:16px
-    }
-    .node-modal-grid{
-      display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px
-    }
-    .client-tile{
-      border:1px solid rgba(148,163,184,.55);
-      background:radial-gradient(circle at 0 0,rgba(248,250,252,.09),transparent 55%);
-      border-radius:12px;padding:9px 8px;text-align:left;
-      display:flex;flex-direction:column;gap:4px;
-      cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s
-    }
-    .client-tile:hover{
-      transform:translateY(-1px);
-      box-shadow:0 14px 30px rgba(0,0,0,.58);
-      border-color:rgba(248,250,252,.7)
-    }
-    .client-icon{
-      width:26px;height:26px;border-radius:999px;
-      background:rgba(15,23,42,.96);display:flex;align-items:center;justify-content:center;
-      margin-bottom:2px
-    }
-    .client-icon svg{width:18px;height:18px;fill:#e5e7eb}
-    .client-name{font-size:12px;font-weight:600}
-    .client-sub{font-size:11px;color:#9ca3af}
-    .node-modal-preview{
-      margin-top:8px;border-radius:10px;background:#020617;
-      border:1px solid rgba(31,41,55,.9);padding:8px
-    }
-    .node-preview-header{
-      display:flex;justify-content:space-between;align-items:center;
-      margin-bottom:4px;font-size:11px;color:#9ca3af
-    }
-    #node-preview-copy{
-      border:none;padding:4px 10px;border-radius:999px;
-      background:#1f2937;color:#e5e7eb;cursor:pointer;font-size:11px
-    }
-    #node-preview-copy:hover{background:#374151}
-    #node-preview-text{
-      margin:0;font-size:11px;white-space:pre-wrap;word-break:break-all;
-      max-height:220px;overflow:auto
-    }
-    @media (max-width:640px){
-      .node-modal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-    }
-  </style>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f3f4f6;
+            color: #111827;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            transition: background 0.25s ease, color 0.25s ease;
+        }
+
+        body.dark {
+            background: radial-gradient(circle at top, #1f2937 0, #020617 45%, #000 100%);
+            color: #f9fafb;
+        }
+
+        .shell {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        /* 顶部区域 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            gap: 12px;
+        }
+
+        .header-main {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .brand-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+        }
+
+        body.dark .brand-card {
+            background: rgba(15, 23, 42, 0.96);
+            border-color: #374151;
+            box-shadow: 0 12px 26px rgba(15, 23, 42, 0.8);
+        }
+
+        .brand-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            flex-shrink: 0;
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .brand-name {
+            font-size: 16px;
+            font-weight: 650;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        body.dark .brand-sub {
+            color: #9ca3af;
+        }
+
+        .header-desc {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        body.dark .header-desc {
+            color: #9ca3af;
+        }
+
+        .mode-toggle {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            border: 1px solid #d1d5db;
+            overflow: hidden;
+            background: #ffffff;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
+        body.dark .mode-toggle {
+            background: rgba(15, 23, 42, 0.96);
+            border-color: #4b5563;
+        }
+
+        .mode-btn {
+            padding: 4px 10px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 11px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        body.dark .mode-btn {
+            color: #9ca3af;
+        }
+
+        .mode-btn.active {
+            background: #111827;
+            color: #f9fafb;
+        }
+
+        body.dark .mode-btn.active {
+            background: #f9fafb;
+            color: #111827;
+        }
+
+        .mode-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #22c55e;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+        }
+
+        /* 主体卡片布局 */
+        .card {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.9fr);
+            gap: 20px;
+            padding: 18px 18px 16px;
+            border-radius: 18px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 18px 35px rgba(15, 23, 42, 0.12);
+            transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        body.dark .card {
+            background: rgba(15, 23, 42, 0.96);
+            border-color: rgba(148, 163, 184, 0.35);
+            box-shadow:
+                    0 24px 60px rgba(15, 23, 42, 0.85),
+                    0 0 0 1px rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(18px);
+        }
+
+        .field {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 9px 11px;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            background: #f9fafb;
+            color: #111827;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+        }
+
+        textarea {
+            min-height: 72px;
+            resize: vertical;
+        }
+
+        body.dark input[type="text"],
+        body.dark textarea {
+            border-color: #4b5563;
+            background: rgba(15, 23, 42, 0.92);
+            color: #e5e7eb;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 1px #38bdf8;
+            background: #ffffff;
+        }
+
+        body.dark input:focus,
+        body.dark textarea:focus {
+            background: rgba(15, 23, 42, 0.96);
+        }
+
+        .hint {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 3px;
+        }
+
+        body.dark .hint {
+            color: #6b7280;
+        }
+
+        /* 过期时间选项按钮 */
+        .expire-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .expire-pill {
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid #d1d5db;
+            background: #f9fafb;
+            font-size: 12px;
+            cursor: pointer;
+            color: #4b5563;
+            transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        .expire-pill.active {
+            background: #111827;
+            color: #f9fafb;
+            border-color: #111827;
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.06);
+        }
+
+        body.dark .expire-pill {
+            background: rgba(15, 23, 42, 0.92);
+            border-color: #4b5563;
+            color: #e5e7eb;
+        }
+
+        body.dark .expire-pill.active {
+            background: #f9fafb;
+            color: #111827;
+            border-color: #f9fafb;
+            box-shadow: 0 0 0 1px rgba(248, 250, 252, 0.25);
+        }
+
+        /* 按钮/状态/结果 */
+        .actions {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-main {
+            width: 100%;
+            padding: 11px;
+            border-radius: 999px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(135deg, #22c55e, #22d3ee);
+            color: #020617;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.1s;
+            box-shadow: 0 10px 25px rgba(34, 197, 94, 0.32);
+        }
+
+        .btn-main:active {
+            transform: translateY(1px);
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+            opacity: 0.93;
+        }
+
+        .status {
+            font-size: 12px;
+            color: #ca8a04;
+            min-height: 16px;
+        }
+
+        body.dark .status {
+            color: #facc15;
+        }
+
+        .result {
+            margin-top: 8px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        body.dark .result {
+            background: rgba(15, 23, 42, 0.96);
+            border-color: #334155;
+        }
+
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        .result-link {
+            margin-top: 4px;
+        }
+
+        .btn-row {
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btn-copy,
+        .btn-share {
+            padding: 6px 10px;
+            font-size: 12px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-copy {
+            background: #111827;
+            color: #f9fafb;
+        }
+
+        body.dark .btn-copy {
+            background: #020617;
+            border: 1px solid #4b5563;
+        }
+
+        .btn-share {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        body.dark .btn-share {
+            background: #1f2937;
+            color: #e5e7eb;
+            border: 1px solid #4b5563;
+        }
+
+        .btn-copy-icon,
+        .btn-share-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-copy-icon svg,
+        .btn-share-icon svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        /* 右侧：图片选择 + 预览 */
+        .thumbs-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .thumbs-title {
+            font-size: 12px;
+            color: #6b7280;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        body.dark .thumbs-title {
+            color: #9ca3af;
+        }
+
+        .thumbs-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 6px;
+        }
+
+        .thumb {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            aspect-ratio: 16 / 9;
+            transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+            background: #e5e7eb;
+        }
+
+        body.dark .thumb {
+            border-color: #334155;
+            background: #020617;
+        }
+
+        .thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            -webkit-user-drag: none;
+            user-select: none;
+        }
+
+        .thumb:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.1);
+        }
+
+        body.dark .thumb:hover {
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.9);
+        }
+
+        .thumb.selected {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 1px #38bdf8, 0 10px 22px rgba(56, 189, 248, 0.25);
+        }
+
+        /* 自定义图片链接 */
+        .custom-image-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .custom-image-row input[type="text"] {
+            flex: 1;
+        }
+
+        .btn-use-custom {
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid #d1d5db;
+            background: #f9fafb;
+            font-size: 12px;
+            cursor: pointer;
+            color: #4b5563;
+            white-space: nowrap;
+        }
+
+        .btn-use-custom:hover {
+            background: #e5e7eb;
+        }
+
+        body.dark .btn-use-custom {
+            background: rgba(15, 23, 42, 0.92);
+            border-color: #4b5563;
+            color: #e5e7eb;
+        }
+
+        body.dark .btn-use-custom:hover {
+            background: rgba(31, 41, 55, 0.95);
+        }
+
+        /* 主预览：固定宽高，图片填满 */
+        .preview-box {
+            border-radius: 14px;
+            border: 1px dashed #d1d5db;
+            padding: 8px;
+            background: #f9fafb;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body.dark .preview-box {
+            background: radial-gradient(circle at top, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.95));
+            border-color: rgba(148, 163, 184, 0.5);
+        }
+
+        .preview-img {
+            width: 100%;
+            max-width: 440px;
+            height: 440px;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+
+        body.dark .preview-img {
+            border-color: #1f2937;
+            background: #020617;
+        }
+
+        .preview-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            background: transparent;
+            -webkit-user-drag: none;
+            user-select: none;
+        }
+
+        .footer {
+            margin-top: 16px;
+            font-size: 11px;
+            color: #9ca3af;
+            text-align: right;
+        }
+
+        body.dark .footer {
+            color: #6b7280;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                align-items: flex-start;
+            }
+            .card {
+                grid-template-columns: minmax(0, 1fr);
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .footer {
+                text-align: left;
+            }
+        }
+    </style>
 </head>
-<body>
-<div class="page">
-  <div class="page-title">🔗 我的链接管理（客户端接口示例）</div>
-
-  <div class="paste-list">
-
-    <!-- 示例1：普通文本，不是节点，不会显示“客户端”按钮 -->
-    <div class="paste-card"
-         data-paste-id="note-1"
-         data-paste-content="Here lie all the messages I typed, read twice, and never sent.">
-      <div class="paste-header">
-        <span class="paste-title">🐹 Lyn · Note</span>
-        <span class="paste-meta">创建：2025-11-26 10:01 · 到期：2025-12-01</span>
-      </div>
-      <div class="paste-body">
-        <div class="paste-tag">Just text</div>
-        <div class="paste-url">https://aura.us.kg/api/paste/note-1</div>
-      </div>
-      <div class="paste-actions">
-        <button class="btn">✏️ 编辑</button>
-        <button class="btn">📋 复制</button>
-        <button class="btn">🔗 打开</button>
-        <button class="btn danger">🗑 删除</button>
-        <button class="btn client-btn" style="display:none;">
-          <svg viewBox="0 0 24 24" class="client-btn-icon">
-            <path d="M4 5h16a1 1 0 0 1 1 1v9H3V6a1 1 0 0 1 1-1zm-1 12h18v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-1z"/>
-          </svg>
-          <span>客户端</span>
-        </button>
-      </div>
+<body class="light">
+<div class="shell">
+    <div class="header">
+        <div class="header-main">
+            <div class="brand-card">
+                <div class="brand-icon" id="brand-icon"></div>
+                <div class="brand-text">
+                    <div class="brand-name">Card Maker</div>
+                    <div class="brand-sub">
+                        生成适合在微信 / QQ 等社交..中分享的卡片链接。
+                    </div>
+                </div>
+            </div>
+            <div class="header-desc">
+            </div>
+        </div>
+        <div class="mode-toggle" id="mode-toggle">
+            <button class="mode-btn active" data-mode="light">
+                <span class="mode-dot"></span> Light
+            </button>
+            <button class="mode-btn" data-mode="dark">Dark</button>
+        </div>
     </div>
 
-    <!-- 示例2：节点文本，会识别为 vmess，显示“客户端”按钮 -->
-    <div class="paste-card"
-         data-paste-id="Forever"
-         data-paste-content="vmess://YXV0bzo3MDM5NmE4OC1iYTQzLTQ2NDItOTI4Ni00MzdmYzJkYjRiMWFAdHcxZy5qaWVxYS54eXo6ODA?path=/&remarks=TW%201G%20%E5%AE%B6%E5%AE%BD/Netflix%20TCP&obfsParam=tms.dingtalk.com&obfs=http&tfo=1&alterId=0">
-      <div class="paste-header">
-        <span class="paste-title">🐹 Lyn · Forever</span>
-        <span class="paste-meta">创建：2025-11-26 11:01 · 到期：Never🙌🏽</span>
-      </div>
-      <div class="paste-body">
-        <div class="paste-tag">Forever</div>
-        <div class="paste-url">https://aura.us.kg/api/paste/Forever</div>
-      </div>
-      <div class="paste-actions">
-        <button class="btn">✏️ 编辑</button>
-        <button class="btn">📋 复制</button>
-        <button class="btn">🔗 打开</button>
-        <button class="btn danger">🗑 删除</button>
-        <button class="btn client-btn" style="display:none;">
-          <svg viewBox="0 0 24 24" class="client-btn-icon">
-            <path d="M4 5h16a1 1 0 0 1 1 1v9H3V6a1 1 0 0 1 1-1zm-1 12h18v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-1z"/>
-          </svg>
-          <span>客户端</span>
-        </button>
-      </div>
+    <div class="card">
+        <!-- 左侧：表单 + 生成结果 -->
+        <div>
+            <div class="field">
+                <label for="title">卡片标题</label>
+                <input id="title" type="text" placeholder="A card shared by Lyn" />
+                <div class="hint">不填写时，会默认使用：A card shared by Lyn</div>
+            </div>
+
+            <div class="field">
+                <label for="desc">卡片描述</label>
+                <textarea id="desc" placeholder="只是一个喜欢在互联网上瞎折腾的人罢了。"></textarea>
+                <div class="hint">不填写时，会默认使用上面的这句描述。</div>
+            </div>
+
+            <div class="field">
+                <label for="target">目标链接</label>
+                <textarea id="target" placeholder="请输入合法链接，例如：https://aura.us.kg、aura.us.kg/ ..."></textarea>
+                <div class="hint">必须是有效链接，不支持纯文本内容。</div>
+            </div>
+
+            <div class="field">
+                <label>过期时间</label>
+                <div class="expire-group" id="expire-group">
+                    <button class="expire-pill" data-value="1d">1 天</button>
+                    <button class="expire-pill active" data-value="7d">7 天</button>
+                    <button class="expire-pill" data-value="30d">30 天</button>
+                    <button class="expire-pill" data-value="forever">不过期</button>
+                </div>
+                <div class="hint" id="expire-hint">卡片将在 7 天后过期。</div>
+            </div>
+
+            <div class="actions">
+                <button class="btn-main" id="btn-generate">Generate Card</button>
+                <div class="status" id="status"></div>
+
+                <!-- 生成结果 -->
+                <div class="result" id="result" style="display:none;">
+                    <div class="result-title">生成成功 🎉</div>
+                    <div>分享链接：</div>
+                    <div class="result-link" id="share-url"></div>
+                    <div class="btn-row">
+                        <!-- Copy 按钮：B 组 · 两个重叠方块 -->
+                        <button class="btn-copy" id="btn-copy">
+    <span class="btn-copy-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <!-- 后面的方块 -->
+        <rect x="8" y="8" width="8" height="8" rx="2"></rect>
+          <!-- 前面的方块 -->
+        <rect x="5" y="5" width="8" height="8" rx="2"></rect>
+      </svg>
+    </span>
+                            <span>Copy Link</span>
+                        </button>
+
+                        <!-- Share 按钮：B 组 · 三个点连线 -->
+                        <button class="btn-share" id="btn-share">
+    <span class="btn-share-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <!-- 三个点 -->
+        <circle cx="6" cy="12" r="1.5" fill="currentColor" />
+        <circle cx="12" cy="7" r="1.5" fill="currentColor" />
+        <circle cx="18" cy="12" r="1.5" fill="currentColor" />
+          <!-- 连线 -->
+        <path d="M7.3 11l3.4-2.3M13.3 8.7L16.7 11" stroke-linecap="round" />
+      </svg>
+    </span>
+                            <span>Share Link</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：图片选择 + 自定义链接 + 预览 -->
+        <div>
+            <div class="thumbs-wrap">
+                <div class="thumbs-title">
+                    <span>预览图片 · 点击选择封面图</span>
+                    <span style="font-size:11px;opacity:.78;">来源：/Picture/Preview/...</span>
+                </div>
+                <div class="thumbs-grid" id="thumbs-grid">
+                    <!-- 缩略图由 JS 填充 -->
+                </div>
+
+                <div class="field" style="margin-top:10px;">
+                    <label for="custom-image-url" style="font-size:12px;">自定义图片链接:</label>
+                    <div class="custom-image-row">
+                        <input
+                                id="custom-image-url"
+                                type="text"
+                                placeholder="https://example.com/your-cover.png"
+                        />
+                        <button type="button" class="btn-use-custom" id="btn-use-custom-image">Use</button>
+                    </div>
+                    <div class="hint">留空则使用上方预设图片。输入链接需以 http:// 或 https:// 开头。</div>
+                </div>
+
+                <div class="preview-box">
+                    <div class="preview-img">
+                        <img
+                                id="preview-img"
+                                src="https://save.aura.us.kg/Picture/Preview/YL1.png"
+                                alt="预览图"
+                                draggable="false"
+                                ondragstart="return false;"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-  </div>
+   <div class="footer">
+    仅存卡片配置，不存访问日志。<br>
+    CardMaker · By AurraLynn · Powered by Cloudflare
 </div>
-
-<!-- 弹窗：客户端图标 + 链接预览 -->
-<div id="node-modal" class="node-modal">
-  <div class="node-modal-inner">
-    <div class="node-modal-header">
-      <span id="node-modal-title">节点 · 客户端链接</span>
-      <button id="node-modal-close" class="node-modal-close">✕</button>
-    </div>
-
-    <div class="node-modal-grid">
-      <button class="client-tile" data-format="v2rayn">
-        <div class="client-icon">
-          <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/></svg>
-        </div>
-        <div class="client-name">V2RayN</div>
-        <div class="client-sub">vmess 链接接口</div>
-      </button>
-
-      <button class="client-tile" data-format="clash">
-        <div class="client-icon">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
-        </div>
-        <div class="client-name">Clash</div>
-        <div class="client-sub">YAML 节点接口</div>
-      </button>
-
-      <button class="client-tile" data-format="singbox">
-        <div class="client-icon">
-          <svg viewBox="0 0 24 24"><path d="M5 5h14v6H5zM5 13h8v6H5z"/></svg>
-        </div>
-        <div class="client-name">Sing-box</div>
-        <div class="client-sub">outbound 接口</div>
-      </button>
-    </div>
-
-    <div class="node-modal-preview">
-      <div class="node-preview-header">
-        <span id="node-preview-label">预览：V2RayN 链接</span>
-        <button id="node-preview-copy">复制当前链接</button>
-      </div>
-      <pre id="node-preview-text"></pre>
-    </div>
-  </div>
 </div>
 
 <script>
-  /* ======= Base64 工具 ======= */
-  function addBase64Padding(str){const p=str.length%4;if(p===2)return str+'==';if(p===3)return str+'=';if(p===1)return str+'===';return str;}
-  function b64Decode(str){return atob(addBase64Padding(str));}
+    const defaultTitle = "A card shared by Lyn";
+    const defaultDesc = "只是一个喜欢在互联网上瞎折腾的人罢了。";
+    const baseImageUrl = "https://save.aura.us.kg/Picture/Preview/";
 
-  /* ======= 协议解析：vmess / vless / trojan / ss ======= */
-  function normalizeVmess(raw){
-    let t=raw.trim();
-    if(t.startsWith('vmess://')) return t;
-    try{const d=b64Decode(t);if(d.startsWith('vmess://'))return d;}catch(e){}
-    return null;
-  }
-  function parseVmess(raw){
-    const n=normalizeVmess(raw);if(!n)return null;
-    const body=n.slice('vmess://'.length);
-    // JSON 模式
-    try{
-      const j=b64Decode(body);const d=JSON.parse(j);
-      return{proto:'vmess',name:d.ps||'',server:d.add,port:+d.port,uuid:d.id,
-        alterId:+(d.aid||0),security:d.security||'auto',network:d.net||'tcp',
-        host:d.host||'',path:d.path||'',tls:d.tls==='tls',sni:d.sni||''};
-    }catch(e){}
-    // URI 模式
-    let url;try{url=new URL(n);}catch(e){return null;}
-    let security='auto',uuid='';
-    if(url.username){
-      try{
-        const u=b64Decode(url.username);const parts=u.split(':');
-        if(parts.length===2){security=parts[0];uuid=parts[1];}else uuid=u;
-      }catch(e){}
+    const imageFiles = Array.from({ length: 10 }).map((_, i) => "YL" + (i + 1) + ".png");
+
+    const thumbsGrid = document.getElementById("thumbs-grid");
+    const previewImg = document.getElementById("preview-img");
+    const brandIcon = document.getElementById("brand-icon");
+
+    let selectedImageFile = imageFiles[0];
+    let selectedImageUrl = baseImageUrl + selectedImageFile;
+    let lastTitle = defaultTitle;
+    let lastDescription = defaultDesc;
+
+    // 顶部随机预览图
+    (function setRandomBrandIcon() {
+        const idx = Math.floor(Math.random() * imageFiles.length);
+        const file = imageFiles[idx];
+        const url = baseImageUrl + file;
+        brandIcon.style.backgroundImage = `url(${url})`;
+    })();
+
+    // 简单判断是否像一个链接：scheme:// 或者带点的域名
+    function isProbablyUrl(s) {
+        if (!s) return false;
+        const str = s.trim();
+        if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(str)) return true;
+        if (str.includes(".") && !/\s/.test(str)) return true;
+        return false;
     }
-    const p=url.searchParams;
-    const remarks=p.get('remarks')?decodeURIComponent(p.get('remarks')):'';
-    const path=p.get('path')||'/';
-    const obfs=p.get('obfs')||'tcp';
-    const obfsParam=p.get('obfsParam')||'';
-    const alterId=+(p.get('alterId')||0);
-    const tlsParam=p.get('tls');
-    const network=obfs==='http'?'ws':obfs;
-    const tls=tlsParam==='1'||tlsParam==='tls';
-    return{proto:'vmess',name:remarks,server:url.hostname,port:+(url.port||80),
-      uuid,alterId,security,network,host:obfsParam,path,tls,sni:''};
-  }
-  function parseVless(raw){
-    const t=raw.trim();if(!t.startsWith('vless://'))return null;
-    let url;try{url=new URL(t);}catch(e){return null;}
-    const p=url.searchParams;
-    const name=url.hash?decodeURIComponent(url.hash.slice(1)):'';
-    const network=p.get('type')||'tcp';
-    const path=p.get('path')||'/';
-    const host=p.get('host')||p.get('sni')||'';
-    const security=p.get('security')||'none';
-    const tls=security==='tls'||security==='reality';
-    const sni=p.get('sni')||'';
-    return{proto:'vless',name,server:url.hostname,port:+(url.port||(tls?443:80)),
-      uuid:url.username,alterId:0,security,network,path,host,tls,sni};
-  }
-  function parseTrojan(raw){
-    const t=raw.trim();if(!t.startsWith('trojan://'))return null;
-    let url;try{url=new URL(t);}catch(e){return null;}
-    const p=url.searchParams;
-    const name=url.hash?decodeURIComponent(url.hash.slice(1)):'';
-    const security=p.get('security')||'tls';
-    const tls=security==='tls';
-    const sni=p.get('sni')||'';
-    const network=p.get('type')||'tcp';
-    const path=p.get('path')||'/';
-    const host=p.get('host')||sni;
-    return{proto:'trojan',name,server:url.hostname,port:+(url.port||443),
-      uuid:'',password:url.username,method:'',network,path,host,tls,sni,
-      alterId:0,security};
-  }
-  function parseSS(raw){
-    let t=raw.trim();if(!t.startsWith('ss://'))return null;
-    t=t.slice('ss://'.length);
-    let name='';const idx=t.indexOf('#');
-    if(idx>=0){name=decodeURIComponent(t.slice(idx+1));t=t.slice(0,idx);}
-    let user='',serverPart='';
-    if(t.includes('@')){
-      const parts=t.split('@');user=parts[0];serverPart=parts[1];
-      if(!user.includes(':')){try{user=b64Decode(user);}catch(e){}}
-    }else{
-      try{
-        const d=b64Decode(t);if(!d.includes('@'))return null;
-        const parts=d.split('@');user=parts[0];serverPart=parts[1];
-      }catch(e){return null;}
+
+    function buildThumbs() {
+        thumbsGrid.innerHTML = "";
+        imageFiles.forEach((file, index) => {
+            const url = baseImageUrl + file;
+            const div = document.createElement("div");
+            const isDefault = index === 0;
+            div.className = "thumb" + (isDefault ? " selected" : "");
+            div.dataset.file = file;
+            div.dataset.url = url;
+
+            div.setAttribute("draggable", "false");
+            div.addEventListener("dragstart", (e) => e.preventDefault());
+
+            const img = document.createElement("img");
+            img.src = url;
+            img.alt = file;
+            img.draggable = false;
+            img.addEventListener("dragstart", (e) => e.preventDefault());
+
+            div.appendChild(img);
+            div.addEventListener("click", () => {
+                const all = thumbsGrid.querySelectorAll(".thumb");
+                all.forEach((t) => t.classList.remove("selected"));
+                div.classList.add("selected");
+                selectedImageFile = file;
+                selectedImageUrl = url;
+                previewImg.src = url;
+            });
+
+            if (isDefault) {
+                selectedImageFile = file;
+                selectedImageUrl = url;
+            }
+
+            thumbsGrid.appendChild(div);
+        });
+
+        previewImg.src = selectedImageUrl;
     }
-    const [method,password]=user.split(':');
-    const [server,portStr]=serverPart.split(':');
-    return{proto:'ss',name,server,port:+portStr,method,password,
-      uuid:'',alterId:0,security:method,network:'tcp',host:'',path:'',tls:false,sni:''};
-  }
-  function parseAnyNode(raw){
-    if(!raw)return null;const t=raw.trim();if(!t)return null;
-    const c=t.replace(/\s+/g,'');
-    if(c.startsWith('vmess://')||c.startsWith('dm1lc3M6Ly')){const n=parseVmess(c);if(n)return n;}
-    if(c.startsWith('vless://')){const n=parseVless(c);if(n)return n;}
-    if(c.startsWith('trojan://')){const n=parseTrojan(c);if(n)return n;}
-    if(c.startsWith('ss://')){const n=parseSS(c);if(n)return n;}
-    return null;
-  }
 
-  /* ======= 构造客户端接口链接：/api/paste-client/:id?client=xxx ======= */
-  function buildClientLink(pasteId,clientKey){
-    const origin=window.location.origin||'';
-    return origin+'/api/paste-client/'+encodeURIComponent(pasteId)+'?client='+encodeURIComponent(clientKey);
-  }
+    buildThumbs();
 
-  const currentLinks={v2rayn:'',clash:'',singbox:''};
-  let currentFormat='v2rayn';
+    // 自定义图片链接
+    const customImageInput = document.getElementById("custom-image-url");
+    const btnUseCustomImage = document.getElementById("btn-use-custom-image");
+    const statusEl = document.getElementById("status");
 
-  function openNodeModal(pasteId,node){
-    const modal=document.getElementById('node-modal');
-    const title=document.getElementById('node-modal-title');
-    const label=document.getElementById('node-preview-label');
-    const text=document.getElementById('node-preview-text');
+    btnUseCustomImage.addEventListener("click", () => {
+        const raw = (customImageInput.value || "").trim();
 
-    title.textContent='节点 · '+node.proto.toUpperCase()+' · '+(node.name||node.server);
+        if (!raw) {
+            statusEl.textContent = "请先输入图片链接，或使用上方预设图片。";
+            return;
+        }
+        if (!/^https?:\/\//i.test(raw)) {
+            statusEl.textContent = "图片链接需要以 http:// 或 https:// 开头。";
+            return;
+        }
+        selectedImageFile = null;
+        selectedImageUrl = raw;
+        previewImg.src = raw;
 
-    currentLinks.v2rayn=buildClientLink(pasteId,'v2rayn');
-    currentLinks.clash =buildClientLink(pasteId,'clash');
-    currentLinks.singbox=buildClientLink(pasteId,'singbox');
+        const all = thumbsGrid.querySelectorAll(".thumb");
+        all.forEach((t) => t.classList.remove("selected"));
 
-    currentFormat='v2rayn';
-    label.textContent='预览：V2RayN 链接';
-    text.textContent=currentLinks.v2rayn;
-
-    modal.style.display='flex';
-  }
-  function closeNodeModal(){document.getElementById('node-modal').style.display='none';}
-
-  function copyText(text){
-    if(!text){alert('没有可复制的内容');return;}
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(text).then(()=>alert('已复制到剪贴板'))
-        .catch(()=>alert('复制失败，请检查浏览器权限'));
-    }else{
-      const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);
-      ta.select();try{document.execCommand('copy');alert('已复制到剪贴板');}
-      catch(e){alert('复制失败，请手动复制');}
-      document.body.removeChild(ta);
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded',()=>{
-    // 1. 遍历每条卡片，识别节点，显示客户端按钮
-    document.querySelectorAll('.paste-card').forEach(card=>{
-      const raw=card.getAttribute('data-paste-content')||'';
-      const node=parseAnyNode(raw);
-      if(!node)return;
-      const pasteId=card.getAttribute('data-paste-id')||'';
-      const btn=card.querySelector('.client-btn');
-      if(btn){
-        btn.style.display='inline-flex';
-        btn.addEventListener('click',()=>openNodeModal(pasteId,node));
-      }
+        statusEl.textContent = "已使用自定义图片链接。";
     });
 
-    // 2. 弹窗关闭
-    const modal=document.getElementById('node-modal');
-    document.getElementById('node-modal-close').addEventListener('click',closeNodeModal);
-    modal.addEventListener('click',e=>{if(e.target===modal)closeNodeModal();});
+    // 模式切换
+    const modeToggle = document.getElementById("mode-toggle");
+    const modeButtons = modeToggle.querySelectorAll(".mode-btn");
+    const bodyEl = document.body;
 
-    // 3. 点击客户端图标：切换预览 + 复制链接
-    document.querySelectorAll('.client-tile').forEach(tile=>{
-      tile.addEventListener('click',()=>{
-        const fmt=tile.getAttribute('data-format');
-        const map={v2rayn:'V2RayN',clash:'Clash',singbox:'Sing-box'};
-        currentFormat=fmt;
-        document.getElementById('node-preview-label').textContent='预览：'+(map[fmt]||fmt)+' 链接';
-        document.getElementById('node-preview-text').textContent=currentLinks[fmt]||'';
-        copyText(currentLinks[fmt]||'');
-      });
+    modeButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const mode = btn.dataset.mode;
+            modeButtons.forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            if (mode === "dark") {
+                bodyEl.classList.add("dark");
+            } else {
+                bodyEl.classList.remove("dark");
+            }
+        });
     });
 
-    // 4. “复制当前链接”按钮
-    document.getElementById('node-preview-copy').addEventListener('click',()=>{
-      copyText(currentLinks[currentFormat]||'');
+    // 过期时间选择 + 提示文本
+    const expireGroup = document.getElementById("expire-group");
+    const expireHintEl = document.getElementById("expire-hint");
+    let expireValue = "7d";
+
+    function updateExpireHint(value) {
+        switch (value) {
+            case "1d":
+                expireHintEl.textContent = "卡片将在 1 天后过期。";
+                break;
+            case "7d":
+                expireHintEl.textContent = "卡片将在 7 天后过期。";
+                break;
+            case "30d":
+                expireHintEl.textContent = "卡片将在 30 天后过期。";
+                break;
+            case "forever":
+                expireHintEl.textContent = "卡片不会自动过期。";
+                break;
+            default:
+                expireHintEl.textContent = "卡片将在 7 天后过期。";
+        }
+    }
+
+    updateExpireHint(expireValue);
+
+    expireGroup.addEventListener("click", (e) => {
+        const target = e.target.closest(".expire-pill");
+        if (!target) return;
+        expireValue = target.dataset.value;
+        const pills = expireGroup.querySelectorAll(".expire-pill");
+        pills.forEach((p) => p.classList.remove("active"));
+        target.classList.add("active");
+        updateExpireHint(expireValue);
     });
-  });
+
+    const btn = document.getElementById("btn-generate");
+    const resultBox = document.getElementById("result");
+    const shareUrlEl = document.getElementById("share-url");
+    const btnCopy = document.getElementById("btn-copy");
+    const btnShare = document.getElementById("btn-share");
+
+    if (!("share" in navigator)) {
+        btnShare.style.display = "none";
+    }
+
+    btn.addEventListener("click", async () => {
+        const titleInput = document.getElementById("title");
+        const descInput = document.getElementById("desc");
+        const targetInput = document.getElementById("target");
+
+        const title = (titleInput.value || "").trim() || defaultTitle;
+        const description = (descInput.value || "").trim() || defaultDesc;
+        const target = (targetInput.value || "").trim();
+        const expire = expireValue;
+        const image = selectedImageUrl || (baseImageUrl + imageFiles[0]);
+
+        lastTitle = title;
+        lastDescription = description;
+
+        if (!target) {
+            statusEl.textContent = "请先填写目标链接。";
+            resultBox.style.display = "none";
+            return;
+        }
+
+        if (!isProbablyUrl(target)) {
+            statusEl.textContent = "请输入正确的链接，不支持纯文本内容。";
+            resultBox.style.display = "none";
+            return;
+        }
+
+        statusEl.textContent = "正在生成卡片链接...";
+        resultBox.style.display = "none";
+
+        try {
+            const res = await fetch("/api/share-create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, description, image, target, expire }),
+            });
+
+            const data = await res.json();
+            if (!data.ok) {
+                statusEl.textContent = data.message || "生成失败，请稍后重试。";
+                return;
+            }
+
+            // ✅ 这里强制优先使用“当前短链接”
+            // 兼容几种后端返回写法：shareUrl / shortUrl / id / key / slug 等
+            let shortUrl =
+                data.shareUrl ||
+                data.shortUrl ||
+                (data.id ? `${location.origin}/C/${data.id}` : "") ||
+                (data.key ? `${location.origin}/C/${data.key}` : "") ||
+                (data.slug ? `${location.origin}/C/${data.slug}` : "") ||
+                (data.url && data.url.includes("/C/") ? data.url : "") ||
+                ""; // 最后兜底
+
+            // 如果后端只返回目标链接，那就自己拼一个随机提示，至少不展示目标
+            if (!shortUrl) {
+                shortUrl = `${location.origin}/C/UNKNOWN`;
+            }
+
+            shareUrlEl.textContent = shortUrl;
+            shareUrlEl.dataset.url = shortUrl;
+            resultBox.style.display = "block";
+            statusEl.textContent = "";
+        } catch (e) {
+            console.error(e);
+            statusEl.textContent = "网络异常，请稍后再试。";
+            resultBox.style.display = "none";
+        }
+    });
+
+    btnCopy.addEventListener("click", async () => {
+        const url = shareUrlEl.dataset.url;
+        if (!url) return;
+        try {
+            await navigator.clipboard.writeText(url);
+            statusEl.textContent = "已复制当前卡片短链接 🎉";
+        } catch (e) {
+            statusEl.textContent = "复制失败，请手动复制链接。";
+        }
+    });
+
+    btnShare.addEventListener("click", async () => {
+        const url = shareUrlEl.dataset.url;
+        if (!url || !navigator.share) {
+            statusEl.textContent = "当前浏览器不支持系统分享，请手动复制链接。";
+            return;
+        }
+        try {
+            await navigator.share({
+                title: lastTitle,
+                text: lastDescription,
+                url,
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    });
 </script>
 </body>
 </html>
