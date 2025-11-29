@@ -1,4 +1,4 @@
-// functions/C/[id].js
+// functions/C/[id].js 
 
 function escapeHtml(str) {
     if (!str) return "";
