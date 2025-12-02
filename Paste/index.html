@@ -5,18 +5,20 @@
     <title>Pastebox</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Favicon -->
+    <!-- Favicon：多种写法提高兼容性 -->
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
 
-    <!-- Meta Info -->
+    <!-- Open Graph / WeChat / Telegram 预览 -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Pastebox">
     <meta property="og:title" content="Pastebox">
     <meta property="og:description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
     <meta property="og:image" content="https://save.aura.us.kg/Picture/Preview/YL10.png">
     <meta property="og:url" content="https://aura.us.kg/Paste">
+
+    <!-- Twitter 卡片 -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Pastebox">
     <meta name="twitter:description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
@@ -283,19 +285,7 @@
         .byte-count{font-size:11px;color:var(--text-sub);}
         .byte-num{color:var(--accent2);font-weight:600;}
 
-        /* 识别信息样式：居右显示，高亮 */
-        .recognition-info {
-            font-size: 11px;
-            color: var(--accent2);
-            margin-left: auto; /* 自动推到右边 */
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 65%;
-            font-weight: 500;
-            text-align: right;
-        }
-
+        /* 原本字节 + 小药丸，现在只用作右侧小药丸样式 */
         .byte-actions{
             display:flex;
             align-items:center;
@@ -311,13 +301,15 @@
         }
         .btn-primary:hover{box-shadow:0 10px 24px rgba(37,99,235,0.5);}
         .btn-primary.btn-disabled{opacity:.5;cursor:not-allowed;box-shadow:none;}
-        
+        /* 只改登录弹窗里的 LOG IN 按钮，不影响上传按钮 */
         .auth-panel #btnDoLogin{
-            background: rgb(41, 195, 30);
+            background: rgb(41, 195, 30);              /* 登录按钮底色：纯黑 */
             border-color: rgba(0, 0, 0, 0.42);
-            color:#f9fafb;
+            color:#f9fafb;                   /* 字体颜色保持浅色 */
             box-shadow:0 8px 20px rgba(255, 255, 255, 0);
         }
+
+        /* 可选：悬停时稍微亮一点 */
         .auth-panel #btnDoLogin:hover{
             background: rgba(255, 0, 207, 0.29);
         }
@@ -415,7 +407,7 @@
             border-top:1px dashed var(--border-soft);
         }
 
-        /* 登录弹窗 */
+        /* 登录弹窗：居中小方块 */
         .modal-backdrop{
             position:fixed;inset:0;
             background: rgba(0, 0, 0, 0.47);
@@ -542,7 +534,7 @@
         }
         .uc-item-actions{margin-top:4px;display:flex;flex-wrap:wrap;gap:6px;}
 
-        /* Base64 Button States */
+        /* 解码按钮交互：点击时变黑 + 替换图标 */
         .base64-decode-btn.decode-active{
             background:#000000;
             color:#f9fafb;
@@ -594,6 +586,7 @@
                 <span class="label">Light</span>
             </button>
 
+            <!-- Home 只在编辑模式下显示，默认隐藏 -->
             <button type="button" class="pill-btn" id="btnHome" style="display:none;">
                 <span class="icon-svg">
                     <svg viewBox="0 0 20 20">
@@ -618,9 +611,10 @@
         <section class="card-section">
             <div class="section-title">使用说明<span class="tag">GUIDE</span></div>
             <div class="section-text">
-                在下面粘贴文本或从文件导入，选择有效期后生成一个可分享的访问链接。<br>
+                在下面粘贴文本或从文件导入，选择有效期后生成一个可分享的访问链接（以 <code>text/plain</code> 打开）。<br>
                 登录可管理已生成的内容。🐹<br>
                 <span class="warning-label">警告：</span>请勿存储敏感信息，本工具仅适用于临时共享内容。<br>
+                <span class="warning-label">警告：</span>你上传的内容文件，可能会在不通知的情况下被删除！
             </div>
         </section>
 
@@ -635,60 +629,120 @@
                         </div>
                     </div>
 
-                    <!-- 修改：同一行显示字节数和识别信息 (flex + space-between) -->
-                    <div class="field" style="display:flex; flex-direction:row; justify-content:space-between; align-items:center;">
+                    <!-- 字节统计：单独一行 -->
+                    <div class="field">
                         <span class="byte-count">
                             已输入 <span class="byte-num" id="byteNum">0</span> 字节
                         </span>
-                        <span class="recognition-info" id="recognitionInfo"></span>
                     </div>
-
+                    <!-- 导入文本行 + 右侧 Base64 小药丸 -->
                     <div class="field">
                         <div class="field-inline upload-row">
+                            <!-- ✅ 只有一个导入按钮 -->
                             <label class="upload-btn" id="uploadBtn" for="fileInput">
-                                <span class="icon-svg">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alarge-small-icon lucide-a-large-small" style="fill:none;">
-                                        <path d="m15 16 2.536-7.328a1.02 1.02 0 0 1 1.928 0L22 16" />
-                                        <path d="M15.697 14h5.606" />
-                                        <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
-                                        <path d="M3.304 13h6.392" />
-                                    </svg>
-                                </span>
+    <span class="icon-svg">
+        <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-alarge-small-icon lucide-a-large-small"
+                style="fill:none;"
+        >
+            <path d="m15 16 2.536-7.328a1.02 1.02 0 0 1 1.928 0L22 16" />
+            <path d="M15.697 14h5.606" />
+            <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
+            <path d="M3.304 13h6.392" />
+        </svg>
+    </span>
                                 <span id="uploadBtnText">导入文本</span>
                             </label>
 
-                            <input type="file" id="fileInput" accept=".txt,.log,.conf,.json,.md,.yaml,.yml,.ini,.cfg,.csv,.html,.js,.ts,.py,.go,.rs,.php,.java,.c,.cpp,.sh,.bat,.ps1,.rb,.lua,.sql,.xml" style="display:none;">
+                            <!-- ✅ 隐藏的文件选择框，只保留这一个 -->
+                            <input
+                                    type="file"
+                                    id="fileInput"
+                                    accept=".txt,.log,.conf,.json,.md,.yaml,.yml,.ini,.cfg,.csv,.html,.js,.ts,.py,.go,.rs,.php,.java,.c,.cpp,.sh,.bat,.ps1,.rb,.lua,.sql,.xml"
+                                    style="display:none;">
 
+                            <!-- ✅ 右侧 Base64 小药丸按钮 -->
                             <div class="byte-actions">
+                                <!-- Base64 编码：使用你给的上箭头 SVG -->
                                 <button type="button" class="btn-secondary btn-xs" id="btnBase64Encode">
-                                    <span class="icon-svg">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-aarrow-up-icon lucide-a-arrow-up" style="fill:none;">
-                                            <path d="m14 11 4-4 4 4" />
-                                            <path d="M18 16V7" />
-                                            <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
-                                            <path d="M3.304 13h6.392" />
-                                        </svg>
-                                    </span>
+        <span class="icon-svg">
+            <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="#000000"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-aarrow-up-icon lucide-a-arrow-up"
+                    style="fill:none;"
+            >
+                <path d="m14 11 4-4 4 4" />
+                <path d="M18 16V7" />
+                <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
+                <path d="M3.304 13h6.392" />
+            </svg>
+        </span>
                                     Base64 编码
                                 </button>
 
+                                <!-- Base64 解码：使用你给的下箭头 SVG -->
                                 <button type="button" class="btn-secondary btn-xs base64-decode-btn" id="btnBase64Decode">
+                                    <!-- 默认状态图标 -->
                                     <span class="icon-svg decode-icon-normal">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-aarrow-down-icon lucide-a-arrow-down" style="fill:none;">
-                                            <path d="m14 12 4 4 4-4" />
-                                            <path d="M18 16V7" />
-                                            <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
-                                            <path d="M3.304 13h6.392" />
-                                        </svg>
-                                    </span>
+            <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="#000000"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-aarrow-down-icon lucide-a-arrow-down"
+                    style="fill:none;"
+            >
+                <path d="m14 12 4 4 4-4" />
+                <path d="M18 16V7" />
+                <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
+                <path d="M3.304 13h6.392" />
+            </svg>
+        </span>
+
+                                    <!-- 激活状态图标（点击后高亮，这里先用同一套，需要的话再单独设计一套高亮版） -->
                                     <span class="icon-svg decode-icon-active">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-aarrow-down-icon lucide-a-arrow-down" style="fill:none;">
-                                            <path d="m14 12 4 4 4-4" />
-                                            <path d="M18 16V7" />
-                                            <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
-                                            <path d="M3.304 13h6.392" />
-                                        </svg>
-                                    </span>
+            <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="#000000"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-aarrow-down-icon lucide-a-arrow-down"
+                    style="fill:none;"
+            >
+                <path d="m14 12 4 4 4-4" />
+                <path d="M18 16V7" />
+                <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
+                <path d="M3.304 13h6.392" />
+            </svg>
+        </span>
+
                                     Base64 解码
                                 </button>
                             </div>
@@ -735,6 +789,7 @@
                 <section class="card-section">
                     <div class="section-title">确认<span class="tag">ACTION</span></div>
                     <div class="field" style="gap:8px;">
+                        <!-- 重置按钮在上传上方 -->
                         <div class="action-row">
                             <button type="button" class="btn-reset" id="btnResetContent">
                                 <span class="icon-svg">
@@ -831,6 +886,7 @@
                 <input id="authPassword" type="password" placeholder="密码（至少 6 位）" autocomplete="current-password">
             </div>
 
+            <!-- ✨ 记住登录状态（默认已勾选） -->
             <label style="display:flex;align-items:center;gap:6px;font-size:11px;opacity:.9;margin-top:2px;">
                 <input id="authRemember" type="checkbox" checked style="width:12px;height:12px;">
                 <span>记住状态</span>
@@ -838,37 +894,60 @@
 
             <div class="auth-panel-actions">
                 <button type="button" class="btn-secondary btn-xs" id="btnDoRegister">
-                    <span class="icon-svg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round-plus-icon lucide-user-round-plus" style="fill:none;">
-                            <path d="M2 21a8 8 0 0 1 13.292-6" />
-                            <circle cx="10" cy="8" r="5" />
-                            <path d="M19 16v6" />
-                            <path d="M22 19h-6" />
-                        </svg>
-                    </span>
+    <span class="icon-svg">
+        <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-user-round-plus-icon lucide-user-round-plus"
+                style="fill:none;"
+        >
+            <path d="M2 21a8 8 0 0 1 13.292-6" />
+            <circle cx="10" cy="8" r="5" />
+            <path d="M19 16v6" />
+            <path d="M22 19h-6" />
+        </svg>
+    </span>
                     SIGN UP
-                </button>
-                <button type="submit" class="btn-primary btn-xs" id="btnDoLogin">
-                    <span class="icon-svg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scan-face-icon lucide-scan-face" style="fill:none;">
-                            <path d="M3 7V5a2 2 0 0 1 2-2h2" />
-                            <path d="M17 3h2a2 2 0 0 1 2 2v2" />
-                            <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
-                            <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
-                            <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-                            <path d="M9 9h.01" />
-                            <path d="M15 9h.01" />
-                        </svg>
-                    </span>
-                    LOG IN
-                </button>
+                    <button type="submit" class="btn-primary btn-xs" id="btnDoLogin">
+    <span class="icon-svg">
+        <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-scan-face-icon lucide-scan-face"
+                style="fill:none;"
+        >
+            <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+            <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+            <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+            <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+            <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+            <path d="M9 9h.01" />
+            <path d="M15 9h.01" />
+        </svg>
+    </span>
+                        LOG IN
+                    </button>
             </div>
         </form>
         <div class="auth-panel-msg" id="authMsg"></div>
     </div>
 </div>
 
-<!-- 用户中心：已更新图标为细线风格 -->
+<!-- 用户中心 -->
 <div class="uc-backdrop" id="userCenter" style="display:none;">
     <div class="uc-panel">
         <div class="uc-header">
@@ -884,33 +963,28 @@
                 </div>
             </div>
             <div class="uc-actions">
-                <!-- 顶部按钮图标已替换为细线风格 -->
                 <button type="button" class="btn-secondary btn-xs" id="ucRefreshBtn">
                     <span class="icon-svg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                            <path d="M3 3v5h5"/>
-                            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
-                            <path d="M16 16h5v5"/>
+                        <svg viewBox="0 0 20 20">
+                            <path d="M4 4a7 7 0 0 1 11.31-1.41L17 2v5a1 1 0 0 1-1 1H11a1 1 0 1 1 0-2h2.535A5 5 0 0 0 5 7a1 1 0 1 1-2 0 7 7 0 0 1 1-3z"/>
+                            <path d="M16 16a7 7 0 0 1-11.31 1.41L3 18v-5a1 1 0 0 1 1-1h5a1 1 0 1 1 0 2H6.465A5 5 0 0 0 15 13a1 1 0 0 1 2 0 7 7 0 0 1-1 3z"/>
                         </svg>
                     </span>
                     刷新
                 </button>
                 <button type="button" class="btn-secondary btn-xs" id="ucLogoutBtn">
                     <span class="icon-svg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                            <polyline points="16 17 21 12 16 7"/>
-                            <line x1="21" x2="9" y1="12" y2="12"/>
+                        <svg viewBox="0 0 20 20">
+                            <path d="M9 4a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V5h-3v10h3v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1V4z"/>
+                            <path d="M5.293 7.293a1 1 0 0 1 1.414 0L9 9.586 6.707 11.88a1 1 0 0 1-1.414-1.414L6.586 10 5.293 8.707a1 1 0 0 1 0-1.414z"/>
                         </svg>
                     </span>
                     LOG OUT
                 </button>
                 <button type="button" class="btn-secondary btn-xs" id="ucCloseBtn">
                     <span class="icon-svg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 6 6 18"/>
-                            <path d="m6 6 18 18"/>
+                        <svg viewBox="0 0 20 20">
+                            <path d="M5.293 5.293a1 1 0 0 1 1.414 0L10 8.586l3.293-3.293a1 1 0 1 1 1.414 1.414L11.414 10l3.293 3.293a1 1 0 0 1-1.414 1.414L10 11.414l-3.293 3.293a1 1 0 0 1-1.414-1.414L8.586 10 5.293 6.707a1 1 0 0 1 0-1.414z"/>
                         </svg>
                     </span>
                     关闭
@@ -967,7 +1041,6 @@
 
     const $content=qs("content");
     const $byteNum=qs("byteNum");
-    const $recognitionInfo=qs("recognitionInfo"); // 新增识别信息容器
     const $lineCounter=qs("lineCounter");
     const $ttlGroup=qs("ttlGroup");
     const $ttlHint=qs("ttlHint");
@@ -990,6 +1063,7 @@
     const $uploadBtn=qs("uploadBtn");
     const $btnResetContent=qs("btnResetContent");
 
+    // Base64 按钮
     const $btnBase64Encode = qs("btnBase64Encode");
     const $btnBase64Decode = qs("btnBase64Decode");
 
@@ -1045,12 +1119,21 @@
         if(type)$authMsg.classList.add(type);
     }
 
+    // ===== Base64 UTF-8 安全编码 / 解码 =====
     function base64EncodeUtf8(str) {
-        try { return btoa(unescape(encodeURIComponent(str))); } catch (_) { return null; }
+        try {
+            return btoa(unescape(encodeURIComponent(str)));
+        } catch (_) {
+            return null;
+        }
     }
 
     function base64DecodeUtf8(str) {
-        try { return decodeURIComponent(escape(atob(str))); } catch (_) { return null; }
+        try {
+            return decodeURIComponent(escape(atob(str)));
+        } catch (_) {
+            return null;
+        }
     }
 
     async function postJSON(url,body){
@@ -1067,66 +1150,6 @@
         return data;
     }
 
-    // [新增] 增强的识别功能
-    function analyzeContent(text) {
-        if (!text) return "";
-        
-        let nodes = 0;
-        let scripts = 0;
-        let codes = 0;
-        let plain = false;
-
-        // 正则匹配节点协议
-        const nodeRegex = /(vmess|vless|ss|ssr|trojan|tuic|hysteria2?):\/\/[a-zA-Z0-9%#?=&._-]+/gi;
-        const nodesMatches = text.match(nodeRegex);
-        if (nodesMatches) {
-            nodes = nodesMatches.length;
-        }
-        
-        // Clash 节点特征 (YAML)
-        if (/^\s*proxies:/m.test(text) || /^\s*cipher:\s+/m.test(text)) {
-            nodes++; 
-        }
-
-        // Surge/QuantumultX 脚本或配置特征
-        if (/#!name=|\[Script\]|\[Rewrite\]|\[General\]|script-path|http-request|http-response|cron\s+/i.test(text)) {
-            scripts = 1;
-        }
-
-        // 代码特征 (简单判断)
-        if (/(export\s+default|function\s+\w+|const\s+\w+\s*=|import\s+\w+|class\s+\w+|console\.log)/.test(text) && scripts === 0 && nodes === 0) {
-            codes = 1;
-        }
-
-        // 尝试 Base64 解码后再次识别 (支持编码后的订阅)
-        if (nodes === 0 && scripts === 0 && codes === 0 && !/\s/.test(text.trim())) {
-            try {
-                const decoded = atob(text.trim());
-                // 再次检查节点
-                const dNodes = decoded.match(nodeRegex);
-                if (dNodes) nodes = dNodes.length;
-                
-                if (/#!name=|\[Script\]|\[General\]/i.test(decoded)) scripts = 1;
-                
-                // 标记为已编码节点
-                if(nodes > 0) return `识别到${nodes}条节点信息(已编码)`;
-            } catch(e) {}
-        }
-
-        // 如果没有特殊内容，则视为普通文本
-        if (nodes === 0 && scripts === 0 && codes === 0 && text.trim().length > 0) {
-            plain = true;
-        }
-
-        const parts = [];
-        if (nodes > 0) parts.push(`识别到${nodes}条节点信息`);
-        if (scripts > 0) parts.push(`识别到脚本`);
-        if (codes > 0) parts.push(`识别到代码`);
-        if (plain) parts.push(`普通文本内容`);
-
-        return parts.join("，");
-    }
-
     function updateByteCount(){
         if(!$content||!$byteNum)return;
         let len=0;
@@ -1139,26 +1162,26 @@
             const lines=v ? v.split(/\r\n|\r|\n/).length : 0;
             $lineCounter.textContent = lines+" 行";
         }
-
-        // [新增] 更新识别提示
-        if($recognitionInfo) {
-            $recognitionInfo.textContent = analyzeContent($content.value);
-        }
     }
     if($content){
         updateByteCount();
         $content.addEventListener("input",updateByteCount);
     }
 
-    // ...文件导入逻辑...
     if($uploadBtn&&$fileInput){
-        $uploadBtn.addEventListener("click",e=>{e.preventDefault();$fileInput.click();});
+        $uploadBtn.addEventListener("click",e=>{
+            e.preventDefault();
+            $fileInput.click();
+        });
         $fileInput.addEventListener("change",()=>{
             const file=$fileInput.files&&$fileInput.files[0];
             if(!file)return;
             const reader=new FileReader();
             reader.onload=()=>{
-                if($content){$content.value=reader.result||"";updateByteCount();}
+                if($content){
+                    $content.value=reader.result||"";
+                    updateByteCount();
+                }
                 if($fileHint){
                     $fileHint.textContent=`已加载：${file.name}（${file.size} 字节）`;
                     $fileHint.classList.remove("hint-error");
@@ -1187,35 +1210,59 @@
         });
     }
 
+    // Base64 编码按钮
     if ($btnBase64Encode) {
         $btnBase64Encode.addEventListener("click", () => {
             if (!$content) return;
             const v = $content.value;
-            if (!v) { setStatus("没有可编码的内容。", "error"); return; }
+            if (!v) {
+                setStatus("没有可编码的内容。", "error");
+                return;
+            }
             const encoded = base64EncodeUtf8(v);
-            if (encoded == null) { setStatus("Base64 编码失败。", "error"); return; }
+            if (encoded == null) {
+                setStatus("Base64 编码失败，内容可能包含不支持的字符。", "error");
+                return;
+            }
             $content.value = encoded;
             updateByteCount();
             setStatus("已使用 Base64 编码当前内容。", "success");
         });
     }
 
+    // Base64 解码按钮 + 交互高亮
     if ($btnBase64Decode) {
         $btnBase64Decode.addEventListener("click", () => {
             if (!$content) return;
             const v = $content.value;
-            if (!v) { setStatus("没有可解码的内容。", "error"); return; }
+            if (!v) {
+                setStatus("没有可解码的内容。", "error");
+                return;
+            }
             const decoded = base64DecodeUtf8(v);
-            if (decoded == null) { setStatus("Base64 解码失败。", "error"); return; }
+            if (decoded == null) {
+                setStatus("Base64 解码失败，文本可能不是合法的 Base64。", "error");
+                return;
+            }
             $content.value = decoded;
             updateByteCount();
             setStatus("已使用 Base64 解码当前内容。", "success");
+
+            // 点击后短暂高亮：变黑 + 换图标
             $btnBase64Decode.classList.add("decode-active");
-            setTimeout(() => { $btnBase64Decode.classList.remove("decode-active"); }, 300);
+            setTimeout(() => {
+                $btnBase64Decode.classList.remove("decode-active");
+            }, 300);
         });
     }
 
-    const ttlText={"10m":"内容将在 10 分钟后过期。","1d":"内容将在 1 天后过期。","7d":"内容将在 7 天后过期。","30d":"内容将在 30 天后过期。","forever":"内容不会自动过期（后台清理除外）。"};
+    const ttlText={
+        "10m":"内容将在 10 分钟后过期。",
+        "1d":"内容将在 1 天后过期。",
+        "7d":"内容将在 7 天后过期。",
+        "30d":"内容将在 30 天后过期。",
+        "forever":"内容不会自动过期（后台清理除外）。"
+    };
     function setTtl(key){
         state.ttlKey=key;
         if($ttlGroup){
@@ -1231,7 +1278,9 @@
             const btn=e.target.closest(".ttl-btn");
             if(!btn)return;
             if(btn.disabled)return;
-            setTtl(btn.dataset.ttl);
+            const key=btn.dataset.ttl;
+            if(!key)return;
+            setTtl(key);
         });
     }
 
@@ -1246,17 +1295,28 @@
             if($advancedSection)$advancedSection.style.display="";
         }
         if(!val){
-            if($customHint){$customHint.textContent="留空则自动分配随机 ID。";$customHint.classList.remove("hint-error","hint-success");}
+            if($customHint){
+                $customHint.textContent="留空则自动分配随机 ID。";
+                $customHint.classList.remove("hint-error","hint-success");
+            }
             $customId.classList.remove("input-error");
             return;
         }
         const ok=/^[A-Za-z0-9_-]+$/.test(val);
         if(!ok){
             state.customSlugError=true;
-            if($customHint){$customHint.textContent="仅支持A-Za-z0-9_- 。";$customHint.classList.add("hint-error");$customHint.classList.remove("hint-success");}
+            if($customHint){
+                $customHint.textContent="仅支持A-Za-z0-9_- 。";
+                $customHint.classList.add("hint-error");
+                $customHint.classList.remove("hint-success");
+            }
             $customId.classList.add("input-error");
         }else{
-            if($customHint){$customHint.textContent="可以使用这个自定义 ID。";$customHint.classList.remove("hint-error");$customHint.classList.add("hint-success");}
+            if($customHint){
+                $customHint.textContent="可以使用这个自定义 ID。";
+                $customHint.classList.remove("hint-error");
+                $customHint.classList.add("hint-success");
+            }
             $customId.classList.remove("input-error");
         }
     }
@@ -1265,7 +1325,10 @@
     function enterCreateMode(clear){
         state.mode="create";
         state.originalSlug=null;
-        if($submitBtn){const span=$submitBtn.querySelector(".text");if(span)span.textContent="上传";}
+        if($submitBtn){
+            const span=$submitBtn.querySelector(".text");
+            if(span)span.textContent="上传";
+        }
         if($btnHome)$btnHome.style.display="none";
         if(clear){
             if($content)$content.value="";
@@ -1285,16 +1348,25 @@
     }
 
     function applyAuthUI(){
-        if($btnAuthLabel)$btnAuthLabel.textContent = state.loggedIn ? (state.username || "用户") : "Login";
-        if($advancedSection)$advancedSection.style.display = state.loggedIn ? "" : "none";
+        if($btnAuthLabel){
+            $btnAuthLabel.textContent = state.loggedIn ? (state.username || "用户") : "LogIn";
+        }
+
+        if($advancedSection){
+            $advancedSection.style.display = state.loggedIn ? "" : "none";
+        }
+
         if ($ttlForeverBtn) {
             if (state.loggedIn) {
                 $ttlForeverBtn.disabled = false;
             } else {
                 $ttlForeverBtn.disabled = true;
-                if (state.ttlKey === "forever") setTtl("7d");
+                if (state.ttlKey === "forever") {
+                    setTtl("7d");
+                }
             }
         }
+
         validateCustomSlug();
     }
 
@@ -1302,7 +1374,10 @@
         state.loggedIn = true;
         state.username = username || "用户";
         try { localStorage.setItem("pbx_username", state.username); } catch(_) {}
+
+        // 登录后默认改为「Never(不过期)」
         setTtl("forever");
+
         applyAuthUI();
     }
     function setLoggedOut(){
@@ -1319,9 +1394,14 @@
             const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
             if(res.status===401){setLoggedOut();return;}
             const data=await res.json().catch(()=>({}));
-            if(data&&data.ok) setLoggedIn(saved||"用户");
-            else setLoggedOut();
-        }catch(_){ setLoggedOut(); }
+            if(data&&data.ok){
+                setLoggedIn(saved||"用户");
+            }else{
+                setLoggedOut();
+            }
+        }catch(_){
+            setLoggedOut();
+        }
     }
 
     function openAuthModal(){
@@ -1338,7 +1418,11 @@
         setAuthTip("");
     }
     if($authCloseBtn)$authCloseBtn.addEventListener("click",closeAuthModal);
-    if($authModal)$authModal.addEventListener("click",e=>{if(e.target===$authModal)closeAuthModal();});
+    if($authModal){
+        $authModal.addEventListener("click",e=>{
+            if(e.target===$authModal)closeAuthModal();
+        });
+    }
 
     function openUserCenter(){
         if(!$userCenter)return;
@@ -1350,7 +1434,11 @@
         $userCenter.style.display="none";
     }
     if($ucCloseBtn)$ucCloseBtn.addEventListener("click",closeUserCenter);
-    if($userCenter)$userCenter.addEventListener("click",e=>{if(e.target===$userCenter)closeUserCenter();});
+    if($userCenter){
+        $userCenter.addEventListener("click",e=>{
+            if(e.target===$userCenter)closeUserCenter();
+        });
+    }
 
     if($btnAuthOpen){
         $btnAuthOpen.addEventListener("click",()=>{
@@ -1365,14 +1453,24 @@
             const u=$authUsername.value.trim();
             const p=$authPassword.value;
             const remember = $authRemember ? $authRemember.checked : true;
-            if(!u||!p){setAuthTip("用户名和密码不能为空。","error");return;}
+
+            if(!u||!p){
+                setAuthTip("用户名和密码不能为空。","error");
+                return;
+            }
             setAuthTip("登录中…");
             try{
-                const data=await postJSON(AUTH_BASE+"/login",{username:u,password:p,remember});
+                const data=await postJSON(AUTH_BASE+"/login",{
+                    username:u,
+                    password:p,
+                    remember
+                });
                 setLoggedIn(data.username||u);
                 setAuthTip("登录成功。","success");
                 setTimeout(closeAuthModal,300);
-            }catch(err){setAuthTip(err.message||"登录失败。","error");}
+            }catch(err){
+                setAuthTip(err.message||"登录失败。","error");
+            }
         });
     }
     if($btnDoRegister){
@@ -1385,7 +1483,9 @@
             try{
                 await postJSON(AUTH_BASE+"/register",{username:u,password:p});
                 setAuthTip("注册成功，请点击登录。","success");
-            }catch(err){setAuthTip(err.message||"注册失败。","error");}
+            }catch(err){
+                setAuthTip(err.message||"注册失败。","error");
+            }
         });
     }
 
@@ -1406,7 +1506,8 @@
         if(Number.isNaN(t))return null;
         const now=Date.now();
         const diff=t-now;
-        return Math.ceil(diff/86400000);
+        const d=Math.ceil(diff/86400000);
+        return d;
     }
 
     async function loadUserPastes(){
@@ -1417,13 +1518,22 @@
         $ucList.innerHTML="";
         try{
             const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
-            if(res.status===401){$ucEmpty.textContent="登录状态已失效。";setLoggedOut();return;}
+            if(res.status===401){
+                $ucEmpty.textContent="登录状态已失效，请重新登录。";
+                setLoggedOut();
+                return;
+            }
             const data=await res.json().catch(()=>({}));
-            if(!data.ok){$ucEmpty.textContent=data.error||"加载失败。";return;}
+            if(!data.ok){
+                $ucEmpty.textContent=data.error||"加载失败。";
+                return;
+            }
             const items=data.items||[];
-            if(!items.length){$ucEmpty.textContent="暂无记录，先去创建一条吧。";return;}
+            if(!items.length){
+                $ucEmpty.textContent="暂无记录，先去创建一条吧。";
+                return;
+            }
 
-            // 获取详情以判断内容是否为节点
             const valid=[];
             await Promise.all(items.map(async (item)=>{
                 const slug=item.slug||item.id;
@@ -1441,9 +1551,14 @@
                 }catch(_){}
             }));
 
-            if(!valid.length){$ucEmpty.style.display="";$ucEmpty.textContent="暂无有效记录。";return;}
+            if(!valid.length){
+                $ucEmpty.style.display="";
+                $ucEmpty.textContent="暂无有效记录（过期或已删除）。";
+                return;
+            }
 
             valid.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+
             $ucEmpty.style.display="none";
             $ucList.style.display="flex";
 
@@ -1454,6 +1569,7 @@
                 const created=d.createdAt||null;
                 const expires=d.expiresAt||null;
                 const ttlKey=d.ttlKey||"";
+
                 const viewUrl=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
                 const remain=calcRemainDays(expires);
 
@@ -1476,85 +1592,120 @@
                 const act=row.querySelector(".uc-item-actions");
 
                 let metaText=`创建：${formatDate(created)} · `;
-                if(!expires || ttlKey==="forever") metaText+=`到期：Never🙌🏿`;
-                else{
+                if(!expires || ttlKey==="forever"){
+                    metaText+=`到期：Never🙌🏿`;
+                }else{
                     metaText+=`到期：${formatDate(expires)}`;
-                    if(remain!=null && remain>=0) metaText+=` · 剩 ${remain} 天`;
+                    if(remain!=null && remain>=0){
+                        metaText+=` · 自动清除还有 ${remain} 天`;
+                    }
                 }
                 meta.textContent=metaText;
 
-                // 检查内容是否包含节点信息
-                const analysis = analyzeContent(d.content || "");
-                if (analysis.includes("节点")) {
-                    // [新增] 订阅按钮 (图标已细化)
-                    const btnSub = document.createElement("button");
-                    btnSub.type = "button";
-                    btnSub.className = "btn-secondary btn-xs";
-                    const subUrl = `${location.origin}/api/paste/${slug}?sub=Auto`;
-                    btnSub.title = `${subUrl},点击即可复制,根据客户端类型自动将上传的节点内容转换成相应适配客户端的格式,比如surge,小火箭,Clash`;
-                    btnSub.innerHTML = `
-                        <span class="icon-svg">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M4 11a9 9 0 0 1 9 9"/>
-                                <path d="M4 4a16 16 0 0 1 16 16"/>
-                                <circle cx="5" cy="19" r="1"/>
-                           </svg>
-                        </span>
-                        订阅
-                    `;
-                    btnSub.addEventListener("click", async () => {
-                        try {
-                            await navigator.clipboard.writeText(subUrl);
-                            alert("✅ 订阅链接已复制\n\n" + subUrl + "\n\n(已自动适配客户端格式)");
-                        } catch (e) {
-                            prompt("复制失败，请手动复制：", subUrl);
-                        }
-                    });
-                    act.appendChild(btnSub);
-                }
-
-                // [修改] 以下所有按钮的 SVG stroke-width 已调整为 1.5
                 const btnEdit=document.createElement("button");
+                btnEdit.type="button";
                 btnEdit.className="btn-secondary btn-xs";
-                btnEdit.innerHTML = `<span class="icon-svg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
-                        <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
-                        <circle cx="10" cy="7" r="4"/>
-                    </svg>
-                </span>编辑`;
-                btnEdit.onclick=()=>{closeUserCenter();enterEditMode(slug);};
-                
+                btnEdit.innerHTML = `
+    <span class="icon-svg">
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-user-pen-icon lucide-user-pen"
+            style="fill:none;"
+        >
+            <path d="M11.5 15H7a4 4 0 0 0-4 4v2" />
+            <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />
+            <circle cx="10" cy="7" r="4" />
+        </svg>
+    </span>
+    编辑
+`;
+                btnEdit.addEventListener("click",()=>{
+                    closeUserCenter();
+                    enterEditMode(slug);
+                });
+
                 const btnCopy=document.createElement("button");
+                btnCopy.type="button";
                 btnCopy.className="btn-secondary btn-xs";
                 btnCopy.innerHTML=`<span class="icon-svg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-                        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
-                    </svg>
+                    <svg viewBox="0 0 20 20"><path d="M7 3a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2v-2h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v2H7z"/><path d="M3 7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7z"/></svg>
                 </span>复制`;
-                btnCopy.onclick=async ()=>{try{await navigator.clipboard.writeText(viewUrl);setStatus("已复制链接。","success");}catch(_){setStatus("复制失败。","error");}};
-                
+                btnCopy.addEventListener("click",async ()=>{
+                    try{
+                        await navigator.clipboard.writeText(viewUrl);
+                        setStatus("已复制链接。","success");
+                    }catch(_){
+                        setStatus("复制失败，请手动复制。","error");
+                    }
+                });
+
                 const btnOpen=document.createElement("button");
+                btnOpen.type="button";
                 btnOpen.className="btn-secondary btn-xs";
-                btnOpen.innerHTML = `<span class="icon-svg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/>
-                        <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                </span>打开`;
-                btnOpen.onclick=()=>{window.open(viewUrl,"_blank","noopener");};
+                btnOpen.innerHTML = `
+    <span class="icon-svg">
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-eye-icon lucide-eye"
+            style="fill:none;"
+        >
+            <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+            <circle cx="12" cy="12" r="3" />
+        </svg>
+    </span>
+    打开
+`;
+                btnOpen.addEventListener("click",()=>{window.open(viewUrl,"_blank","noopener");});
 
                 const btnDel=document.createElement("button");
+                btnDel.type="button";
                 btnDel.className="btn-danger btn-xs";
-                btnDel.innerHTML = `<span class="icon-svg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 6h18"/>
-                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                </span>删除`;
-                btnDel.onclick=async ()=>{if(!confirm("确认删除该链接？"))return;try{await postJSON(API_BASE,{action:"delete",slug});loadUserPastes();setStatus("已删除。","success");}catch(err){setStatus(err.message||"删除失败。","error");}};
+                btnDel.innerHTML = `
+    <span class="icon-svg">
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="size-6"
+            style="fill:none;"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+            />
+        </svg>
+    </span>
+    删除
+`;
+                btnDel.addEventListener("click",async ()=>{
+                    if(!confirm("确认删除该链接？"))return;
+                    try{
+                        await postJSON(API_BASE,{action:"delete",slug});
+                        loadUserPastes();
+                        setStatus("已删除。","success");
+                    }catch(err){
+                        setStatus(err.message||"删除失败。","error");
+                    }
+                });
 
                 act.appendChild(btnEdit);
                 act.appendChild(btnCopy);
@@ -1563,7 +1714,10 @@
 
                 $ucList.appendChild(row);
             });
-        }catch(err){$ucEmpty.style.display="";$ucEmpty.textContent=err.message||"加载失败。";}
+        }catch(err){
+            $ucEmpty.style.display="";
+            $ucEmpty.textContent=err.message||"加载失败。";
+        }
     }
 
     if($ucRefreshBtn)$ucRefreshBtn.addEventListener("click",loadUserPastes);
@@ -1580,7 +1734,10 @@
     async function enterEditMode(slug){
         state.mode="edit";
         state.originalSlug=slug;
-        if($submitBtn){const span=$submitBtn.querySelector(".text");if(span)span.textContent="更新";}
+        if($submitBtn){
+            const span=$submitBtn.querySelector(".text");
+            if(span)span.textContent="更新";
+        }
         if($btnHome)$btnHome.style.display="inline-flex";
         setStatus("正在载入内容…");
         try{
@@ -1588,10 +1745,15 @@
             url.searchParams.set("manage","1");
             const res=await fetch(url.toString(),{credentials:"include"});
             const data=await res.json().catch(()=>({}));
-            if(!res.ok||data.ok===false) throw new Error(data.error||"内容不存在。");
+            if(!res.ok||data.ok===false){
+                throw new Error(data.error||"内容不存在。");
+            }
             if($content)$content.value=data.content||"";
             if($remark)$remark.value=data.remark||"";
-            if($customId){$customId.value=data.slug||slug;$customId.readOnly=false;}
+            if($customId){
+                $customId.value=data.slug||slug;
+                $customId.readOnly=false;
+            }
             updateByteCount();
             if(data.ttlKey)setTtl(data.ttlKey);
             const urlClean=new URL(location.href);
@@ -1609,14 +1771,21 @@
         const url=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
         $viewLinkText.textContent=url;
         $resultBox.style.display="block";
-        if($btnManageFromResult)$btnManageFromResult.style.display = state.loggedIn ? "inline-flex" : "none";
+        if($btnManageFromResult){
+            $btnManageFromResult.style.display = state.loggedIn ? "inline-flex" : "none";
+        }
     }
 
     if($btnCopyView){
         $btnCopyView.addEventListener("click",async ()=>{
             const text=$viewLinkText&&$viewLinkText.textContent;
             if(!text)return;
-            try{await navigator.clipboard.writeText(text);setStatus("访问链接已复制。","success");}catch(_){setStatus("复制失败。","error");}
+            try{
+                await navigator.clipboard.writeText(text);
+                setStatus("访问链接已复制。","success");
+            }catch(_){
+                setStatus("复制失败，请手动复制。","error");
+            }
         });
     }
     if($btnOpenView){
@@ -1628,7 +1797,10 @@
     }
     if($btnManageFromResult){
         $btnManageFromResult.addEventListener("click",()=>{
-            if(!state.loggedIn){openAuthModal();return;}
+            if(!state.loggedIn){
+                openAuthModal();
+                return;
+            }
             openUserCenter();
         });
     }
@@ -1639,34 +1811,66 @@
             const text=($content&&$content.value.trim())||"";
             if(!text){setStatus("内容不能为空。","error");return;}
             if(state.customSlugError){setStatus("自定义 URL 不合法。","error");return;}
+
             let slug=null;
             let newSlug=null;
             if(state.mode==="edit"){
                 slug=state.originalSlug;
-                if($customId){const v=$customId.value.trim();if(v&&v!==slug)newSlug=v;}
+                if($customId){
+                    const v=$customId.value.trim();
+                    if(v&&v!==slug)newSlug=v;
+                }
             }else{
-                if(state.loggedIn&&$customId){const v=$customId.value.trim();if(v)slug=v;}
+                if(state.loggedIn&&$customId){
+                    const v=$customId.value.trim();
+                    if(v)slug=v;
+                }
             }
-            const payload={action:state.mode==="edit"?"update":"create",content:text,ttlKey:state.ttlKey,remark:$remark?$remark.value.trim():""};
+
+            const payload={
+                action:state.mode==="edit"?"update":"create",
+                content:text,
+                ttlKey:state.ttlKey,
+                remark:$remark?$remark.value.trim():""
+            };
             if(slug)payload.slug=slug;
             if(newSlug)payload.newSlug=newSlug;
 
             state.isSubmitting=true;
-            if($submitBtn){$submitBtn.disabled=true;$submitBtn.classList.add("btn-disabled");const span=$submitBtn.querySelector(".text");if(span)span.textContent=state.mode==="edit"?"保存中…":"上传中…";}
+            if($submitBtn){
+                $submitBtn.disabled=true;
+                $submitBtn.classList.add("btn-disabled");
+                const span=$submitBtn.querySelector(".text");
+                if(span)span.textContent=state.mode==="edit"?"保存中…":"上传中…";
+            }
             setStatus("正在提交…");
             try{
                 const data=await postJSON(API_BASE,payload);
                 const finalSlug=data.slug||newSlug||slug;
                 if(!finalSlug)throw new Error("返回数据缺少 slug。");
                 showResultLink(finalSlug);
-                setStatus(state.mode==="edit"?"更新成功。":"上传完成。","success");
+
+                if(state.mode==="edit"){
+                    setStatus("更新成功，已回到主页。","success");
+                }else{
+                    setStatus("上传完成，已生成链接。","success");
+                }
                 enterCreateMode(true);
-            }catch(err){setStatus(err.message||"操作失败。","error");}finally{
+            }catch(err){
+                setStatus(err.message||"操作失败。","error");
+            }finally{
                 state.isSubmitting=false;
-                if($submitBtn){$submitBtn.disabled=false;$submitBtn.classList.remove("btn-disabled");const span=$submitBtn.querySelector(".text");if(span)span.textContent=state.mode==="edit"?"更新":"上传";}
+                if($submitBtn){
+                    $submitBtn.disabled=false;
+                    $submitBtn.classList.remove("btn-disabled");
+                    const span=$submitBtn.querySelector(".text");
+                    if(span)span.textContent=state.mode==="edit"?"更新":"上传";
+                }
             }
         });
     }
+
+    if($baseUrlText)$baseUrlText.textContent=VIEW_BASE+"/{id}";
 
     document.addEventListener("keydown",e=>{
         if(e.key==="Escape"){
