@@ -48,7 +48,7 @@ export async function onRequestPost(context) {
 }
 
 /**
- * 解析单行内容：识别协议类型 + 尽量解析出字段
+ * 解析单行：识别协议 + 尽量拆字段
  */
 function parseSingleLine(line) {
   const trimmed = line.trim();
@@ -74,7 +74,6 @@ function parseSingleLine(line) {
     type = "snell";
   }
 
-  // 统一结构
   let parsed = {
     type,
     raw: trimmed,
@@ -89,7 +88,6 @@ function parseSingleLine(line) {
     sni: null,
     host: null,
     path: null,
-    // extra 用来存放原始 JSON / 未知参数
     extra: {},
   };
 
@@ -103,14 +101,13 @@ function parseSingleLine(line) {
     } else if (type === "trojan") {
       parsed = { ...parsed, ...parseTrojan(trimmed) };
     } else {
-      // 其它协议先不细化，后续再扩展
+      // 其他协议后面再扩展
     }
   } catch (e) {
-    // 解析失败就保持基础结构 + raw
+    parsed.extra = parsed.extra || {};
     parsed.extra.error = "parse_error: " + String(e);
   }
 
-  // 名称兜底
   if (!parsed.name) {
     parsed.name = guessNameFromRaw(trimmed) || parsed.type.toUpperCase();
   }
@@ -119,39 +116,144 @@ function parseSingleLine(line) {
 }
 
 /**
- * vmess:// 节点解析：Base64(JSON)
+ * vmess:// 解析：
+ * 支持两种格式：
+ * 1) vmess://Base64(JSON)
+ * 2) vmess://Base64("auto:uuid@host:port" 或 "uuid@host:port")?path=...&remarks=...&obfsParam=...&obfs=http
  */
 function parseVmess(line) {
-  const b64 = line.slice("vmess://".length);
-  const jsonStr = safeAtob(b64);
-  const conf = JSON.parse(jsonStr);
+  // 去掉 vmess:// 前缀
+  const full = line.slice("vmess://".length);
+  let main = full; // Base64 部分
+  let query = "";  // ? 后面的参数
 
-  const tlsFlag =
-    conf.tls === "tls" ||
-    conf.tls === "1" ||
-    conf.security === "tls" ||
-    conf.tls === true;
+  const qIndex = full.indexOf("?");
+  if (qIndex !== -1) {
+    main = full.slice(0, qIndex);
+    query = full.slice(qIndex + 1);
+  }
 
-  return {
-    name: conf.ps || conf.name || null,
-    server: conf.add || conf.addr || null,
-    port: conf.port ? Number(conf.port) : null,
-    uuid: conf.id || conf.uuid || null,
-    cipher: conf.cipher || "auto",
-    network: conf.net || "tcp",
-    tls: tlsFlag,
-    host: conf.host || conf.sni || (conf["ws-opts"] && conf["ws-opts"].headers && conf["ws-opts"].headers.Host) || null,
-    path:
-      conf.path ||
-      (conf["ws-opts"] && conf["ws-opts"].path) ||
-      null,
-    extra: conf,
+  // 先尝试 Base64 解码
+  let decoded = "";
+  try {
+    decoded = safeAtob(main);
+  } catch (e) {
+    decoded = "";
+  }
+
+  const out = {
+    name: null,
+    server: null,
+    port: null,
+    uuid: null,
+    password: null,
+    cipher: null,
+    network: null,
+    tls: null,
+    sni: null,
+    host: null,
+    path: null,
+    extra: {},
   };
+
+  // 情况一：老格式 Base64(JSON)
+  if (decoded.trim().startsWith("{")) {
+    let conf;
+    try {
+      conf = JSON.parse(decoded);
+    } catch (e) {
+      conf = null;
+    }
+
+    if (conf) {
+      const tlsFlag =
+        conf.tls === "tls" ||
+        conf.tls === "1" ||
+        conf.security === "tls" ||
+        conf.tls === true;
+
+      out.name = conf.ps || conf.name || null;
+      out.server = conf.add || conf.addr || null;
+      out.port = conf.port ? Number(conf.port) : null;
+      out.uuid = conf.id || conf.uuid || null;
+      out.cipher = conf.cipher || "auto";
+      out.network = conf.net || "tcp";
+      out.tls = tlsFlag;
+      out.host =
+        conf.host ||
+        conf.sni ||
+        (conf["ws-opts"] &&
+          conf["ws-opts"].headers &&
+          conf["ws-opts"].headers.Host) ||
+        null;
+      out.path =
+        conf.path ||
+        (conf["ws-opts"] && conf["ws-opts"].path) ||
+        null;
+      out.extra = conf;
+    }
+  } else if (decoded) {
+    // 情况二：新格式 Base64("auto:uuid@host:port" 或 "uuid@host:port")
+    // 示例：auto:7039...b4b1a@tw1g.jieqa.xyz:80
+    const atIndex = decoded.lastIndexOf("@");
+    if (atIndex !== -1) {
+      const authPart = decoded.slice(0, atIndex);  // auto:uuid 或 uuid
+      const hostPort = decoded.slice(atIndex + 1); // host:port
+
+      const sp = hostPort.split(":");
+      out.server = sp[0] || null;
+      out.port = sp[1] ? Number(sp[1]) : null;
+
+      const authSegments = authPart.split(":");
+      const maybeUuid = authSegments[authSegments.length - 1];
+      out.uuid = maybeUuid || null;
+      // 前面那段可以看成 cipher（auto）
+      out.cipher = authSegments.length > 1 ? authSegments[0] : "auto";
+    }
+
+    out.extra.rawDecoded = decoded;
+  }
+
+  // 解析 ? 后面的查询参数：path / remarks / obfsParam / obfs / security / tls / sni
+  if (query) {
+    const sp = new URLSearchParams(query);
+    const q = {};
+    sp.forEach((v, k) => {
+      q[k] = v;
+    });
+    out.extra = out.extra || {};
+    out.extra.query = q;
+
+    if (!out.path && q.path) out.path = q.path;
+    if (!out.host && q.obfsParam) out.host = q.obfsParam;
+    // obfs=http / ws 等，尽量映射成 network
+    if (!out.network && q.obfs) {
+      if (q.obfs === "ws") out.network = "ws";
+      else if (q.obfs === "http") out.network = "ws"; // 很多面板 http 实际上是 ws+http 伪装
+    }
+    if (!out.name && q.remarks) {
+      try {
+        out.name = decodeURIComponent(q.remarks);
+      } catch (e) {
+        out.name = q.remarks;
+      }
+    }
+    const sec = q.security || q.tls;
+    if (sec === "tls") out.tls = true;
+  }
+
+  // network 默认值
+  if (!out.network) {
+    if (out.path || out.host) out.network = "ws";
+    else out.network = "tcp";
+  }
+
+  return out;
 }
 
 /**
- * ss:// 节点解析（尽量兼容常见格式）
- * 常见形式：
+ * ss:// 解析
+ * 形式：
  *   ss://Base64(method:password@server:port)#name
  *   ss://method:password@server:port#name
  */
@@ -166,7 +268,6 @@ function parseSS(line) {
   }
 
   let decoded = "";
-  // 如果 body 看起来是 Base64（不包含 "." "@" 等），优先按 Base64 解析
   const maybeB64 = /^[A-Za-z0-9+/_=-]+$/.test(body);
   if (maybeB64) {
     try {
@@ -178,10 +279,8 @@ function parseSS(line) {
     decoded = body;
   }
 
-  // decoded 期待形如 method:password@server:port
   const atIndex = decoded.lastIndexOf("@");
   if (atIndex === -1) {
-    // 结构不标准，就当未知
     return {
       name: tag,
       extra: { rawDecoded: decoded },
@@ -210,9 +309,8 @@ function parseSS(line) {
 }
 
 /**
- * vless://
- * 一般形式：
- *   vless://uuid@server:port?encryption=none&security=tls&host=xxx&path=/xxx#name
+ * vless:// 解析
+ * vless://uuid@server:port?encryption=none&security=tls&type=ws&host=xxx&path=/xxx#name
  */
 function parseVless(line) {
   const url = new URL(line);
@@ -249,9 +347,8 @@ function parseVless(line) {
 }
 
 /**
- * trojan://
- * 一般形式：
- *   trojan://password@server:port?security=tls&sni=xxx#name
+ * trojan:// 解析
+ * trojan://password@server:port?security=tls&sni=xxx#name
  */
 function parseTrojan(line) {
   const url = new URL(line);
@@ -265,7 +362,7 @@ function parseTrojan(line) {
   const password = url.username || url.password || null;
 
   const security = url.searchParams.get("security");
-  const tlsFlag = security === "tls" || true; // trojan 默认走 TLS
+  const tlsFlag = security === "tls" || true; // trojan 一般默认 TLS
 
   const sni =
     url.searchParams.get("sni") ||
@@ -284,10 +381,9 @@ function parseTrojan(line) {
 }
 
 /**
- * Base64 解码（带自动补 pad）
+ * Base64 解码（兼容 URL 安全 & 补齐 =）
  */
 function safeAtob(str) {
-  // URL 安全 Base64 替换
   let s = str.replace(/-/g, "+").replace(/_/g, "/");
   const pad = s.length % 4;
   if (pad === 2) s += "==";
@@ -297,12 +393,16 @@ function safeAtob(str) {
 }
 
 /**
- * 从原始行里猜名字（#后面的部分）
+ * 从原始行里猜名字（# 后面的部分）
  */
 function guessNameFromRaw(raw) {
   const idx = raw.indexOf("#");
   if (idx !== -1) {
-    return decodeURIComponent(raw.slice(idx + 1));
+    try {
+      return decodeURIComponent(raw.slice(idx + 1));
+    } catch (e) {
+      return raw.slice(idx + 1);
+    }
   }
   return null;
 }
