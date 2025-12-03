@@ -285,23 +285,6 @@
         .byte-count{font-size:11px;color:var(--text-sub);}
         .byte-num{color:var(--accent2);font-weight:600;}
 
-        /* 字节 + 节点统计所在行 */
-        .byte-row{
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:8px;
-        }
-        .node-count{
-            font-size:11px;
-            color:var(--text-sub);
-            white-space:nowrap;
-        }
-        .node-count .node-num{
-            color:var(--accent2);
-            font-weight:600;
-        }
-
         /* 原本字节 + 小药丸，现在只用作右侧小药丸样式 */
         .byte-actions{
             display:flex;
@@ -320,12 +303,13 @@
         .btn-primary.btn-disabled{opacity:.5;cursor:not-allowed;box-shadow:none;}
         /* 只改登录弹窗里的 LOG IN 按钮，不影响上传按钮 */
         .auth-panel #btnDoLogin{
-            background: rgb(41, 195, 30);
+            background: rgb(41, 195, 30);              /* 登录按钮底色：纯黑 */
             border-color: rgba(0, 0, 0, 0.42);
-            color:#f9fafb;
+            color:#f9fafb;                   /* 字体颜色保持浅色 */
             box-shadow:0 8px 20px rgba(255, 255, 255, 0);
         }
 
+        /* 可选：悬停时稍微亮一点 */
         .auth-panel #btnDoLogin:hover{
             background: rgba(255, 0, 207, 0.29);
         }
@@ -355,18 +339,6 @@
         body.theme-light .btn-reset{
             background:#111827;
             color:#f9fafb;
-        }
-
-        /* 用户中心订阅按钮：颜色鲜艳 */
-        .btn-subscribe{
-            background:linear-gradient(135deg,#22c55e,#a855f7);
-            color:#f9fafb;
-            border:1px solid rgba(59,130,246,0.5);
-            box-shadow:0 8px 18px rgba(34,197,94,0.5);
-        }
-        .btn-subscribe:hover{
-            box-shadow:0 10px 22px rgba(34,197,94,0.75);
-            opacity:.98;
         }
 
         .action-row{
@@ -546,20 +518,6 @@
             color:var(--text-sub);
             font-size:10px;
         }
-        /* 节点识别胶囊 */
-        .uc-node-tag{
-            display:inline-flex;
-            align-items:center;
-            padding:2px 8px;
-            border-radius:999px;
-            background:rgba(34,197,94,0.16);
-            color:#4ade80;
-            font-size:11px;
-        }
-        body.theme-light .uc-node-tag{
-            background:rgba(34,197,94,0.12);
-        }
-
         .uc-link-row{margin-top:4px;}
         .uc-link-tag{
             display:inline-flex;
@@ -671,43 +629,37 @@
                         </div>
                     </div>
 
-                    <!-- 字节统计 + 节点识别：同一行 -->
+                    <!-- 字节统计：单独一行 -->
                     <div class="field">
-                        <div class="field-inline byte-row">
-                            <span class="byte-count">
-                                已输入 <span class="byte-num" id="byteNum">0</span> 字节
-                            </span>
-                            <span class="node-count" id="nodeCount">
-                                识别到 <span class="node-num">0</span> 条节点
-                            </span>
-                        </div>
+                        <span class="byte-count">
+                            已输入 <span class="byte-num" id="byteNum">0</span> 字节
+                        </span>
                     </div>
-
                     <!-- 导入文本行 + 右侧 Base64 小药丸 -->
                     <div class="field">
                         <div class="field-inline upload-row">
                             <!-- ✅ 只有一个导入按钮 -->
                             <label class="upload-btn" id="uploadBtn" for="fileInput">
-                                <span class="icon-svg">
-                                    <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="20"
-                                            height="20"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="#000000"
-                                            stroke-width="2"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            class="lucide lucide-alarge-small-icon lucide-a-large-small"
-                                            style="fill:none;"
-                                    >
-                                        <path d="m15 16 2.536-7.328a1.02 1.02 0 0 1 1.928 0L22 16" />
-                                        <path d="M15.697 14h5.606" />
-                                        <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
-                                        <path d="M3.304 13h6.392" />
-                                    </svg>
-                                </span>
+    <span class="icon-svg">
+        <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-alarge-small-icon lucide-a-large-small"
+                style="fill:none;"
+        >
+            <path d="m15 16 2.536-7.328a1.02 1.02 0 0 1 1.928 0L22 16" />
+            <path d="M15.697 14h5.606" />
+            <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
+            <path d="M3.304 13h6.392" />
+        </svg>
+    </span>
                                 <span id="uploadBtnText">导入文本</span>
                             </label>
 
@@ -720,76 +672,76 @@
 
                             <!-- ✅ 右侧 Base64 小药丸按钮 -->
                             <div class="byte-actions">
-                                <!-- Base64 编码 -->
+                                <!-- Base64 编码：使用你给的上箭头 SVG -->
                                 <button type="button" class="btn-secondary btn-xs" id="btnBase64Encode">
-                                    <span class="icon-svg">
-                                        <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 24 24"
-                                                width="20"
-                                                height="20"
-                                                fill="none"
-                                                stroke="#000000"
-                                                stroke-width="2"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                class="lucide lucide-aarrow-up-icon lucide-a-arrow-up"
-                                                style="fill:none;"
-                                        >
-                                            <path d="m14 11 4-4 4 4" />
-                                            <path d="M18 16V7" />
-                                            <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
-                                            <path d="M3.304 13h6.392" />
-                                        </svg>
-                                    </span>
+        <span class="icon-svg">
+            <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="#000000"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-aarrow-up-icon lucide-a-arrow-up"
+                    style="fill:none;"
+            >
+                <path d="m14 11 4-4 4 4" />
+                <path d="M18 16V7" />
+                <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
+                <path d="M3.304 13h6.392" />
+            </svg>
+        </span>
                                     Base64 编码
                                 </button>
 
-                                <!-- Base64 解码 -->
+                                <!-- Base64 解码：使用你给的下箭头 SVG -->
                                 <button type="button" class="btn-secondary btn-xs base64-decode-btn" id="btnBase64Decode">
                                     <!-- 默认状态图标 -->
                                     <span class="icon-svg decode-icon-normal">
-                                        <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 24 24"
-                                                width="20"
-                                                height="20"
-                                                fill="none"
-                                                stroke="#000000"
-                                                stroke-width="2"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                class="lucide lucide-aarrow-down-icon lucide-a-arrow-down"
-                                                style="fill:none;"
-                                        >
-                                            <path d="m14 12 4 4 4-4" />
-                                            <path d="M18 16V7" />
-                                            <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
-                                            <path d="M3.304 13h6.392" />
-                                        </svg>
-                                    </span>
+            <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="#000000"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-aarrow-down-icon lucide-a-arrow-down"
+                    style="fill:none;"
+            >
+                <path d="m14 12 4 4 4-4" />
+                <path d="M18 16V7" />
+                <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
+                <path d="M3.304 13h6.392" />
+            </svg>
+        </span>
 
-                                    <!-- 激活状态图标 -->
+                                    <!-- 激活状态图标（点击后高亮，这里先用同一套，需要的话再单独设计一套高亮版） -->
                                     <span class="icon-svg decode-icon-active">
-                                        <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 24 24"
-                                                width="20"
-                                                height="20"
-                                                fill="none"
-                                                stroke="#000000"
-                                                stroke-width="2"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                class="lucide lucide-aarrow-down-icon lucide-a-arrow-down"
-                                                style="fill:none;"
-                                        >
-                                            <path d="m14 12 4 4 4-4" />
-                                            <path d="M18 16V7" />
-                                            <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
-                                            <path d="M3.304 13h6.392" />
-                                        </svg>
-                                    </span>
+            <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="#000000"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-aarrow-down-icon lucide-a-arrow-down"
+                    style="fill:none;"
+            >
+                <path d="m14 12 4 4 4-4" />
+                <path d="M18 16V7" />
+                <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
+                <path d="M3.304 13h6.392" />
+            </svg>
+        </span>
 
                                     Base64 解码
                                 </button>
@@ -942,54 +894,53 @@
 
             <div class="auth-panel-actions">
                 <button type="button" class="btn-secondary btn-xs" id="btnDoRegister">
-                    <span class="icon-svg">
-                        <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="#000000"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="lucide lucide-user-round-plus-icon lucide-user-round-plus"
-                                style="fill:none;"
-                        >
-                            <path d="M2 21a8 8 0 0 1 13.292-6" />
-                            <circle cx="10" cy="8" r="5" />
-                            <path d="M19 16v6" />
-                            <path d="M22 19h-6" />
-                        </svg>
-                    </span>
+    <span class="icon-svg">
+        <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-user-round-plus-icon lucide-user-round-plus"
+                style="fill:none;"
+        >
+            <path d="M2 21a8 8 0 0 1 13.292-6" />
+            <circle cx="10" cy="8" r="5" />
+            <path d="M19 16v6" />
+            <path d="M22 19h-6" />
+        </svg>
+    </span>
                     SIGN UP
-                </button>
-                <button type="submit" class="btn-primary btn-xs" id="btnDoLogin">
-                    <span class="icon-svg">
-                        <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="#000000"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="lucide lucide-scan-face-icon lucide-scan-face"
-                                style="fill:none;"
-                        >
-                            <path d="M3 7V5a2 2 0 0 1 2-2h2" />
-                            <path d="M17 3h2a2 2 0 0 1 2 2v2" />
-                            <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
-                            <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
-                            <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-                            <path d="M9 9h.01" />
-                            <path d="M15 9h.01" />
-                        </svg>
-                    </span>
-                    LOG IN
-                </button>
+                    <button type="submit" class="btn-primary btn-xs" id="btnDoLogin">
+    <span class="icon-svg">
+        <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-scan-face-icon lucide-scan-face"
+                style="fill:none;"
+        >
+            <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+            <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+            <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+            <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+            <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+            <path d="M9 9h.01" />
+            <path d="M15 9h.01" />
+        </svg>
+    </span>
+                        LOG IN
+                    </button>
             </div>
         </form>
         <div class="auth-panel-msg" id="authMsg"></div>
@@ -1091,7 +1042,6 @@
     const $content=qs("content");
     const $byteNum=qs("byteNum");
     const $lineCounter=qs("lineCounter");
-    const $nodeCount=qs("nodeCount");
     const $ttlGroup=qs("ttlGroup");
     const $ttlHint=qs("ttlHint");
     const $form=qs("pasteForm");
@@ -1186,75 +1136,6 @@
         }
     }
 
-    // ===== 节点识别相关（前端只做「大概检测」，和后端逻辑呼应） =====
-    function safeB64DecodeForNodes(str){
-        if(!str) return "";
-        try{
-            let s=str.replace(/-/g,"+").replace(/_/g,"/");
-            const pad=s.length%4;
-            if(pad===2) s+="==";
-            else if(pad===3) s+="=";
-            else if(pad!==0) s+="==";
-            return atob(s);
-        }catch(_){
-            return "";
-        }
-    }
-
-    function detectNodeCount(text){
-        const s=(text||"").trim();
-        if(!s) return 0;
-
-        const uriSet=new Set();
-        const protoPattern="(vmess|vless|trojan|ss|ssr|socks|socks5|socks5-tls|http|https|hysteria|hysteria2|hy2|anytls|tuic|juicity|ssh|wireguard|wg|snell|brook)";
-        const directUriRegex=new RegExp(protoPattern+ "://[^\\s]+","gi");
-
-        let m;
-        while((m=directUriRegex.exec(s))!==null){
-            uriSet.add(m[0]);
-        }
-
-        // 没有显式 URI 时，尝试整段 / 拼接行做 Base64 解码后再找
-        if(uriSet.size===0 && !s.includes("://")){
-            const compact=s.replace(/\s+/g,"");
-            if(/^[A-Za-z0-9+/=_-]+$/.test(compact)){
-                const decoded=safeB64DecodeForNodes(compact);
-                if(decoded){
-                    let m2;
-                    while((m2=directUriRegex.exec(decoded))!==null){
-                        uriSet.add(m2[0]);
-                    }
-                }
-            }
-        }
-
-        // JSON 风格：{"type":"ss"...} / {"type":"vmess"...}
-        const typeRegex=/"type"\s*:\s*"(ss|shadowsocks|vmess|vless|trojan|socks|http|https|hysteria2?|hy2|anytls|tuic|juicity|ssh|wireguard|snell|brook)"/gi;
-        let jsonCount=0;
-        while(typeRegex.exec(s)!==null){jsonCount++;}
-
-        // 文本格式：= ss, host, port...
-        const textPattern=/=\s*(ss|shadowsocks|vmess|vless|trojan|socks5?)[,\s]/gi;
-        let textCount=0;
-        while(textPattern.exec(s)!==null){textCount++;}
-
-        // 简单合并：不同来源相加，有一点点富余也没关系
-        const count = uriSet.size + jsonCount + textCount;
-        return count;
-    }
-
-    function updateNodeCountUI(text){
-        if(!$nodeCount) return;
-        const numSpan = $nodeCount.querySelector(".node-num");
-        const v = (text || "").trim();
-        if(!v){
-            if(numSpan) numSpan.textContent = "0";
-            return;
-        }
-        const n = detectNodeCount(v);
-        if(numSpan) numSpan.textContent = String(n);
-    }
-
     async function postJSON(url,body){
         const res=await fetch(url,{
             method:"POST",
@@ -1281,9 +1162,6 @@
             const lines=v ? v.split(/\r\n|\r|\n/).length : 0;
             $lineCounter.textContent = lines+" 行";
         }
-
-        // 同步更新节点识别数量
-        updateNodeCountUI($content.value);
     }
     if($content){
         updateByteCount();
@@ -1695,19 +1573,12 @@
                 const viewUrl=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
                 const remain=calcRemainDays(expires);
 
-                // 前端节点识别：根据内容判断是不是节点 Paste
-                const nodeCount = detectNodeCount(d.content || "");
-                const nodeInfoHtml = nodeCount > 0
-                    ? `<span class="uc-node-tag">识别到: ${nodeCount} 条节点</span>`
-                    : "";
-
                 const row=document.createElement("div");
                 row.className="uc-item";
                 row.innerHTML=`
                     <div class="uc-item-top">
                         <div class="uc-item-title">
                             <span class="uc-remark-tag">${escapeHTML(remark)}</span>
-                            ${nodeInfoHtml}
                             <span class="uc-slug-tag">${escapeHTML(slug)}</span>
                         </div>
                         <div class="uc-item-meta"></div>
@@ -1835,45 +1706,6 @@
                         setStatus(err.message||"删除失败。","error");
                     }
                 });
-
-                // 如果是节点内容，追加一个鲜艳的订阅按钮：复制 ?sub=Auto
-                if (nodeCount > 0) {
-                    const btnSub=document.createElement("button");
-                    btnSub.type="button";
-                    btnSub.className="btn-subscribe btn-xs";
-                    btnSub.innerHTML = `
-    <span class="icon-svg">
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-rss-icon lucide-rss"
-            style="fill:none;"
-        >
-            <path d="M4 11a9 9 0 0 1 9 9" />
-            <path d="M4 4a16 16 0 0 1 16 16" />
-            <circle cx="5" cy="19" r="1" />
-        </svg>
-    </span>
-    订阅
-`;
-                    btnSub.addEventListener("click", async ()=>{
-                        const subUrl = `${VIEW_BASE}/${encodeURIComponent(slug)}?sub=Auto`;
-                        try{
-                            await navigator.clipboard.writeText(subUrl);
-                            setStatus("订阅链接已复制（Auto）。","success");
-                        }catch(_){
-                            setStatus("复制订阅链接失败，请手动复制。","error");
-                        }
-                    });
-                    act.appendChild(btnSub);
-                }
 
                 act.appendChild(btnEdit);
                 act.appendChild(btnCopy);
