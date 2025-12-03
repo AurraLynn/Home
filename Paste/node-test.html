@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Node Parser · Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        :root {
+            --bg-dark: #060712;
+            --bg-card: rgba(15, 16, 35, 0.9);
+            --accent: #f7c14f;
+            --accent-soft: rgba(247, 193, 79, 0.15);
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --danger: #f97373;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background:
+                radial-gradient(circle at 0% 0%, #1f2933 0, transparent 55%),
+                radial-gradient(circle at 100% 100%, #111827 0, transparent 55%),
+                #020617;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+            color: var(--text-main);
+            padding: 24px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 960px;
+            background: var(--bg-card);
+            border-radius: 28px;
+            border: 1px solid var(--border-subtle);
+            box-shadow:
+                0 24px 60px rgba(0, 0, 0, 0.85),
+                0 0 0 1px rgba(255, 255, 255, 0.02);
+            padding: 24px;
+            backdrop-filter: blur(18px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 14px;
+        }
+
+        .title-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 0 0, #fbbf24 0, transparent 45%);
+            border: 1px solid rgba(248, 250, 252, 0.06);
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--accent);
+            box-shadow: 0 0 12px rgba(247, 193, 79, 0.9);
+        }
+
+        .title-main {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .title-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .status-pill {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(248, 250, 252, 0.06);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: #10b981;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.9);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+            gap: 18px;
+            margin-top: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .card {
+                padding: 18px;
+            }
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .left-panel, .right-panel {
+            border-radius: 22px;
+            border: 1px solid var(--border-subtle);
+            background: radial-gradient(circle at 0 0, rgba(148, 163, 184, 0.08), transparent 50%);
+            padding: 14px;
+        }
+
+        .panel-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 180px;
+            max-height: 420px;
+            resize: vertical;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-main);
+            font-size: 13px;
+            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            padding: 10px 11px;
+            outline: none;
+            caret-color: var(--accent);
+        }
+
+        textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px rgba(247, 193, 79, 0.4);
+        }
+
+        .hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        button {
+            border-radius: 999px;
+            border: 1px solid rgba(156, 163, 175, 0.5);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-main);
+            font-size: 12px;
+            padding: 6px 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            outline: none;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease, background 0.1s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.65);
+            border-color: var(--accent);
+            background: radial-gradient(circle at 0 0, var(--accent-soft), rgba(15, 23, 42, 0.98));
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        .btn-primary {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, rgba(247, 193, 79, 0.18), rgba(15, 23, 42, 0.98));
+        }
+
+        .btn-primary-icon {
+            font-size: 13px;
+        }
+
+        pre {
+            width: 100%;
+            min-height: 180px;
+            max-height: 420px;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: rgba(3, 7, 18, 0.95);
+            color: var(--text-main);
+            font-size: 12px;
+            padding: 10px 11px;
+            overflow: auto;
+            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .status-bar {
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .status-highlight {
+            color: var(--accent);
+        }
+
+        .status-error {
+            color: var(--danger);
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            color: var(--text-muted);
+        }
+
+        .tag-strong {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="card-header">
+        <div class="title-left">
+            <div class="badge">
+                <span class="badge-dot"></span>
+                <span>Experimental · Internal</span>
+            </div>
+            <div class="title-main">Node Parser · Test Bench</div>
+            <div class="title-sub">Paste raw content here and ping <code>/api/node-parse</code> to see what it detects.</div>
+        </div>
+        <div class="status-pill" id="status-pill">
+            <span class="status-dot"></span>
+            <span id="status-text">Ready · No request yet</span>
+        </div>
+    </div>
+
+    <div class="layout">
+        <!-- 左侧：输入 -->
+        <div class="left-panel">
+            <div class="panel-title">
+                <span>INPUT · RAW CONTENT</span>
+                <span id="byte-counter">0 bytes</span>
+            </div>
+
+            <textarea id="node-input" placeholder="在这里粘贴你的节点 / 文本 / 脚本...
+例如：
+vmess://xxxx
+ss://xxxx
+vless://xxxx"></textarea>
+
+            <div class="hint">
+                · 支持多行内容自动识别（ss / vmess / vless / trojan / hysteria / hysteria2 / tuic / snell / 其它）。<br>
+                · 这是测试页，后续会把逻辑对接到 Pastebin 的主页面。
+            </div>
+
+            <div class="controls">
+                <button type="button" id="btn-fill-demo">
+                    <span>填入示例</span>
+                </button>
+                <button type="button" class="btn-primary" id="btn-parse">
+                    <span class="btn-primary-icon">▶</span>
+                    <span>发送到 /api/node-parse</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 右侧：结果 -->
+        <div class="right-panel">
+            <div class="panel-title">
+                <span>OUTPUT · JSON RESULT</span>
+                <span id="line-counter">0 lines</span>
+            </div>
+
+            <pre id="result-area">{}</pre>
+
+            <div class="status-bar">
+                <div id="status-extra">Waiting for request...</div>
+                <div class="tag-list" id="tag-list">
+                    <!-- 动态填充识别统计 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 前端测试页面逻辑：调用 /api/node-parse 并展示结果
+(function () {
+    const inputEl = document.getElementById('node-input');
+    const resultEl = document.getElementById('result-area');
+    const byteCounter = document.getElementById('byte-counter');
+    const lineCounter = document.getElementById('line-counter');
+    const statusText = document.getElementById('status-text');
+    const statusExtra = document.getElementById('status-extra');
+    const statusPill = document.getElementById('status-pill');
+    const tagList = document.getElementById('tag-list');
+    const btnParse = document.getElementById('btn-parse');
+    const btnFillDemo = document.getElementById('btn-fill-demo');
+
+    function updateCounters() {
+        const text = inputEl.value || '';
+        // 简单按 UTF-8 估算字节数
+        let bytes = 0;
+        for (let i = 0; i < text.length; i++) {
+            const code = text.charCodeAt(i);
+            if (code <= 0x7f) bytes += 1;
+            else if (code <= 0x7ff) bytes += 2;
+            else if (code <= 0xffff) bytes += 3;
+            else bytes += 4;
+        }
+        byteCounter.textContent = bytes + ' bytes';
+
+        const lines = text.replace(/\r\n/g, '\n').split('\n').filter(l => l.trim().length > 0);
+        lineCounter.textContent = lines.length + ' lines';
+    }
+
+    inputEl.addEventListener('input', updateCounters);
+    updateCounters();
+
+    btnFillDemo.addEventListener('click', () => {
+        const demo = [
+            'vmess://xxxxxxxxxxxxxxxxxxxxxxxx',
+            'ss://yyyyyyyyyyyyyyyyyyyyyyyyyy',
+            'vless://zzzzzzzzzzzzzzzzzzzzzzzz',
+            'trojan://aaaaaaaaaaaaaaaaaaaaaaa',
+            'hysteria2://bbbbbbbbbbbbbbbbbbbb',
+            'tuic://cccccccccccccccccccccc',
+            'hello world',
+            'just some script() {}'
+        ].join('\n');
+        inputEl.value = demo;
+        updateCounters();
+    });
+
+    async function parseNodes() {
+        const raw = inputEl.value || '';
+        if (!raw.trim()) {
+            statusExtra.textContent = '请输入一些内容再测试。';
+            statusExtra.classList.remove('status-error');
+            return;
+        }
+
+        statusText.textContent = 'Parsing...';
+        statusExtra.textContent = 'Sending POST /api/node-parse';
+        statusExtra.classList.remove('status-error');
+        statusPill.style.opacity = '0.9';
+
+        try {
+            const res = await fetch('/api/node-parse', {
+                method: 'POST',
+                body: raw,
+            });
+
+            const text = await res.text();
+            let data = null;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                data = null;
+            }
+
+            if (!res.ok || !data || data.ok === false) {
+                statusText.textContent = 'Error · ' + res.status;
+                statusExtra.textContent = (data && data.error) ? data.error : '接口返回异常或解析失败。';
+                statusExtra.classList.add('status-error');
+                resultEl.textContent = text || '接口错误，无返回内容。';
+                tagList.innerHTML = '';
+                return;
+            }
+
+            statusText.textContent = 'OK · Parsed';
+            statusExtra.textContent = 'Detected ' + data.totalLines + ' lines. See summary tags below.';
+            statusExtra.classList.remove('status-error');
+
+            resultEl.textContent = JSON.stringify(data, null, 2);
+
+            // 填充标签统计
+            tagList.innerHTML = '';
+            const detected = data.detected || {};
+            const keys = Object.keys(detected);
+            let strongCount = 0;
+
+            for (const k of keys) {
+                const count = detected[k] || 0;
+                if (count <= 0) continue;
+
+                const span = document.createElement('span');
+                span.className = 'tag';
+                span.textContent = k.toUpperCase() + ' · ' + count;
+
+                if (k !== 'others') {
+                    span.classList.add('tag-strong');
+                    strongCount++;
+                }
+
+                tagList.appendChild(span);
+            }
+
+            if (strongCount === 0) {
+                const span = document.createElement('span');
+                span.className = 'tag';
+                span.textContent = 'No proxy nodes detected';
+                tagList.appendChild(span);
+            }
+
+        } catch (err) {
+            console.error(err);
+            statusText.textContent = 'Network Error';
+            statusExtra.textContent = '无法请求 /api/node-parse，请检查 Functions 是否部署成功。';
+            statusExtra.classList.add('status-error');
+        }
+    }
+
+    btnParse.addEventListener('click', parseNodes);
+})();
+</script>
+</body>
+</html>
