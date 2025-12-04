@@ -7,7 +7,7 @@
 // 支持协议（解析阶段）：
 // - ss
 // - vmess（JSON base64 + "auto:uuid@host:port" base64 两种）
-// - vless（标准 URL + base64 userinfo + 整个 host 被 base64）
+// - vless（标准 URL + 部分机场用 base64 包当前 userinfo 的变种）
 // - trojan
 //
 // 重点字段：
@@ -26,7 +26,7 @@
 // - shadowrocket
 // - quantumultx
 // - sing-box
-// - v2ray（多行 URI → 再整体 Base64）
+// - v2ray（★ 现在直接用原始节点 raw → 再整体 UTF-8 Base64，不再重构）
 // 未识别 → 默认 v2ray
 
 export async function onRequestPost(context) {
@@ -125,7 +125,7 @@ export async function onRequestPost(context) {
  *   plugin: '',
  *   obfs: '',
  *   obfsHost: '',
- *   raw: '原始行'
+ *   raw: '原始行（尽量原封不动保存，给 v2ray 用）'
  * }
  */
 
@@ -137,6 +137,7 @@ function parseNodesFromText(text) {
   if (!raw.includes("://") && isLikelyBase64(raw)) {
     const decoded = safeBase64Decode(raw);
     if (decoded && decoded.includes("://")) {
+      // 这里返回的是 decode 后的内容，每一行仍然会被保存到 node.raw
       return parseNodesFromText(decoded);
     }
   }
@@ -156,6 +157,7 @@ function parseNodesFromText(text) {
       if (s.includes("://")) {
         const node = parseSingleUri(s);
         if (node) {
+          // ★ 保存原始节点串，后面 v2ray 订阅直接用
           node.raw = s;
           nodes.push(node);
         }
@@ -168,7 +170,7 @@ function parseNodesFromText(text) {
         if (decoded && decoded.includes("://")) {
           const subNodes = parseNodesFromText(decoded);
           subNodes.forEach((n) => {
-            if (!n.raw) n.raw = s;
+            if (!n.raw) n.raw = decoded; // 极端情况兜底
             nodes.push(n);
           });
           continue;
@@ -275,6 +277,8 @@ function parseShadowsocks(uri) {
     plugin: "",
     obfs: "",
     obfsHost: "",
+    path: "",
+    host: "",
   };
 
   const plugin = q.get("plugin");
@@ -427,18 +431,11 @@ function parseVlessOrTrojan(uri, type) {
   const q = url.searchParams;
 
   let userDecoded = "";
-  let hostDecoded = "";
-  let portDecoded = "";
 
-  // 优先处理 username 里的 base64
+  // 一些机场会把 "none:uuid@host:port" 整个 base64 放在 username 里
   if (url.username && isLikelyBase64(url.username)) {
     const d = safeBase64Decode(url.username);
     if (d) userDecoded = d;
-  } else if (!url.username && url.hostname && isLikelyBase64(url.hostname)) {
-    const d = safeBase64Decode(url.hostname);
-    if (d) {
-      userDecoded = d;
-    }
   }
 
   let uuid = "";
@@ -448,7 +445,6 @@ function parseVlessOrTrojan(uri, type) {
 
   if (userDecoded) {
     if (userDecoded.includes("@")) {
-      // none:uuid@host:port
       const [userinfo, addr] = userDecoded.split("@");
       const uparts = userinfo.split(":");
       if (type === "vless") {
@@ -458,10 +454,10 @@ function parseVlessOrTrojan(uri, type) {
       }
       if (addr.includes(":")) {
         const [h, p] = addr.split(":");
-        hostDecoded = h;
-        portDecoded = p;
+        server = h;
+        port = p;
       } else {
-        hostDecoded = addr;
+        server = addr;
       }
     } else {
       const uparts = userDecoded.split(":");
@@ -480,12 +476,6 @@ function parseVlessOrTrojan(uri, type) {
     password = url.username || "";
   }
 
-  if (hostDecoded) {
-    server = hostDecoded;
-  }
-  if (!port && portDecoded) {
-    port = portDecoded;
-  }
   const portNum = Number(port || 0) || 443;
 
   const remarks = q.get("remarks");
@@ -945,12 +935,20 @@ function toSingBox(nodes) {
 }
 
 /* ----------------------------- V2Ray 订阅输出 ----------------------------- */
-
+/**
+ * ★ 关键点：
+ * 现在对 client=v2ray 时：
+ * - 不再重构 URI（避免丢混淆 / xtls / pbk / tfo 等）
+ * - 直接用 node.raw（你原始上传的节点），一行一条
+ * - 最后整体做 UTF-8 Base64
+ */
 function toV2RaySubscription(nodes) {
   const lines = [];
   for (const n of nodes) {
-    if (n.type === "ss") {
-      // ss://base64(method:password)@server:port#name
+    if (n.raw && n.raw.includes("://")) {
+      lines.push(n.raw.trim());
+    } else if (n.type === "ss") {
+      // 极端兜底：实在没有 raw 再重构一条基本 ss
       const userinfo = `${n.cipher}:${n.password}`;
       const b64User = encodeBase64Utf8(userinfo);
       const name = encodeURIComponent(n.name || `${n.server}:${n.port}`);
@@ -1001,8 +999,6 @@ function toV2RaySubscription(nodes) {
       const query = params.toString();
       const uri = `trojan://${n.password}@${n.server}:${n.port}?${query}#${name}`;
       lines.push(uri);
-    } else if (n.raw) {
-      lines.push(n.raw);
     }
   }
 
