@@ -14,10 +14,13 @@ export async function onRequestPost(context) {
   }
 
   const raw = (text || "").replace(/\r\n/g, "\n");
-  const lines = raw
+  const rawLines = raw
     .split("\n")
     .map((l) => l.trim())
     .filter((l) => l.length > 0);
+
+  // 先展开可能是 Base64 的订阅内容（例如：c3M6Ly9... 这种）
+  const lines = expandBase64Lines(rawLines);
 
   const stats = {
     ss: 0,
@@ -45,6 +48,48 @@ export async function onRequestPost(context) {
     detected: stats,
     nodes,
   });
+}
+
+/**
+ * 展开纯 Base64 订阅（例如：c3M6Ly9ZV1Z6... -> 里面其实是 ss://...）
+ */
+function expandBase64Lines(lines) {
+  const result = [];
+  for (const l of lines) {
+    const s = l.trim();
+    if (!isBase64Like(s)) {
+      result.push(s);
+      continue;
+    }
+
+    try {
+      const decoded = safeAtob(s);
+      // 如果解出来里面含有 "://", 基本可以判断是订阅内容
+      if (decoded.includes("://")) {
+        decoded
+          .replace(/\r\n/g, "\n")
+          .split("\n")
+          .map((x) => x.trim())
+          .filter((x) => x.length > 0)
+          .forEach((x) => result.push(x));
+        continue;
+      } else {
+        // 解出来不是节点就按原样保留
+        result.push(s);
+      }
+    } catch (e) {
+      // 解码失败，按原样保留
+      result.push(s);
+    }
+  }
+  return result;
+}
+
+function isBase64Like(str) {
+  if (!str || str.length < 8) return false;
+  if (/[^A-Za-z0-9+/=_-]/.test(str)) return false;
+  // 很短的一串一般不是订阅
+  return true;
 }
 
 /**
@@ -101,7 +146,7 @@ function parseSingleLine(line) {
     } else if (type === "trojan") {
       parsed = { ...parsed, ...parseTrojan(trimmed) };
     } else {
-      // 其他协议后面再扩展
+      // 其他协议先只记录 raw + type，后面有需要再精细解析
     }
   } catch (e) {
     parsed.extra = parsed.extra || {};
@@ -122,7 +167,6 @@ function parseSingleLine(line) {
  * 2) vmess://Base64("auto:uuid@host:port" 或 "uuid@host:port")?path=...&remarks=...&obfsParam=...&obfs=http
  */
 function parseVmess(line) {
-  // 去掉 vmess:// 前缀
   const full = line.slice("vmess://".length);
   let main = full; // Base64 部分
   let query = "";  // ? 后面的参数
@@ -133,7 +177,6 @@ function parseVmess(line) {
     query = full.slice(qIndex + 1);
   }
 
-  // 先尝试 Base64 解码
   let decoded = "";
   try {
     decoded = safeAtob(main);
@@ -194,7 +237,6 @@ function parseVmess(line) {
     }
   } else if (decoded) {
     // 情况二：新格式 Base64("auto:uuid@host:port" 或 "uuid@host:port")
-    // 示例：auto:7039...b4b1a@tw1g.jieqa.xyz:80
     const atIndex = decoded.lastIndexOf("@");
     if (atIndex !== -1) {
       const authPart = decoded.slice(0, atIndex);  // auto:uuid 或 uuid
@@ -207,7 +249,6 @@ function parseVmess(line) {
       const authSegments = authPart.split(":");
       const maybeUuid = authSegments[authSegments.length - 1];
       out.uuid = maybeUuid || null;
-      // 前面那段可以看成 cipher（auto）
       out.cipher = authSegments.length > 1 ? authSegments[0] : "auto";
     }
 
@@ -226,10 +267,9 @@ function parseVmess(line) {
 
     if (!out.path && q.path) out.path = q.path;
     if (!out.host && q.obfsParam) out.host = q.obfsParam;
-    // obfs=http / ws 等，尽量映射成 network
     if (!out.network && q.obfs) {
       if (q.obfs === "ws") out.network = "ws";
-      else if (q.obfs === "http") out.network = "ws"; // 很多面板 http 实际上是 ws+http 伪装
+      else if (q.obfs === "http") out.network = "ws";
     }
     if (!out.name && q.remarks) {
       try {
@@ -242,7 +282,6 @@ function parseVmess(line) {
     if (sec === "tls") out.tls = true;
   }
 
-  // network 默认值
   if (!out.network) {
     if (out.path || out.host) out.network = "ws";
     else out.network = "tcp";
@@ -310,7 +349,6 @@ function parseSS(line) {
 
 /**
  * vless:// 解析
- * vless://uuid@server:port?encryption=none&security=tls&type=ws&host=xxx&path=/xxx#name
  */
 function parseVless(line) {
   const url = new URL(line);
@@ -348,7 +386,6 @@ function parseVless(line) {
 
 /**
  * trojan:// 解析
- * trojan://password@server:port?security=tls&sni=xxx#name
  */
 function parseTrojan(line) {
   const url = new URL(line);
