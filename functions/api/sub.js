@@ -113,6 +113,9 @@ function extractContentFromRecord(stored) {
 function detectClientFromUA(ua) {
   const u = (ua || "").toLowerCase();
 
+  // 👇 新增这一行
+  if (u.includes("flyclash")) return "clash";
+
   if (u.includes("clash") || u.includes("mihomo")) return "clash";
   if (u.includes("stash")) return "stash";
   if (u.includes("surge")) return "surge";
