@@ -1,28 +1,28 @@
 // functions/api/ua.js
-// 用来抓取客户端的 User-Agent，返回一个合法的 Clash 配置
-// 节点名称里就写入 UA，方便在 APP 里直接看到
+// 用来抓取客户端的 User-Agent，返回一份极简 Clash 配置
+// 节点名称里写入 UA，方便在 APP 里直接看到
 
 export async function onRequestGet(context) {
   const { request } = context;
-  const ua = (request.headers.get("user-agent") || "unknown-UA").replace(/"/g, '\\"');
+  const uaRaw = request.headers.get("user-agent") || "unknown-UA";
 
-  const yaml = `port: 0
-socks-port: 0
+  // Clash 的 name 里不能有换行/双引号，简单清理一下
+  const uaSafe = uaRaw.replace(/"/g, '\\"').replace(/\s+/g, " ");
+
+  const yaml = `port: 7890
 mode: Rule
+log-level: info
 allow-lan: true
-log-level: silent
 
 proxies:
-  - name: "UA: ${ua}"
-    type: http
-    server: 127.0.0.1
-    port: 0
+  - name: "UA: ${uaSafe}"
+    type: direct
 
 proxy-groups:
   - name: "UA-GROUP"
     type: select
     proxies:
-      - "UA: ${ua}"
+      - "UA: ${uaSafe}"
 
 rules:
   - MATCH,UA-GROUP
