@@ -6,28 +6,27 @@
 //
 // 支持协议（解析阶段）：
 // - ss
-// - vmess
-// - vless
+// - vmess（传统 JSON base64 + “auto:uuid@host:port” base64 两种）
+// - vless（标准 URL + base64 userinfo + 整个 host 是 base64）
 // - trojan
 //
-// 支持重点字段：
+// 重点字段：
 // - udp / tfo
-// - tls / security / sni / alpn
-// - network / path / host （ws）
-// - ss 混淆：obfs-local / v2ray-plugin
+// - tls / security / tls=1 / allowInsecure=1 / sni(peer) / alpn
+// - network / path / host （ws + obfs=websocket）
+// - ss 混淆：obfs-local / v2ray-plugin 的 obfs / obfs-host / host / path / tls
 //
-// 支持客户端（client 参数）：
-// - clash        → proxies: YAML（proxy 列表）
+// 支持 client：
+// - clash
 // - surge
-// - stash
-// - mihomo       → 视作 stash-like（JSON）
+// - stash / mihomo（输出 JSON 行）
 // - egern
 // - surfboard
 // - loon
 // - shadowrocket
 // - quantumultx
 // - sing-box
-// - v2ray        → Base64 订阅（多行 URI 再整体 Base64）
+// - v2ray（多行 URI → 再整体 Base64）
 // 其它 / 未识别 → 同 v2ray
 
 export async function onRequestPost(context) {
@@ -134,25 +133,21 @@ function parseNodesFromText(text) {
   const nodes = [];
   const raw = text.trim();
 
-  // 情况 1：整体看起来像 Base64 订阅：没有 "://", 且大部分是 Base64 字符
+  // 情况 1：整体像 Base64 订阅：没有 "://", 且字符集符合 Base64
   if (!raw.includes("://") && isLikelyBase64(raw)) {
     const decoded = safeBase64Decode(raw);
     if (decoded && decoded.includes("://")) {
-      // 递归再解析一次
       return parseNodesFromText(decoded);
     }
   }
 
-  // 情况 2：按行解析，每行可能是：
-  // - 单个 URI
-  // - Base64 的 URI
+  // 情况 2：按行处理
   const lines = raw.split(/\r?\n/);
   for (let line of lines) {
     line = line.trim();
     if (!line) continue;
     if (line.startsWith("#") || line.startsWith("//")) continue;
 
-    // 行内可能有多个 URI（极少数情况），简单按空格切一下
     const parts = line.split(/\s+/);
     for (let part of parts) {
       const s = part.trim();
@@ -167,7 +162,7 @@ function parseNodesFromText(text) {
         continue;
       }
 
-      // 不含 "://": 尝试当作 Base64 的单个 URI
+      // 整行没有协议头：尝试 Base64 单个节点
       if (isLikelyBase64(s)) {
         const decoded = safeBase64Decode(s);
         if (decoded && decoded.includes("://")) {
@@ -179,8 +174,6 @@ function parseNodesFromText(text) {
           continue;
         }
       }
-
-      // 其它情况先忽略（脚本 / 普通文本）
     }
   }
 
@@ -191,8 +184,7 @@ function isLikelyBase64(str) {
   const s = str.replace(/\s+/g, "");
   if (!s) return false;
   if (!/^[A-Za-z0-9+/=]+$/.test(s)) return false;
-  // 太短的基本不是订阅
-  return s.length >= 16;
+  return s.length >= 8;
 }
 
 function safeBase64Decode(str) {
@@ -219,7 +211,6 @@ function parseSingleUri(uri) {
       return parseShadowsocks(uri);
     }
   } catch (e) {
-    // 忽略错误行
     return null;
   }
   return null;
@@ -228,7 +219,6 @@ function parseSingleUri(uri) {
 /* ---------------------- Shadowsocks 解析（含混淆） ---------------------- */
 
 function parseShadowsocks(uri) {
-  // 可能是：
   // 1) ss://base64(method:password)@server:port#name
   // 2) ss://method:password@server:port#name
   let withoutScheme = uri.replace(/^ss:\/\//, "");
@@ -239,7 +229,6 @@ function parseShadowsocks(uri) {
     withoutScheme = withoutScheme.slice(0, hashIndex);
   }
 
-  // 检测是否含有 @
   let userinfo = "";
   let serverPart = "";
 
@@ -247,26 +236,26 @@ function parseShadowsocks(uri) {
     [userinfo, serverPart] = withoutScheme.split("@");
   } else {
     // 整体是 base64(method:password@server:port)
-    const decoded = safeBase64Decode(withoutScheme);
-    if (decoded && decoded.includes("@")) {
-      [userinfo, serverPart] = decoded.split("@");
+    const decodedWhole = safeBase64Decode(withoutScheme);
+    if (decodedWhole && decodedWhole.includes("@")) {
+      [userinfo, serverPart] = decodedWhole.split("@");
     } else {
       throw new Error("invalid ss uri");
     }
   }
 
-  // userinfo 可能是 base64(method:password)
+  // userinfo 可能还是 base64(method:password)
   if (!userinfo.includes(":")) {
-    const decoded = safeBase64Decode(userinfo);
-    if (decoded && decoded.includes(":")) {
-      userinfo = decoded;
+    const decodedUser = safeBase64Decode(userinfo);
+    if (decodedUser && decodedUser.includes(":")) {
+      userinfo = decodedUser;
     }
   }
 
-  const [method, password] = userinfo.split(":");
+  const [method, passwordRaw] = userinfo.split(":");
+  const password = passwordRaw || "";
   const [server, portStrAndQuery] = serverPart.split(":");
   const [portStr, queryStr] = portStrAndQuery.split("?");
-
   const port = Number(portStr);
   const q = new URLSearchParams(queryStr || "");
 
@@ -297,7 +286,7 @@ function parseShadowsocks(uri) {
       const modeMatch = /obfs=([^;]+)/.exec(plugin);
       if (modeMatch) node.obfs = modeMatch[1]; // http / tls
       const hostMatch = /obfs-host=([^;]+)/.exec(plugin);
-      if (hostMatch) node.obfsHost = hostMatch[1];
+      if (hostMatch) node.obfsHost = decodeURIComponent(hostMatch[1]);
       if (node.obfs === "tls") {
         node.tls = true;
       }
@@ -320,79 +309,257 @@ function parseShadowsocks(uri) {
 }
 
 /* ---------------------------- VMess 解析 ---------------------------- */
-
+/**
+ * 支持两种：
+ * 1) vmess://base64(JSON)
+ * 2) vmess://base64("auto:uuid@host:port")?remarks=...&tfo=1...
+ */
 function parseVmess(uri) {
-  const b64 = uri.replace(/^vmess:\/\//, "");
-  const jsonStr = safeBase64Decode(b64);
-  if (!jsonStr) throw new Error("invalid vmess base64");
+  const withoutScheme = uri.replace(/^vmess:\/\//, "");
+  const [b64Part, queryStr] = withoutScheme.split("?");
+  const q = new URLSearchParams(queryStr || "");
 
-  const cfg = JSON.parse(jsonStr);
+  const decoded = safeBase64Decode(b64Part);
+  if (!decoded) {
+    throw new Error("invalid vmess base64");
+  }
+
+  const tfo = q.get("tfo") === "1" || q.get("tfo") === "true";
+  const udp = q.get("udp") === "1" || q.get("udp") === "true";
+
+  // 情况 A：JSON 格式
+  if (decoded.trim().startsWith("{")) {
+    const cfg = JSON.parse(decoded);
+
+    const node = {
+      type: "vmess",
+      name:
+        q.get("remarks") ||
+        cfg.ps ||
+        `${cfg.add}:${cfg.port}`,
+      server: cfg.add,
+      port: Number(cfg.port),
+      uuid: cfg.id,
+      cipher: cfg.scy || cfg.cipher || "auto",
+      network: (cfg.net || "tcp").toLowerCase(),
+      udp: udp || !!cfg.udp,
+      tfo: tfo || !!cfg.tfo,
+      tls: (cfg.tls || "").toLowerCase() === "tls",
+      sni: cfg.sni || cfg.host || "",
+      alpn: [],
+      path: "",
+      host: "",
+    };
+
+    if (node.network === "ws") {
+      node.path = cfg.path || "/";
+      node.host = cfg.host || node.server;
+    }
+
+    return node;
+  }
+
+  // 情况 B：auto:uuid@host:port
+  if (!decoded.includes("@")) {
+    throw new Error("invalid vmess format");
+  }
+
+  const [userinfo, addr] = decoded.split("@");
+  let cipher = "auto";
+  let uuid = userinfo;
+  if (userinfo.includes(":")) {
+    const parts = userinfo.split(":");
+    cipher = parts[0] || "auto";
+    uuid = parts[1] || "";
+  }
+
+  let host = "";
+  let port = 443;
+  if (addr.includes(":")) {
+    const [h, p] = addr.split(":");
+    host = h;
+    port = Number(p);
+  } else {
+    host = addr;
+  }
+
+  const remarks = q.get("remarks");
+  const name = decodeURIComponent(remarks || "") || `${host}:${port}`;
+
+  const tlsParam = (q.get("tls") || "").toLowerCase();
+  const tls =
+    tlsParam === "1" ||
+    tlsParam === "true" ||
+    tlsParam === "tls";
+
+  let network = (q.get("net") || q.get("type") || "").toLowerCase();
+  const obfs = (q.get("obfs") || "").toLowerCase();
+  if (!network && obfs === "websocket") {
+    network = "ws";
+  }
+  if (!network) network = "tcp";
+
+  const sni = q.get("sni") || q.get("peer") || "";
+  const path = q.get("path") || "";
+  const hostHeader = q.get("host") || q.get("obfsParam") || "";
 
   const node = {
     type: "vmess",
-    name: cfg.ps || `${cfg.add}:${cfg.port}`,
-    server: cfg.add,
-    port: Number(cfg.port),
-    uuid: cfg.id,
-    cipher: cfg.scy || cfg.cipher || "auto",
-    network: (cfg.net || "tcp").toLowerCase(),
-    udp: !!cfg.udp,
-    tfo: !!cfg.tfo,
-    tls: (cfg.tls || "").toLowerCase() === "tls",
-    sni: cfg.sni || cfg.host || "",
+    name,
+    server: host,
+    port,
+    uuid,
+    cipher,
+    network,
+    udp,
+    tfo,
+    tls,
+    sni,
     alpn: [],
-    path: "",
-    host: "",
+    path,
+    host: hostHeader,
   };
-
-  if (node.network === "ws") {
-    node.path = cfg.path || "/";
-    node.host = cfg.host || node.server;
-  }
 
   return node;
 }
 
-/* ------------------- VLESS / TROJAN 解析（URL + Query） ------------------- */
+/* ------------------- VLESS / TROJAN 解析（URL + Base64） ------------------- */
 
 function parseVlessOrTrojan(uri, type) {
   const url = new URL(uri);
   const q = url.searchParams;
 
-  const name =
-    decodeURIComponent(url.hash?.slice(1) || "") ||
-    url.username ||
-    url.hostname;
+  // 尝试从 username 或 hostname 里解 base64（支持 none:uuid@host:port 这种）
+  let userDecoded = "";
+  let hostDecoded = "";
+  let portDecoded = "";
 
+  // 优先 username
+  if (url.username && isLikelyBase64(url.username)) {
+    const d = safeBase64Decode(url.username);
+    if (d) userDecoded = d;
+  } else if (!url.username && url.hostname && isLikelyBase64(url.hostname)) {
+    const d = safeBase64Decode(url.hostname);
+    if (d) {
+      // 这种情况通常整个 "none:uuid@host:port" 被 base64 到 hostname
+      userDecoded = d;
+    }
+  }
+
+  let uuid = "";
+  let password = "";
+  let server = url.hostname;
+  let port = url.port;
+
+  if (userDecoded) {
+    if (userDecoded.includes("@")) {
+      // none:uuid@host:port
+      const [userinfo, addr] = userDecoded.split("@");
+      const uparts = userinfo.split(":");
+      if (type === "vless") {
+        uuid = uparts.length >= 2 ? uparts[1] : uparts[0];
+      } else {
+        password = uparts.length >= 2 ? uparts[1] : uparts[0];
+      }
+      if (addr.includes(":")) {
+        const [h, p] = addr.split(":");
+        hostDecoded = h;
+        portDecoded = p;
+      } else {
+        hostDecoded = addr;
+      }
+    } else {
+      // only "auto:uuid" 或 "uuid"
+      const uparts = userDecoded.split(":");
+      if (type === "vless") {
+        uuid = uparts.length >= 2 ? uparts[1] : uparts[0];
+      } else {
+        password = uparts.length >= 2 ? uparts[1] : uparts[0];
+      }
+    }
+  }
+
+  if (!uuid && type === "vless") {
+    uuid = url.username || "";
+  }
+  if (!password && type === "trojan") {
+    password = url.username || "";
+  }
+
+  if (hostDecoded) {
+    server = hostDecoded;
+  }
+  if (!port && portDecoded) {
+    port = portDecoded;
+  }
+  const portNum = Number(port || 0) || 443;
+
+  const remarks = q.get("remarks");
+  const hashName = decodeURIComponent(url.hash?.slice(1) || "");
+  const name =
+    hashName ||
+    (remarks ? decodeURIComponent(remarks) : "") ||
+    url.username ||
+    server;
+
+  // TLS 判断：security=tls / security=reality / tls=1 / allowInsecure=1（trojan 常见）
   const security = (q.get("security") || "").toLowerCase();
-  const tls = security === "tls" || security === "reality";
+  const tlsParam = (q.get("tls") || "").toLowerCase();
+  const allowInsecure = q.get("allowInsecure");
+  let tls =
+    security === "tls" ||
+    security === "reality" ||
+    tlsParam === "1" ||
+    tlsParam === "true";
+
+  if (type === "trojan" && allowInsecure === "1") {
+    // trojan 基本都跑在 TLS 上
+    tls = true;
+  }
+
+  const udp = q.get("udp") === "1" || q.get("udp") === "true";
+  const tfo = q.get("tfo") === "1" || q.get("tfo") === "true";
+
+  const sni = q.get("sni") || q.get("peer") || "";
+  const alpnStr = q.get("alpn");
+  const alpn = alpnStr
+    ? alpnStr
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
+
+  // network: ws / tcp / 兼容 obfs=websocket
+  let network = (q.get("type") || "").toLowerCase();
+  const obfs = (q.get("obfs") || "").toLowerCase();
+  if (!network && obfs === "websocket") {
+    network = "ws";
+  }
+  if (!network) network = "tcp";
+
+  let path = q.get("path") || "";
+  let hostHeader = q.get("host") || q.get("obfsParam") || "";
+
+  if (network === "ws") {
+    if (!path) path = "/";
+  }
 
   const node = {
     type,
     name,
-    server: url.hostname,
-    port: Number(url.port || (tls ? 443 : 80)),
-    uuid: type === "vless" ? url.username : "",
-    password: type === "trojan" ? url.username : "",
-    network: (q.get("type") || "tcp").toLowerCase(),
-    udp: q.get("udp") === "1" || q.get("udp") === "true",
-    tfo: q.get("tfo") === "1" || q.get("tfo") === "true",
+    server,
+    port: portNum,
+    uuid: type === "vless" ? uuid : "",
+    password: type === "trojan" ? password : "",
+    network,
+    udp,
+    tfo,
     tls,
-    sni: q.get("sni") || q.get("peer") || "",
-    alpn: [],
-    path: "",
-    host: "",
+    sni,
+    alpn,
+    path,
+    host: hostHeader,
   };
-
-  const alpn = q.get("alpn");
-  if (alpn) {
-    node.alpn = alpn.split(",").map((s) => s.trim()).filter(Boolean);
-  }
-
-  if (node.network === "ws") {
-    node.path = q.get("path") || "/";
-    node.host = q.get("host") || node.server;
-  }
 
   return node;
 }
@@ -493,7 +660,7 @@ function toClash(nodes) {
       continue;
     }
 
-    // 其它类型先原样保留为一个 "raw" 节点（至少不丢）
+    // 其它类型先保底塞个假节点
     if (n.raw) {
       lines.push(`  - name: "${name}"`);
       lines.push(`    type: ss`);
@@ -529,7 +696,6 @@ function toSurge(nodes) {
 
       lines.push(parts.join(","));
     } else if (n.type === "trojan") {
-      // 简单版 trojan
       const name = n.name || `${n.server}:${n.port}`;
       const parts = [];
       parts.push(`${name}=trojan`);
@@ -619,7 +785,6 @@ function toSurfboard(nodes) {
       parts.push(n.port);
       parts.push(`encrypt-method=${n.cipher}`);
       parts.push(`password=${n.password}`);
-      // Surfboard 对 udp 也有支持，这里可以按需再补
       lines.push(parts.join(","));
     }
   }
@@ -708,13 +873,13 @@ function toSingBox(nodes) {
         server_port: n.port,
         uuid: n.uuid,
         security: n.cipher || "auto",
-        tls: n.tls
-          ? {
-              enabled: true,
-              server_name: n.sni || n.host || n.server,
-            }
-          : undefined,
       };
+      if (n.tls) {
+        ob.tls = {
+          enabled: true,
+          server_name: n.sni || n.host || n.server,
+        };
+      }
       outbounds.push(ob);
     }
   }
@@ -727,7 +892,6 @@ function toV2RaySubscription(nodes) {
   const lines = [];
   for (const n of nodes) {
     if (n.type === "ss") {
-      // ss://base64(method:password)@server:port#name
       const userinfo = `${n.cipher}:${n.password}`;
       const b64 = btoa(userinfo);
       const name = encodeURIComponent(n.name || `${n.server}:${n.port}`);
