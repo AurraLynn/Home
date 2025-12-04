@@ -244,27 +244,34 @@ function parseSingleUri(uri) {
 
 /* ---------------------- Shadowsocks 解析（含混淆） ---------------------- */
 
-function parseShadowsocks(uri) {
-  // 1) ss://base64(method:password)@server:port#name
-  // 2) ss://method:password@server:port#name
-  let withoutScheme = uri.replace(/^ss:\/\//, "");
+
+  
+    function parseShadowsocks(uri) {
+  // 去掉 ss://
+  let u = uri.replace(/^ss:\/\//, "");
+
+  // 提取备注（# 后面）
   let name = "";
-  const hashIndex = withoutScheme.indexOf("#");
+  const hashIndex = u.indexOf("#");
   if (hashIndex !== -1) {
-    name = decodeURIComponent(withoutScheme.slice(hashIndex + 1));
-    withoutScheme = withoutScheme.slice(0, hashIndex);
+    name = decodeURIComponent(u.slice(hashIndex + 1));
+    u = u.slice(0, hashIndex);
   }
 
+  // 拆 userinfo 和 server 部分：userinfo@server:port?query
   let userinfo = "";
   let serverPart = "";
-
-  if (withoutScheme.includes("@")) {
-    [userinfo, serverPart] = withoutScheme.split("@");
+  const atIndex = u.indexOf("@");
+  if (atIndex !== -1) {
+    userinfo = u.slice(0, atIndex);
+    serverPart = u.slice(atIndex + 1);
   } else {
-    // 整体是 base64(method:password@server:port)
-    const decodedWhole = safeBase64Decode(withoutScheme);
+    // 整体是 base64(userinfo@server:port) 的写法
+    const decodedWhole = safeBase64Decode(u);
     if (decodedWhole && decodedWhole.includes("@")) {
-      [userinfo, serverPart] = decodedWhole.split("@");
+      const idx = decodedWhole.indexOf("@");
+      userinfo = decodedWhole.slice(0, idx);
+      serverPart = decodedWhole.slice(idx + 1);
     } else {
       throw new Error("invalid ss uri");
     }
@@ -278,19 +285,50 @@ function parseShadowsocks(uri) {
     }
   }
 
-  // 只在第一个冒号处分割，后面全部是密码（支持密码里带 ':'）
+  // 只在第一个 : 分隔，后面全是密码（密码里可以有冒号）
   const colonIndex = userinfo.indexOf(":");
   if (colonIndex === -1) {
     throw new Error("invalid ss userinfo");
   }
-  const method = userinfo.slice(0, colonIndex);
-  const passwordRaw = userinfo.slice(colonIndex + 1);
-  const password = passwordRaw || "";
+  const method = userinfo.slice(0, colonIndex);          // chacha20-ietf-poly1305
+  const password = userinfo.slice(colonIndex + 1);       // t0srmdxrm...
 
-  const [server, portStrAndQuery] = serverPart.split(":");
-  const [portStr, queryStr] = portStrAndQuery.split("?");
-  const port = Number(portStr);
-  const q = new URLSearchParams(queryStr || "");
+  // server:port?query
+  const [hostPort, queryStr = ""] = serverPart.split("?");
+  const lastColon = hostPort.lastIndexOf(":");
+  if (lastColon === -1) {
+    throw new Error("invalid ss host/port");
+  }
+  const server = hostPort.slice(0, lastColon);           // 172.237.6.53
+  const port = Number(hostPort.slice(lastColon + 1));    // 2377
+
+  const q = new URLSearchParams(queryStr);
+
+  // 解析 plugin（obfs-local;obfs=tls;obfs-host=...;obfs-uri=/）
+  const pluginRaw = q.get("plugin") || "";
+  let plugin = "";
+  let pluginMode = "";
+  let pluginHost = "";
+  let pluginPath = "";
+
+  if (pluginRaw) {
+    if (pluginRaw.includes("obfs-local")) {
+      plugin = "obfs";
+
+      const mMode = /obfs=([^;]+)/.exec(pluginRaw);
+      if (mMode) pluginMode = mMode[1];                    // tls / http
+
+      const mHost = /obfs-host=([^;]+)/.exec(pluginRaw);
+      if (mHost) pluginHost = decodeURIComponent(mHost[1] || "");
+
+      const mPath = /obfs-uri=([^;]+)/.exec(pluginRaw);
+      if (mPath) pluginPath = mPath[1] || "/";
+    }
+  }
+
+  // security=1 可以按需要映射成 udp=true，这里先不乱启：
+  const sec = q.get("security");
+  const udp = sec === "1" || sec === "true";
 
   const node = {
     type: "ss",
@@ -299,51 +337,33 @@ function parseShadowsocks(uri) {
     port,
     cipher: method,
     password,
+
+    // 网络相关
     network: "tcp",
-    udp: q.get("udp") === "1" || q.get("udp") === "true",
+    udp,
     tfo: false,
-    tls: false,
+
+    // TLS / 混淆（给别的客户端也能用）
+    tls: pluginMode === "tls",
     sni: "",
     alpn: [],
-    plugin: "",
-    obfs: "",
-    obfsHost: "",
-    path: "",
-    host: "",
+
+    // 兼容字段（之前的代码会用到）
+    plugin: plugin,           // "obfs"
+    obfs: pluginMode,         // "tls" / "http"
+    obfsHost: pluginHost,
+    path: pluginPath || "/",
+    host: pluginHost,
+
+    // 额外给 Shadowrocket 用的字段
+    pluginMode,               // "tls"
+    pluginHost,               // "(TG @WangCai2)4b06c71:137573"
+
+    // 其它协议用不到的占位
     xtls: "",
     pbk: "",
     flow: "",
   };
-
-  const plugin = q.get("plugin");
-  if (plugin) {
-    node.plugin = plugin;
-
-    // simple-obfs: obfs-local;obfs=tls;obfs-host=xxx;obfs-uri=/
-    if (plugin.includes("obfs-local")) {
-      const modeMatch = /obfs=([^;]+)/.exec(plugin);
-      if (modeMatch) node.obfs = modeMatch[1]; // http / tls
-      const hostMatch = /obfs-host=([^;]+)/.exec(plugin);
-      if (hostMatch) node.obfsHost = decodeURIComponent(hostMatch[1]);
-      const uriMatch = /obfs-uri=([^;]+)/.exec(plugin);
-      if (uriMatch) node.path = uriMatch[1];
-      if (node.obfs === "tls") {
-        node.tls = true;
-      }
-    }
-
-    // v2ray-plugin
-    if (plugin.includes("v2ray-plugin")) {
-      node.network = plugin.includes("websocket") ? "ws" : "tcp";
-      if (/tls(;|$)/.test(plugin)) {
-        node.tls = true;
-      }
-      const hostMatch = /host=([^;]+)/.exec(plugin);
-      if (hostMatch) node.host = hostMatch[1];
-      const pathMatch = /path=([^;]+)/.exec(plugin);
-      if (pathMatch) node.path = pathMatch[1];
-    }
-  }
 
   return node;
 }
