@@ -7,14 +7,8 @@
 // 支持协议（解析阶段）：
 // - ss
 // - vmess（JSON base64 + "auto:uuid@host:port" base64 两种）
-// - vless（标准 URL + 部分机场用 base64 包 userinfo 的变种）
+// - vless（标准 URL + 全 authority base64 机场骚操作）
 // - trojan
-//
-// 重点字段：
-// - udp / tfo
-// - tls / security / tls=1 / allowInsecure=1 / sni(peer) / alpn
-// - network / path / host （ws + obfs=websocket）
-// - ss 混淆：obfs-local / v2ray-plugin 的 obfs / obfs-host / host / path / tls
 //
 // 支持 client：
 // - clash
@@ -26,22 +20,51 @@
 // - shadowrocket
 // - quantumultx
 // - sing-box
-// - v2ray（★ 用原始 raw 行整体做 UTF-8 Base64，不重构链接）
+// - v2ray（★ 现在只做“原文 → UTF-8 Base64”，不再重构 URI）
 // 未识别 → 默认 v2ray
 
 export async function onRequestPost(context) {
   const { request } = context;
   const url = new URL(request.url);
-  const client = (url.searchParams.get("client") || "").toLowerCase();
+  let client = (url.searchParams.get("client") || "").toLowerCase();
 
   const bodyText = await request.text();
-  if (!bodyText || !bodyText.trim()) {
+  const rawBody = bodyText || "";
+
+  if (!rawBody.trim()) {
     return new Response("empty body", { status: 400 });
   }
 
+  if (!client) client = "v2ray";
+
+  // ===== 特殊处理：v2ray 订阅，完全不解析节点 =====
+  if (client === "v2ray") {
+    const raw = rawBody.trim();
+
+    if (!raw) {
+      return new Response("empty body", { status: 400 });
+    }
+
+    // 如果看起来已经是 Base64 订阅（没有 "://")，就原样返回
+    if (!raw.includes("://") && isLikelyBase64(raw)) {
+      return new Response(raw, {
+        status: 200,
+        headers: { "content-type": "text/plain; charset=utf-8" },
+      });
+    }
+
+    // 否则：把原始文本整体做 UTF-8 Base64
+    const encoded = encodeBase64Utf8(raw);
+    return new Response(encoded, {
+      status: 200,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
+  }
+
+  // ===== 其它客户端：解析节点对象，再做转换 =====
   let nodes;
   try {
-    nodes = parseNodesFromText(bodyText);
+    nodes = parseNodesFromText(rawBody);
   } catch (e) {
     return new Response("parse error: " + e.message, { status: 400 });
   }
@@ -81,7 +104,6 @@ export async function onRequestPost(context) {
     case "singbox":
       out = toSingBox(nodes);
       break;
-    case "v2ray":
     default:
       out = toV2RaySubscription(nodes);
       break;
@@ -107,7 +129,7 @@ export async function onRequestPost(context) {
 /**
  * Node 统一结构：
  * {
- *   type: 'ss' | 'vmess' | 'vless' | 'trojan' | 'unknown',
+ *   type: 'ss' | 'vmess' | 'vless' | 'trojan',
  *   name: '',
  *   server: '',
  *   port: 443,
@@ -156,7 +178,7 @@ function parseNodesFromText(text) {
       if (s.includes("://")) {
         const node = parseSingleUri(s);
         if (node) {
-          node.raw = s; // ★ 保留原始节点串
+          node.raw = s; // ★ 原始节点串
           nodes.push(node);
         }
         continue;
@@ -190,7 +212,8 @@ function isLikelyBase64(str) {
 function safeBase64Decode(str) {
   try {
     const s = str.replace(/\s+/g, "");
-    return atob(s);
+    const pad = "=".repeat((4 - (s.length % 4)) % 4);
+    return atob(s + pad);
   } catch (e) {
     return "";
   }
@@ -297,7 +320,7 @@ function parseShadowsocks(uri) {
       const hostMatch = /obfs-host=([^;]+)/.exec(plugin);
       if (hostMatch) node.obfsHost = decodeURIComponent(hostMatch[1]);
       const uriMatch = /obfs-uri=([^;]+)/.exec(plugin);
-      if (uriMatch) node.path = uriMatch[1]; // 有些软件把 obfs-uri 当 path 用
+      if (uriMatch) node.path = uriMatch[1];
       if (node.obfs === "tls") {
         node.tls = true;
       }
@@ -439,7 +462,7 @@ function parseVlessOrTrojan(uri, type) {
 
   let userDecoded = "";
 
-  // 一些机场会把 "none:uuid@host:port" 或 "auto:uuid@host:port" base64 放在 username 里
+  // 情况 1：username 是 Base64（少数机场）
   if (url.username && isLikelyBase64(url.username)) {
     const d = safeBase64Decode(url.username);
     if (d) userDecoded = d;
@@ -448,7 +471,7 @@ function parseVlessOrTrojan(uri, type) {
   let uuid = "";
   let password = "";
 
-  // ★ 这里只从 userDecoded 里提取 uuid / password，不再从里面改 server / port
+  // 先从 userDecoded 里提取 uuid/password
   if (userDecoded) {
     const atIndex = userDecoded.indexOf("@");
     const userPart = atIndex >= 0 ? userDecoded.slice(0, atIndex) : userDecoded;
@@ -467,6 +490,7 @@ function parseVlessOrTrojan(uri, type) {
     }
   }
 
+  // 没拿到的话，fallback 用 URL username
   if (!uuid && type === "vless") {
     uuid = url.username || "";
   }
@@ -474,8 +498,41 @@ function parseVlessOrTrojan(uri, type) {
     password = url.username || "";
   }
 
-  const server = url.hostname;
-  const portNum = Number(url.port || 0) || 443;
+  // 先用 URL 的 host / port
+  let server = url.hostname;
+  let portNum = Number(url.port || 0) || 443;
+
+  // 情况 2：整块 hostname 是 Base64("auto:uuid@host:port" | "none:uuid@host:port")
+  if (server && isLikelyBase64(server)) {
+    const decoded = safeBase64Decode(server);
+    if (decoded && decoded.includes("@")) {
+      const [userinfo2, addr2] = decoded.split("@");
+
+      // userinfo2: "auto:uuid" / "none:uuid" / "uuid"
+      const colonIdx2 = userinfo2.indexOf(":");
+      if (colonIdx2 >= 0) {
+        const right2 = userinfo2.slice(colonIdx2 + 1);
+        if (type === "vless" && !uuid) uuid = right2 || userinfo2;
+        if (type === "trojan" && !password) password = right2 || userinfo2;
+      } else {
+        if (type === "vless" && !uuid) uuid = userinfo2;
+        if (type === "trojan" && !password) password = userinfo2;
+      }
+
+      if (addr2) {
+        const lastColon = addr2.lastIndexOf(":");
+        if (lastColon >= 0) {
+          const host = addr2.slice(0, lastColon);
+          const portStr = addr2.slice(lastColon + 1);
+          if (host) server = host;
+          const p = Number(portStr);
+          if (p) portNum = p;
+        } else {
+          if (addr2) server = addr2;
+        }
+      }
+    }
+  }
 
   const remarks = q.get("remarks");
   const hashName = decodeURIComponent(url.hash?.slice(1) || "");
@@ -545,10 +602,8 @@ function parseVlessOrTrojan(uri, type) {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  各客户端格式输出                                                          */
+/*  各客户端格式输出（和之前逻辑一致，这里就不改动思路了）                     */
 /* -------------------------------------------------------------------------- */
-
-/* ------------------------------ Clash / Mihomo ------------------------------ */
 
 function toClash(nodes) {
   const lines = [];
@@ -654,8 +709,6 @@ function toClash(nodes) {
   return lines.join("\n");
 }
 
-/* --------------------------------- Surge --------------------------------- */
-
 function toSurge(nodes) {
   const lines = [];
   for (const n of nodes) {
@@ -692,8 +745,6 @@ function toSurge(nodes) {
   }
   return lines.join("\n");
 }
-
-/* -------------------------- Stash / Mihomo JSON -------------------------- */
 
 function toStashLike(nodes) {
   const arr = [];
@@ -732,8 +783,6 @@ function toStashLike(nodes) {
   return "proxies:\n  - " + arr.map((x) => JSON.stringify(x)).join("\n  - ");
 }
 
-/* --------------------------------- Egern --------------------------------- */
-
 function toEgern(nodes) {
   const arr = [];
   for (const n of nodes) {
@@ -752,8 +801,6 @@ function toEgern(nodes) {
   return "proxies:\n  - " + arr.map((x) => JSON.stringify(x)).join("\n  - ");
 }
 
-/* -------------------------------- Surfboard ------------------------------- */
-
 function toSurfboard(nodes) {
   const lines = [];
   for (const n of nodes) {
@@ -771,8 +818,6 @@ function toSurfboard(nodes) {
   return lines.join("\n");
 }
 
-/* ---------------------------------- Loon ---------------------------------- */
-
 function toLoon(nodes) {
   const lines = [];
   for (const n of nodes) {
@@ -787,8 +832,6 @@ function toLoon(nodes) {
   }
   return lines.join("\n");
 }
-
-/* ------------------------------- Shadowrocket ------------------------------ */
 
 function toShadowrocket(nodes) {
   const arr = [];
@@ -875,8 +918,6 @@ function toShadowrocket(nodes) {
   return "proxies:\n  - " + arr.map((x) => JSON.stringify(x)).join("\n  - ");
 }
 
-/* ------------------------------ Quantumult X ------------------------------ */
-
 function toQuantumultX(nodes) {
   const lines = [];
   for (const n of nodes) {
@@ -897,8 +938,6 @@ function toQuantumultX(nodes) {
   }
   return lines.join("\n");
 }
-
-/* -------------------------------- Sing-box -------------------------------- */
 
 function toSingBox(nodes) {
   const outbounds = [];
@@ -934,13 +973,9 @@ function toSingBox(nodes) {
   return JSON.stringify({ outbounds }, null, 2);
 }
 
-/* ----------------------------- V2Ray 订阅输出 ----------------------------- */
 /**
- * ★ 关键点：
- * client=v2ray 时：
- * - 优先直接用 node.raw（你原始 paste 的整条 URI），一行一条
- * - 最后整体 UTF-8 Base64
- * - 只有极端情况 node.raw 不存在时，才 fallback 重构（避免再乱改混淆）
+ * ★ 兜底：当 switch 落到 default 时调用，但理论上现在 v2ray 已经在 onRequestPost 里短路了。
+ * 这里保留只是为了极端 fallback。
  */
 function toV2RaySubscription(nodes) {
   const lines = [];
@@ -949,62 +984,7 @@ function toV2RaySubscription(nodes) {
       lines.push(n.raw.trim());
       continue;
     }
-
-    // 极端兜底，用解析结果重构
-    if (n.type === "ss") {
-      const userinfo = `${n.cipher}:${n.password}`;
-      const b64User = encodeBase64Utf8(userinfo);
-      const name = encodeURIComponent(n.name || `${n.server}:${n.port}`);
-      const uri = `ss://${b64User}@${n.server}:${n.port}#${name}`;
-      lines.push(uri);
-    } else if (n.type === "vmess") {
-      const cfg = {
-        v: "2",
-        ps: n.name || `${n.server}:${n.port}`,
-        add: n.server,
-        port: String(n.port),
-        id: n.uuid,
-        aid: "0",
-        scy: n.cipher || "auto",
-        net: n.network || "tcp",
-        type: "none",
-        host: n.host || "",
-        path: n.path || "",
-        tls: n.tls ? "tls" : "",
-        sni: n.sni || "",
-      };
-      const json = JSON.stringify(cfg);
-      const b64Json = encodeBase64Utf8(json);
-      lines.push(`vmess://${b64Json}`);
-    } else if (n.type === "vless") {
-      const params = new URLSearchParams();
-      params.set("type", n.network || "tcp");
-      if (n.tls) params.set("security", "tls");
-      if (n.sni) params.set("sni", n.sni);
-      if (n.network === "ws") {
-        if (n.path) params.set("path", n.path);
-        if (n.host) params.set("host", n.host);
-      }
-      const name = encodeURIComponent(n.name || `${n.server}:${n.port}`);
-      const query = params.toString();
-      const uri = `vless://${n.uuid}@${n.server}:${n.port}?${query}#${name}`;
-      lines.push(uri);
-    } else if (n.type === "trojan") {
-      const params = new URLSearchParams();
-      if (n.tls) params.set("security", "tls");
-      if (n.sni) params.set("sni", n.sni);
-      if (n.network === "ws") {
-        params.set("type", "ws");
-        if (n.path) params.set("path", n.path);
-        if (n.host) params.set("host", n.host);
-      }
-      const name = encodeURIComponent(n.name || `${n.server}:${n.port}`);
-      const query = params.toString();
-      const uri = `trojan://${n.password}@${n.server}:${n.port}?${query}#${name}`;
-      lines.push(uri);
-    }
   }
-
   const text = lines.join("\n");
   return encodeBase64Utf8(text);
 }
@@ -1023,7 +1003,7 @@ function escapeDoubleQuotes(str) {
   return String(str).replace(/"/g, '\\"');
 }
 
-// UTF-8 安全版 Base64（修复含中文/emoji 节点导致的 1101）
+// UTF-8 安全版 Base64
 function encodeBase64Utf8(str) {
   const bytes = new TextEncoder().encode(str);
   let binary = "";
