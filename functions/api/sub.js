@@ -1,7 +1,7 @@
 // functions/api/sub.js
 // 通用订阅入口：GET /api/sub?id=<pasteId>&client=<clientName>
 //
-// 1. 从 KV: Paste 中读取对应 id 的原始内容
+// 1. 从 KV 中读取对应 id 的原始内容
 // 2. 内部调用 /api/node-convert?client=xxx 做格式转换
 // 3. 输出给各客户端作为订阅地址使用
 
@@ -17,12 +17,23 @@ export async function onRequestGet(context) {
     return new Response("missing id", { status: 400 });
   }
 
-  // ========= 1. 从 KV(Paste) 中取出原始节点内容 =========
-  if (!env.Paste) {
-    return new Response("KV namespace `Paste` not bound", { status: 500 });
+  // ========= 1. 从 KV 中取出原始节点内容 =========
+  // 为了稳妥，这里兼容多种变量名，你至少绑定了其中一个就行
+  const kv =
+    env.Paste ||      // 你截图里的绑定就是这个
+    env.PasteBox ||   // 之前可能用过
+    env.PASTE ||
+    env.Paste_KV ||
+    env.PASTE_KV;
+
+  if (!kv) {
+    return new Response(
+      "KV namespace for Paste not bound (tried: Paste, PasteBox, PASTE, Paste_KV, PASTE_KV)",
+      { status: 500 }
+    );
   }
 
-  const stored = await env.Paste.get(id);
+  const stored = await kv.get(id);
   if (!stored) {
     return new Response("not found", { status: 404 });
   }
@@ -75,16 +86,17 @@ export async function onRequestGet(context) {
 function extractContentFromRecord(stored) {
   if (!stored) return "";
 
+  const trimmed = stored.trim();
+  const firstChar = trimmed[0];
+
   // 看起来不像 JSON，就按纯文本
-  const firstChar = stored.trim()[0];
   if (firstChar !== "{" && firstChar !== "[") {
     return stored;
   }
 
   try {
-    const obj = JSON.parse(stored);
+    const obj = JSON.parse(trimmed);
 
-    // 常见字段名：根据你 Pastebin 的结构自己适配
     if (typeof obj.content === "string") return obj.content;
     if (typeof obj.text === "string") return obj.text;
     if (typeof obj.body === "string") return obj.body;
