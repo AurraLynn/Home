@@ -110,12 +110,14 @@ function extractContentFromRecord(stored) {
 }
 
 // ===== 工具：UA → client 名 =====
+// UA → client
 function detectClientFromUA(ua) {
   const u = (ua || "").toLowerCase();
 
-  // 👇 新增这一行
+  // ✅ 先特殊处理 FlyClash
   if (u.includes("flyclash")) return "clash";
 
+  // 下面这些保持不变
   if (u.includes("clash") || u.includes("mihomo")) return "clash";
   if (u.includes("stash")) return "stash";
   if (u.includes("surge")) return "surge";
