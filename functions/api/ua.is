@@ -1,31 +1,26 @@
 // functions/api/ua.js
 // 用来抓取客户端的 User-Agent，返回一份极简 Clash 配置
-// 节点名称里写入 UA，方便在 APP 里直接看到
+// 把 UA 写在 YAML 注释里，FlyClash 正常导入后，你在软件里查看配置文本就能看到 UA。
 
 export async function onRequestGet(context) {
   const { request } = context;
   const uaRaw = request.headers.get("user-agent") || "unknown-UA";
 
-  // Clash 的 name 里不能有换行/双引号，简单清理一下
-  const uaSafe = uaRaw.replace(/"/g, '\\"').replace(/\s+/g, " ");
+  // 注释行里不能有换行符，替换掉 \r \n 即可
+  const uaLine = uaRaw.replace(/\r/g, " ").replace(/\n/g, " ");
 
   const yaml = `port: 7890
+socks-port: 0
 mode: Rule
 log-level: info
 allow-lan: true
 
-proxies:
-  - name: "UA: ${uaSafe}"
-    type: direct
+# UA: ${uaLine}
 
-proxy-groups:
-  - name: "UA-GROUP"
-    type: select
-    proxies:
-      - "UA: ${uaSafe}"
-
+proxies: []
+proxy-groups: []
 rules:
-  - MATCH,UA-GROUP
+  - MATCH,DIRECT
 `;
 
   return new Response(yaml, {
