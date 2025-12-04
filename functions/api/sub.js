@@ -110,7 +110,6 @@ function extractContentFromRecord(stored) {
 }
 
 // ===== 工具：UA → client 名 =====
-// UA → client
 function detectClientFromUA(ua) {
   const u = (ua || "").toLowerCase();
 
@@ -120,7 +119,10 @@ function detectClientFromUA(ua) {
   if (u.includes("clash") || u.includes("mihomo")) return "clash";
   if (u.includes("stash")) return "stash";
   if (u.includes("surge")) return "surge";
-  if (u.includes("shadowrocket")) return "shadowrocket";
+
+  // ✅ 这里：小火箭直接当 v2ray 客户端
+  if (u.includes("shadowrocket")) return "v2ray";
+
   if (u.includes("quantumult x") || u.includes("quantumult_x"))
     return "quantumultx";
   if (u.includes("sing-box") || u.includes("singbox")) return "sing-box";
