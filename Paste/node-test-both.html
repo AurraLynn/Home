@@ -307,6 +307,39 @@
             background: rgba(15, 23, 42, 0.9);
             cursor: pointer;
         }
+
+        .sub-link-row {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .sub-link-input {
+            flex: 1 1 auto;
+            min-width: 0;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-main);
+            font-size: 11px;
+            padding: 5px 9px;
+            outline: none;
+        }
+
+        .sub-link-display {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            background: rgba(15, 23, 42, 0.9);
+            padding: 6px 8px;
+            font-size: 11px;
+            word-break: break-all;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -319,7 +352,7 @@
             </div>
             <div class="title-main">Node · Multi-Client Converter</div>
             <div class="title-sub">
-                粘贴任意节点 / 订阅（包含 Base64） → 选择客户端 → 一键转换。
+                粘贴任意节点 / 订阅（包含 Base64） → 选择客户端 → 一键转换 + 生成订阅链接。
             </div>
         </div>
         <div class="status-pill" id="status-pill">
@@ -342,7 +375,7 @@
 
             <div class="hint">
                 · 支持：ss / vmess / vless / trojan / 订阅 Base64 等。<br>
-                · 右侧“识别结果”来自 /api/node-parse · 下方“转换结果”来自 /api/node-convert?client=...
+                · 右侧“识别结果”来自 /api/node-parse · 下方“转换结果 + 订阅链接”来自 /api/node-convert 和 /api/sub。
             </div>
 
             <div class="controls">
@@ -392,6 +425,16 @@
             </div>
 
             <div class="tag-list" id="tag-list"></div>
+
+            <!-- 订阅链接区域 -->
+            <div class="sub-link-row">
+                <span>Paste ID：</span>
+                <input id="paste-id-input" class="sub-link-input" placeholder="例如：abc123（对应 KV 里 paste 的 ID）">
+                <button type="button" class="copy-btn" data-copy-target="sub-link-display">复制订阅链接</button>
+            </div>
+            <div id="sub-link-display" class="sub-link-display">
+                填写 Paste ID，点击下方“转换到选中客户端”后生成订阅链接。
+            </div>
         </div>
     </div>
 
@@ -418,6 +461,8 @@
     const btnFillDemo = document.getElementById('btn-fill-demo');
     const clientSelect = document.getElementById('client-select');
     const convertTitle = document.getElementById('convert-title');
+    const pasteIdInput = document.getElementById('paste-id-input');
+    const subLinkDisplay = document.getElementById('sub-link-display');
 
     function updateCounters() {
         const text = inputEl.value || '';
@@ -558,6 +603,19 @@
 
             convertResultEl.textContent = text;
 
+            // 生成订阅链接（需要填写 Paste ID）
+            const id = (pasteIdInput.value || '').trim();
+            if (id) {
+                const origin = window.location.origin;
+                let link = origin + '/api/sub?id=' + encodeURIComponent(id);
+                if (client && client !== 'raw') {
+                    link += '&client=' + encodeURIComponent(client);
+                }
+                subLinkDisplay.textContent = link;
+            } else {
+                subLinkDisplay.textContent = '提示：填写上方 Paste ID 后，再次点击“转换到选中客户端”即可生成订阅链接。';
+            }
+
         } catch (err) {
             console.error(err);
             statusText.textContent = 'Network Error';
@@ -569,15 +627,15 @@
     btnParse.addEventListener('click', parseNodes);
     btnConvert.addEventListener('click', convertNodes);
 
-    // 复制按钮
+    // 复制按钮（JSON / 配置 / 订阅链接 共用）
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('.copy-btn');
         if (!btn) return;
         const targetId = btn.getAttribute('data-copy-target');
-        const pre = document.getElementById(targetId);
-        if (!pre) return;
+        const target = document.getElementById(targetId);
+        if (!target) return;
 
-        const text = pre.textContent || '';
+        const text = target.textContent || '';
         if (!text.trim()) return;
 
         if (navigator.clipboard && navigator.clipboard.writeText) {
