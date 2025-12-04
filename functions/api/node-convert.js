@@ -6,8 +6,8 @@
 //
 // 支持协议（解析阶段）：
 // - ss
-// - vmess（传统 JSON base64 + “auto:uuid@host:port” base64 两种）
-// - vless（标准 URL + base64 userinfo + 整个 host 是 base64）
+// - vmess（JSON base64 + "auto:uuid@host:port" base64 两种）
+// - vless（标准 URL + base64 userinfo + 整个 host 被 base64）
 // - trojan
 //
 // 重点字段：
@@ -19,7 +19,7 @@
 // 支持 client：
 // - clash
 // - surge
-// - stash / mihomo（输出 JSON 行）
+// - stash / mihomo
 // - egern
 // - surfboard
 // - loon
@@ -27,7 +27,7 @@
 // - quantumultx
 // - sing-box
 // - v2ray（多行 URI → 再整体 Base64）
-// 其它 / 未识别 → 同 v2ray
+// 未识别 → 默认 v2ray
 
 export async function onRequestPost(context) {
   const { request } = context;
@@ -105,7 +105,7 @@ export async function onRequestPost(context) {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Node 统一结构（字段并不都必须有）：
+ * Node 统一结构：
  * {
  *   type: 'ss' | 'vmess' | 'vless' | 'trojan' | 'unknown',
  *   name: '',
@@ -309,11 +309,7 @@ function parseShadowsocks(uri) {
 }
 
 /* ---------------------------- VMess 解析 ---------------------------- */
-/**
- * 支持两种：
- * 1) vmess://base64(JSON)
- * 2) vmess://base64("auto:uuid@host:port")?remarks=...&tfo=1...
- */
+
 function parseVmess(uri) {
   const withoutScheme = uri.replace(/^vmess:\/\//, "");
   const [b64Part, queryStr] = withoutScheme.split("?");
@@ -334,7 +330,7 @@ function parseVmess(uri) {
     const node = {
       type: "vmess",
       name:
-        q.get("remarks") ||
+        (q.get("remarks") && decodeURIComponent(q.get("remarks"))) ||
         cfg.ps ||
         `${cfg.add}:${cfg.port}`,
       server: cfg.add,
@@ -384,7 +380,8 @@ function parseVmess(uri) {
   }
 
   const remarks = q.get("remarks");
-  const name = decodeURIComponent(remarks || "") || `${host}:${port}`;
+  const name =
+    (remarks && decodeURIComponent(remarks)) || `${host}:${port}`;
 
   const tlsParam = (q.get("tls") || "").toLowerCase();
   const tls =
@@ -429,19 +426,17 @@ function parseVlessOrTrojan(uri, type) {
   const url = new URL(uri);
   const q = url.searchParams;
 
-  // 尝试从 username 或 hostname 里解 base64（支持 none:uuid@host:port 这种）
   let userDecoded = "";
   let hostDecoded = "";
   let portDecoded = "";
 
-  // 优先 username
+  // 优先处理 username 里的 base64
   if (url.username && isLikelyBase64(url.username)) {
     const d = safeBase64Decode(url.username);
     if (d) userDecoded = d;
   } else if (!url.username && url.hostname && isLikelyBase64(url.hostname)) {
     const d = safeBase64Decode(url.hostname);
     if (d) {
-      // 这种情况通常整个 "none:uuid@host:port" 被 base64 到 hostname
       userDecoded = d;
     }
   }
@@ -469,7 +464,6 @@ function parseVlessOrTrojan(uri, type) {
         hostDecoded = addr;
       }
     } else {
-      // only "auto:uuid" 或 "uuid"
       const uparts = userDecoded.split(":");
       if (type === "vless") {
         uuid = uparts.length >= 2 ? uparts[1] : uparts[0];
@@ -502,7 +496,6 @@ function parseVlessOrTrojan(uri, type) {
     url.username ||
     server;
 
-  // TLS 判断：security=tls / security=reality / tls=1 / allowInsecure=1（trojan 常见）
   const security = (q.get("security") || "").toLowerCase();
   const tlsParam = (q.get("tls") || "").toLowerCase();
   const allowInsecure = q.get("allowInsecure");
@@ -513,7 +506,6 @@ function parseVlessOrTrojan(uri, type) {
     tlsParam === "true";
 
   if (type === "trojan" && allowInsecure === "1") {
-    // trojan 基本都跑在 TLS 上
     tls = true;
   }
 
@@ -529,7 +521,6 @@ function parseVlessOrTrojan(uri, type) {
         .filter(Boolean)
     : [];
 
-  // network: ws / tcp / 兼容 obfs=websocket
   let network = (q.get("type") || "").toLowerCase();
   const obfs = (q.get("obfs") || "").toLowerCase();
   if (!network && obfs === "websocket") {
@@ -540,8 +531,8 @@ function parseVlessOrTrojan(uri, type) {
   let path = q.get("path") || "";
   let hostHeader = q.get("host") || q.get("obfsParam") || "";
 
-  if (network === "ws") {
-    if (!path) path = "/";
+  if (network === "ws" && !path) {
+    path = "/";
   }
 
   const node = {
@@ -589,7 +580,7 @@ function toClash(nodes) {
       if (n.plugin && n.plugin.includes("obfs-local") && n.obfs) {
         lines.push(`    plugin: obfs`);
         lines.push(`    plugin-opts:`);
-        lines.push(`      mode: ${n.obfs}`); // http / tls
+        lines.push(`      mode: ${n.obfs}`);
         if (n.obfsHost) lines.push(`      host: ${n.obfsHost}`);
       } else if (n.plugin && n.plugin.includes("v2ray-plugin")) {
         lines.push(`    plugin: v2ray-plugin`);
@@ -660,7 +651,6 @@ function toClash(nodes) {
       continue;
     }
 
-    // 其它类型先保底塞个假节点
     if (n.raw) {
       lines.push(`  - name: "${name}"`);
       lines.push(`    type: ss`);
@@ -812,6 +802,7 @@ function toLoon(nodes) {
 
 function toShadowrocket(nodes) {
   const arr = [];
+
   for (const n of nodes) {
     if (n.type === "ss") {
       arr.push({
@@ -821,9 +812,76 @@ function toShadowrocket(nodes) {
         cipher: n.cipher,
         password: n.password,
         name: n.name || `${n.server}:${n.port}`,
+        udp: n.udp || undefined,
       });
+      continue;
+    }
+
+    if (n.type === "vmess") {
+      arr.push({
+        type: "vmess",
+        server: n.server,
+        port: n.port,
+        uuid: n.uuid,
+        cipher: n.cipher || "auto",
+        tls: n.tls || undefined,
+        sni: n.sni || undefined,
+        network: n.network || undefined,
+        ws_opts:
+          n.network === "ws"
+            ? {
+                path: n.path || "/",
+                headers: n.host ? { Host: n.host } : undefined,
+              }
+            : undefined,
+        name: n.name || `${n.server}:${n.port}`,
+      });
+      continue;
+    }
+
+    if (n.type === "vless") {
+      arr.push({
+        type: "vless",
+        server: n.server,
+        port: n.port,
+        uuid: n.uuid,
+        tls: n.tls || undefined,
+        sni: n.sni || undefined,
+        network: n.network || undefined,
+        ws_opts:
+          n.network === "ws"
+            ? {
+                path: n.path || "/",
+                headers: n.host ? { Host: n.host } : undefined,
+              }
+            : undefined,
+        name: n.name || `${n.server}:${n.port}`,
+      });
+      continue;
+    }
+
+    if (n.type === "trojan") {
+      arr.push({
+        type: "trojan",
+        server: n.server,
+        port: n.port,
+        password: n.password,
+        tls: n.tls || undefined,
+        sni: n.sni || undefined,
+        network: n.network || undefined,
+        ws_opts:
+          n.network === "ws"
+            ? {
+                path: n.path || "/",
+                headers: n.host ? { Host: n.host } : undefined,
+              }
+            : undefined,
+        name: n.name || `${n.server}:${n.port}`,
+      });
+      continue;
     }
   }
+
   return "proxies:\n  - " + arr.map((x) => JSON.stringify(x)).join("\n  - ");
 }
 
@@ -892,10 +950,11 @@ function toV2RaySubscription(nodes) {
   const lines = [];
   for (const n of nodes) {
     if (n.type === "ss") {
+      // ss://base64(method:password)@server:port#name
       const userinfo = `${n.cipher}:${n.password}`;
-      const b64 = btoa(userinfo);
+      const b64User = encodeBase64Utf8(userinfo);
       const name = encodeURIComponent(n.name || `${n.server}:${n.port}`);
-      const uri = `ss://${b64}@${n.server}:${n.port}#${name}`;
+      const uri = `ss://${b64User}@${n.server}:${n.port}#${name}`;
       lines.push(uri);
     } else if (n.type === "vmess") {
       const cfg = {
@@ -914,8 +973,8 @@ function toV2RaySubscription(nodes) {
         sni: n.sni || "",
       };
       const json = JSON.stringify(cfg);
-      const b64 = btoa(json);
-      lines.push(`vmess://${b64}`);
+      const b64Json = encodeBase64Utf8(json);
+      lines.push(`vmess://${b64Json}`);
     } else if (n.type === "vless") {
       const params = new URLSearchParams();
       params.set("type", n.network || "tcp");
@@ -948,7 +1007,7 @@ function toV2RaySubscription(nodes) {
   }
 
   const text = lines.join("\n");
-  return btoa(text);
+  return encodeBase64Utf8(text);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -963,4 +1022,14 @@ function safeYamlString(str) {
 function escapeDoubleQuotes(str) {
   if (!str) return "";
   return String(str).replace(/"/g, '\\"');
+}
+
+// UTF-8 安全版 Base64（修复含中文/emoji 节点导致的 1101）
+function encodeBase64Utf8(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
 }
