@@ -1,7 +1,7 @@
 // functions/api/node-convert.js
 // 节点识别 + 转换接口
-// POST /api/node-convert?client=clash
-// Body: 纯文本，多行节点
+// POST /api/node-convert?client=xxx
+// Body: 纯文本，多行节点 / 订阅内容
 
 export async function onRequestPost(context) {
   const { request } = context;
@@ -16,51 +16,137 @@ export async function onRequestPost(context) {
   }
 
   const raw = (text || "").replace(/\r\n/g, "\n");
-  const lines = raw
+  const rawLines = raw
     .split("\n")
     .map((l) => l.trim())
     .filter((l) => l.length > 0);
 
+  // 展开纯 Base64 订阅
+  const lines = expandBase64Lines(rawLines);
+
   const nodes = lines.map((line) => parseSingleLine(line));
 
-  // Clash 系（Clash / Meta / Mihomo / Sing-box 基本都能吃）
+  // 按客户端生成不同格式
+  let body = "";
   if (
     client === "clash" ||
     client === "clash-meta" ||
-    client === "mihomo" ||
-    client === "sing-box" ||
     client === "clashmeta"
   ) {
-    const yaml = toClashYaml(nodes);
-    return new Response(yaml, {
-      status: 200,
-      headers: {
-        "content-type": "text/plain; charset=utf-8",
-      },
-    });
+    body = toClashYaml(nodes);
+    return textResponse(body);
   }
 
-  // 返回标准化后的原始 URI（做“通用订阅”用）
+  if (client === "surge") {
+    body = toSurge(nodes);
+    return textResponse(body);
+  }
+
+  if (client === "surfboard") {
+    body = toSurfboard(nodes);
+    return textResponse(body);
+  }
+
+  if (client === "loon") {
+    body = toLoon(nodes);
+    return textResponse(body);
+  }
+
+  if (client === "stash" || client === "mihomo" || client === "shadowrocket") {
+    body = toClashJsonSs(nodes); // proxies: - {...}
+    return textResponse(body);
+  }
+
+  if (client === "egern") {
+    body = toEgern(nodes);
+    return textResponse(body);
+  }
+
+  if (client === "quantumultx" || client === "quantumult-x") {
+    body = toQuantumultX(nodes);
+    return textResponse(body);
+  }
+
+  if (client === "sing-box" || client === "singbox") {
+    body = toSingBox(nodes);
+    return jsonResponseRaw(body);
+  }
+
   if (client === "raw") {
-    const content = nodes
-      .filter((n) => n.type !== "others")
-      .map((n) => n.raw)
-      .join("\n");
-    return new Response(content, {
-      status: 200,
-      headers: {
-        "content-type": "text/plain; charset=utf-8",
-      },
-    });
+    body = toRawUris(nodes);
+    return textResponse(body);
   }
 
-  return new Response(
-    `暂未实现客户端类型: ${client}。目前支持: clash / clash-meta / mihomo / sing-box / raw`,
-    { status: 400 }
-  );
+  if (client === "v2ray") {
+    body = toBase64Subscription(nodes);
+    return textResponse(body);
+  }
+
+  // 未识别 client：按你要求，返回 Base64 订阅
+  body = toBase64Subscription(nodes);
+  return textResponse(body);
 }
 
-/* ===================== 公共解析逻辑（与 node-parse 保持一致） ===================== */
+/* ========== 公共工具 ========== */
+
+function textResponse(body) {
+  return new Response(body || "", {
+    status: 200,
+    headers: {
+      "content-type": "text/plain; charset=utf-8",
+    },
+  });
+}
+
+function jsonResponseRaw(objOrString) {
+  const text =
+    typeof objOrString === "string"
+      ? objOrString
+      : JSON.stringify(objOrString, null, 2);
+  return new Response(text, {
+    status: 200,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+    },
+  });
+}
+
+/* ========== Base64 展开 & 基础解析（和 node-parse 保持一致） ========== */
+
+function expandBase64Lines(lines) {
+  const result = [];
+  for (const l of lines) {
+    const s = l.trim();
+    if (!isBase64Like(s)) {
+      result.push(s);
+      continue;
+    }
+
+    try {
+      const decoded = safeAtob(s);
+      if (decoded.includes("://")) {
+        decoded
+          .replace(/\r\n/g, "\n")
+          .split("\n")
+          .map((x) => x.trim())
+          .filter((x) => x.length > 0)
+          .forEach((x) => result.push(x));
+        continue;
+      } else {
+        result.push(s);
+      }
+    } catch (e) {
+      result.push(s);
+    }
+  }
+  return result;
+}
+
+function isBase64Like(str) {
+  if (!str || str.length < 8) return false;
+  if (/[^A-Za-z0-9+/=_-]/.test(str)) return false;
+  return true;
+}
 
 function parseSingleLine(line) {
   const trimmed = line.trim();
@@ -113,7 +199,7 @@ function parseSingleLine(line) {
     } else if (type === "trojan") {
       parsed = { ...parsed, ...parseTrojan(trimmed) };
     } else {
-      // 其他协议后面扩展
+      // 其他协议先保留 raw
     }
   } catch (e) {
     parsed.extra = parsed.extra || {};
@@ -127,7 +213,7 @@ function parseSingleLine(line) {
   return parsed;
 }
 
-// 和 node-parse.js 保持同一版 parseVmess
+// 和 node-parse 的 parseVmess 一致
 function parseVmess(line) {
   const full = line.slice("vmess://".length);
   let main = full;
@@ -373,6 +459,11 @@ function safeAtob(str) {
   return atob(s);
 }
 
+function safeBtoa(str) {
+  // 处理非 ASCII 字符
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
 function guessNameFromRaw(raw) {
   const idx = raw.indexOf("#");
   if (idx !== -1) {
@@ -385,16 +476,15 @@ function guessNameFromRaw(raw) {
   return null;
 }
 
-/* ===================== 转 Clash YAML ===================== */
+/* ========== 各客户端生成逻辑：先完整支持 SS，其他协议优先走 Clash / Base64 ========== */
 
+// Clash YAML（支持多协议，兼容 mihomo / clash meta / clash for android）
 function toClashYaml(nodes) {
   const lines = [];
   lines.push("proxies:");
 
   for (const n of nodes) {
-    if (!n.server || !n.port) {
-      continue;
-    }
+    if (!n.server || !n.port) continue;
 
     if (n.type === "vmess") {
       lines.push(...yamlVmess(n));
@@ -405,7 +495,7 @@ function toClashYaml(nodes) {
     } else if (n.type === "trojan") {
       lines.push(...yamlTrojan(n));
     } else {
-      // 其他协议先忽略
+      // 其他协议先不输出
     }
   }
 
@@ -504,4 +594,163 @@ function yamlTrojan(n) {
 function safeYamlString(s) {
   if (s == null) return "";
   return String(s).replace(/"/g, '\\"');
+}
+
+/* ---- Surge ---- */
+
+function toSurge(nodes) {
+  const lines = [];
+  for (const n of nodes) {
+    if (n.type !== "ss") continue;
+    if (!n.server || !n.port || !n.cipher || !n.password) continue;
+    const name = n.name || "SS";
+    lines.push(
+      `${name}=ss,${n.server},${n.port},encrypt-method=${n.cipher},password="${n.password}"`
+    );
+  }
+  return lines.join("\n");
+}
+
+/* ---- Surfboard ---- */
+
+function toSurfboard(nodes) {
+  const lines = [];
+  for (const n of nodes) {
+    if (n.type !== "ss") continue;
+    if (!n.server || !n.port || !n.cipher || !n.password) continue;
+    const name = n.name || "SS";
+    lines.push(
+      `${name}=ss,${n.server},${n.port},encrypt-method=${n.cipher},password=${n.password}`
+    );
+  }
+  return lines.join("\n");
+}
+
+/* ---- Loon ---- */
+
+function toLoon(nodes) {
+  const lines = [];
+  for (const n of nodes) {
+    if (n.type !== "ss") continue;
+    if (!n.server || !n.port || !n.cipher || !n.password) continue;
+    const name = n.name || "SS";
+    lines.push(
+      `${name}=shadowsocks,${n.server},${n.port},${n.cipher},"${n.password}"`
+    );
+  }
+  return lines.join("\n");
+}
+
+/* ---- Stash / Mihomo / Shadowrocket：JSON proxies ---- */
+
+function toClashJsonSs(nodes) {
+  const arr = [];
+  for (const n of nodes) {
+    if (n.type !== "ss") continue;
+    if (!n.server || !n.port || !n.cipher || !n.password) continue;
+    arr.push({
+      type: "ss",
+      server: n.server,
+      port: n.port,
+      cipher: n.cipher,
+      password: n.password,
+      name: n.name || "SS",
+    });
+  }
+
+  const lines = ["proxies:"];
+  for (const item of arr) {
+    lines.push("  - " + JSON.stringify(item));
+  }
+  return lines.join("\n");
+}
+
+/* ---- Egern ---- */
+
+function toEgern(nodes) {
+  const arr = [];
+  for (const n of nodes) {
+    if (n.type !== "ss") continue;
+    if (!n.server || !n.port || !n.cipher || !n.password) continue;
+    arr.push({
+      shadowsocks: {
+        name: n.name || "SS",
+        method: n.cipher,
+        server: n.server,
+        port: n.port,
+        password: n.password,
+      },
+    });
+  }
+  const lines = ["proxies:"];
+  for (const item of arr) {
+    lines.push("  - " + JSON.stringify(item));
+  }
+  return lines.join("\n");
+}
+
+/* ---- Quantumult X ---- */
+
+function toQuantumultX(nodes) {
+  const lines = [];
+  for (const n of nodes) {
+    if (n.type !== "ss") continue;
+    if (!n.server || !n.port || !n.cipher || !n.password) continue;
+    const name = n.name || "SS";
+    lines.push(
+      `shadowsocks=${n.server}:${n.port},method=${n.cipher},password=${n.password},tag=${name}`
+    );
+  }
+  return lines.join("\n");
+}
+
+/* ---- Sing-box ---- */
+
+function toSingBox(nodes) {
+  const outbounds = [];
+  for (const n of nodes) {
+    if (n.type !== "ss") continue;
+    if (!n.server || !n.port || !n.cipher || !n.password) continue;
+    outbounds.push({
+      tag: n.name || "SS",
+      type: "shadowsocks",
+      server: n.server,
+      server_port: n.port,
+      method: n.cipher,
+      password: n.password,
+    });
+  }
+  return { outbounds };
+}
+
+/* ---- 原始 URI / Base64 订阅 ---- */
+
+function toRawUris(nodes) {
+  const lines = [];
+  for (const n of nodes) {
+    if (n.type === "others") continue;
+    // SS 尽量补充成标准 ss://
+    if (n.type === "ss" && n.server && n.port && n.cipher && n.password) {
+      lines.push(buildSsUri(n));
+    } else {
+      lines.push(n.raw);
+    }
+  }
+  return lines.join("\n");
+}
+
+function toBase64Subscription(nodes) {
+  const content = toRawUris(nodes);
+  return safeBtoa(content);
+}
+
+function buildSsUri(n) {
+  const method = n.cipher || "aes-256-gcm";
+  const pwd = n.password || "";
+  const server = n.server || "127.0.0.1";
+  const port = n.port || 8388;
+  const payload = `${method}:${pwd}@${server}:${port}`;
+  const b64 = safeBtoa(payload);
+  const tag = n.name ? encodeURIComponent(n.name) : "";
+  return `ss://${b64}${tag ? "#" + tag : ""}`;
 }
