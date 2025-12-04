@@ -7,7 +7,7 @@
 // 支持协议（解析阶段）：
 // - ss
 // - vmess（JSON base64 + "auto:uuid@host:port" base64 两种）
-// - vless（标准 URL + 全 authority base64 机场骚操作）
+// - vless（标准 URL + 整块 authority base64 机场写法）
 // - trojan
 //
 // 支持 client：
@@ -20,7 +20,7 @@
 // - shadowrocket
 // - quantumultx
 // - sing-box
-// - v2ray（★ 现在只做“原文 → UTF-8 Base64”，不再重构 URI）
+// - v2ray（★ 现在只做“原文 → UTF-8 Base64 / 原样返回 Base64”，不重构 URI）
 // 未识别 → 默认 v2ray
 
 export async function onRequestPost(context) {
@@ -37,7 +37,7 @@ export async function onRequestPost(context) {
 
   if (!client) client = "v2ray";
 
-  // ===== 特殊处理：v2ray 订阅，完全不解析节点 =====
+  // ===== 1. v2ray / 通用订阅：完全不解析 URL，只做 Base64 封装 =====
   if (client === "v2ray") {
     const raw = rawBody.trim();
 
@@ -45,7 +45,7 @@ export async function onRequestPost(context) {
       return new Response("empty body", { status: 400 });
     }
 
-    // 如果看起来已经是 Base64 订阅（没有 "://")，就原样返回
+    // 1) 看起来已经是 Base64 订阅（没有 ://），原样返回
     if (!raw.includes("://") && isLikelyBase64(raw)) {
       return new Response(raw, {
         status: 200,
@@ -53,7 +53,7 @@ export async function onRequestPost(context) {
       });
     }
 
-    // 否则：把原始文本整体做 UTF-8 Base64
+    // 2) 否则：把原始文本整体 UTF-8 → Base64
     const encoded = encodeBase64Utf8(raw);
     return new Response(encoded, {
       status: 200,
@@ -61,7 +61,7 @@ export async function onRequestPost(context) {
     });
   }
 
-  // ===== 其它客户端：解析节点对象，再做转换 =====
+  // ===== 2. 其它客户端：解析成 Node 对象，再做格式转换 =====
   let nodes;
   try {
     nodes = parseNodesFromText(rawBody);
@@ -155,7 +155,7 @@ function parseNodesFromText(text) {
   const nodes = [];
   const raw = text.trim();
 
-  // 情况 1：整体像 Base64 订阅：没有 "://", 且字符集符合 Base64
+  // 整体像 Base64 订阅：没有 "://", 且字符集符合 Base64
   if (!raw.includes("://") && isLikelyBase64(raw)) {
     const decoded = safeBase64Decode(raw);
     if (decoded && decoded.includes("://")) {
@@ -163,7 +163,7 @@ function parseNodesFromText(text) {
     }
   }
 
-  // 情况 2：按行处理
+  // 按行处理
   const lines = raw.split(/\r?\n/);
   for (let line of lines) {
     line = line.trim();
@@ -178,7 +178,7 @@ function parseNodesFromText(text) {
       if (s.includes("://")) {
         const node = parseSingleUri(s);
         if (node) {
-          node.raw = s; // ★ 原始节点串
+          node.raw = s; // ★ 原始节点串，给 v2ray 订阅用
           nodes.push(node);
         }
         continue;
@@ -602,7 +602,7 @@ function parseVlessOrTrojan(uri, type) {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  各客户端格式输出（和之前逻辑一致，这里就不改动思路了）                     */
+/*  各客户端格式输出（下方逻辑和之前一致，这里就不一条条解释了）               */
 /* -------------------------------------------------------------------------- */
 
 function toClash(nodes) {
@@ -973,10 +973,7 @@ function toSingBox(nodes) {
   return JSON.stringify({ outbounds }, null, 2);
 }
 
-/**
- * ★ 兜底：当 switch 落到 default 时调用，但理论上现在 v2ray 已经在 onRequestPost 里短路了。
- * 这里保留只是为了极端 fallback。
- */
+// 兜底：极端情况用原始 raw 拼个订阅（理论上 v2ray 分支已经直接返回了）
 function toV2RaySubscription(nodes) {
   const lines = [];
   for (const n of nodes) {
