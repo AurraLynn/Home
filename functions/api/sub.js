@@ -4,6 +4,10 @@
 // 1. 从 KV: Paste 读取原始内容
 // 2. 调用 /api/node-convert?client=xxx 转换成各客户端格式
 // 3. 对 Clash / Mihomo 等客户端，自动包上一份完整配置（含阿里 DNS + 简单分流）
+//
+// 注意：本版已删除对 Shadowrocket 的专用识别和转换逻辑
+// - UA 里出现 shadowrocket：不会单独识别，按「未识别客户端」处理
+// - ?client=shadowrocket：会当成未知 client，最终走默认 v2ray
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -33,11 +37,19 @@ export async function onRequestGet(context) {
   }
 
   // ===== 2. 决定 client 类型 =====
+  // 先看 query 参数
   if (!client) {
     client = detectClientFromUA(ua);
   }
+
+  // 🚫 不再单独支持 shadowrocket：
+  // 如果 query 里强行传了 client=shadowrocket，这里直接当成未知客户端处理
+  if (client === "shadowrocket") {
+    client = "";
+  }
+
+  // 识别不了：默认走 v2ray Base64 订阅（安卓 / 小火箭都能吃）
   if (!client) {
-    // 识别不了：默认走 v2ray Base64 订阅，安卓兼容性最好
     client = "v2ray";
   }
 
@@ -61,7 +73,6 @@ export async function onRequestGet(context) {
   let outText = convertedText;
 
   // ===== 4. 对 Clash / Mihomo 自动套模板，生成完整配置 =====
-  // 这里以 client=clash 为主，Clash / Clash Meta / Mihomo 都用这一套
   if (client === "clash") {
     outText = buildClashFullConfig(convertedText);
   }
@@ -113,16 +124,12 @@ function extractContentFromRecord(stored) {
 function detectClientFromUA(ua) {
   const u = (ua || "").toLowerCase();
 
-  // FlyClash / Clash Meta 核心 UA：meta/0.2.0.9.Meta 之类
+  // FlyClash / Clash Meta
   if (u.includes("meta/") || u.includes(".meta")) return "clash";
 
   if (u.includes("clash") || u.includes("mihomo")) return "clash";
   if (u.includes("stash")) return "stash";
   if (u.includes("surge")) return "surge";
-
-  // ✅ 这里：小火箭直接当 v2ray 客户端
-  if (u.includes("shadowrocket")) return "v2ray";
-
   if (u.includes("quantumult x") || u.includes("quantumult_x"))
     return "quantumultx";
   if (u.includes("sing-box") || u.includes("singbox")) return "sing-box";
@@ -138,7 +145,6 @@ function detectClientFromUA(ua) {
 
 // ===== Clash / Mihomo 完整配置相关 =====
 
-// 简化版：端口 + 阿里 DNS
 const CLASH_BASE_HEADER = `port: 7890
 socks-port: 7891
 mode: Rule
@@ -162,7 +168,6 @@ function extractClashProxyNames(nodesYaml) {
     const m = line.match(/^\s*-\s*name:\s*(.+)\s*$/);
     if (m) {
       let name = m[1].trim();
-      // 去掉包裹的引号
       if (
         (name.startsWith('"') && name.endsWith('"')) ||
         (name.startsWith("'") && name.endsWith("'"))
@@ -179,7 +184,6 @@ function extractClashProxyNames(nodesYaml) {
 function buildClashFullConfig(nodesYaml) {
   const names = extractClashProxyNames(nodesYaml);
 
-  // 没解析出节点名就原样返回（至少还能用）
   if (!names.length) {
     return nodesYaml;
   }
