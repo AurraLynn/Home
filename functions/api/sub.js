@@ -1,8 +1,9 @@
 // functions/api/sub.js
-// GET /api/sub?id=<pasteId>&client=<clientName>
-// 1. 从 KV: Paste 读取内容
-// 2. 调 /api/node-convert?client=xxx 转换
-// 3. 作为订阅输出
+// 通用订阅入口：GET /api/sub?id=<pasteId>&client=<clientName>
+//
+// 1. 从 KV: Paste 读取原始内容
+// 2. 调用 /api/node-convert?client=xxx 转换成各客户端格式
+// 3. 对 Clash / Mihomo 等客户端，自动包上一份完整配置（含阿里 DNS + 简单分流）
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -16,7 +17,7 @@ export async function onRequestGet(context) {
     return new Response("missing id", { status: 400 });
   }
 
-  // ===== 1. 只用一个变量名：Paste =====
+  // ===== 1. 从 KV: Paste 读取内容 =====
   if (!env.Paste) {
     return new Response("KV namespace `Paste` not bound", { status: 500 });
   }
@@ -31,15 +32,16 @@ export async function onRequestGet(context) {
     return new Response("empty content", { status: 404 });
   }
 
-  // ===== 2. client 类型 =====
+  // ===== 2. 决定 client 类型 =====
   if (!client) {
     client = detectClientFromUA(ua);
   }
   if (!client) {
-    client = "v2ray"; // 识别不了就走 Base64 订阅
+    // 识别不了：默认走 v2ray Base64 订阅，安卓兼容性最好
+    client = "v2ray";
   }
 
-  // ===== 3. 内部调用 node-convert =====
+  // ===== 3. 调用 /api/node-convert 做节点转换 =====
   const origin = url.origin;
   const convertUrl = `${origin}/api/node-convert?client=${encodeURIComponent(
     client
@@ -50,48 +52,64 @@ export async function onRequestGet(context) {
     body: raw,
   });
 
-  // ===== 4. 透传结果 =====
-  const respHeaders = new Headers(res.headers);
-  if (client === "sing-box") {
-    respHeaders.set("content-type", "application/json; charset=utf-8");
-  } else {
-    respHeaders.set("content-type", "text/plain; charset=utf-8");
+  const convertedText = await res.text();
+
+  if (!res.ok) {
+    return new Response(convertedText || "convert error", { status: res.status });
   }
 
-  return new Response(res.body, {
-    status: res.status,
-    headers: respHeaders,
+  let outText = convertedText;
+
+  // ===== 4. 对 Clash / Mihomo 自动套模板，生成完整配置 =====
+  // 这里以 client=clash 为主，Clash / Clash Meta / Mihomo 都用这一套
+  if (client === "clash") {
+    outText = buildClashFullConfig(convertedText);
+  }
+
+  const headers = new Headers();
+
+  if (client === "sing-box") {
+    headers.set("content-type", "application/json; charset=utf-8");
+  } else {
+    headers.set("content-type", "text/plain; charset=utf-8");
+  }
+
+  return new Response(outText, {
+    status: 200,
+    headers,
   });
 }
 
-// 从 KV 记录里抽取文本内容
+// ===== 工具：从 KV 记录提取节点文本 =====
 function extractContentFromRecord(stored) {
   if (!stored) return "";
 
   const trimmed = stored.trim();
   const firstChar = trimmed[0];
 
-  // 纯文本
+  // 看起来不像 JSON，就按纯文本
   if (firstChar !== "{" && firstChar !== "[") {
     return stored;
   }
 
-  // JSON：优先找 content / text / body / raw / nodeContent / data
   try {
     const obj = JSON.parse(trimmed);
+
     if (typeof obj.content === "string") return obj.content;
     if (typeof obj.text === "string") return obj.text;
     if (typeof obj.body === "string") return obj.body;
     if (typeof obj.raw === "string") return obj.raw;
     if (typeof obj.nodeContent === "string") return obj.nodeContent;
     if (typeof obj.data === "string") return obj.data;
+
+    // 实在找不到，就把整个 JSON 再当文本
     return stored;
   } catch (e) {
     return stored;
   }
 }
 
-// UA → client
+// ===== 工具：UA → client 名 =====
 function detectClientFromUA(ua) {
   const u = (ua || "").toLowerCase();
 
@@ -108,4 +126,80 @@ function detectClientFromUA(ua) {
   if (u.includes("v2ray") || u.includes("v2rayng")) return "v2ray";
 
   return "";
+}
+
+// ===== Clash / Mihomo 完整配置相关 =====
+
+// 简化版：端口 + 阿里 DNS
+const CLASH_BASE_HEADER = `port: 7890
+socks-port: 7891
+mode: Rule
+allow-lan: true
+log-level: info
+
+dns:
+  enable: true
+  listen: 0.0.0.0:53
+  ipv6: false
+  nameserver:
+    - 223.5.5.5
+    - 223.6.6.6
+`;
+
+// 从 node-convert 返回的 YAML 里抓出所有节点名称
+function extractClashProxyNames(nodesYaml) {
+  const lines = (nodesYaml || "").split(/\r?\n/);
+  const names = [];
+  for (const line of lines) {
+    const m = line.match(/^\s*-\s*name:\s*(.+)\s*$/);
+    if (m) {
+      let name = m[1].trim();
+      // 去掉包裹的引号
+      if (
+        (name.startsWith('"') && name.endsWith('"')) ||
+        (name.startsWith("'") && name.endsWith("'"))
+      ) {
+        name = name.slice(1, -1);
+      }
+      names.push(name);
+    }
+  }
+  return names;
+}
+
+// 把节点列表塞进完整 Clash 配置
+function buildClashFullConfig(nodesYaml) {
+  const names = extractClashProxyNames(nodesYaml);
+
+  // 没解析出节点名就原样返回（至少还能用）
+  if (!names.length) {
+    return nodesYaml;
+  }
+
+  const groupName = "🐹Lyn · Node";
+
+  const groupLines = [];
+  groupLines.push("proxy-groups:");
+  groupLines.push(`  - name: "${groupName}"`);
+  groupLines.push("    type: select");
+  groupLines.push("    proxies:");
+  for (const n of names) {
+    groupLines.push('      - "' + n.replace(/"/g, '\\"') + '"');
+  }
+  groupLines.push("");
+  groupLines.push("rules:");
+  groupLines.push("  - GEOIP,LAN,DIRECT");
+  groupLines.push("  - GEOIP,CN,DIRECT");
+  groupLines.push("  - MATCH," + groupName);
+
+  const groupSection = groupLines.join("\n");
+
+  return (
+    CLASH_BASE_HEADER +
+    "\n" +
+    nodesYaml.trim() +
+    "\n\n" +
+    groupSection +
+    "\n"
+  );
 }
