@@ -892,17 +892,119 @@ function toShadowrocket(nodes) {
       if (n.udp) obj.udp = true;
       if (n.tfo) obj.tfo = true;
 
-      // simple-obfs 混淆：直接用 obfs / obfs-host / obfs-uri
-      if (n.obfs === "tls" || n.obfs === "http") {
+      // simple-obfs：用 plugin + plugin-opts 写法
+      if (n.plugin === "obfs" || n.pluginMode || n.pluginHost) {
+        obj.plugin = "obfs";
+        obj["plugin-opts"] = {
+          mode: n.pluginMode || n.obfs || "tls",
+        };
+        if (n.pluginHost || n.obfsHost) {
+          obj["plugin-opts"].host = n.pluginHost || n.obfsHost;
+        }
+      }
+
+      // 预留字段（可要可不要）
+      // obj._subName = "";
+      // obj._subDisplayName = "";
+
+      arr.push(obj);
+      continue;
+    }
+
+    // ---------- VMess ----------
+    if (n.type === "vmess") {
+      const obj = {
+        type: "vmess",
+        name: n.name || `${n.server}:${n.port}`,
+        server: n.server,
+        port: n.port,
+        uuid: n.uuid,
+        cipher: n.cipher || "auto",
+      };
+
+      if (n.tls) obj.tls = true;
+      if (n.sni) obj.sni = n.sni;
+      if (n.udp) obj.udp = true;
+      if (n.tfo) obj.tfo = true;
+
+      if (n.network === "ws") {
+        obj.network = "ws";
+        obj["ws-opts"] = {
+          path: n.path || "/",
+        };
+        if (n.host) {
+          obj["ws-opts"].headers = { Host: n.host };
+        }
+      }
+
+      // HTTP/TLS obfs（如 obfs=http，Host 来自 obfsParam）
+      if (n.obfs === "http" || n.obfs === "tls") {
         obj.obfs = n.obfs;
-        if (n.obfsHost) obj["obfs-host"] = n.obfsHost;
+        if (n.host) obj["obfs-host"] = n.host;
         if (n.path) obj["obfs-uri"] = n.path;
-        if (n.obfs === "tls") obj.tls = true; // UI 显示成 ss/tls/udp
       }
 
       arr.push(obj);
       continue;
     }
+
+    // ---------- VLESS ----------
+    if (n.type === "vless") {
+      const obj = {
+        type: "vless",
+        name: n.name || `${n.server}:${n.port}`,
+        server: n.server,
+        port: n.port,
+        uuid: n.uuid,
+        "skip-cert-verify": false,
+      };
+
+      if (n.tls) obj.tls = true;
+      if (n.sni) obj.sni = n.sni;
+      if (n.udp) obj.udp = true;
+      if (n.tfo) obj.tfo = true;
+
+      if (n.network === "ws") {
+        obj.network = "ws";
+        obj["ws-opts"] = {
+          path: n.path || "/",
+        };
+        if (n.host) {
+          obj["ws-opts"].headers = { Host: n.host };
+        }
+      }
+
+      // XTLS / PBK：小火箭有自己的高级配置方式，这里暂不强塞，避免格式错误。
+      arr.push(obj);
+      continue;
+    }
+
+    // ---------- Trojan ----------
+    if (n.type === "trojan") {
+      const obj = {
+        type: "trojan",
+        name: n.name || `${n.server}:${n.port}`,
+        server: n.server,
+        port: n.port,
+        password: n.password,
+      };
+
+      if (n.tls) obj.tls = true;
+      if (n.sni) obj.sni = n.sni;
+      if (n.udp) obj.udp = true;
+      if (n.tfo) obj.tfo = true;
+
+      arr.push(obj);
+      continue;
+    }
+  }
+
+  // 输出格式：
+  // proxies:
+  //   - {...}
+  //   - {...}
+  return "proxies:\n  - " + arr.map((x) => JSON.stringify(x)).join("\n  - ");
+}
 
     // ---------- VMess ----------
     if (n.type === "vmess") {
