@@ -1,9 +1,8 @@
 // functions/api/sub.js
-// 通用订阅入口：GET /api/sub?id=<pasteId>&client=<clientName>
-//
-// 1. 从 KV 中读取对应 id 的原始内容
-// 2. 内部调用 /api/node-convert?client=xxx 做格式转换
-// 3. 输出给各客户端作为订阅地址使用
+// GET /api/sub?id=<pasteId>&client=<clientName>
+// 1. 从 KV: Paste 读取内容
+// 2. 调 /api/node-convert?client=xxx 转换
+// 3. 作为订阅输出
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -17,23 +16,12 @@ export async function onRequestGet(context) {
     return new Response("missing id", { status: 400 });
   }
 
-  // ========= 1. 从 KV 中取出原始节点内容 =========
-  // 为了稳妥，这里兼容多种变量名，你至少绑定了其中一个就行
-  const kv =
-    env.Paste ||      // 你截图里的绑定就是这个
-    env.PasteBox ||   // 之前可能用过
-    env.PASTE ||
-    env.Paste_KV ||
-    env.PASTE_KV;
-
-  if (!kv) {
-    return new Response(
-      "KV namespace for Paste not bound (tried: Paste, PasteBox, PASTE, Paste_KV, PASTE_KV)",
-      { status: 500 }
-    );
+  // ===== 1. 只用一个变量名：Paste =====
+  if (!env.Paste) {
+    return new Response("KV namespace `Paste` not bound", { status: 500 });
   }
 
-  const stored = await kv.get(id);
+  const stored = await env.Paste.get(id);
   if (!stored) {
     return new Response("not found", { status: 404 });
   }
@@ -43,16 +31,15 @@ export async function onRequestGet(context) {
     return new Response("empty content", { status: 404 });
   }
 
-  // ========= 2. 决定 client 类型 =========
+  // ===== 2. client 类型 =====
   if (!client) {
     client = detectClientFromUA(ua);
   }
   if (!client) {
-    // 识别不了，就走 v2ray（Base64 订阅），安卓客户端普遍可用
-    client = "v2ray";
+    client = "v2ray"; // 识别不了就走 Base64 订阅
   }
 
-  // ========= 3. 内部调用 /api/node-convert =========
+  // ===== 3. 内部调用 node-convert =====
   const origin = url.origin;
   const convertUrl = `${origin}/api/node-convert?client=${encodeURIComponent(
     client
@@ -63,9 +50,8 @@ export async function onRequestGet(context) {
     body: raw,
   });
 
-  // ========= 4. 把 node-convert 的响应透传出去 =========
+  // ===== 4. 透传结果 =====
   const respHeaders = new Headers(res.headers);
-
   if (client === "sing-box") {
     respHeaders.set("content-type", "application/json; charset=utf-8");
   } else {
@@ -78,43 +64,34 @@ export async function onRequestGet(context) {
   });
 }
 
-/**
- * 从 KV 读出的字符串里提取真正的节点内容：
- * 1. 如果是纯文本：直接返回
- * 2. 如果是 JSON：优先取 content / text / body / raw / nodeContent 等字段
- */
+// 从 KV 记录里抽取文本内容
 function extractContentFromRecord(stored) {
   if (!stored) return "";
 
   const trimmed = stored.trim();
   const firstChar = trimmed[0];
 
-  // 看起来不像 JSON，就按纯文本
+  // 纯文本
   if (firstChar !== "{" && firstChar !== "[") {
     return stored;
   }
 
+  // JSON：优先找 content / text / body / raw / nodeContent / data
   try {
     const obj = JSON.parse(trimmed);
-
     if (typeof obj.content === "string") return obj.content;
     if (typeof obj.text === "string") return obj.text;
     if (typeof obj.body === "string") return obj.body;
     if (typeof obj.raw === "string") return obj.raw;
     if (typeof obj.nodeContent === "string") return obj.nodeContent;
     if (typeof obj.data === "string") return obj.data;
-
-    // 实在找不到，就把整个 JSON 再当文本返回（让 node-convert 自己处理）
     return stored;
   } catch (e) {
-    // 解析 JSON 失败，当纯文本
     return stored;
   }
 }
 
-/**
- * 根据 User-Agent 猜测客户端类型，映射为 /api/node-convert 的 client 参数
- */
+// UA → client
 function detectClientFromUA(ua) {
   const u = (ua || "").toLowerCase();
 
