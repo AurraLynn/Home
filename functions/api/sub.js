@@ -3,7 +3,7 @@
 //
 // 1. 从 KV: Paste 读取原始内容
 // 2. 调用 /api/node-convert?client=xxx 转换成各客户端格式
-// 3. 对 Clash / Mihomo 等客户端，自动包上一份完整配置（含阿里 DNS + 简单分流）
+// 3. 对 Clash / Mihomo / FlyClash 等，自动包上一份完整配置（含阿里 DNS + 简单分流）
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -33,12 +33,20 @@ export async function onRequestGet(context) {
   }
 
   // ===== 2. 决定 client 类型 =====
+
+  // 1）URL 明确指定（优先级最高）
   if (!client) {
-    client = detectClientFromUA(ua);
+    client = detectClientFromUA(ua);   // 2）根据 UA 猜
   }
+
+  // 3）都猜不到 → 默认当 Clash 处理（给 YAML 完整配置）
   if (!client) {
-    // 识别不了：默认走 v2ray Base64 订阅，安卓兼容性最好
-    client = "v2ray";
+    // 如果 UA 看起来是 v2ray 家族，再兜一层
+    if (looksLikeV2RayUA(ua)) {
+      client = "v2ray";
+    } else {
+      client = "clash";
+    }
   }
 
   // ===== 3. 调用 /api/node-convert 做节点转换 =====
@@ -60,8 +68,7 @@ export async function onRequestGet(context) {
 
   let outText = convertedText;
 
-  // ===== 4. 对 Clash / Mihomo 自动套模板，生成完整配置 =====
-  // 这里以 client=clash 为主，Clash / Clash Meta / Mihomo 都用这一套
+  // ===== 4. 对 Clash/Mihomo/FlyClash 自动套模板，生成完整配置 =====
   if (client === "clash") {
     outText = buildClashFullConfig(convertedText);
   }
@@ -109,15 +116,13 @@ function extractContentFromRecord(stored) {
   }
 }
 
-// ===== 工具：UA → client 名 =====
-// UA → client
+// ===== 工具：UA → client 名（只负责“明显能分出来”的情况） =====
 function detectClientFromUA(ua) {
   const u = (ua || "").toLowerCase();
 
-  // ✅ 先特殊处理 FlyClash
+  // FlyClash 显式归为 Clash
   if (u.includes("flyclash")) return "clash";
 
-  // 下面这些保持不变
   if (u.includes("clash") || u.includes("mihomo")) return "clash";
   if (u.includes("stash")) return "stash";
   if (u.includes("surge")) return "surge";
@@ -129,8 +134,21 @@ function detectClientFromUA(ua) {
   if (u.includes("loon")) return "loon";
   if (u.includes("surfboard")) return "surfboard";
   if (u.includes("v2ray") || u.includes("v2rayng")) return "v2ray";
+  if (u.includes("hiddify")) return "v2ray";
+  if (u.includes("nekobox")) return "v2ray";
 
+  // 识别不了就返回空，让上层走默认
   return "";
+}
+
+// 专门判断“是不是更像 v2ray 家族”
+function looksLikeV2RayUA(ua) {
+  const u = (ua || "").toLowerCase();
+  if (u.includes("v2ray") || u.includes("v2rayng")) return true;
+  if (u.includes("hiddify")) return true;
+  if (u.includes("nekobox")) return true;
+  if (u.includes("xray")) return true;
+  return false;
 }
 
 // ===== Clash / Mihomo 完整配置相关 =====
