@@ -7,7 +7,7 @@
 // 支持协议（解析阶段）：
 // - ss
 // - vmess（JSON base64 + "auto:uuid@host:port" base64 两种）
-// - vless（标准 URL + 部分机场用 base64 包当前 userinfo 的变种）
+// - vless（标准 URL + 部分机场用 base64 包 userinfo 的变种）
 // - trojan
 //
 // 重点字段：
@@ -26,7 +26,7 @@
 // - shadowrocket
 // - quantumultx
 // - sing-box
-// - v2ray（★ 现在直接用原始节点 raw → 再整体 UTF-8 Base64，不再重构）
+// - v2ray（★ 用原始 raw 行整体做 UTF-8 Base64，不重构链接）
 // 未识别 → 默认 v2ray
 
 export async function onRequestPost(context) {
@@ -125,7 +125,7 @@ export async function onRequestPost(context) {
  *   plugin: '',
  *   obfs: '',
  *   obfsHost: '',
- *   raw: '原始行（尽量原封不动保存，给 v2ray 用）'
+ *   raw: '原始行（给 v2ray 订阅直接用）'
  * }
  */
 
@@ -137,7 +137,6 @@ function parseNodesFromText(text) {
   if (!raw.includes("://") && isLikelyBase64(raw)) {
     const decoded = safeBase64Decode(raw);
     if (decoded && decoded.includes("://")) {
-      // 这里返回的是 decode 后的内容，每一行仍然会被保存到 node.raw
       return parseNodesFromText(decoded);
     }
   }
@@ -157,8 +156,7 @@ function parseNodesFromText(text) {
       if (s.includes("://")) {
         const node = parseSingleUri(s);
         if (node) {
-          // ★ 保存原始节点串，后面 v2ray 订阅直接用
-          node.raw = s;
+          node.raw = s; // ★ 保留原始节点串
           nodes.push(node);
         }
         continue;
@@ -170,7 +168,7 @@ function parseNodesFromText(text) {
         if (decoded && decoded.includes("://")) {
           const subNodes = parseNodesFromText(decoded);
           subNodes.forEach((n) => {
-            if (!n.raw) n.raw = decoded; // 极端情况兜底
+            if (!n.raw) n.raw = decoded;
             nodes.push(n);
           });
           continue;
@@ -254,8 +252,15 @@ function parseShadowsocks(uri) {
     }
   }
 
-  const [method, passwordRaw] = userinfo.split(":");
+  // ★ 只在第一个冒号处分割，后面全部是密码（支持密码里再带 ':'）
+  const colonIndex = userinfo.indexOf(":");
+  if (colonIndex === -1) {
+    throw new Error("invalid ss userinfo");
+  }
+  const method = userinfo.slice(0, colonIndex);
+  const passwordRaw = userinfo.slice(colonIndex + 1);
   const password = passwordRaw || "";
+
   const [server, portStrAndQuery] = serverPart.split(":");
   const [portStr, queryStr] = portStrAndQuery.split("?");
   const port = Number(portStr);
@@ -285,12 +290,14 @@ function parseShadowsocks(uri) {
   if (plugin) {
     node.plugin = plugin;
 
-    // simple-obfs: obfs-local;obfs=tls;obfs-host=xxx
+    // simple-obfs: obfs-local;obfs=tls;obfs-host=xxx;obfs-uri=/
     if (plugin.includes("obfs-local")) {
       const modeMatch = /obfs=([^;]+)/.exec(plugin);
       if (modeMatch) node.obfs = modeMatch[1]; // http / tls
       const hostMatch = /obfs-host=([^;]+)/.exec(plugin);
       if (hostMatch) node.obfsHost = decodeURIComponent(hostMatch[1]);
+      const uriMatch = /obfs-uri=([^;]+)/.exec(plugin);
+      if (uriMatch) node.path = uriMatch[1]; // 有些软件把 obfs-uri 当 path 用
       if (node.obfs === "tls") {
         node.tls = true;
       }
@@ -368,9 +375,9 @@ function parseVmess(uri) {
   let cipher = "auto";
   let uuid = userinfo;
   if (userinfo.includes(":")) {
-    const parts = userinfo.split(":");
-    cipher = parts[0] || "auto";
-    uuid = parts[1] || "";
+    const idx = userinfo.indexOf(":");
+    cipher = userinfo.slice(0, idx) || "auto";
+    uuid = userinfo.slice(idx + 1) || "";
   }
 
   let host = "";
@@ -432,7 +439,7 @@ function parseVlessOrTrojan(uri, type) {
 
   let userDecoded = "";
 
-  // 一些机场会把 "none:uuid@host:port" 整个 base64 放在 username 里
+  // 一些机场会把 "none:uuid@host:port" 或 "auto:uuid@host:port" base64 放在 username 里
   if (url.username && isLikelyBase64(url.username)) {
     const d = safeBase64Decode(url.username);
     if (d) userDecoded = d;
@@ -440,32 +447,23 @@ function parseVlessOrTrojan(uri, type) {
 
   let uuid = "";
   let password = "";
-  let server = url.hostname;
-  let port = url.port;
 
+  // ★ 这里只从 userDecoded 里提取 uuid / password，不再从里面改 server / port
   if (userDecoded) {
-    if (userDecoded.includes("@")) {
-      const [userinfo, addr] = userDecoded.split("@");
-      const uparts = userinfo.split(":");
+    const atIndex = userDecoded.indexOf("@");
+    const userPart = atIndex >= 0 ? userDecoded.slice(0, atIndex) : userDecoded;
+
+    const colonIndex = userPart.indexOf(":");
+    if (colonIndex >= 0) {
+      const right = userPart.slice(colonIndex + 1);
       if (type === "vless") {
-        uuid = uparts.length >= 2 ? uparts[1] : uparts[0];
+        uuid = right || userPart;
       } else {
-        password = uparts.length >= 2 ? uparts[1] : uparts[0];
-      }
-      if (addr.includes(":")) {
-        const [h, p] = addr.split(":");
-        server = h;
-        port = p;
-      } else {
-        server = addr;
+        password = right || userPart;
       }
     } else {
-      const uparts = userDecoded.split(":");
-      if (type === "vless") {
-        uuid = uparts.length >= 2 ? uparts[1] : uparts[0];
-      } else {
-        password = uparts.length >= 2 ? uparts[1] : uparts[0];
-      }
+      if (type === "vless") uuid = userPart;
+      else password = userPart;
     }
   }
 
@@ -476,7 +474,8 @@ function parseVlessOrTrojan(uri, type) {
     password = url.username || "";
   }
 
-  const portNum = Number(port || 0) || 443;
+  const server = url.hostname;
+  const portNum = Number(url.port || 0) || 443;
 
   const remarks = q.get("remarks");
   const hashName = decodeURIComponent(url.hash?.slice(1) || "");
@@ -572,6 +571,7 @@ function toClash(nodes) {
         lines.push(`    plugin-opts:`);
         lines.push(`      mode: ${n.obfs}`);
         if (n.obfsHost) lines.push(`      host: ${n.obfsHost}`);
+        if (n.path) lines.push(`      path: ${n.path}`);
       } else if (n.plugin && n.plugin.includes("v2ray-plugin")) {
         lines.push(`    plugin: v2ray-plugin`);
         lines.push(`    plugin-opts:`);
@@ -937,18 +937,21 @@ function toSingBox(nodes) {
 /* ----------------------------- V2Ray 订阅输出 ----------------------------- */
 /**
  * ★ 关键点：
- * 现在对 client=v2ray 时：
- * - 不再重构 URI（避免丢混淆 / xtls / pbk / tfo 等）
- * - 直接用 node.raw（你原始上传的节点），一行一条
- * - 最后整体做 UTF-8 Base64
+ * client=v2ray 时：
+ * - 优先直接用 node.raw（你原始 paste 的整条 URI），一行一条
+ * - 最后整体 UTF-8 Base64
+ * - 只有极端情况 node.raw 不存在时，才 fallback 重构（避免再乱改混淆）
  */
 function toV2RaySubscription(nodes) {
   const lines = [];
   for (const n of nodes) {
     if (n.raw && n.raw.includes("://")) {
       lines.push(n.raw.trim());
-    } else if (n.type === "ss") {
-      // 极端兜底：实在没有 raw 再重构一条基本 ss
+      continue;
+    }
+
+    // 极端兜底，用解析结果重构
+    if (n.type === "ss") {
       const userinfo = `${n.cipher}:${n.password}`;
       const b64User = encodeBase64Utf8(userinfo);
       const name = encodeURIComponent(n.name || `${n.server}:${n.port}`);
