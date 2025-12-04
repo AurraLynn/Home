@@ -892,7 +892,7 @@ function toShadowrocket(nodes) {
       if (n.udp) obj.udp = true;
       if (n.tfo) obj.tfo = true;
 
-      // simple-obfs：用 plugin + plugin-opts 写法
+      // simple-obfs：用 plugin + plugin-opts 写法（逻辑上无害）
       if (n.plugin === "obfs" || n.pluginMode || n.pluginHost) {
         obj.plugin = "obfs";
         obj["plugin-opts"] = {
@@ -903,9 +903,18 @@ function toShadowrocket(nodes) {
         }
       }
 
-      // 预留字段（可要可不要）
-      // obj._subName = "";
-      // obj._subDisplayName = "";
+      // ✅ 关键：再额外补一套 obfs / obfs-host / obfs-uri
+      // 这个是很多转换器给 Shadowrocket / Surge 用的字段，
+      // 小火箭 UI 里的「混淆 / Host」更大概率是认这一套。
+      if (n.pluginMode || n.obfs) {
+        obj.obfs = n.pluginMode || n.obfs; // "tls" / "http"
+      }
+      if (n.pluginHost || n.obfsHost) {
+        obj["obfs-host"] = n.pluginHost || n.obfsHost;
+      }
+      if (n.path) {
+        obj["obfs-uri"] = n.path;
+      }
 
       arr.push(obj);
       continue;
@@ -937,7 +946,6 @@ function toShadowrocket(nodes) {
         }
       }
 
-      // HTTP/TLS obfs（如 obfs=http，Host 来自 obfsParam）
       if (n.obfs === "http" || n.obfs === "tls") {
         obj.obfs = n.obfs;
         if (n.host) obj["obfs-host"] = n.host;
@@ -974,7 +982,6 @@ function toShadowrocket(nodes) {
         }
       }
 
-      // XTLS / PBK：小火箭有自己的高级配置方式，这里暂不强塞，避免格式错误。
       arr.push(obj);
       continue;
     }
@@ -999,7 +1006,7 @@ function toShadowrocket(nodes) {
     }
   }
 
-  // 输出格式：
+  // 输出为：
   // proxies:
   //   - {...}
   //   - {...}
