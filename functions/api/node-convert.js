@@ -4,14 +4,15 @@
 //
 // 支持输入：
 //   - ss://...       （URL 格式，支持 obfs-local http/tls 混淆）
-//   - shadowsocks=.. （Quantumult X 行）
+//   - shadowsocks=.. （Quantumult X shadowsocks 行）
+//   - vless://...    （支持你给的 Base64 打包形式，以及标准 UUID@host:port）
 //   - 其它协议（vmess/vless/trojan...）只在 v2ray Base64 订阅中使用
 //
 // client 行为：
 //   - v2ray / 其它未知： 通用 Base64 订阅
 //   - clash/mihomo/stash/egern/surfboard/loon：只输出 SS 的 Clash YAML
 //   - surge：只输出 SS 的 Surge 行
-//   - quantumultx：只输出 SS 的 QX 行（shadowsocks=...）
+//   - quantumultx：输出 SS + VLESS 的 QX 行（shadowsocks=... / vless=...）
 //   - 不对小火箭做适配，小火箭直接用 Base64 订阅
 
 export async function onRequestPost(context) {
@@ -46,6 +47,9 @@ export async function onRequestPost(context) {
       nodes.push(n);
     } else if (lower.startsWith("shadowsocks=")) {
       const n = parseShadowsocksQXLenient(line);
+      nodes.push(n);
+    } else if (lower.startsWith("vless://")) {
+      const n = parseVlessLenient(line);
       nodes.push(n);
     } else {
       const scheme = line.split(":", 1)[0].toLowerCase();
@@ -90,10 +94,8 @@ function safeBase64Decode(input) {
   try {
     let s = (input || "").trim();
     s = s.replace(/-/g, "+").replace(/_/g, "/");
-    const pad = s.length % 4;
-    if (pad === 2) s += "==";
-    else if (pad === 3) s += "=";
-    else if (pad === 1) s += "===";
+    const pad = (-s.length) % 4;
+    if (pad > 0) s += "=".repeat(pad);
     return decodeURIComponent(escape(atob(s)));
   } catch (_e) {
     return "";
@@ -105,10 +107,7 @@ function utf8ToBase64(str) {
 }
 
 /* ========== Shadowsocks 解析：宽松 ss:// URL ========== */
-/**
- * 不抛异常，至少保证：
- *   { type:"ss", server, port, cipher, password, name, obfs, obfsHost }
- */
+
 function parseShadowsocksLenient(uri) {
   try {
     let u = uri.replace(/^ss:\/\//i, "");
@@ -130,11 +129,9 @@ function parseShadowsocksLenient(uri) {
 
     const atIndex = u.lastIndexOf("@");
     if (atIndex !== -1) {
-      // BASE64(userinfo)@server:port?query  或  userinfo@server:port?query
       userinfoPart = u.slice(0, atIndex);
       serverPart = u.slice(atIndex + 1);
     } else {
-      // 可能是 BASE64(method:pwd@server:port?query)
       const decoded = safeBase64Decode(u);
       if (decoded && decoded.includes("@")) {
         const idx = decoded.indexOf("@");
@@ -234,7 +231,6 @@ function parseShadowsocksLenient(uri) {
       path: pluginPath || "/",
     };
   } catch (_e) {
-    // 极限兜底：至少给一个 ss 节点
     return {
       raw: uri,
       scheme: "ss",
@@ -344,12 +340,101 @@ function parseShadowsocksQXLenient(line) {
   }
 }
 
-/* ========== host:port 纠正（重点修你遇到的问题） ========== */
+/* ========== VLESS 解析：宽松 vless:// ========== */
 /**
- * 目的：
- *   把任何奇怪的 server（例如 "cnc...xyz:14091/"）+ port(8388)
- *   规范化成 host="cnc...xyz" + port=14091
+ * 支持你这类：
+ *   vless://BASE64("auto:UUID@host:port")?remarks=NAME
+ * 也尽量兼容标准形式：
+ *   vless://UUID@host:port?xxx
  */
+function parseVlessLenient(uri) {
+  try {
+    let u = uri.replace(/^vless:\/\//i, "");
+
+    // 先剥离 query
+    let main = u;
+    let queryStr = "";
+    const qIndex = u.indexOf("?");
+    if (qIndex !== -1) {
+      main = u.slice(0, qIndex);
+      queryStr = u.slice(qIndex + 1);
+    }
+
+    let decoded = safeBase64Decode(main);
+    let userinfoHostPort = "";
+
+    if (decoded && decoded.includes("@") && decoded.includes(":")) {
+      // 形如 auto:UUID@host:port
+      userinfoHostPort = decoded;
+    } else {
+      // 形如 UUID@host:port
+      userinfoHostPort = main;
+    }
+
+    // 拆 userinfo 与 host:port
+    const atIndex = userinfoHostPort.indexOf("@");
+    if (atIndex === -1) {
+      throw new Error("invalid vless: missing @");
+    }
+    const userinfo = userinfoHostPort.slice(0, atIndex);
+    const hostPortRaw = userinfoHostPort.slice(atIndex + 1);
+
+    // UUID 在 userinfo 里，通常形如 auto:uuid 或直接 uuid
+    const parts = userinfo.split(":");
+    const uuid = parts[parts.length - 1] || "";
+
+    // host 与 port
+    const hostPort = hostPortRaw.trim();
+    let host = hostPort || "0.0.0.0";
+    let port = 443;
+    const m = /:(\d+)$/.exec(hostPort);
+    if (m) {
+      port = parseInt(m[1], 10) || 443;
+      host = hostPort.slice(0, m.index);
+    }
+
+    // 备注：从 query 中取 remarks / name / tag
+    let name = `${host}:${port}`;
+    if (queryStr) {
+      const q = new URLSearchParams(queryStr);
+      const r =
+        q.get("remarks") || q.get("name") || q.get("tag") || q.get("remark");
+      if (r) {
+        try {
+          name = decodeURIComponent(r);
+        } catch (_e) {
+          name = r;
+        }
+      }
+    }
+
+    return {
+      raw: uri,
+      scheme: "vless",
+      type: "vless",
+
+      name,
+      server: host,
+      port,
+      uuid,
+      encryption: "none",
+    };
+  } catch (_e) {
+    return {
+      raw: uri,
+      scheme: "vless",
+      type: "vless",
+      name: uri,
+      server: "0.0.0.0",
+      port: 443,
+      uuid: "",
+      encryption: "none",
+    };
+  }
+}
+
+/* ========== host:port 纠正（给 QX / Clash 用） ========== */
+
 function normalizeHostPort(server, port) {
   let host = (server || "").trim();
   let finalPort = port;
@@ -360,7 +445,7 @@ function normalizeHostPort(server, port) {
     host = host.slice(0, cut);
   }
 
-  // 如果 host 自己还带 :数字，就优先用那里的端口
+  // 如果 host 自己带 :数字，就优先用后面的端口
   const m = /^(.*):(\d+)$/.exec(host);
   if (m) {
     host = m[1];
@@ -368,13 +453,13 @@ function normalizeHostPort(server, port) {
   }
 
   if (!Number.isFinite(finalPort) || finalPort <= 0) {
-    finalPort = 8388;
+    finalPort = 443;
   }
 
   return { host, port: finalPort };
 }
 
-/* ========== V2Ray 订阅 ========== */
+/* ========== V2Ray 订阅（Base64） ========== */
 
 function buildV2raySubscription(nodes) {
   const text = nodes
@@ -459,38 +544,54 @@ function buildSurgeConfig(nodes) {
   return lines.join("\n") + "\n";
 }
 
-/* ========== Quantumult X（只输出 SS） ========== */
+/* ========== Quantumult X（SS + VLESS） ========== */
 
 function buildQuantumultXConfig(nodes) {
   const lines = [];
 
   for (const n of nodes) {
-    if (n.type !== "ss") continue;
+    if (n.type === "ss") {
+      const { host, port } = normalizeHostPort(n.server, n.port);
+      const name = (n.name || `${host}:${port}`).replace(/,/g, " ");
+      const method = n.cipher;
+      const password = n.password;
 
-    const { host, port } = normalizeHostPort(n.server, n.port);
-    const name = (n.name || `${host}:${port}`).replace(/,/g, " ");
-    const method = n.cipher;
-    const password = n.password;
+      const parts = [];
+      parts.push(`shadowsocks=${host}:${port}`);
+      parts.push(`method=${method}`);
+      parts.push(`password=${password}`);
 
-    const parts = [];
-    parts.push(`shadowsocks=${host}:${port}`);
-    parts.push(`method=${method}`);
-    parts.push(`password=${password}`);
-
-    if (n.plugin === "obfs" && n.pluginMode) {
-      parts.push(`obfs=${n.pluginMode}`);
-      if (n.pluginHost) {
-        parts.push(`obfs-host=${n.pluginHost}`);
+      if (n.plugin === "obfs" && n.pluginMode) {
+        parts.push(`obfs=${n.pluginMode}`);
+        if (n.pluginHost) {
+          parts.push(`obfs-host=${n.pluginHost}`);
+        }
       }
+
+      parts.push(`tag=${name}`);
+
+      lines.push(parts.join(","));
+    } else if (n.type === "vless") {
+      const { host, port } = normalizeHostPort(n.server, n.port);
+      const name = (n.name || `${host}:${port}`).replace(/,/g, " ");
+      const uuid = n.uuid || "";
+
+      const parts = [];
+      // 🟡 这里就是你要的格式：
+      // vless=host:port,method=none,password=UUID,tag=NAME
+      parts.push(`vless=${host}:${port}`);
+      parts.push("method=none");
+      if (uuid) {
+        parts.push(`password=${uuid}`);
+      }
+      parts.push(`tag=${name}`);
+
+      lines.push(parts.join(","));
     }
-
-    parts.push(`tag=${name}`);
-
-    lines.push(parts.join(","));
   }
 
   if (!lines.length) {
-    return "# no shadowsocks nodes\n";
+    return "# no shadowsocks/vless nodes\n";
   }
   return lines.join("\n") + "\n";
 }
