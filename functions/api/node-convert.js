@@ -2,22 +2,28 @@
 //
 // 通用节点转换：POST /api/node-convert?client=<clientName>
 //
-// 当前版本策略：
-//
-// 1. 专门支持 Shadowsocks：
-//    - ss:// BASE64(method:password)@server:port?plugin=...
-//    - ss:// BASE64(method:password@server:port?plugin=...)
+// 设计目标：
+// 1. 专门解析 Shadowsocks：
+//    - ss://BASE64(method:password)@server:port?plugin=...
+//    - ss://BASE64(method:password@server:port?plugin=...)
 //    - 支持 plugin=obfs-local;obfs=http|tls;obfs-host=...;obfs-uri=/path
-//    - 支持 security=1 / udp=1 / udp=true 标记 UDP 开启
-// 2. 对 vmess / vless / trojan 等其它协议：不解析，只保留原始行，在 v2ray 订阅里原样输出。
+//    - 支持 security=1 / udp=1 / udp=true（只解析，不一定输出）
+// 2. vmess / vless / trojan 等其它协议：不做结构化解析，只在 v2ray 订阅中原样输出。
 // 3. client 行为：
-//    - client=v2ray            → 所有原始行拼在一起做一次 Base64（通用 V2 订阅）
-//    - client=clash/mihomo/... → 生成只包含 SS 节点的 Clash YAML（含 http/tls 混淆 & UDP）
-//    - client=surge            → 生成 SS 的 Surge 行
-//    - client=quantumultx      → 生成 SS 的 Quantumult X 行（不含 obfs-uri / udp-relay）
-//    - 其它 client             → 回退到 v2ray Base64 订阅
+//    - client=v2ray
+//         → 通用 V2 订阅（所有原始节点文本拼成多行，然后整体 Base64）
+//    - client=clash / mihomo / stash / egern / surfboard / loon
+//         → 生成只包含 Shadowsocks 节点的 Clash YAML（含 http/tls 混淆）
+//    - client=surge
+//         → 生成 Shadowsocks 的 Surge 行（含 http/tls 混淆）
+//    - client=quantumultx
+//         → 生成 Shadowsocks 的 Quantumult X 行：
+//            shadowsocks=server:port,method=...,password=...,obfs=http,obfs-host=...,tag=名字
+//         → 不输出 obfs-uri / udp-relay
+//    - 其它 client（包括小火箭）
+//         → 回退到 v2ray Base64 订阅（原始 ss:// / vmess:// 不动，让客户端自己解析）
 //
-// 不包含任何针对 Shadowrocket 的专用逻辑。
+// 节点名称可以是 emoji、中文及各种特殊字符，不会报错。
 
 export async function onRequestPost(context) {
   const { request } = context;
@@ -27,7 +33,7 @@ export async function onRequestPost(context) {
   const rawText = await request.text();
   const text = rawText || "";
 
-  // 先拆行，去掉空行和注释
+  // 1. 拆行，去掉空行和注释
   const lines = text
     .split(/\r?\n/)
     .map((l) => l.trim())
@@ -40,21 +46,20 @@ export async function onRequestPost(context) {
     });
   }
 
-  // 解析为节点对象数组
+  // 2. 解析为“节点对象数组”
   const nodes = [];
   for (const line of lines) {
     const lower = line.toLowerCase();
     if (lower.startsWith("ss://")) {
-      // Shadowsocks：做结构化解析（含混淆 + UDP）
       try {
         const n = parseShadowsocks(line);
         nodes.push(n);
       } catch (_e) {
-        // 单条 ss 解析失败，保留原始文本，至少 v2 订阅还能用
+        // 某条 ss 解析失败，保留原文，至少 V2 订阅还能用
         nodes.push({ raw: line, scheme: "ss-raw" });
       }
     } else {
-      // 其它协议：只保留原始文本
+      // 其它协议：只记录原文和 scheme
       const scheme = line.split(":", 1)[0].toLowerCase();
       nodes.push({ raw: line, scheme });
     }
@@ -76,17 +81,17 @@ export async function onRequestPost(context) {
     // 通用 V2 订阅：原始节点文本 → Base64
     outText = buildV2raySubscription(nodes);
   } else if (clashClients.has(client)) {
-    // Clash 系：只输出 Shadowsocks 节点的 YAML
+    // Clash 系：输出 Shadowsocks 节点 YAML
     outText = buildClashConfig(nodes);
     contentType = "text/yaml; charset=utf-8";
   } else if (client === "surge") {
-    // Surge：输出 SS 行
+    // Surge 格式
     outText = buildSurgeConfig(nodes);
   } else if (client === "quantumultx") {
-    // Quantumult X：输出 SS 行（不含 obfs-uri / udp-relay）
+    // Quantumult X Shadowsocks 行
     outText = buildQuantumultXConfig(nodes);
   } else {
-    // 其它客户端：统一回退到 V2 订阅
+    // 其他客户端（包含小火箭等）：统一使用 V2 Base64 订阅
     outText = buildV2raySubscription(nodes);
   }
 
@@ -98,7 +103,7 @@ export async function onRequestPost(context) {
   });
 }
 
-/* ================= 工具：Base64 与 UTF-8 ================= */
+/* ================= Base64 & UTF-8 ================= */
 
 function safeBase64Decode(input) {
   try {
@@ -119,11 +124,21 @@ function utf8ToBase64(str) {
 }
 
 /* ================= Shadowsocks 解析 ================= */
-
+/**
+ * 支持：
+ *   ss://BASE64(method:password)@server:port?plugin=...
+ *   ss://BASE64(method:password@server:port?plugin=...)
+ *
+ * 混淆：
+ *   plugin=obfs-local;obfs=http|tls;obfs-host=xxx;obfs-uri=/path
+ *
+ * UDP：
+ *   security=1 / udp=1 / udp=true（解析出来存储，但默认不在生成格式中输出）
+ */
 function parseShadowsocks(uri) {
   let u = uri.replace(/^ss:\/\//i, "");
 
-  // 备注（# 后）
+  // 1. 处理备注（# 后的部分）
   let name = "";
   const hashIndex = u.indexOf("#");
   if (hashIndex !== -1) {
@@ -136,21 +151,21 @@ function parseShadowsocks(uri) {
 
   const atIndex = u.indexOf("@");
   if (atIndex !== -1) {
-    // BASE64(method:pwd)@server:port?query
+    // 形式：BASE64(method:pwd)@server:port?query
     userinfo = u.slice(0, atIndex);
     serverPart = u.slice(atIndex + 1);
   } else {
-    // BASE64(method:pwd@server:port?query)
+    // 形式：BASE64(method:pwd@server:port?query)
     const decodedAll = safeBase64Decode(u);
     if (!decodedAll || !decodedAll.includes("@")) {
-      throw new Error("invalid ss uri");
+      throw new Error("invalid ss uri (no @ after decoding)");
     }
     const idx = decodedAll.indexOf("@");
     userinfo = decodedAll.slice(0, idx);
     serverPart = decodedAll.slice(idx + 1);
   }
 
-  // userinfo 仍可能是 BASE64(method:pwd)
+  // userinfo 可能还是 Base64（method:pwd）
   if (!userinfo.includes(":")) {
     const decodedUser = safeBase64Decode(userinfo);
     if (decodedUser && decodedUser.includes(":")) {
@@ -160,18 +175,28 @@ function parseShadowsocks(uri) {
 
   const colonIndex = userinfo.indexOf(":");
   if (colonIndex === -1) {
-    throw new Error("invalid ss userinfo");
+    throw new Error("invalid ss userinfo (no :)");
   }
   const method = userinfo.slice(0, colonIndex); // cipher
-  const password = userinfo.slice(colonIndex + 1); // 密码（可包含冒号）
+  const password = userinfo.slice(colonIndex + 1); // 密码，可包含冒号
 
-  const [hostPort, queryStr = ""] = serverPart.split("?");
-  const lastColon = hostPort.lastIndexOf(":");
-  if (lastColon === -1) {
-    throw new Error("invalid ss host/port");
+  // 2. 解析 server:port?query —— 这里是关键，修掉 NaN
+  const [hostPortRaw, queryStr = ""] = serverPart.split("?");
+  const hostPort = hostPortRaw.trim();
+
+  // 用正则从结尾提取端口，只接受纯数字：  something:12345
+  const m = /:(\d+)$/.exec(hostPort);
+  if (!m) {
+    throw new Error("invalid ss host/port (no :port)");
   }
-  const server = hostPort.slice(0, lastColon);
-  const port = Number(hostPort.slice(lastColon + 1));
+
+  const portStr = m[1];
+  const port = parseInt(portStr, 10);
+  if (!Number.isFinite(port)) {
+    throw new Error("invalid ss port (NaN)");
+  }
+
+  const server = hostPort.slice(0, m.index); // m.index 是 ":" 的位置
 
   const q = new URLSearchParams(queryStr);
 
@@ -187,7 +212,7 @@ function parseShadowsocks(uri) {
       plugin = "obfs";
 
       const mMode = /obfs=([^;]+)/.exec(pluginRaw);
-      if (mMode) pluginMode = mMode[1]; // http / tls
+      if (mMode) pluginMode = mMode[1];
 
       const mHost = /obfs-host=([^;]+)/.exec(pluginRaw);
       if (mHost) pluginHost = decodeURIComponent(mHost[1] || "");
@@ -197,7 +222,7 @@ function parseShadowsocks(uri) {
     }
   }
 
-  // UDP 标记
+  // UDP 标记（目前只解析，不强制在输出格式中带出来）
   let udp = false;
   const sec = q.get("security");
   const udpFlag = q.get("udp");
@@ -205,13 +230,11 @@ function parseShadowsocks(uri) {
   if (udpFlag === "1" || udpFlag === "true") udp = true;
 
   return {
-    // 原始行，用于 V2 订阅
     raw: uri,
     scheme: "ss",
 
-    // 结构化字段
     type: "ss",
-    name: name || `${server}:${port}`, // 名字可以是 emoji / 特殊字符
+    name: name || `${server}:${port}`, // 可以是 emoji + 特殊字符
     server,
     port,
     cipher: method,
@@ -224,7 +247,6 @@ function parseShadowsocks(uri) {
     pluginHost,
     pluginPath,
 
-    // 兼容字段
     obfs: pluginMode,
     obfsHost: pluginHost,
     path: pluginPath || "/",
@@ -243,7 +265,7 @@ function buildV2raySubscription(nodes) {
   return utf8ToBase64(text);
 }
 
-/* ================= Clash 系 YAML ================= */
+/* ================= Clash YAML ================= */
 
 function buildClashConfig(nodes) {
   const lines = [];
@@ -261,9 +283,7 @@ function buildClashConfig(nodes) {
     lines.push(`    cipher: "${escapeYaml(n.cipher)}"`);
     lines.push(`    password: "${escapeYaml(n.password)}"`);
 
-    if (n.udp) {
-      lines.push("    udp: true");
-    }
+    // 这里暂时不输出 udp: true，避免某些客户端解析异常
 
     if (n.plugin === "obfs" && (n.pluginMode === "http" || n.pluginMode === "tls")) {
       lines.push('    plugin: "obfs"');
@@ -287,7 +307,6 @@ function buildClashConfig(nodes) {
 
 function escapeYaml(str) {
   if (!str) return "";
-  // 只转义反斜杠和双引号，emoji / 特殊字符原样保留
   return String(str).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
@@ -314,9 +333,7 @@ function buildSurgeConfig(nodes) {
       }
     }
 
-    if (n.udp) {
-      line += ",udp-relay=true";
-    }
+    // 不再输出 udp-relay=true，避免某些客户端解析问题
 
     lines.push(line);
   }
@@ -330,9 +347,14 @@ function buildSurgeConfig(nodes) {
 
 /* ================= Quantumult X ================= */
 /**
- * 目标格式（严格对齐你给的）：
+ * 目标格式（严格对齐你给的那条）：
  *
- * shadowsocks=server:port,method=...,password=...,obfs=http,obfs-host=...,tag=HK - 香港
+ * shadowsocks=cncgzbgp01.224837439.xyz:14091,
+ *   method=chacha20-ietf-poly1305,
+ *   password=lE9uL5fR3yR9,
+ *   obfs=http,
+ *   obfs-host=4aaef245bd.iqiyi.com,
+ *   tag=HK - 香港
  *
  * - 不输出 obfs-uri
  * - 不输出 udp-relay
@@ -343,7 +365,7 @@ function buildQuantumultXConfig(nodes) {
   for (const n of nodes) {
     if (n.type !== "ss") continue;
 
-    // 名称里如果有逗号，QX 会乱，这里只替换逗号，保留 emoji / 中文
+    // 名称里如果有逗号，QX 容易乱，这里替换逗号为空格，保留 emoji 和中文
     const name = (n.name || `${n.server}:${n.port}`).replace(/,/g, " ");
     const server = n.server;
     const port = n.port;
@@ -362,7 +384,7 @@ function buildQuantumultXConfig(nodes) {
       }
     }
 
-    // ⚠️ 不加 obfs-uri，不加 udp-relay
+    // 不带 obfs-uri / udp-relay
     parts.push(`tag=${name}`);
 
     lines.push(parts.join(","));
