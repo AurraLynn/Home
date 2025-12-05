@@ -13,6 +13,7 @@
 //         VLESS / UDP
 //         Trojan / UDP
 //         Vmess / UDP
+//         Vmess / WEBSOCKET / UDP
 //
 // client 行为：
 // -  未知UA返回Base64
@@ -64,8 +65,8 @@ export async function onRequestPost(context) {
     const line = lineRaw.trim();
     if (!line) continue;
 
-    let work = line;
-    let lower = work.toLowerCase();
+    const work = line;
+    const lower = work.toLowerCase();
 
     // URL格式：ss://
     if (lower.startsWith("ss://")) {
@@ -412,8 +413,10 @@ function parseVmessLenient(uri) {
     let userinfoHostPort = "";
 
     if (decoded && decoded.includes("@") && decoded.includes(":")) {
+      // 形如 auto:UUID@host:port
       userinfoHostPort = decoded;
     } else {
+      // 形如 UUID@host:port
       userinfoHostPort = main;
     }
 
@@ -437,8 +440,14 @@ function parseVmessLenient(uri) {
     }
 
     let name = `${host}:${port}`;
+    let network = "";
+    let wsPath = "";
+    let wsHost = "";
+    let obfs = "";
+
     if (queryStr) {
       const q = new URLSearchParams(queryStr);
+
       const r =
         q.get("remarks") ||
         q.get("name") ||
@@ -452,6 +461,16 @@ function parseVmessLenient(uri) {
           name = r;
         }
       }
+
+      const obfsParam = (q.get("obfs") || "").toLowerCase();
+      if (obfsParam === "websocket" || obfsParam === "ws") {
+        network = "ws";
+        obfs = "websocket";
+      }
+
+      wsHost =
+        q.get("obfsParam") || q.get("host") || q.get("sni") || "" || host;
+      wsPath = q.get("path") || q.get("obfs-uri") || "/";
     }
 
     return {
@@ -463,7 +482,12 @@ function parseVmessLenient(uri) {
       server: host,
       port,
       uuid,
-      encryption: "none",
+      encryption: "auto",
+
+      network,
+      obfs,
+      wsPath,
+      wsHost,
     };
   } catch (_e) {
     return {
@@ -474,7 +498,11 @@ function parseVmessLenient(uri) {
       server: "0.0.0.0",
       port: 443,
       uuid: "",
-      encryption: "none",
+      encryption: "auto",
+      network: "",
+      obfs: "",
+      wsPath: "",
+      wsHost: "",
     };
   }
 }
@@ -680,7 +708,6 @@ function buildQuantumultXConfig(nodes) {
       const { host, port } = normalizeHostPort(n.server, n.port);
       const name = (n.name || `${host}:${port}`).replace(/,/g, " ");
       const uuid = n.uuid || "";
-
       const method = "chacha20-ietf-poly1305";
 
       const parts = [];
@@ -689,6 +716,17 @@ function buildQuantumultXConfig(nodes) {
       if (uuid) {
         parts.push(`password=${uuid}`);
       }
+
+      if (n.network === "ws" || n.obfs === "websocket") {
+        parts.push("obfs=ws");
+        if (n.wsPath) {
+          parts.push(`obfs-uri=${n.wsPath}`);
+        }
+        if (n.wsHost) {
+          parts.push(`obfs-host=${n.wsHost}`);
+        }
+      }
+
       parts.push("aead=true");
       parts.push(`tag=${name}`);
 
