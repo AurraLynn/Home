@@ -18,8 +18,7 @@
 //    - client=surge
 //         → 输出 Shadowsocks 的 Surge 格式行（带 http/tls 混淆 & UDP）
 //    - client=quantumultx
-//         → 输出 Shadowsocks 的 Quantumult X 格式行：
-//            shadowsocks=server:port,method=...,password=...,obfs=http,obfs-host=...,tag=名字
+//         → 输出 Shadowsocks 的 Quantumult X 格式行
 //    - 其它 client
 //         → 统一回退到 v2ray Base64 订阅
 //
@@ -91,7 +90,7 @@ export async function onRequestPost(context) {
     // Surge：输出 Shadowsocks 行
     outText = buildSurgeConfig(nodes);
   } else if (client === "quantumultx") {
-    // Quantumult X：输出 Shadowsocks 行（按你给的格式）
+    // Quantumult X：输出 Shadowsocks 行
     outText = buildQuantumultXConfig(nodes);
   } else {
     // 其它客户端：统一回退到 V2 订阅
@@ -251,10 +250,7 @@ function parseShadowsocks(uri) {
 }
 
 /* ================= V2Ray 订阅（Base64） ================= */
-/**
- * 所有节点原文拼接为多行字符串，再整体做 Base64：
- * 适配 v2rayN / v2rayNG / 各类 V2 订阅客户端。
- */
+
 function buildV2raySubscription(nodes) {
   const text = nodes
     .map((n) => (n.raw || "").trim())
@@ -352,18 +348,12 @@ function buildSurgeConfig(nodes) {
 
 /* ================= Quantumult X ================= */
 /**
- * 目标格式（你给的样子）：
+ * 目标格式近似：
  *
- * 转换前：
- * ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpsRTl1TDVmUjN5Ujk@cncgzbgp01.224837439.xyz:14091?plugin=obfs-local;obfs=http;obfs-host=4aaef245bd.iqiyi.com;obfs-uri=/#HK%20-%20%E9%A6%99%E6%B8%AF
+ * shadowsocks=server:port,method=chacha20-ietf-poly1305,password=xxxx,obfs=http,obfs-host=example.com,obfs-uri=/path,udp-relay=true,tag=HK - 香港
  *
- * 转换后：
- * shadowsocks=cncgzbgp01.224837439.xyz:14091,method=chacha20-ietf-poly1305,password=lE9uL5fR3yR9,obfs=http,obfs-host=4aaef245bd.iqiyi.com,tag=HK - 香港
- *
- * 注意：
- * - 不加 udp-relay=true
- * - 不加 obfs-uri/path
- * - 顺序基本按上面来
+ * - obfs-uri：有就带上；没有就不加。
+ * - udp-relay：如果解析到 udp=true，就加上。
  */
 function buildQuantumultXConfig(nodes) {
   const lines = [];
@@ -371,7 +361,6 @@ function buildQuantumultXConfig(nodes) {
   for (const n of nodes) {
     if (n.type !== "ss") continue;
 
-    // 名称里如果有逗号，QX 解析容易乱掉，这里替换掉逗号但保留 emoji / 中文
     const name = (n.name || `${n.server}:${n.port}`).replace(/,/g, " ");
     const server = n.server;
     const port = n.port;
@@ -388,9 +377,15 @@ function buildQuantumultXConfig(nodes) {
       if (n.pluginHost) {
         parts.push(`obfs-host=${n.pluginHost}`);
       }
+      if (n.pluginPath) {
+        parts.push(`obfs-uri=${n.pluginPath}`);
+      }
     }
 
-    // 按你的样本，不加 udp-relay / path 这些，只加 tag
+    if (n.udp) {
+      parts.push("udp-relay=true");
+    }
+
     parts.push(`tag=${name}`);
 
     lines.push(parts.join(","));
