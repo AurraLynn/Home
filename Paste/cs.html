@@ -2,24 +2,24 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>节点转换测试面板</title>
+  <title>节点转换测试面板 · Lyn</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root {
-      --bg: #05060a;
-      --card-bg: rgba(15, 17, 25, 0.96);
-      --border: rgba(255, 255, 255, 0.06);
+      --bg: #f5f5f7;
+      --card-bg: #ffffff;
+      --border: #e1e4eb;
       --accent: #e0b15a;
-      --accent-soft: rgba(224, 177, 90, 0.18);
-      --text-main: #f5f5f7;
-      --text-muted: #8b8fa3;
-      --danger: #ff5c7a;
-      --radius-xl: 16px;
-      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.55);
-      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+      --accent-soft: rgba(224, 177, 90, 0.16);
+      --text-main: #161823;
+      --text-muted: #8c8fa3;
+      --danger: #ff4d6a;
+      --radius-xl: 18px;
+      --shadow-soft: 0 18px 50px rgba(15, 23, 42, 0.09);
+      --font-sans: -apple-system, BlinkMacSystemFont, system-ui, "SF Pro Text",
         "Helvetica Neue", Arial, sans-serif;
-      --font-mono: ui-monospace, Menlo, Monaco, Consolas, "JetBrains Mono",
-        "SF Mono", monospace;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "JetBrains Mono", "Courier New", monospace;
     }
 
     * {
@@ -32,15 +32,16 @@
       min-height: 100vh;
       font-family: var(--font-sans);
       color: var(--text-main);
-      background: radial-gradient(circle at 0% 0%, #1b2136 0, #05060a 55%, #000 100%);
+      background: radial-gradient(circle at 0 0, #ffffff 0, #edf0f7 50%, #e5e8f0 100%);
       display: flex;
+      align-items: center;
       justify-content: center;
-      padding: 24px 12px;
+      padding: 16px;
     }
 
     .page {
       width: 100%;
-      max-width: 1100px;
+      max-width: 1080px;
     }
 
     .card {
@@ -48,13 +49,12 @@
       border-radius: 24px;
       border: 1px solid var(--border);
       box-shadow: var(--shadow-soft);
-      padding: 20px 18px;
-      backdrop-filter: blur(16px);
+      padding: 20px 18px 18px;
     }
 
     @media (min-width: 768px) {
       .card {
-        padding: 24px 24px 20px;
+        padding: 22px 22px 18px;
       }
     }
 
@@ -63,14 +63,14 @@
       justify-content: space-between;
       gap: 12px;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
 
     .title {
       font-size: 18px;
-      letter-spacing: 0.06em;
+      font-weight: 600;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--accen);
     }
 
     .title span {
@@ -81,19 +81,20 @@
       font-size: 12px;
       color: var(--text-muted);
       margin-top: 4px;
+      line-height: 1.5;
     }
 
     .badge {
-      padding: 6px 10px;
+      padding: 6px 12px;
       border-radius: 999px;
       border: 1px solid var(--accent-soft);
-      background: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.04), transparent),
-        rgba(15, 17, 25, 0.9);
+      background: rgba(252, 250, 245, 0.9);
       font-size: 11px;
-      color: var(--accent);
+      color: #936123;
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      white-space: nowrap;
     }
 
     .badge-dot {
@@ -101,7 +102,7 @@
       height: 7px;
       border-radius: 999px;
       background: var(--accent);
-      box-shadow: 0 0 12px rgba(224, 177, 90, 0.9);
+      box-shadow: 0 0 10px rgba(224, 177, 90, 0.9);
     }
 
     .main-grid {
@@ -120,9 +121,9 @@
     .section-title {
       font-size: 13px;
       font-weight: 600;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: #c5c9dd;
+      color: #656b80;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -135,8 +136,7 @@
       width: 8px;
       height: 8px;
       border-radius: 999px;
-      background: linear-gradient(135deg, var(--accent), #ffdf9c);
-      box-shadow: 0 0 12px rgba(224, 177, 90, 0.9);
+      background: linear-gradient(135deg, var(--accent), #ffdca0);
     }
 
     label {
@@ -152,7 +152,7 @@
       width: 100%;
       border-radius: 12px;
       border: 1px solid var(--border);
-      background: rgba(5, 7, 14, 0.9);
+      background: #fafbff;
       color: var(--text-main);
       padding: 10px 11px;
       font-family: var(--font-mono);
@@ -167,7 +167,7 @@
     select:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 1px var(--accent-soft);
-      background: rgba(5, 7, 14, 0.98);
+      background: #ffffff;
     }
 
     textarea {
@@ -205,7 +205,7 @@
       border: none;
       padding: 8px 18px;
       font-size: 12px;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       font-weight: 600;
       cursor: pointer;
@@ -213,8 +213,8 @@
       align-items: center;
       gap: 6px;
       background: linear-gradient(135deg, #eab767, #fbe3b0);
-      color: #1a1207;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+      color: #2b1e09;
+      box-shadow: 0 10px 25px rgba(148, 112, 48, 0.35);
       transform: translateY(0);
       transition: transform 0.15s ease, box-shadow 0.15s ease,
         filter 0.15s ease;
@@ -223,18 +223,18 @@
 
     .btn:hover {
       transform: translateY(-1px);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 14px 32px rgba(148, 112, 48, 0.45);
       filter: brightness(1.03);
     }
 
     .btn:active {
       transform: translateY(0);
-      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 8px 15px rgba(148, 112, 48, 0.3);
       filter: brightness(0.98);
     }
 
     .btn-secondary {
-      background: transparent;
+      background: #f5f6fb;
       border: 1px solid var(--border);
       color: var(--text-muted);
       box-shadow: none;
@@ -242,8 +242,8 @@
     }
 
     .btn-secondary:hover {
-      border-color: var(--accent-soft);
-      color: var(--text-main);
+      border-color: #d2d7e6;
+      color: #44485d;
       filter: none;
     }
 
@@ -251,12 +251,12 @@
       font-size: 11px;
       padding: 4px 8px;
       border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid #e3e6f0;
       color: var(--text-muted);
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      background: rgba(13, 15, 24, 0.85);
+      background: #f7f8fd;
     }
 
     .pill-dot {
@@ -270,12 +270,13 @@
       font-size: 11px;
       color: var(--text-muted);
       margin-top: 4px;
+      line-height: 1.4;
     }
 
     .result-box {
       border-radius: 14px;
       border: 1px solid var(--border);
-      background: rgba(1, 3, 8, 0.85);
+      background: #fafbff;
       padding: 10px;
       font-family: var(--font-mono);
       font-size: 12px;
@@ -295,12 +296,13 @@
 
     .result-title {
       font-size: 12px;
-      color: #d5d8eb;
+      color: #40445c;
     }
 
     .result-meta {
       font-size: 11px;
       color: var(--text-muted);
+      margin-top: 4px;
     }
 
     .error {
@@ -312,27 +314,25 @@
 
     .link-preview {
       border-radius: 12px;
-      border: 1px dashed rgba(255, 255, 255, 0.12);
+      border: 1px dashed #d4d8e6;
       padding: 8px 10px;
       font-family: var(--font-mono);
       font-size: 11px;
       color: var(--text-muted);
       margin-top: 6px;
+      background: #fafbff;
       word-break: break-all;
+      white-space: pre-wrap;
     }
 
     .footer {
-      margin-top: 12px;
+      margin-top: 14px;
       font-size: 11px;
       color: var(--text-muted);
       display: flex;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 6px;
-    }
-
-    .footer span {
-      opacity: 0.8;
     }
 
     .copy-icon {
@@ -350,16 +350,16 @@
     <div class="header">
       <div>
         <div class="title">
-          NODE <span>CONVERTER · TEST</span>
+          NODE CONVERTER · <span>TEST PANEL</span>
         </div>
         <div class="subtitle">
-          输入节点文本，在本页直接调用 <code>/api/sub/QuantumultX</code> 和
-          <code>/api/sub/Converter</code> 进行转换，仅用于测试。
+          输入节点文本，在本页直接调用 <code>/api/sub/QuantumultX</code> 与
+          <code>/api/sub/Converter</code> 进行转换。当前仅对 Quantumult X 做专门格式，其它客户端统一先返回 Base64 订阅。
         </div>
       </div>
       <div class="badge">
         <span class="badge-dot"></span>
-        <span>前端本地调试 · 不写入 KV</span>
+        <span>前端本地测试 · 不写入 KV</span>
       </div>
     </div>
 
@@ -390,11 +390,14 @@ trojan://...
             <label for="clientSelect">选择要测试的客户端</label>
             <select id="clientSelect">
               <option value="quantumultx">Quantumult X（配置行）</option>
-              <option value="base64">通用 Base64 订阅（原样编码）</option>
+              <option value="base64">通用 Base64 订阅</option>
+              <option value="surge">Surge（暂时使用 Base64）</option>
+              <option value="clash">Clash / Mihomo（暂时使用 Base64）</option>
+              <option value="stash">Stash（暂时使用 Base64）</option>
             </select>
             <div class="muted-tip">
-              Quantumult X：返回多行 <code>shadowsocks=...</code> / <code>vless=...</code> 等配置。<br>
-              Base64：返回整段订阅，可给 Shadowrocket / v2rayNG / sing-box 等食用。
+              当前仅 Quantumult X 有专门的转换逻辑，其它客户端（Surge / Clash / Stash）
+              先统一使用 Base64 订阅格式，后续再逐个接入专用 JS（Surge.js、Clash.js、Stash.js）。
             </div>
           </div>
         </div>
@@ -424,7 +427,9 @@ trojan://...
           </div>
         </div>
 
-        <div id="resultBox" class="result-box"># 在左侧粘贴节点，然后选择客户端并点击“开始转换”</div>
+        <div id="resultBox" class="result-box">
+# 在左侧粘贴节点，然后选择客户端并点击“开始转换”
+        </div>
         <div id="resultMeta" class="result-meta"></div>
         <div id="resultError" class="error hidden"></div>
 
@@ -441,7 +446,7 @@ trojan://...
 
     <div class="footer">
       <span>已支持的客户端：Quantumult X，以及所有可直接使用 Base64 订阅的客户端。</span>
-      <span>本页仅作测试使用，真正上线时请按 Pastebin 项目整合。</span>
+      <span>后续可为 Surge / Clash / Stash 分别增加独立的转换后端（Surge.js / Clash.js / Stash.js）。</span>
     </div>
   </div>
 </div>
@@ -491,23 +496,44 @@ trojan://...
   function buildSubLinkPreview() {
     const id = subIdInput.value.trim();
     const origin = window.location.origin;
+    const client = clientSelect.value;
+
     if (!id) {
       linkPreview.textContent =
         "填写上方 Paste ID 后，这里会给出 /api/sub 的订阅链接示例。";
       return;
     }
-    const client = clientSelect.value;
-    let lines = [];
+
+    const lines = [];
     if (client === "quantumultx") {
       lines.push("# Quantumult X 推荐订阅链接：");
-      lines.push(`${origin}/api/sub?id=${encodeURIComponent(id)}&client=quantumultx`);
+      lines.push(origin + "/api/sub?id=" + encodeURIComponent(id) + "&client=quantumultx");
       lines.push("");
       lines.push("# 若 UA 能正确识别 Quantumult X，也可以：");
-      lines.push(`${origin}/api/sub?id=${encodeURIComponent(id)}`);
-    } else {
+      lines.push(origin + "/api/sub?id=" + encodeURIComponent(id));
+    } else if (client === "base64") {
       lines.push("# 通用 Base64 订阅链接示例：");
-      lines.push(`${origin}/api/sub?id=${encodeURIComponent(id)}`);
+      lines.push(origin + "/api/sub?id=" + encodeURIComponent(id));
+    } else if (client === "surge") {
+      lines.push("# Surge（暂时使用 Base64）订阅链接示例：");
+      lines.push(origin + "/api/sub?id=" + encodeURIComponent(id) + "&client=surge");
+      lines.push("");
+      lines.push("# Surge 也可以直接使用通用 Base64：");
+      lines.push(origin + "/api/sub?id=" + encodeURIComponent(id));
+    } else if (client === "clash") {
+      lines.push("# Clash / Mihomo（暂时使用 Base64）订阅链接示例：");
+      lines.push(origin + "/api/sub?id=" + encodeURIComponent(id) + "&client=clash");
+      lines.push("");
+      lines.push("# 同样可以直接使用通用 Base64：");
+      lines.push(origin + "/api/sub?id=" + encodeURIComponent(id));
+    } else if (client === "stash") {
+      lines.push("# Stash（暂时使用 Base64）订阅链接示例：");
+      lines.push(origin + "/api/sub?id=" + encodeURIComponent(id) + "&client=stash");
+      lines.push("");
+      lines.push("# 同样可以直接使用通用 Base64：");
+      lines.push(origin + "/api/sub?id=" + encodeURIComponent(id));
     }
+
     linkPreview.textContent = lines.join("\n");
   }
 
@@ -552,17 +578,21 @@ trojan://...
 
     if (!raw) {
       setInputError("请先在上方粘贴至少一条节点（支持多行）。");
-      setResult("# 在左侧粘贴节点，然后选择客户端并点击“开始转换”", "尚未转换", "");
+      setResult(
+        "# 在左侧粘贴节点，然后选择客户端并点击“开始转换”",
+        "尚未转换",
+        ""
+      );
       return;
     }
 
     let url = "";
     if (client === "quantumultx") {
-      // 直接调用 QX 转换接口
+      // 直接调用 Quantumult X 转换
       url = "/api/sub/QuantumultX";
     } else {
-      // Base64 订阅（通过 Converter）
-      url = "/api/sub/Converter?client=base64";
+      // 其它客户端（base64 / surge / clash / stash）统一先走 Converter
+      url = "/api/sub/Converter?client=" + encodeURIComponent(client);
     }
 
     try {
@@ -578,17 +608,29 @@ trojan://...
         return;
       }
 
-      const meta = `长度：${text.length} 字符`;
-      const title =
-        client === "quantumultx"
-          ? "Quantumult X 配置行"
-          : "Base64 订阅内容";
+      const meta = "长度：" + text.length + " 字符";
+      let title = "转换结果";
+      if (client === "quantumultx") {
+        title = "Quantumult X 配置行";
+      } else if (client === "base64") {
+        title = "Base64 订阅内容";
+      } else if (client === "surge") {
+        title = "Surge（当前返回 Base64 订阅内容）";
+      } else if (client === "clash") {
+        title = "Clash / Mihomo（当前返回 Base64 订阅内容）";
+      } else if (client === "stash") {
+        title = "Stash（当前返回 Base64 订阅内容）";
+      }
 
       setResult(text, title, meta);
       setResultError("");
       buildSubLinkPreview();
     } catch (e) {
-      setResult("# 无法连接到 /api/sub 接口，请检查 Worker 是否部署成功。", "网络错误", "");
+      setResult(
+        "# 无法连接到 /api/sub 接口，请检查 Worker 是否部署成功。",
+        "网络错误",
+        ""
+      );
       setResultError(String(e));
     }
   });
