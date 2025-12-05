@@ -14,6 +14,7 @@
 //         Trojan / UDP
 //         Vmess / UDP
 //         Vmess / WEBSOCKET / UDP
+//         Vmess / HTTP / UDP
 //
 // client 行为：
 // -  未知UA返回Base64
@@ -440,10 +441,9 @@ function parseVmessLenient(uri) {
     }
 
     let name = `${host}:${port}`;
-    let network = "";
-    let wsPath = "";
-    let wsHost = "";
     let obfs = "";
+    let obfsHost = "";
+    let obfsUri = "";
 
     if (queryStr) {
       const q = new URLSearchParams(queryStr);
@@ -462,15 +462,19 @@ function parseVmessLenient(uri) {
         }
       }
 
-      const obfsParam = (q.get("obfs") || "").toLowerCase();
-      if (obfsParam === "websocket" || obfsParam === "ws") {
-        network = "ws";
-        obfs = "websocket";
-      }
+      const obfsType = (q.get("obfs") || "").toLowerCase();
+      const hostFrom = q.get("obfsParam") || q.get("host") || q.get("sni") || "";
+      const path = q.get("path") || q.get("obfs-uri") || "/";
 
-      wsHost =
-        q.get("obfsParam") || q.get("host") || q.get("sni") || "" || host;
-      wsPath = q.get("path") || q.get("obfs-uri") || "/";
+      if (obfsType === "websocket" || obfsType === "ws") {
+        obfs = "ws";
+        obfsHost = hostFrom || host;
+        obfsUri = path || "/";
+      } else if (obfsType === "http") {
+        obfs = "http";
+        obfsHost = hostFrom || host;
+        obfsUri = path || "/";
+      }
     }
 
     return {
@@ -484,10 +488,9 @@ function parseVmessLenient(uri) {
       uuid,
       encryption: "auto",
 
-      network,
       obfs,
-      wsPath,
-      wsHost,
+      obfsHost,
+      obfsUri,
     };
   } catch (_e) {
     return {
@@ -499,10 +502,9 @@ function parseVmessLenient(uri) {
       port: 443,
       uuid: "",
       encryption: "auto",
-      network: "",
       obfs: "",
-      wsPath: "",
-      wsHost: "",
+      obfsHost: "",
+      obfsUri: "",
     };
   }
 }
@@ -717,13 +719,21 @@ function buildQuantumultXConfig(nodes) {
         parts.push(`password=${uuid}`);
       }
 
-      if (n.network === "ws" || n.obfs === "websocket") {
+      if (n.obfs === "ws") {
         parts.push("obfs=ws");
-        if (n.wsPath) {
-          parts.push(`obfs-uri=${n.wsPath}`);
+        if (n.obfsUri) {
+          parts.push(`obfs-uri=${n.obfsUri}`);
         }
-        if (n.wsHost) {
-          parts.push(`obfs-host=${n.wsHost}`);
+        if (n.obfsHost) {
+          parts.push(`obfs-host=${n.obfsHost}`);
+        }
+      } else if (n.obfs === "http") {
+        parts.push("obfs=http");
+        if (n.obfsUri) {
+          parts.push(`obfs-uri=${n.obfsUri}`);
+        }
+        if (n.obfsHost) {
+          parts.push(`obfs-host=${n.obfsHost}`);
         }
       }
 
