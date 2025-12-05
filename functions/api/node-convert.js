@@ -12,19 +12,20 @@
 // 2. 对 vmess / vless / trojan 等其它协议：不做结构化解析，只保留原始行，在 v2ray 订阅里原样输出。
 // 3. client 行为：
 //    - client=v2ray
-//         → 所有原始行拼在一起做一次 Base64，生成通用 V2 订阅（适合安卓、小火箭等）
+//         → 所有原始行拼在一起做一次 Base64，生成通用 V2 订阅（适合安卓等）
 //    - client=clash / mihomo / stash / egern / surfboard / loon
 //         → 输出只包含 Shadowsocks 节点的 Clash YAML（http/tls 混淆 & UDP 都生效）
 //    - client=surge
 //         → 输出 Shadowsocks 的 Surge 格式行（带 http/tls 混淆 & UDP）
 //    - client=quantumultx
-//         → 输出 Shadowsocks 的 Quantumult X 格式行（带 http/tls 混淆 & UDP）
+//         → 输出 Shadowsocks 的 Quantumult X 格式行：
+//            shadowsocks=server:port,method=...,password=...,obfs=http,obfs-host=...,tag=名字
 //    - 其它 client
 //         → 统一回退到 v2ray Base64 订阅
 //
 // 注意：
-// - 不对某一个具体 iOS 客户端做专门格式适配。
-// - 节点名称可以是 emoji 和各种特殊字符，本文件不会因字符集报错。
+// - 不对某一个具体 iOS 客户端做专门 JSON 适配。
+// - 节点名称可以是 emoji 和各种特殊字符，本文件不会因为字符集报错。
 
 export async function onRequestPost(context) {
   const { request } = context;
@@ -90,7 +91,7 @@ export async function onRequestPost(context) {
     // Surge：输出 Shadowsocks 行
     outText = buildSurgeConfig(nodes);
   } else if (client === "quantumultx") {
-    // Quantumult X：输出 Shadowsocks 行
+    // Quantumult X：输出 Shadowsocks 行（按你给的格式）
     outText = buildQuantumultXConfig(nodes);
   } else {
     // 其它客户端：统一回退到 V2 订阅
@@ -265,23 +266,7 @@ function buildV2raySubscription(nodes) {
 }
 
 /* ================= Clash 系 YAML ================= */
-/**
- * 输出示例：
- *
- * proxies:
- *   - name: "🇭🇰HongKong-01"
- *     type: ss
- *     server: "cncgzbgp01.224837439.xyz"
- *     port: 14091
- *     cipher: "chacha20-ietf-poly1305"
- *     password: "xxxx"
- *     udp: true
- *     plugin: "obfs"
- *     plugin-opts:
- *       mode: "http"
- *       host: "4aaef245bd.iqiyi.com"
- *       uri: "/"
- */
+
 function buildClashConfig(nodes) {
   const lines = [];
   lines.push("proxies:");
@@ -329,11 +314,7 @@ function escapeYaml(str) {
 }
 
 /* ================= Surge ================= */
-/**
- * 输出示例：
- *
- * 🇭🇰HongKong-01 = ss,cncgzbgp01.224837439.xyz,14091,encrypt-method=chacha20-ietf-poly1305,password="xxxx",obfs=http,obfs-host=4aaef245bd.iqiyi.com,udp-relay=true
- */
+
 function buildSurgeConfig(nodes) {
   const lines = [];
 
@@ -371,9 +352,18 @@ function buildSurgeConfig(nodes) {
 
 /* ================= Quantumult X ================= */
 /**
- * 输出示例：
+ * 目标格式（你给的样子）：
  *
- * shadowsocks=cncgzbgp01.224837439.xyz:14091,method=chacha20-ietf-poly1305,password=xxxx,obfs=http,obfs-host=4aaef245bd.iqiyi.com,udp-relay=true,tag=🇭🇰HongKong-01
+ * 转换前：
+ * ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpsRTl1TDVmUjN5Ujk@cncgzbgp01.224837439.xyz:14091?plugin=obfs-local;obfs=http;obfs-host=4aaef245bd.iqiyi.com;obfs-uri=/#HK%20-%20%E9%A6%99%E6%B8%AF
+ *
+ * 转换后：
+ * shadowsocks=cncgzbgp01.224837439.xyz:14091,method=chacha20-ietf-poly1305,password=lE9uL5fR3yR9,obfs=http,obfs-host=4aaef245bd.iqiyi.com,tag=HK - 香港
+ *
+ * 注意：
+ * - 不加 udp-relay=true
+ * - 不加 obfs-uri/path
+ * - 顺序基本按上面来
  */
 function buildQuantumultXConfig(nodes) {
   const lines = [];
@@ -381,6 +371,7 @@ function buildQuantumultXConfig(nodes) {
   for (const n of nodes) {
     if (n.type !== "ss") continue;
 
+    // 名称里如果有逗号，QX 解析容易乱掉，这里替换掉逗号但保留 emoji / 中文
     const name = (n.name || `${n.server}:${n.port}`).replace(/,/g, " ");
     const server = n.server;
     const port = n.port;
@@ -399,10 +390,7 @@ function buildQuantumultXConfig(nodes) {
       }
     }
 
-    if (n.udp) {
-      parts.push("udp-relay=true");
-    }
-
+    // 按你的样本，不加 udp-relay / path 这些，只加 tag
     parts.push(`tag=${name}`);
 
     lines.push(parts.join(","));
