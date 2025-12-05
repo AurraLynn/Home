@@ -8,12 +8,12 @@
 // -  Base64
 //
 // 支持输出：
-// -  Quantumult X（内部转发到 /api/sub/qx）
+// -  Quantumult X（内部转发到 /api/sub/QuantumultX）
 // -  Base64（其它 / 未识别客户端）
 //
 // client 行为：
-// -  client=quantumultx → 调用 /api/sub/qx 做节点转换
-// -  UA 识别为 Quantumult X → 调用 /api/sub/qx
+// -  client=quantumultx → 调用 /api/sub/QuantumultX 做节点转换
+// -  UA 识别为 Quantumult X → 调用 /api/sub/QuantumultX
 // -  其它 / 未识别 → 直接返回 Base64
 //
 // 已支持的客户端：
@@ -56,10 +56,10 @@ export async function onRequestGet(context) {
     client = "v2ray";
   }
 
-  // ===== 3A. Quantumult X → 调用 /api/sub/qx =====
+  // ===== 3A. Quantumult X → 调用 /api/sub/QuantumultX =====
   if (client === "quantumultx") {
     const origin = url.origin;
-    const convertUrl = `${origin}/api/sub/qx`;
+    const convertUrl = `${origin}/api/sub/QuantumultX`;
 
     const res = await fetch(convertUrl, {
       method: "POST",
