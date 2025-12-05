@@ -12,6 +12,7 @@
 //         shadowsocks / HTTP / UDP
 //         VLESS / UDP
 //         Trojan / UDP
+//         Vmess / UDP
 //
 // client 行为：
 // -  未知UA返回Base64
@@ -84,6 +85,12 @@ export async function onRequestPost(context) {
       continue;
     }
 
+    // URL格式：vmess://
+    if (lower.startsWith("vmess://")) {
+      nodes.push(parseVmessLenient(work));
+      continue;
+    }
+
     // 单条Base64：尝试解码成 URL
     const decoded = safeBase64Decode(work);
     if (decoded && decoded !== work) {
@@ -100,6 +107,10 @@ export async function onRequestPost(context) {
       }
       if (dl.startsWith("trojan://")) {
         nodes.push(parseTrojanLenient(d));
+        continue;
+      }
+      if (dl.startsWith("vmess://")) {
+        nodes.push(parseVmessLenient(d));
         continue;
       }
       if (dl.startsWith("vmess://")) {
@@ -383,6 +394,91 @@ function parseVlessLenient(uri) {
   }
 }
 
+/* ========== Vmess 解析：vmess:// ========== */
+
+function parseVmessLenient(uri) {
+  try {
+    let u = uri.replace(/^vmess:\/\//i, "");
+
+    let main = u;
+    let queryStr = "";
+    const qIndex = u.indexOf("?");
+    if (qIndex !== -1) {
+      main = u.slice(0, qIndex);
+      queryStr = u.slice(qIndex + 1);
+    }
+
+    let decoded = safeBase64Decode(main);
+    let userinfoHostPort = "";
+
+    if (decoded && decoded.includes("@") && decoded.includes(":")) {
+      userinfoHostPort = decoded;
+    } else {
+      userinfoHostPort = main;
+    }
+
+    const atIndex = userinfoHostPort.indexOf("@");
+    if (atIndex === -1) {
+      throw new Error("invalid vmess");
+    }
+    const userinfo = userinfoHostPort.slice(0, atIndex);
+    const hostPortRaw = userinfoHostPort.slice(atIndex + 1);
+
+    const parts = userinfo.split(":");
+    const uuid = parts[parts.length - 1] || "";
+
+    const hostPort = hostPortRaw.trim();
+    let host = hostPort || "0.0.0.0";
+    let port = 443;
+    const m = /:(\d+)$/.exec(hostPort);
+    if (m) {
+      port = parseInt(m[1], 10) || 443;
+      host = hostPort.slice(0, m.index);
+    }
+
+    let name = `${host}:${port}`;
+    if (queryStr) {
+      const q = new URLSearchParams(queryStr);
+      const r =
+        q.get("remarks") ||
+        q.get("name") ||
+        q.get("tag") ||
+        q.get("remark") ||
+        q.get("ps");
+      if (r) {
+        try {
+          name = decodeURIComponent(r);
+        } catch (_e) {
+          name = r;
+        }
+      }
+    }
+
+    return {
+      raw: uri,
+      scheme: "vmess",
+      type: "vmess",
+
+      name,
+      server: host,
+      port,
+      uuid,
+      encryption: "none",
+    };
+  } catch (_e) {
+    return {
+      raw: uri,
+      scheme: "vmess",
+      type: "vmess",
+      name: uri,
+      server: "0.0.0.0",
+      port: 443,
+      uuid: "",
+      encryption: "none",
+    };
+  }
+}
+
 /* ========== Trojan 解析：trojan:// ========== */
 
 function parseTrojanLenient(uri) {
@@ -580,11 +676,28 @@ function buildQuantumultXConfig(nodes) {
       parts.push(`tag=${name}`);
 
       lines.push(parts.join(","));
+    } else if (n.type === "vmess") {
+      const { host, port } = normalizeHostPort(n.server, n.port);
+      const name = (n.name || `${host}:${port}`).replace(/,/g, " ");
+      const uuid = n.uuid || "";
+
+      const method = "chacha20-ietf-poly1305";
+
+      const parts = [];
+      parts.push(`vmess=${host}:${port}`);
+      parts.push(`method=${method}`);
+      if (uuid) {
+        parts.push(`password=${uuid}`);
+      }
+      parts.push("aead=true");
+      parts.push(`tag=${name}`);
+
+      lines.push(parts.join(","));
     }
   }
 
   if (!lines.length) {
-    return "# no shadowsocks/vless/trojan nodes\n";
+    return "# no shadowsocks/vless/trojan/vmess nodes\n";
   }
   return lines.join("\n") + "\n";
 }
