@@ -1,24 +1,20 @@
 // functions/api/sub/index.js
 //
-// 通用订阅入口：GET /api/sub?id=<pasteId>&client=<clientName>
+// 文件用途：通用订阅入口 /api/sub
 //
 // 支持输入：
-// -  URL格式
-// -  URL/Base64 混合格式
-// -  Base64
+// -  id: 从 KV: Paste 读取对应内容，例如 /api/sub?id=cs
+// -  client: 可选，当前只识别 quantumultx，其它一律按 base64 处理
 //
-// 支持输出：
-// -  Quantumult X（内部转发到 /api/sub/QuantumultX）
-// -  Base64（其它 / 未识别客户端）
-//
-// client 行为：
-// -  client=quantumultx → 调用 /api/sub/QuantumultX 做节点转换
-// -  UA 识别为 Quantumult X → 调用 /api/sub/QuantumultX
-// -  其它 / 未识别 → 直接返回 Base64
+// 行为：
+// -  从 Paste KV 取出原始节点文本
+// -  判断当前 client（query 优先，其次 UA 自动识别）
+// -  把原始文本转发给 /api/sub/node-convert?client=xxx
+// -  返回 node-convert 的纯文本结果
 //
 // 已支持的客户端：
 // -  Quantumult X
-// -  使用Base64订阅的客户端
+// -  使用 Base64 订阅的客户端（Shadowrocket / v2rayNG 等）
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -32,7 +28,6 @@ export async function onRequestGet(context) {
     return new Response("missing id", { status: 400 });
   }
 
-  // ===== 1. 从 KV: Paste 读取内容 =====
   if (!env.Paste) {
     return new Response("KV namespace `Paste` not bound", { status: 500 });
   }
@@ -47,59 +42,50 @@ export async function onRequestGet(context) {
     return new Response("empty content", { status: 404 });
   }
 
-  // ===== 2. 决定 client 类型 =====
+  // ===== 决定 client 类型 =====
   if (!client) {
     client = detectClientFromUA(ua);
   }
-  if (!client) {
-    // 识别不了：默认走 Base64 订阅
-    client = "v2ray";
+
+  // 现在只区分：Quantumult X / Base64
+  if (client !== "quantumultx") {
+    client = "base64";
   }
 
-  // ===== 3A. Quantumult X → 调用 /api/sub/QuantumultX =====
-  if (client === "quantumultx") {
-    const origin = url.origin;
-    const convertUrl = `${origin}/api/sub/QuantumultX`;
+  // ===== 转发给 /api/sub/node-convert =====
+  const origin = url.origin;
+  const convertUrl = `${origin}/api/sub/node-convert?client=${encodeURIComponent(
+    client
+  )}`;
 
-    const res = await fetch(convertUrl, {
-      method: "POST",
-      body: raw,
-    });
+  const res = await fetch(convertUrl, {
+    method: "POST",
+    body: raw,
+  });
 
-    const convertedText = await res.text();
+  const outText = await res.text();
 
-    if (!res.ok) {
-      return new Response(convertedText || "convert error", {
-        status: res.status,
-      });
-    }
-
-    return new Response(convertedText, {
-      status: 200,
-      headers: {
-        "content-type": "text/plain; charset=utf-8",
-      },
+  if (!res.ok) {
+    return new Response(outText || "convert error", {
+      status: res.status,
+      headers: { "content-type": "text/plain; charset=utf-8" },
     });
   }
 
-  // ===== 3B. 其它客户端：直接返回 Base64 订阅 =====
-  const b64 = utf8ToBase64(raw.trim());
-  return new Response(b64, {
+  return new Response(outText, {
     status: 200,
-    headers: {
-      "content-type": "text/plain; charset=utf-8",
-    },
+    headers: { "content-type": "text/plain; charset=utf-8" },
   });
 }
 
-// ===== 工具：从 KV 记录提取节点文本 =====
+// ===== 从 KV 记录里抽取正文内容 =====
 function extractContentFromRecord(stored) {
   if (!stored) return "";
 
   const trimmed = stored.trim();
   const firstChar = trimmed[0];
 
-  // 看起来不像 JSON，就按纯文本
+  // 看起来不像 JSON，就当纯文本
   if (firstChar !== "{" && firstChar !== "[") {
     return stored;
   }
@@ -114,27 +100,40 @@ function extractContentFromRecord(stored) {
     if (typeof obj.nodeContent === "string") return obj.nodeContent;
     if (typeof obj.data === "string") return obj.data;
 
-    // 实在找不到，就把整个 JSON 再当文本
+    // 实在找不到，就原样返回 JSON
     return stored;
   } catch (_e) {
     return stored;
   }
 }
 
-// ===== 工具：UA → client 名 =====
-function detectClientFromUA(ua) {
-  const u = (ua || "").toLowerCase();
+// ===== UA → client 名 =====
 
-  // Quantumult X
-  if (u.includes("quantumult x") || u.includes("quantumult_x") || u.includes("qx")) {
+function safeDecodeURIComponent(s) {
+  try {
+    return decodeURIComponent(s);
+  } catch (_e) {
+    return s || "";
+  }
+}
+
+// 只识别 Quantumult X，其它一律返回空
+function detectClientFromUA(ua) {
+  const raw = ua || "";
+  const lower = raw.toLowerCase();
+  const decodedLower = safeDecodeURIComponent(raw).toLowerCase();
+
+  const h = `${lower} ${decodedLower}`;
+
+  if (
+    h.includes("quantumult%20x") ||
+    h.includes("quantumult x") ||
+    h.includes("quantumultx") ||
+    h.includes("quanx")
+  ) {
     return "quantumultx";
   }
 
-  // 其它一律不识别，走 Base64
+  // 未识别：交给上层当 base64
   return "";
-}
-
-// ===== 工具：UTF-8 文本 → Base64 =====
-function utf8ToBase64(str) {
-  return btoa(unescape(encodeURIComponent(str)));
 }
