@@ -11,9 +11,14 @@
 //         shadowsocks / UDP
 //         shadowsocks / HTTP / UDP
 //         VLESS / UDP
+//         Trojan / UDP
 //
 // client 行为：
 // -  未知UA返回Base64
+//
+// 已支持的客户端：
+// -  Quantumult X
+// -  使用Base64订阅的客户端
 
 export async function onRequestPost(context) {
   const { request } = context;
@@ -73,6 +78,12 @@ export async function onRequestPost(context) {
       continue;
     }
 
+    // URL格式：trojan://
+    if (lower.startsWith("trojan://")) {
+      nodes.push(parseTrojanLenient(work));
+      continue;
+    }
+
     // 单条Base64：尝试解码成 URL
     const decoded = safeBase64Decode(work);
     if (decoded && decoded !== work) {
@@ -87,11 +98,15 @@ export async function onRequestPost(context) {
         nodes.push(parseVlessLenient(d));
         continue;
       }
-      if (dl.startsWith("vmess://") || dl.startsWith("trojan://")) {
+      if (dl.startsWith("trojan://")) {
+        nodes.push(parseTrojanLenient(d));
+        continue;
+      }
+      if (dl.startsWith("vmess://")) {
         nodes.push({
           raw: d,
-          scheme: dl.split(":", 1)[0],
-          type: dl.split(":", 1)[0],
+          scheme: "vmess",
+          type: "vmess",
         });
         continue;
       }
@@ -368,6 +383,109 @@ function parseVlessLenient(uri) {
   }
 }
 
+/* ========== Trojan 解析：trojan:// ========== */
+
+function parseTrojanLenient(uri) {
+  try {
+    let u = uri.replace(/^trojan:\/\//i, "");
+
+    // 备注（#）
+    let name = "";
+    const hashIndex = u.indexOf("#");
+    if (hashIndex !== -1) {
+      const remarkPart = u.slice(hashIndex + 1);
+      try {
+        name = decodeURIComponent(remarkPart);
+      } catch (_) {
+        name = remarkPart;
+      }
+      u = u.slice(0, hashIndex);
+    }
+
+    // 主体 + 参数
+    let main = u;
+    let queryStr = "";
+    const qIndex = u.indexOf("?");
+    if (qIndex !== -1) {
+      main = u.slice(0, qIndex);
+      queryStr = u.slice(qIndex + 1);
+    }
+
+    // password@host:port
+    const atIndex = main.lastIndexOf("@");
+    let password = "";
+    let hostPortRaw = "";
+    if (atIndex !== -1) {
+      password = main.slice(0, atIndex);
+      hostPortRaw = main.slice(atIndex + 1);
+    } else {
+      hostPortRaw = main;
+    }
+
+    try {
+      password = decodeURIComponent(password);
+    } catch (_e) {}
+
+    hostPortRaw = (hostPortRaw || "").trim();
+    let server = hostPortRaw || "0.0.0.0";
+    let port = 443;
+    const m = /:(\d+)$/.exec(hostPortRaw);
+    if (m) {
+      port = parseInt(m[1], 10) || 443;
+      server = hostPortRaw.slice(0, m.index);
+    }
+
+    let allowInsecure = "";
+    let peer = "";
+    if (queryStr) {
+      const q = new URLSearchParams(queryStr);
+      allowInsecure =
+        q.get("allowInsecure") || q.get("allow_insecure") || "";
+      peer = q.get("peer") || q.get("sni") || "";
+    }
+
+    const overTls = true;
+    const tlsVerification = !(
+      allowInsecure === "1" ||
+      allowInsecure === "true" ||
+      allowInsecure === "yes"
+    );
+    const tlsHost = peer || server;
+
+    if (!name) {
+      name = `${tlsHost}:${port}`;
+    }
+
+    return {
+      raw: uri,
+      scheme: "trojan",
+      type: "trojan",
+
+      name,
+      server,
+      port,
+      password,
+
+      overTls,
+      tlsVerification,
+      tlsHost,
+    };
+  } catch (_e) {
+    return {
+      raw: uri,
+      scheme: "trojan",
+      type: "trojan",
+      name: uri,
+      server: "0.0.0.0",
+      port: 443,
+      password: "",
+      overTls: true,
+      tlsVerification: true,
+      tlsHost: "",
+    };
+  }
+}
+
 /* ========== host:port 规范化 ========== */
 
 function normalizeHostPort(server, port) {
@@ -443,11 +561,30 @@ function buildQuantumultXConfig(nodes) {
       parts.push(`tag=${name}`);
 
       lines.push(parts.join(","));
+    } else if (n.type === "trojan") {
+      const { host, port } = normalizeHostPort(n.server, n.port);
+      const name = (n.name || `${host}:${port}`).replace(/,/g, " ");
+      const password = n.password || "";
+      const overTls = n.overTls ? "true" : "false";
+      const tlsVerification = n.tlsVerification ? "true" : "false";
+      const tlsHost = n.tlsHost || host;
+
+      const parts = [];
+      parts.push(`trojan=${host}:${port}`);
+      parts.push(`password=${password}`);
+      parts.push(`over-tls=${overTls}`);
+      parts.push(`tls-verification=${tlsVerification}`);
+      if (tlsHost) {
+        parts.push(`tls-host=${tlsHost}`);
+      }
+      parts.push(`tag=${name}`);
+
+      lines.push(parts.join(","));
     }
   }
 
   if (!lines.length) {
-    return "# no shadowsocks/vless nodes\n";
+    return "# no shadowsocks/vless/trojan nodes\n";
   }
   return lines.join("\n") + "\n";
 }
