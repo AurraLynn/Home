@@ -1,4 +1,18 @@
 // functions/api/node-convert.js
+//
+// 通用节点转换：POST /api/node-convert?client=<clientName>
+//
+// 支持输入：
+//   - ss://...       （URL 格式，支持 obfs-local http/tls 混淆）
+//   - shadowsocks=.. （Quantumult X 行）
+//   - 其它协议（vmess/vless/trojan...）只在 v2ray Base64 订阅中使用
+//
+// client 行为：
+//   - v2ray / 其它未知： 通用 Base64 订阅
+//   - clash/mihomo/stash/egern/surfboard/loon：只输出 SS 的 Clash YAML
+//   - surge：只输出 SS 的 Surge 行
+//   - quantumultx：只输出 SS 的 QX 行（shadowsocks=...）
+//   - 不对小火箭做适配，小火箭直接用 Base64 订阅
 
 export async function onRequestPost(context) {
   const { request } = context;
@@ -8,7 +22,7 @@ export async function onRequestPost(context) {
   const rawText = await request.text();
   const text = rawText || "";
 
-  // 1. 拆行，去空行和注释
+  // 1. 拆行，去掉空行和注释
   const lines = text
     .split(/\r?\n/)
     .map((l) => l.trim())
@@ -21,22 +35,19 @@ export async function onRequestPost(context) {
     });
   }
 
-  // 2. 解析节点
+  // 2. 解析为节点对象
   const nodes = [];
   for (const lineRaw of lines) {
     const line = lineRaw.trim();
     const lower = line.toLowerCase();
 
     if (lower.startsWith("ss://")) {
-      // ss URL：绝不抛错，解析失败也返回一个 ss 节点
       const n = parseShadowsocksLenient(line);
       nodes.push(n);
     } else if (lower.startsWith("shadowsocks=")) {
-      // QX shadowsocks 行
       const n = parseShadowsocksQXLenient(line);
       nodes.push(n);
     } else {
-      // 其它协议：给 V2 订阅用
       const scheme = line.split(":", 1)[0].toLowerCase();
       nodes.push({ raw: line, scheme, type: scheme });
     }
@@ -64,7 +75,6 @@ export async function onRequestPost(context) {
   } else if (client === "quantumultx") {
     outText = buildQuantumultXConfig(nodes);
   } else {
-    // 其它一律走 V2 Base64
     outText = buildV2raySubscription(nodes);
   }
 
@@ -94,10 +104,10 @@ function utf8ToBase64(str) {
   return btoa(unescape(encodeURIComponent(str)));
 }
 
-/* ========== Shadowsocks 解析：宽松模式 ========== */
+/* ========== Shadowsocks 解析：宽松 ss:// URL ========== */
 /**
- * 目标：不抛异常，至少保证：
- *   { type: "ss", server, port, cipher, password, name, obfs, obfsHost }
+ * 不抛异常，至少保证：
+ *   { type:"ss", server, port, cipher, password, name, obfs, obfsHost }
  */
 function parseShadowsocksLenient(uri) {
   try {
@@ -131,7 +141,6 @@ function parseShadowsocksLenient(uri) {
         userinfoPart = decoded.slice(0, idx);
         serverPart = decoded.slice(idx + 1);
       } else {
-        // 实在不行就先全给 serverPart，后面再兜底
         serverPart = u;
       }
     }
@@ -189,7 +198,6 @@ function parseShadowsocksLenient(uri) {
         obfsHost = q.get("obfs-host") ? decodeURIComponent(q.get("obfs-host")) : "";
         pluginPath = q.get("obfs-uri") || pluginPath;
 
-        // 兼容旧写法：都塞在 pluginParam 里
         if (!obfs) {
           const mm = /obfs=([^;]+)/.exec(pluginParam);
           if (mm) obfs = mm[1];
@@ -226,7 +234,7 @@ function parseShadowsocksLenient(uri) {
       path: pluginPath || "/",
     };
   } catch (_e) {
-    // 极限兜底：至少给出一个 ss 节点，方便你在客户端里看到并手动修改
+    // 极限兜底：至少给一个 ss 节点
     return {
       raw: uri,
       scheme: "ss",
@@ -247,14 +255,14 @@ function parseShadowsocksLenient(uri) {
   }
 }
 
-/* ========== Shadowsocks 解析：QX 行，宽松模式 ========== */
+/* ========== Shadowsocks 解析：QX 行，宽松 ========== */
 
 function parseShadowsocksQXLenient(line) {
   try {
     const parts = line.split(",");
     if (!parts.length) throw new Error("empty qx line");
 
-    const first = parts[0].trim();
+    const first = parts[0].trim(); // shadowsocks=server:port
     const mh = /^shadowsocks=(.+?):(\d+)$/.exec(first);
     let server = "0.0.0.0";
     let port = 8388;
@@ -336,7 +344,37 @@ function parseShadowsocksQXLenient(line) {
   }
 }
 
-/* ========== V2Ray 订阅（Base64） ========== */
+/* ========== host:port 纠正（重点修你遇到的问题） ========== */
+/**
+ * 目的：
+ *   把任何奇怪的 server（例如 "cnc...xyz:14091/"）+ port(8388)
+ *   规范化成 host="cnc...xyz" + port=14091
+ */
+function normalizeHostPort(server, port) {
+  let host = (server || "").trim();
+  let finalPort = port;
+
+  // 去掉 path / query
+  const cut = host.search(/[\/\?]/);
+  if (cut !== -1) {
+    host = host.slice(0, cut);
+  }
+
+  // 如果 host 自己还带 :数字，就优先用那里的端口
+  const m = /^(.*):(\d+)$/.exec(host);
+  if (m) {
+    host = m[1];
+    finalPort = parseInt(m[2], 10) || finalPort;
+  }
+
+  if (!Number.isFinite(finalPort) || finalPort <= 0) {
+    finalPort = 8388;
+  }
+
+  return { host, port: finalPort };
+}
+
+/* ========== V2Ray 订阅 ========== */
 
 function buildV2raySubscription(nodes) {
   const text = nodes
@@ -347,7 +385,7 @@ function buildV2raySubscription(nodes) {
   return utf8ToBase64(text);
 }
 
-/* ========== Clash YAML（只输出 SS 节点） ========== */
+/* ========== Clash YAML（只输出 SS） ========== */
 
 function buildClashConfig(nodes) {
   const lines = [];
@@ -356,11 +394,13 @@ function buildClashConfig(nodes) {
   for (const n of nodes) {
     if (n.type !== "ss") continue;
 
-    const name = n.name || `${n.server}:${n.port}`;
+    const { host, port } = normalizeHostPort(n.server, n.port);
+    const name = n.name || `${host}:${port}`;
+
     lines.push(`  - name: "${escapeYaml(name)}"`);
     lines.push("    type: ss");
-    lines.push(`    server: "${escapeYaml(n.server)}"`);
-    lines.push(`    port: ${n.port}`);
+    lines.push(`    server: "${escapeYaml(host)}"`);
+    lines.push(`    port: ${port}`);
     lines.push(`    cipher: "${escapeYaml(n.cipher)}"`);
     lines.push(`    password: "${escapeYaml(n.password)}"`);
 
@@ -388,7 +428,7 @@ function escapeYaml(str) {
   return String(str).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
-/* ========== Surge（只输出 SS 节点） ========== */
+/* ========== Surge（只输出 SS） ========== */
 
 function buildSurgeConfig(nodes) {
   const lines = [];
@@ -396,13 +436,12 @@ function buildSurgeConfig(nodes) {
   for (const n of nodes) {
     if (n.type !== "ss") continue;
 
-    const name = (n.name || `${n.server}:${n.port}`).replace(/,/g, " ");
-    const server = n.server;
-    const port = n.port;
+    const { host, port } = normalizeHostPort(n.server, n.port);
+    const name = (n.name || `${host}:${port}`).replace(/,/g, " ");
     const method = n.cipher;
     const password = n.password;
 
-    let line = `${name}=ss,${server},${port},encrypt-method=${method},password="${password}"`;
+    let line = `${name}=ss,${host},${port},encrypt-method=${method},password="${password}"`;
 
     if (n.plugin === "obfs" && n.pluginMode) {
       line += `,obfs=${n.pluginMode}`;
@@ -420,7 +459,7 @@ function buildSurgeConfig(nodes) {
   return lines.join("\n") + "\n";
 }
 
-/* ========== Quantumult X（只输出 SS 节点） ========== */
+/* ========== Quantumult X（只输出 SS） ========== */
 
 function buildQuantumultXConfig(nodes) {
   const lines = [];
@@ -428,14 +467,13 @@ function buildQuantumultXConfig(nodes) {
   for (const n of nodes) {
     if (n.type !== "ss") continue;
 
-    const name = (n.name || `${n.server}:${n.port}`).replace(/,/g, " ");
-    const server = n.server;
-    const port = n.port;
+    const { host, port } = normalizeHostPort(n.server, n.port);
+    const name = (n.name || `${host}:${port}`).replace(/,/g, " ");
     const method = n.cipher;
     const password = n.password;
 
     const parts = [];
-    parts.push(`shadowsocks=${server}:${port}`);
+    parts.push(`shadowsocks=${host}:${port}`);
     parts.push(`method=${method}`);
     parts.push(`password=${password}`);
 
