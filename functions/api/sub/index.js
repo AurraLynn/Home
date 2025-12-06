@@ -1,138 +1,255 @@
 // functions/api/sub/index.js
 //
-// 文件用途：通用订阅入口 /api/sub
+// 通用订阅入口：GET /api/sub?id=<pasteId>&client=<clientName>
 //
-// 支持输入：
-// -  id: 从 KV: Paste 读取对应内容，例如 /api/sub?id=cs
-// -  client: 可选，当前只区分 quantumultx / base64
+// 1. 从 KV: Paste 读取原始内容
+// 2. 决定 client：优先 query，其次 UA 自动识别
+// 3. 调用 /api/sub/Converter?client=xxx 做节点转换
+// 4. 对 Clash / Mihomo：在 Converter 返回的 proxies 段基础上，自动包一份完整配置（含端口 + 阿里 DNS + 分组 + 规则）
+// 5. 其它客户端：保持 Converter 输出不变（例如 Quantumult X 行、Surge 行、Base64 订阅）
 //
-// 行为：
-// -  从 Paste KV 取出原始节点文本
-// -  决定当前 client（query 优先，其次 UA 自动识别）
-// -  把原始文本转发给 /api/sub/Converter?client=xxx
-// -  返回 Converter 的纯文本结果
-//
-// 已支持的客户端：
-// -  Quantumult X
-// -  使用 Base64 订阅的客户端
+// 已支持的 client 名：
+// - quantumultx：Quantumult X
+// - surge：Surge
+// - clash：Clash / Mihomo / FlyClash（meta/...）
+// - 其它（stash / shadowrocket / v2rayng 等）：默认走 Base64 订阅
 
 export async function onRequestGet(context) {
-    const { request, env } = context;
-    const url = new URL(request.url);
+  const { request, env } = context;
+  const url = new URL(request.url);
 
-    const id = url.searchParams.get("id");
-    let client = (url.searchParams.get("client") || "").toLowerCase();
-    const ua = request.headers.get("user-agent") || "";
+  const id = url.searchParams.get("id");
+  let client = (url.searchParams.get("client") || "").toLowerCase();
+  const ua = request.headers.get("user-agent") || "";
 
-    if (!id) {
-        return new Response("missing id", { status: 400 });
-    }
+  if (!id) {
+    return new Response("missing id", { status: 400 });
+  }
 
-    if (!env.Paste) {
-        return new Response("KV namespace `Paste` not bound", { status: 500 });
-    }
+  // ===== 1. 读取 KV: Paste =====
+  if (!env.Paste) {
+    return new Response("KV namespace `Paste` not bound", { status: 500 });
+  }
 
-    const stored = await env.Paste.get(id);
-    if (!stored) {
-        return new Response("not found", { status: 404 });
-    }
+  const stored = await env.Paste.get(id);
+  if (!stored) {
+    return new Response("not found", { status: 404 });
+  }
 
-    const raw = extractContentFromRecord(stored);
-    if (!raw || !raw.trim()) {
-        return new Response("empty content", { status: 404 });
-    }
+  const raw = extractContentFromRecord(stored);
+  if (!raw || !raw.trim()) {
+    return new Response("empty content", { status: 404 });
+  }
 
-    // ===== 决定 client 类型 =====
-    if (!client) {
-        client = detectClientFromUA(ua);
-    }
+  // ===== 2. 决定 client：优先 query，其次 UA 自动识别 =====
+  if (!client) {
+    client = detectClientFromUA(ua);
+  }
 
-    // 现在只做 Quantumult X，其它一律 Base64
-    if (client !== "quantumultx") {
-        client = "base64";
-    }
+  const origin = url.origin;
 
-    // ===== 转发给 /api/sub/Converter =====
-    const origin = url.origin;
-    const convertUrl = `${origin}/api/sub/Converter?client=${encodeURIComponent(
-        client
+  // ===== 3. 调用 /api/sub/Converter 做转换 =====
+  let converterUrl = `${origin}/api/sub/Converter`;
+
+  if (client === "quantumultx") {
+    converterUrl = `${origin}/api/sub/Converter?client=quantumultx`;
+  } else if (client === "surge") {
+    converterUrl = `${origin}/api/sub/Converter?client=surge`;
+  } else if (client === "clash") {
+    converterUrl = `${origin}/api/sub/Converter?client=clash`;
+  } else if (client) {
+    // 其它 client（stash 等），统一透传给 Converter（目前会按 Base64 处理）
+    converterUrl = `${origin}/api/sub/Converter?client=${encodeURIComponent(
+      client
     )}`;
+  }
+  // 如果 client 为空，就不带 client 参数，让 Converter 默认输出 Base64
 
-    const res = await fetch(convertUrl, {
-        method: "POST",
-        body: raw,
+  const res = await fetch(converterUrl, {
+    method: "POST",
+    body: raw,
+  });
+
+  let convertedText = await res.text();
+
+  if (!res.ok) {
+    return new Response(convertedText || "convert error", {
+      status: res.status,
+      headers: { "content-type": "text/plain; charset=utf-8" },
     });
+  }
 
-    const outText = await res.text();
+  // ===== 4. Clash / Mihomo：自动包完整配置 =====
+  if (client === "clash") {
+    convertedText = buildClashFullConfig(convertedText);
+  }
 
-    if (!res.ok) {
-        return new Response(outText || "convert error", {
-            status: res.status,
-            headers: { "content-type": "text/plain; charset=utf-8" },
-        });
-    }
+  // 当前所有 client 都返回 text/plain
+  const headers = new Headers();
+  headers.set("content-type", "text/plain; charset=utf-8");
 
-    return new Response(outText, {
-        status: 200,
-        headers: { "content-type": "text/plain; charset=utf-8" },
-    });
+  return new Response(convertedText, {
+    status: 200,
+    headers,
+  });
 }
 
-// ===== 从 KV 记录里抽正文内容（适配 PasteBox 存储结构） =====
+/* ========== 工具：从 KV 记录中提取节点文本 ========== */
+
 function extractContentFromRecord(stored) {
-    if (!stored) return "";
+  if (!stored) return "";
 
-    const trimmed = stored.trim();
-    const firstChar = trimmed[0];
+  const trimmed = stored.trim();
+  const firstChar = trimmed[0];
 
-    // 看起来不像 JSON，就当纯文本
-    if (firstChar !== "{" && firstChar !== "[") {
-        return stored;
-    }
+  // 看起来不像 JSON，就按纯文本
+  if (firstChar !== "{" && firstChar !== "[") {
+    return stored;
+  }
 
-    try {
-        const obj = JSON.parse(trimmed);
+  try {
+    const obj = JSON.parse(trimmed);
 
-        if (typeof obj.content === "string") return obj.content;
-        if (typeof obj.text === "string") return obj.text;
-        if (typeof obj.body === "string") return obj.body;
-        if (typeof obj.raw === "string") return obj.raw;
-        if (typeof obj.nodeContent === "string") return obj.nodeContent;
-        if (typeof obj.data === "string") return obj.data;
+    if (typeof obj.content === "string") return obj.content;
+    if (typeof obj.text === "string") return obj.text;
+    if (typeof obj.body === "string") return obj.body;
+    if (typeof obj.raw === "string") return obj.raw;
+    if (typeof obj.nodeContent === "string") return obj.nodeContent;
+    if (typeof obj.data === "string") return obj.data;
 
-        // 实在找不到，就原样返回 JSON
-        return stored;
-    } catch (_e) {
-        return stored;
-    }
+    // 实在找不到，就把整个 JSON 再当成原始文本
+    return stored;
+  } catch (_e) {
+    return stored;
+  }
 }
 
-// ===== UA → client 名 =====
+/* ========== 工具：UA → client 名 ========== */
 
-function safeDecodeURIComponent(s) {
-    try {
-        return decodeURIComponent(s);
-    } catch (_e) {
-        return s || "";
-    }
-}
-
-// 只识别 Quantumult X，其它留空（上层当 base64）
 function detectClientFromUA(ua) {
-    const raw = ua || "";
-    const lower = raw.toLowerCase();
-    const decodedLower = safeDecodeURIComponent(raw).toLowerCase();
+  const u = (ua || "").toLowerCase();
+  if (!u) return "";
 
-    const h = `${lower} ${decodedLower}`;
+  // FlyClash / Clash Meta：meta/0.2.0.9.Meta 一类
+  if (u.includes("meta/") || u.includes(".meta")) return "clash";
 
-    if (
-        h.includes("quantumult%20x") ||
-        h.includes("quantumult x") ||
-        h.includes("quantumultx") ||
-        h.includes("quanx")
-    ) {
-        return "quantumultx";
+  // Clash 系：Clash, Mihomo, Clash for Windows, Clash for Android 等
+  if (u.includes("clash") || u.includes("mihomo")) return "clash";
+
+  // Surge
+  if (u.includes("surge")) return "surge";
+
+  // Stash（目前还没专用格式，先走 Base64）
+  if (u.includes("stash")) return "stash";
+
+  // Quantumult X：Quantumult%20X / Quantumult X / QuantumultX / QuanX
+  if (
+    u.includes("quantumult%20x") ||
+    u.includes("quantumult x") ||
+    u.includes("quantumultx") ||
+    u.includes("quanx")
+  ) {
+    return "quantumultx";
+  }
+
+  // Shadowrocket / 其它客户端：不再单独识别，默认走 Base64 通用订阅
+  return "";
+}
+
+/* ========== Clash / Mihomo 完整配置相关 ========== */
+
+// 简化版：端口 + 阿里 DNS
+const CLASH_BASE_HEADER = `port: 7890
+socks-port: 7891
+mode: Rule
+allow-lan: true
+log-level: info
+
+dns:
+  enable: true
+  listen: 0.0.0.0:53
+  ipv6: false
+  nameserver:
+    - 223.5.5.5
+    - 223.6.6.6
+`;
+
+// 从 /api/sub/Clash 返回的 proxies 段中提取所有节点名称
+// 兼容两种格式：
+// 1）- name: xxx
+// 2）- {"name":"xxx", ...}
+function extractClashProxyNames(nodesYaml) {
+  const lines = (nodesYaml || "").split(/\r?\n/);
+  const names = [];
+
+  for (const line of lines) {
+    const l = line.trim();
+    if (!l.startsWith("-")) continue;
+
+    // 格式 1：- name: xxx
+    let m = l.match(/^\-\s*name:\s*(.+)\s*$/);
+    if (m) {
+      let name = m[1].trim();
+      if (
+        (name.startsWith('"') && name.endsWith('"')) ||
+        (name.startsWith("'") && name.endsWith("'"))
+      ) {
+        name = name.slice(1, -1);
+      }
+      names.push(name);
+      continue;
     }
 
-    return "";
+    // 格式 2：- {"name":"xxx", ...}
+    m = l.match(/^\-\s*(\{.*"name"\s*:\s*".*"\s*.*\})\s*$/);
+    if (m) {
+      try {
+        const obj = JSON.parse(m[1]);
+        if (obj && typeof obj.name === "string") {
+          names.push(obj.name);
+        }
+      } catch (_e) {
+        // ignore JSON parse error
+      }
+    }
+  }
+
+  return names;
+}
+
+// 把 proxies 段塞进完整 Clash 配置（含分组与规则）
+function buildClashFullConfig(nodesYaml) {
+  const names = extractClashProxyNames(nodesYaml);
+
+  // 没解析出节点名就原样返回（至少还能用）
+  if (!names.length) {
+    return nodesYaml;
+  }
+
+  const groupName = "🐹Lyn · Node";
+
+  const groupLines = [];
+  groupLines.push("proxy-groups:");
+  groupLines.push(`  - name: "${groupName}"`);
+  groupLines.push("    type: select");
+  groupLines.push("    proxies:");
+  for (const n of names) {
+    groupLines.push('      - "' + n.replace(/"/g, '\\"') + '"');
+  }
+  groupLines.push("");
+  groupLines.push("rules:");
+  groupLines.push("  - GEOIP,LAN,DIRECT");
+  groupLines.push("  - GEOIP,CN,DIRECT");
+  groupLines.push("  - MATCH," + groupName);
+
+  const groupSection = groupLines.join("\n");
+
+  return (
+    CLASH_BASE_HEADER +
+    "\n" +
+    nodesYaml.trim() +
+    "\n\n" +
+    groupSection +
+    "\n"
+  );
 }
