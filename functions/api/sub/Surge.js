@@ -1,12 +1,13 @@
 // functions/api/sub/Surge.js
 //
 // 支持输入：
-// - URL 格式（ss://）
+// - URL 格式（ss://、trojan://）
 // - URL / Base64 混合（逐行）
 // - Base64 订阅
 //
 // 支持输出：
 // - Surge：shadowsocks / UDP（含 http / tls 混淆）
+// - Surge：trojan / UDP
 //
 // 已支持的客户端：
 // - Surge
@@ -19,7 +20,7 @@ export async function onRequestPost(context) {
   // 整段尝试 Base64 解码
   const compact = text.replace(/\s+/g, "");
   const decodedBulk = tryBase64DecodeToString(compact);
-  if (decodedBulk && decodedBulk.includes("ss://")) {
+  if (decodedBulk && (decodedBulk.includes("ss://") || decodedBulk.includes("trojan://"))) {
     text = decodedBulk;
   }
 
@@ -31,31 +32,37 @@ export async function onRequestPost(context) {
     if (!line || line.startsWith("#")) continue;
 
     // 单行尝试 Base64
-    if (!line.startsWith("ss://")) {
+    if (!line.startsWith("ss://") && !line.startsWith("trojan://")) {
       const decodedLine = tryBase64DecodeToString(line);
-      if (decodedLine && decodedLine.startsWith("ss://")) {
+      if (decodedLine && (decodedLine.startsWith("ss://") || decodedLine.startsWith("trojan://"))) {
         line = decodedLine;
       } else {
         continue;
       }
     }
 
-    const node = parseShadowsocksUrl(line);
+    let node = null;
+    if (line.startsWith("ss://")) {
+      node = parseShadowsocksUrl(line);
+    } else if (line.startsWith("trojan://")) {
+      node = parseTrojanUrl(line);
+    }
+
     if (node) nodes.push(node);
   }
 
   let out = "";
 
   if (!nodes.length) {
-    out = "# no shadowsocks nodes\n";
+    out = "# no surge nodes\n";
   } else {
     const outLines = [];
     for (const n of nodes) {
-      const surgeLine = buildSurgeShadowsocksLine(n);
+      const surgeLine = buildSurgeLine(n);
       if (surgeLine) outLines.push(surgeLine);
     }
     out =
-      (outLines.length ? "# Surge shadowsocks\n" + outLines.join("\n") : "# no shadowsocks nodes") +
+      (outLines.length ? "# Surge nodes\n" + outLines.join("\n") : "# no surge nodes") +
       "\n";
   }
 
@@ -188,10 +195,92 @@ function parseShadowsocksUrl(url) {
   }
 }
 
-/* 构造 Surge shadowsocks 行：名称=ss,server,port,encrypt-method=...,password="...",obfs=...,obfs-host=... */
-function buildSurgeShadowsocksLine(node) {
-  if (!node || node.type !== "ss") return "";
+/* 解析 Trojan URL */
+function parseTrojanUrl(url) {
+  try {
+    if (!url.startsWith("trojan://")) return null;
 
+    let s = url.slice("trojan://".length);
+
+    // 名称
+    let name = "";
+    const hashIndex = s.indexOf("#");
+    if (hashIndex !== -1) {
+      name = s.slice(hashIndex + 1);
+      s = s.slice(0, hashIndex);
+      try {
+        name = decodeURIComponent(name);
+      } catch (_e) {}
+    }
+
+    // 查询参数
+    let query = "";
+    const qIndex = s.indexOf("?");
+    if (qIndex !== -1) {
+      query = s.slice(qIndex + 1);
+      s = s.slice(0, qIndex);
+    }
+
+    // password@server:port
+    const atIndex = s.lastIndexOf("@");
+    if (atIndex === -1) return null;
+
+    const password = s.slice(0, atIndex);
+    const hostPort = s.slice(atIndex + 1);
+
+    const lastColon = hostPort.lastIndexOf(":");
+    if (lastColon === -1) return null;
+
+    const server = hostPort.slice(0, lastColon);
+    const portStr = hostPort.slice(lastColon + 1);
+    const port = parseInt(portStr, 10);
+    if (!server || !Number.isFinite(port)) return null;
+
+    let sni = "";
+    let skipCertVerify = false;
+
+    if (query) {
+      const params = new URLSearchParams(query);
+      const peer = params.get("peer");
+      const sniParam = params.get("sni");
+      const hostParam = params.get("host");
+      sni = peer || sniParam || hostParam || server;
+
+      const allowInsecure =
+        params.get("allowInsecure") ||
+        params.get("insecure") ||
+        params.get("allow_insecure");
+      if (allowInsecure === "1" || allowInsecure === "true") {
+        skipCertVerify = true;
+      }
+    } else {
+      sni = server;
+    }
+
+    return {
+      type: "trojan",
+      name: name || `${server}:${port}`,
+      server,
+      port,
+      password,
+      sni,
+      skipCertVerify,
+    };
+  } catch (_e) {
+    return null;
+  }
+}
+
+/* 根据节点类型构造 Surge 行 */
+function buildSurgeLine(node) {
+  if (!node || !node.type) return "";
+  if (node.type === "ss") return buildSurgeShadowsocksLine(node);
+  if (node.type === "trojan") return buildSurgeTrojanLine(node);
+  return "";
+}
+
+/* 构造 Surge shadowsocks 行 */
+function buildSurgeShadowsocksLine(node) {
   const server = node.server || "";
   const port = node.port;
   const method = node.method || "";
@@ -213,6 +302,34 @@ function buildSurgeShadowsocksLine(node) {
     if (node.obfsHost) {
       parts.push(`obfs-host=${escapeComma(node.obfsHost)}`);
     }
+  }
+
+  return parts.join(",");
+}
+
+/* 构造 Surge trojan 行 */
+function buildSurgeTrojanLine(node) {
+  const server = node.server || "";
+  const port = node.port;
+  const password = node.password || "";
+  const tag = node.name || `${server}:${port}`;
+  const sni = node.sni || server;
+  const skipCertVerify = !!node.skipCertVerify;
+
+  if (!server || !Number.isFinite(port) || !password) return "";
+
+  const parts = [];
+
+  parts.push(`${escapeComma(tag)}=trojan`);
+  parts.push(server);
+  parts.push(String(port));
+  parts.push(`password="${escapeQuote(password)}"`);
+  parts.push("tls=true");
+  if (sni) {
+    parts.push(`sni=${escapeComma(sni)}`);
+  }
+  if (skipCertVerify) {
+    parts.push("skip-cert-verify=true");
   }
 
   return parts.join(",");
