@@ -129,7 +129,7 @@ function parseShadowsocksLenient(uri) {
     try {
         let u = uri.replace(/^ss:\/\//i, "");
 
-        // 先拆掉 #name
+        // 取 name（# 后面）
         let name = "";
         const hashIndex = u.indexOf("#");
         if (hashIndex !== -1) {
@@ -144,7 +144,7 @@ function parseShadowsocksLenient(uri) {
             }
         }
 
-        // 可能带 plugin= 参数
+        // main + query
         let main = u;
         let queryStr = "";
         const qIndex = u.indexOf("?");
@@ -153,11 +153,15 @@ function parseShadowsocksLenient(uri) {
             queryStr = u.slice(qIndex + 1);
         }
 
-        // 可能是完全 Base64，也可能是 method:password@host:port 形式
+        // main 可能是：
+        // - Base64("method:passwd@host:port")
+        // - 或 "method:passwd@host:port"
+        // - 或 Base64("method:passwd") + "@host:port"
         let userinfoHostPort = "";
-        const decoded = safeBase64Decode(main);
-        if (decoded && decoded.includes("@")) {
-            userinfoHostPort = decoded;
+        const decodedMain = safeBase64Decode(main);
+        if (decodedMain && decodedMain.includes("@")) {
+            // 形如 Base64("method:passwd@host:port")
+            userinfoHostPort = decodedMain;
         } else {
             userinfoHostPort = main;
         }
@@ -173,13 +177,22 @@ function parseShadowsocksLenient(uri) {
         let cipher = "";
         let password = "";
 
+        // 第一种：明文 "method:password"
         if (userinfo && userinfo.includes(":")) {
             const idx = userinfo.indexOf(":");
             cipher = userinfo.slice(0, idx);
             password = userinfo.slice(idx + 1);
+        } else if (userinfo) {
+            // 第二种：userinfo 自己是 Base64("method:password")
+            const decUi = safeBase64Decode(userinfo);
+            if (decUi && decUi.includes(":")) {
+                const idx2 = decUi.indexOf(":");
+                cipher = decUi.slice(0, idx2);
+                password = decUi.slice(idx2 + 1);
+            }
         }
 
-        // serverPart 可能带 query
+        // serverPart 可能再带 query
         let hostPortRaw = serverPart;
         let queryStr2 = queryStr;
         if (!queryStr2) {
@@ -212,7 +225,7 @@ function parseShadowsocksLenient(uri) {
 
                 pluginMode = q.get("obfs") || "";
                 pluginHost = q.get("obfs-host")
-                    ? decodeURIComponent(q.get("obfs-host"))
+                    ? decodeURIComponentSafe(q.get("obfs-host"))
                     : "";
 
                 if (!pluginMode) {
@@ -221,7 +234,7 @@ function parseShadowsocksLenient(uri) {
                 }
                 if (!pluginHost) {
                     const mh = /obfs-host=([^;]+)/.exec(pluginParam);
-                    if (mh) pluginHost = decodeURIComponent(mh[1] || "");
+                    if (mh) pluginHost = decodeURIComponentSafe(mh[1] || "");
                 }
             }
         }
@@ -428,9 +441,7 @@ function parseTrojanLenient(uri) {
             }
 
             const peer = q.get("peer") || q.get("sni") || "";
-            if (peer) {
-                sni = peer;
-            }
+            if (peer) sni = peer;
 
             const insecure = q.get("allowInsecure") || "";
             if (insecure === "1" || insecure === "true") {
@@ -466,7 +477,7 @@ function parseTrojanLenient(uri) {
     }
 }
 
-// ========== VMESS 解析：vmess://（UDP / WS / HTTP） ========== */
+// ========== VMESS 解析：vmess://（UDP / WS / HTTP） ==========
 
 function parseVmessLenient(uri) {
     try {
@@ -546,7 +557,6 @@ function parseVmessLenient(uri) {
             }
 
             const obfsType = q.get("obfs") || q.get("network") || "";
-
             const hostFrom = q.get("obfsParam") || q.get("host") || "";
             const path = q.get("path") || q.get("obfsUri") || "/";
 
@@ -673,6 +683,8 @@ function buildQuantumultXConfig(nodes) {
             const method = n.cipher;
             const password = n.password;
 
+            if (!method || !password) continue;
+
             const parts = [];
             parts.push(`shadowsocks=${host}:${port}`);
             parts.push(`method=${method}`);
@@ -721,11 +733,11 @@ function buildQuantumultXConfig(nodes) {
             const overTls = true;
             const skipCert = !!n.skipCertVerify;
 
+            if (!password) continue;
+
             const parts = [];
             parts.push(`trojan=${host}:${port}`);
-            if (password) {
-                parts.push(`password=${password}`);
-            }
+            parts.push(`password=${password}`);
             parts.push(`over-tls=${overTls ? "true" : "false"}`);
             if (n.sni) {
                 parts.push(`tls-host=${n.sni}`);
@@ -745,12 +757,12 @@ function buildQuantumultXConfig(nodes) {
             const uuid = n.uuid || "";
             const method = "chacha20-ietf-poly1305";
 
+            if (!uuid) continue;
+
             const parts = [];
             parts.push(`vmess=${host}:${port}`);
             parts.push(`method=${method}`);
-            if (uuid) {
-                parts.push(`password=${uuid}`);
-            }
+            parts.push(`password=${uuid}`);
 
             if (n.obfs === "ws") {
                 parts.push("obfs=ws");
