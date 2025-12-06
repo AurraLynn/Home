@@ -5,7 +5,7 @@
 // -  URL/Base64 混合格式
 // -  Base64（单条、多条、整条订阅）
 //
-// 支持协议输出：
+// 支持协议输出（仅支持白名单列表）：
 // -  Quantumult X：
 //         Shadowsocks / UDP
 //         Shadowsocks / HTTP / UDP
@@ -16,173 +16,161 @@
 //         VMESS / HTTP / UDP
 //
 // client 行为：
-// -  只处理 Quantumult X，供 /api/sub/Converter 内部调用
-//
-// 客户端：
-// -  Quantumult X仅支持现有输出协议
+// -  只处理 Quantumult X，供 /api/sub/Converter 调用
+// -  不在白名单里的协议 / 传输方式一律丢弃，不下发给客户端
 
 export async function onRequestPost(context) {
     const { request } = context;
+
     const rawText = await request.text();
-    const text = rawText || "";
-
-    // 按行拆分，去掉空行和注释
-    const linesRaw = text
-        .split(/\r?\n/)
-        .map((l) => l.trim())
-        .filter((l) => l && !l.startsWith("//"));
-
-    if (!linesRaw.length) {
-        return new Response("# empty\n", {
+    const text = (rawText || "").trim();
+    if (!text) {
+        return new Response("# empty input\n", {
             status: 200,
             headers: { "content-type": "text/plain; charset=utf-8" },
         });
     }
 
-    // 单行时尝试当成 Base64 订阅整体解码
-    let lines = linesRaw;
-    if (linesRaw.length === 1) {
-        const decodedAll = safeBase64Decode(linesRaw[0]);
-        if (
-            decodedAll &&
-            decodedAll !== linesRaw[0] &&
-            (decodedAll.includes("://") || decodedAll.includes("\n"))
-        ) {
-            lines = decodedAll
-                .split(/\r?\n/)
-                .map((l) => l.trim())
-                .filter((l) => l && !l.startsWith("//"));
-        }
+    const nodes = parseMixedInputToNodes(text);
+    let out = "";
+
+    if (!nodes.length) {
+        out = "# no shadowsocks/vless/trojan/vmess nodes\n";
+    } else {
+        const outText = buildQuantumultXConfig(nodes);
+        out = outText || "# no shadowsocks/vless/trojan/vmess nodes\n";
     }
 
-    const nodes = [];
-
-    for (const lineRaw of lines) {
-        const line = lineRaw.trim();
-        if (!line) continue;
-
-        const lower = line.toLowerCase();
-
-        if (lower.startsWith("ss://")) {
-            nodes.push(parseShadowsocksLenient(line));
-            continue;
-        }
-
-        if (lower.startsWith("vless://")) {
-            nodes.push(parseVlessLenient(line));
-            continue;
-        }
-
-        if (lower.startsWith("trojan://")) {
-            nodes.push(parseTrojanLenient(line));
-            continue;
-        }
-
-        if (lower.startsWith("vmess://")) {
-            nodes.push(parseVmessLenient(line));
-            continue;
-        }
-
-        // 尝试当成 Base64 单条节点解码
-        const decoded = safeBase64Decode(line);
-        if (decoded && decoded !== line) {
-            const d = decoded.trim();
-            const dl = d.toLowerCase();
-
-            if (dl.startsWith("ss://")) {
-                nodes.push(parseShadowsocksLenient(d));
-                continue;
-            }
-            if (dl.startsWith("vless://")) {
-                nodes.push(parseVlessLenient(d));
-                continue;
-            }
-            if (dl.startsWith("trojan://")) {
-                nodes.push(parseTrojanLenient(d));
-                continue;
-            }
-            if (dl.startsWith("vmess://")) {
-                nodes.push(parseVmessLenient(d));
-                continue;
-            }
-        }
-
-        // 未识别的行丢弃
-    }
-
-    const outText = buildQuantumultXConfig(nodes);
-
-    return new Response(outText, {
+    return new Response(out, {
         status: 200,
         headers: { "content-type": "text/plain; charset=utf-8" },
     });
 }
 
-/* ========== Base64 工具 ========== */
+// ========== 通用解析：把混合输入拆成一行一行 URL / Base64 ==========
 
-function safeBase64Decode(input) {
+function parseMixedInputToNodes(text) {
+    const lines = text
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter((l) => !!l && !l.startsWith("#") && !l.startsWith("//"));
+
+    const nodes = [];
+
+    for (const lineRaw of lines) {
+        let line = lineRaw.trim();
+
+        // Base64 纯订阅整段
+        if (!line.includes("://") && /^[A-Za-z0-9+/=]+$/.test(line)) {
+            const decoded = safeBase64Decode(line);
+            if (!decoded) continue;
+
+            const subLines = decoded
+                .split(/\r?\n/)
+                .map((l) => l.trim())
+                .filter((l) => !!l && !l.startsWith("#") && !l.startsWith("//"));
+
+            for (const sub of subLines) {
+                const n = parseSingleUriToNode(sub);
+                if (n) nodes.push(n);
+            }
+            continue;
+        }
+
+        // 正常 URL / URL+参数
+        const n = parseSingleUriToNode(line);
+        if (n) nodes.push(n);
+    }
+
+    return nodes;
+}
+
+// 单条 uri → node
+function parseSingleUriToNode(uri) {
+    if (!uri) return null;
+    const u = uri.trim();
+
+    if (u.startsWith("ss://")) {
+        return parseShadowsocksLenient(u);
+    }
+    if (u.startsWith("vless://")) {
+        return parseVlessLenient(u);
+    }
+    if (u.startsWith("trojan://")) {
+        return parseTrojanLenient(u);
+    }
+    if (u.startsWith("vmess://")) {
+        return parseVmessLenient(u);
+    }
+
+    return null;
+}
+
+function safeBase64Decode(b64) {
+    if (!b64) return "";
+    let s = b64.trim();
+    // URL 安全 → 标准 Base64
+    s = s.replace(/-/g, "+").replace(/_/g, "/");
+    // 补齐 =
+    const pad = s.length % 4;
+    if (pad === 2) s += "==";
+    else if (pad === 3) s += "=";
+
     try {
-        let s = (input || "").trim();
-        if (!s) return "";
-
-        s = s.replace(/-/g, "+").replace(/_/g, "/");
-        const pad = (-s.length) % 4;
-        if (pad > 0) s += "=".repeat(pad);
-
-        return decodeURIComponent(escape(atob(s)));
+        return atob(s);
     } catch (_e) {
         return "";
     }
 }
 
-/* ========== Shadowsocks 解析：ss:// ========== */
+// ========== Shadowsocks 解析：ss://... ==========
 
 function parseShadowsocksLenient(uri) {
     try {
         let u = uri.replace(/^ss:\/\//i, "");
 
-        // 备注（节点名）
+        // 先拆掉 #name
         let name = "";
         const hashIndex = u.indexOf("#");
         if (hashIndex !== -1) {
-            const remarkPart = u.slice(hashIndex + 1);
-            try {
-                name = decodeURIComponent(remarkPart);
-            } catch (_e) {
-                name = remarkPart;
-            }
+            const namePart = u.slice(hashIndex + 1);
             u = u.slice(0, hashIndex);
+            if (namePart) {
+                try {
+                    name = decodeURIComponent(namePart);
+                } catch (_e) {
+                    name = namePart;
+                }
+            }
         }
 
-        let userinfoPart = "";
-        let serverPart = "";
+        // 可能带 plugin= 参数
+        let main = u;
+        let queryStr = "";
+        const qIndex = u.indexOf("?");
+        if (qIndex !== -1) {
+            main = u.slice(0, qIndex);
+            queryStr = u.slice(qIndex + 1);
+        }
 
-        const atIndex = u.lastIndexOf("@");
-        if (atIndex !== -1) {
-            userinfoPart = u.slice(0, atIndex);
-            serverPart = u.slice(atIndex + 1);
+        // 可能是完全 Base64，也可能是 method:password@host:port 形式
+        let userinfoHostPort = "";
+        const decoded = safeBase64Decode(main);
+        if (decoded && decoded.includes("@")) {
+            userinfoHostPort = decoded;
         } else {
-            // 可能是 ss://Base64(method:pwd@host:port)
-            const decoded = safeBase64Decode(u);
-            if (decoded && decoded.includes("@")) {
-                const idx = decoded.indexOf("@");
-                userinfoPart = decoded.slice(0, idx);
-                serverPart = decoded.slice(idx + 1);
-            } else {
-                serverPart = u;
-            }
+            userinfoHostPort = main;
         }
 
-        // userinfo 可能是 Base64(method:pwd)
-        let userinfo = userinfoPart;
-        if (userinfo && !userinfo.includes(":")) {
-            const decodedUser = safeBase64Decode(userinfo);
-            if (decodedUser && decodedUser.includes(":")) {
-                userinfo = decodedUser;
-            }
+        const atIndex = userinfoHostPort.lastIndexOf("@");
+        if (atIndex === -1) {
+            return null;
         }
 
-        let cipher = "aes-128-gcm";
+        const userinfo = userinfoHostPort.slice(0, atIndex);
+        const serverPart = userinfoHostPort.slice(atIndex + 1);
+
+        let cipher = "";
         let password = "";
 
         if (userinfo && userinfo.includes(":")) {
@@ -193,31 +181,32 @@ function parseShadowsocksLenient(uri) {
 
         // serverPart 可能带 query
         let hostPortRaw = serverPart;
-        let queryStr = "";
-        const qIndex = serverPart.indexOf("?");
-        if (qIndex !== -1) {
-            hostPortRaw = serverPart.slice(0, qIndex);
-            queryStr = serverPart.slice(qIndex + 1);
+        let queryStr2 = queryStr;
+        if (!queryStr2) {
+            const q2 = serverPart.indexOf("?");
+            if (q2 !== -1) {
+                hostPortRaw = serverPart.slice(0, q2);
+                queryStr2 = serverPart.slice(q2 + 1);
+            }
         }
-        hostPortRaw = (hostPortRaw || "").trim();
 
-        // 提取 host + port，避免出现 "host:port/xxx" 导致 NaN
-        let server = hostPortRaw || "0.0.0.0";
+        let host = hostPortRaw;
         let port = 8388;
-        const m = /^(.*):(\d+)$/.exec(hostPortRaw);
+        const m = /:(\d+)$/.exec(hostPortRaw);
         if (m) {
-            server = m[1];
-            port = parseInt(m[2], 10) || 8388;
+            port = parseInt(m[1], 10) || 8388;
+            host = hostPortRaw.slice(0, m.index);
         }
 
+        // plugin / obfs
         let plugin = "";
         let pluginMode = "";
         let pluginHost = "";
 
-        if (queryStr) {
-            const q = new URLSearchParams(queryStr);
-            const pluginParam = q.get("plugin") || "";
+        if (queryStr2) {
+            const q = new URLSearchParams(queryStr2);
 
+            const pluginParam = q.get("plugin") || "";
             if (pluginParam && pluginParam.includes("obfs-local")) {
                 plugin = "obfs";
 
@@ -237,13 +226,16 @@ function parseShadowsocksLenient(uri) {
             }
         }
 
+        if (!name) {
+            name = `${host}:${port}`;
+        }
+
         return {
             raw: uri,
             scheme: "ss",
             type: "ss",
-
-            name: name || `${server}:${port}`,
-            server,
+            name,
+            server: host,
             port,
             cipher,
             password,
@@ -258,22 +250,30 @@ function parseShadowsocksLenient(uri) {
             scheme: "ss",
             type: "ss",
             name: uri,
-            server: "0.0.0.0",
-            port: 8388,
-            cipher: "aes-128-gcm",
-            password: "",
-            plugin: "",
-            pluginMode: "",
-            pluginHost: "",
         };
     }
 }
 
-/* ========== VLESS 解析：vless:// （仅 UDP） ========== */
+// ========== VLESS 解析：vless://（只做 UDP 直连） ==========
 
 function parseVlessLenient(uri) {
     try {
         let u = uri.replace(/^vless:\/\//i, "");
+
+        // name
+        let name = "";
+        const hashIndex = u.indexOf("#");
+        if (hashIndex !== -1) {
+            const namePart = u.slice(hashIndex + 1);
+            u = u.slice(0, hashIndex);
+            if (namePart) {
+                try {
+                    name = decodeURIComponent(namePart);
+                } catch (_e) {
+                    name = namePart;
+                }
+            }
+        }
 
         let main = u;
         let queryStr = "";
@@ -283,25 +283,16 @@ function parseVlessLenient(uri) {
             queryStr = u.slice(qIndex + 1);
         }
 
-        let decoded = safeBase64Decode(main);
-        let userinfoHostPort = "";
-
-        if (decoded && decoded.includes("@") && decoded.includes(":")) {
-            userinfoHostPort = decoded;
-        } else {
-            userinfoHostPort = main;
+        const atIndex = main.lastIndexOf("@");
+        if (atIndex === -1) {
+            return null;
         }
 
-        const atIndex = userinfoHostPort.indexOf("@");
-        if (atIndex === -1) throw new Error("invalid vless");
+        const userinfo = main.slice(0, atIndex);
+        const hostPort = main.slice(atIndex + 1);
 
-        const userinfo = userinfoHostPort.slice(0, atIndex);
-        const hostPortRaw = userinfoHostPort.slice(atIndex + 1);
+        const uuid = decodeURIComponentSafe(userinfo);
 
-        const parts = userinfo.split(":");
-        const uuid = parts[parts.length - 1] || "";
-
-        const hostPort = hostPortRaw.trim();
         let host = hostPort || "0.0.0.0";
         let port = 443;
         const m = /:(\d+)$/.exec(hostPort);
@@ -310,14 +301,13 @@ function parseVlessLenient(uri) {
             host = hostPort.slice(0, m.index);
         }
 
-        let name = `${host}:${port}`;
         let tls = "";
         let sni = "";
         let path = "";
-        let pbk = "";
 
         if (queryStr) {
             const q = new URLSearchParams(queryStr);
+
             const r =
                 q.get("remarks") || q.get("name") || q.get("tag") || q.get("remark");
             if (r) {
@@ -336,8 +326,10 @@ function parseVlessLenient(uri) {
                 sni = peer;
             }
 
-            path = q.get("path") || q.get("obfs-uri") || "";
-            pbk = q.get("pbk") || "";
+            const p = q.get("path") || "";
+            if (p) {
+                path = p;
+            }
         }
 
         return {
@@ -354,7 +346,6 @@ function parseVlessLenient(uri) {
             tls,
             sni,
             path,
-            pbk,
         };
     } catch (_e) {
         return {
@@ -369,12 +360,113 @@ function parseVlessLenient(uri) {
             tls: "",
             sni: "",
             path: "",
-            pbk: "",
         };
     }
 }
 
-/* ========== VMESS 解析：vmess://（UDP / WS / HTTP） ========== */
+// ========== TROJAN 解析：trojan:// ==========
+
+function parseTrojanLenient(uri) {
+    try {
+        let u = uri.replace(/^trojan:\/\//i, "");
+
+        // name
+        let name = "";
+        const hashIndex = u.indexOf("#");
+        if (hashIndex !== -1) {
+            const namePart = u.slice(hashIndex + 1);
+            u = u.slice(0, hashIndex);
+            if (namePart) {
+                try {
+                    name = decodeURIComponent(namePart);
+                } catch (_e) {
+                    name = namePart;
+                }
+            }
+        }
+
+        let main = u;
+        let queryStr = "";
+        const qIndex = u.indexOf("?");
+        if (qIndex !== -1) {
+            main = u.slice(0, qIndex);
+            queryStr = u.slice(qIndex + 1);
+        }
+
+        const atIndex = main.lastIndexOf("@");
+        if (atIndex === -1) {
+            return null;
+        }
+
+        const passwordPart = main.slice(0, atIndex);
+        const hostPort = main.slice(atIndex + 1);
+
+        const password = decodeURIComponentSafe(passwordPart);
+
+        let host = hostPort || "0.0.0.0";
+        let port = 443;
+        const m = /:(\d+)$/.exec(hostPort);
+        if (m) {
+            port = parseInt(m[1], 10) || 443;
+            host = hostPort.slice(0, m.index);
+        }
+
+        let sni = "";
+        let skipCertVerify = false;
+
+        if (queryStr) {
+            const q = new URLSearchParams(queryStr);
+
+            const r =
+                q.get("remarks") || q.get("name") || q.get("tag") || q.get("remark");
+            if (r) {
+                try {
+                    name = decodeURIComponent(r);
+                } catch (_e) {
+                    name = r;
+                }
+            }
+
+            const peer = q.get("peer") || q.get("sni") || "";
+            if (peer) {
+                sni = peer;
+            }
+
+            const insecure = q.get("allowInsecure") || "";
+            if (insecure === "1" || insecure === "true") {
+                skipCertVerify = true;
+            }
+        }
+
+        return {
+            raw: uri,
+            scheme: "trojan",
+            type: "trojan",
+
+            name,
+            server: host,
+            port,
+            password,
+
+            sni,
+            skipCertVerify,
+        };
+    } catch (_e) {
+        return {
+            raw: uri,
+            scheme: "trojan",
+            type: "trojan",
+            name: uri,
+            server: "0.0.0.0",
+            port: 443,
+            password: "",
+            sni: "",
+            skipCertVerify: false,
+        };
+    }
+}
+
+// ========== VMESS 解析：vmess://（UDP / WS / HTTP） ========== */
 
 function parseVmessLenient(uri) {
     try {
@@ -397,16 +489,36 @@ function parseVmessLenient(uri) {
             userinfoHostPort = main;
         }
 
-        const atIndex = userinfoHostPort.indexOf("@");
-        if (atIndex === -1) throw new Error("invalid vmess");
+        let name = "";
+        const hashIndex = userinfoHostPort.indexOf("#");
+        if (hashIndex !== -1) {
+            const namePart = userinfoHostPort.slice(hashIndex + 1);
+            userinfoHostPort = userinfoHostPort.slice(0, hashIndex);
+            if (namePart) {
+                try {
+                    name = decodeURIComponent(namePart);
+                } catch (_e) {
+                    name = namePart;
+                }
+            }
+        }
+
+        const atIndex = userinfoHostPort.lastIndexOf("@");
+        if (atIndex === -1) {
+            return null;
+        }
 
         const userinfo = userinfoHostPort.slice(0, atIndex);
-        const hostPortRaw = userinfoHostPort.slice(atIndex + 1);
+        const hostPort = userinfoHostPort.slice(atIndex + 1);
 
-        const parts = userinfo.split(":");
-        const uuid = parts[parts.length - 1] || "";
+        let uuid = "";
+        if (userinfo.includes(":")) {
+            const parts = userinfo.split(":");
+            uuid = parts[parts.length - 1] || "";
+        } else {
+            uuid = userinfo;
+        }
 
-        const hostPort = hostPortRaw.trim();
         let host = hostPort || "0.0.0.0";
         let port = 443;
         const m = /:(\d+)$/.exec(hostPort);
@@ -415,21 +527,16 @@ function parseVmessLenient(uri) {
             host = hostPort.slice(0, m.index);
         }
 
-        let name = `${host}:${port}`;
         let obfs = "";
         let obfsHost = "";
-        let obfsUri = "";
+        let obfsUri = "/";
         let tls = "";
 
         if (queryStr) {
             const q = new URLSearchParams(queryStr);
 
             const r =
-                q.get("remarks") ||
-                q.get("name") ||
-                q.get("tag") ||
-                q.get("remark") ||
-                q.get("ps");
+                q.get("remarks") || q.get("name") || q.get("tag") || q.get("remark");
             if (r) {
                 try {
                     name = decodeURIComponent(r);
@@ -438,9 +545,10 @@ function parseVmessLenient(uri) {
                 }
             }
 
-            const obfsType = (q.get("obfs") || "").toLowerCase();
-            const hostFrom = q.get("obfsParam") || q.get("host") || q.get("sni") || "";
-            const path = q.get("path") || q.get("obfs-uri") || "/";
+            const obfsType = q.get("obfs") || q.get("network") || "";
+
+            const hostFrom = q.get("obfsParam") || q.get("host") || "";
+            const path = q.get("path") || q.get("obfsUri") || "/";
 
             if (obfsType === "websocket" || obfsType === "ws") {
                 obfs = "ws";
@@ -485,143 +593,80 @@ function parseVmessLenient(uri) {
             encryption: "auto",
             obfs: "",
             obfsHost: "",
-            obfsUri: "",
+            obfsUri: "/",
             tls: "",
         };
     }
 }
 
-/* ========== Trojan 解析：trojan://（UDP） ========== */
+// ========== 辅助：安全解码 ==========
 
-function parseTrojanLenient(uri) {
+function decodeURIComponentSafe(s) {
+    if (!s) return "";
     try {
-        let u = uri.replace(/^trojan:\/\//i, "");
-
-        let name = "";
-        const hashIndex = u.indexOf("#");
-        if (hashIndex !== -1) {
-            const remarkPart = u.slice(hashIndex + 1);
-            try {
-                name = decodeURIComponent(remarkPart);
-            } catch (_e) {
-                name = remarkPart;
-            }
-            u = u.slice(0, hashIndex);
-        }
-
-        let main = u;
-        let queryStr = "";
-        const qIndex = u.indexOf("?");
-        if (qIndex !== -1) {
-            main = u.slice(0, qIndex);
-            queryStr = u.slice(qIndex + 1);
-        }
-
-        const atIndex = main.lastIndexOf("@");
-        let password = "";
-        let hostPortRaw = "";
-        if (atIndex !== -1) {
-            password = main.slice(0, atIndex);
-            hostPortRaw = main.slice(atIndex + 1);
-        } else {
-            hostPortRaw = main;
-        }
-
-        try {
-            password = decodeURIComponent(password);
-        } catch (_e) {}
-
-        hostPortRaw = (hostPortRaw || "").trim();
-        let server = hostPortRaw || "0.0.0.0";
-        let port = 443;
-        const m = /:(\d+)$/.exec(hostPortRaw);
-        if (m) {
-            port = parseInt(m[1], 10) || 443;
-            server = hostPortRaw.slice(0, m.index);
-        }
-
-        let allowInsecure = "";
-        let peer = "";
-        if (queryStr) {
-            const q = new URLSearchParams(queryStr);
-            allowInsecure =
-                q.get("allowInsecure") || q.get("allow_insecure") || "";
-            peer = q.get("peer") || q.get("sni") || "";
-        }
-
-        const overTls = true;
-        const tlsVerification = !(
-            allowInsecure === "1" ||
-            allowInsecure === "true" ||
-            allowInsecure === "yes"
-        );
-        const tlsHost = peer || server;
-
-        if (!name) {
-            name = `${tlsHost}:${port}`;
-        }
-
-        return {
-            raw: uri,
-            scheme: "trojan",
-            type: "trojan",
-
-            name,
-            server,
-            port,
-            password,
-
-            overTls,
-            tlsVerification,
-            tlsHost,
-        };
+        return decodeURIComponent(s);
     } catch (_e) {
-        return {
-            raw: uri,
-            scheme: "trojan",
-            type: "trojan",
-            name: uri,
-            server: "0.0.0.0",
-            port: 443,
-            password: "",
-            overTls: true,
-            tlsVerification: true,
-            tlsHost: "",
-        };
+        return s;
     }
 }
 
-/* ========== host:port 规范化 ========== */
+// ========== Quantumult X 白名单：仅下发以下协议 / 传输组合 ==========
+//
+// 形态 key 约定：
+// - ss-udp
+// - ss-http-udp
+// - vless-udp
+// - trojan-udp
+// - vmess-udp
+// - vmess-ws-udp
+// - vmess-http-udp
+const QX_ALLOWED_SHAPES = new Set([
+    "ss-udp",
+    "ss-http-udp",
+    "vless-udp",
+    "trojan-udp",
+    "vmess-udp",
+    "vmess-ws-udp",
+    "vmess-http-udp",
+]);
 
-function normalizeHostPort(server, port) {
-    let host = (server || "").trim();
-    let finalPort = port;
+function getQuantumultXShape(n) {
+    if (!n || !n.type) return "";
 
-    // 去掉 path / query
-    const cut = host.search(/[\/\?]/);
-    if (cut !== -1) {
-        host = host.slice(0, cut);
+    switch (n.type) {
+        case "ss": {
+            if (n.plugin === "obfs" && (n.pluginMode || "").toLowerCase() === "http") {
+                return "ss-http-udp";
+            }
+            return "ss-udp";
+        }
+        case "vless":
+            return "vless-udp";
+        case "trojan":
+            return "trojan-udp";
+        case "vmess": {
+            const obfs = (n.obfs || "").toLowerCase();
+            if (!obfs) return "vmess-udp";
+            if (obfs === "ws") return "vmess-ws-udp";
+            if (obfs === "http") return "vmess-http-udp";
+            return "";
+        }
+        default:
+            return "";
     }
-
-    const m = /^(.*):(\d+)$/.exec(host);
-    if (m) {
-        host = m[1];
-        finalPort = parseInt(m[2], 10) || finalPort;
-    }
-
-    if (!Number.isFinite(finalPort) || finalPort <= 0) {
-        finalPort = 443;
-    }
-
-    return { host, port: finalPort };
 }
 
-/* ========== 输出：Quantumult X 配置 ========== */
+// ========== Quantumult X 输出构建 ==========
 
 function buildQuantumultXConfig(nodes) {
     const lines = [];
 
     for (const n of nodes) {
+        const shape = getQuantumultXShape(n);
+        if (!shape || !QX_ALLOWED_SHAPES.has(shape)) {
+            continue;
+        }
+
         if (n.type === "ss") {
             const { host, port } = normalizeHostPort(n.server, n.port);
             const name = (n.name || `${host}:${port}`).replace(/,/g, " ");
@@ -654,6 +699,18 @@ function buildQuantumultXConfig(nodes) {
             if (uuid) {
                 parts.push(`password=${uuid}`);
             }
+
+            if (n.tls === "tls") {
+                parts.push("over-tls=true");
+            } else {
+                parts.push("over-tls=false");
+            }
+
+            if (n.sni) {
+                parts.push(`tls-host=${n.sni}`);
+            }
+
+            parts.push("udp-relay=true");
             parts.push(`tag=${name}`);
 
             lines.push(parts.join(","));
@@ -661,18 +718,24 @@ function buildQuantumultXConfig(nodes) {
             const { host, port } = normalizeHostPort(n.server, n.port);
             const name = (n.name || `${host}:${port}`).replace(/,/g, " ");
             const password = n.password || "";
-            const overTls = n.overTls ? "true" : "false";
-            const tlsVerification = n.tlsVerification ? "true" : "false";
-            const tlsHost = n.tlsHost || host;
+            const overTls = true;
+            const skipCert = !!n.skipCertVerify;
 
             const parts = [];
             parts.push(`trojan=${host}:${port}`);
-            parts.push(`password=${password}`);
-            parts.push(`over-tls=${overTls}`);
-            parts.push(`tls-verification=${tlsVerification}`);
-            if (tlsHost) {
-                parts.push(`tls-host=${tlsHost}`);
+            if (password) {
+                parts.push(`password=${password}`);
             }
+            parts.push(`over-tls=${overTls ? "true" : "false"}`);
+            if (n.sni) {
+                parts.push(`tls-host=${n.sni}`);
+            }
+            if (skipCert) {
+                parts.push("tls-verification=false");
+            } else {
+                parts.push("tls-verification=true");
+            }
+            parts.push("udp-relay=true");
             parts.push(`tag=${name}`);
 
             lines.push(parts.join(","));
@@ -718,4 +781,20 @@ function buildQuantumultXConfig(nodes) {
         return "# no shadowsocks/vless/trojan/vmess nodes\n";
     }
     return lines.join("\n") + "\n";
+}
+
+// host / port 正规化
+function normalizeHostPort(server, port) {
+    let host = server || "0.0.0.0";
+    let p = port;
+    if (!Number.isFinite(p)) {
+        const m = /:(\d+)$/.exec(host);
+        if (m) {
+            p = parseInt(m[1], 10) || 0;
+            host = host.slice(0, m.index);
+        } else {
+            p = 0;
+        }
+    }
+    return { host, port: p || 0 };
 }
