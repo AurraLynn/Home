@@ -1,17 +1,18 @@
 // functions/api/sub/Surge.js
 //
-// 支持输入：
+// 支持类型输入：
 // - URL 格式
 // - URL / Base64 混合
 // - Base64 单条 / 多条
 //
-// 支持输出：
-// - Shadowsocks / UDP
-// - Shadowsocks / HTTP / UDP
-// - Trojan / UDP
-// - Vmess / UDP
-// - Vmess / Websocket / UDP
-// - Hysteria2 / UDP
+// 支持协议输出：
+// - Surge：
+//      - Shadowsocks / UDP
+//      - Shadowsocks / HTTP / UDP
+//      - Trojan / UDP
+//      - VMESS / UDP
+//      - VMESS / Websocket / UDP
+//      - Hysteria2 / UDP
 //
 
 export async function onRequestPost(context) {
