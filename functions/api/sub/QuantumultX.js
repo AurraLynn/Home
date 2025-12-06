@@ -1,25 +1,25 @@
 // functions/api/sub/QuantumultX.js
 //
-// 支持输入：
+// 支持类型输入：
 // -  URL格式
 // -  URL/Base64 混合格式
 // -  Base64（单条、多条、整条订阅）
 //
-// 支持输出：
+// 支持协议输出：
 // -  Quantumult X：
-//         shadowsocks / UDP
-//         shadowsocks / HTTP / UDP
+//         Shadowsocks / UDP
+//         Shadowsocks / HTTP / UDP
 //         VLESS / UDP
-//         Trojan / UDP
-//         Vmess / UDP
-//         Vmess / WEBSOCKET / UDP
-//         Vmess / HTTP / UDP
+//         TROJAN / UDP
+//         VMESS / UDP
+//         VMESS / WEBSOCKET / UDP
+//         VMESS / HTTP / UDP
 //
 // client 行为：
 // -  只处理 Quantumult X，供 /api/sub/Converter 内部调用
 //
 // 客户端：
-// -  Quantumult X
+// -  Quantumult X仅支持现有输出协议
 
 export async function onRequestPost(context) {
     const { request } = context;
