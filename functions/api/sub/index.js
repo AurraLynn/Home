@@ -1,5 +1,5 @@
 // functions/api/sub/index.js
-//
+// 
 // 通用订阅入口：GET /api/sub?id=<pasteId>&client=<clientName>
 //
 // 1. 从 KV: Paste 读取原始内容
