@@ -1,17 +1,18 @@
 // functions/api/sub/Surge.js
 //
 // 支持输入：
-// - URL 格式（ss://、trojan://、vmess://）
+// - URL 格式
 // - URL / Base64 混合
-// - Base64 订阅
+// - Base64 单条 / 多条
 //
 // 支持输出：
-// - Surge：shadowsocks / UDP（含 http / tls 混淆）
-// - Surge：trojan / UDP
-// - Surge：vmess / UDP（含 websocket，跳过 http 伪装）
+// - Shadowsocks / UDP
+// - Shadowsocks / HTTP / UDP
+// - Trojan / UDP
+// - Vmess / UDP
+// - Vmess / Websocket / UDP
+// - Hysteria2 / UDP
 //
-// 已支持的客户端：
-// - Surge
 
 export async function onRequestPost(context) {
   const { request } = context;
@@ -25,7 +26,8 @@ export async function onRequestPost(context) {
     decodedBulk &&
     (decodedBulk.includes("ss://") ||
       decodedBulk.includes("trojan://") ||
-      decodedBulk.includes("vmess://"))
+      decodedBulk.includes("vmess://") ||
+      decodedBulk.includes("hysteria2://"))
   ) {
     text = decodedBulk;
   }
@@ -41,14 +43,16 @@ export async function onRequestPost(context) {
     if (
       !line.startsWith("ss://") &&
       !line.startsWith("trojan://") &&
-      !line.startsWith("vmess://")
+      !line.startsWith("vmess://") &&
+      !line.startsWith("hysteria2://")
     ) {
       const decodedLine = tryBase64DecodeToString(line);
       if (
         decodedLine &&
         (decodedLine.startsWith("ss://") ||
           decodedLine.startsWith("trojan://") ||
-          decodedLine.startsWith("vmess://"))
+          decodedLine.startsWith("vmess://") ||
+          decodedLine.startsWith("hysteria2://"))
       ) {
         line = decodedLine;
       } else {
@@ -63,6 +67,8 @@ export async function onRequestPost(context) {
       node = parseTrojanUrl(line);
     } else if (line.startsWith("vmess://")) {
       node = parseVmessUrl(line);
+    } else if (line.startsWith("hysteria2://")) {
+      node = parseHysteria2Url(line);
     }
 
     if (node) nodes.push(node);
@@ -396,12 +402,88 @@ function parseVmessUrl(url) {
   }
 }
 
+/* 解析 Hysteria2 URL（hysteria2://password@host:port?...） */
+function parseHysteria2Url(url) {
+  try {
+    if (!url.startsWith("hysteria2://")) return null;
+
+    let s = url.slice("hysteria2://".length);
+
+    // 名称
+    let name = "";
+    const hashIndex = s.indexOf("#");
+    if (hashIndex !== -1) {
+      name = s.slice(hashIndex + 1);
+      s = s.slice(0, hashIndex);
+      try {
+        name = decodeURIComponent(name);
+      } catch (_e) {}
+    }
+
+    // 查询参数
+    let query = "";
+    const qIndex = s.indexOf("?");
+    if (qIndex !== -1) {
+      query = s.slice(qIndex + 1);
+      s = s.slice(0, qIndex);
+    }
+
+    // password@server:port
+    const atIndex = s.lastIndexOf("@");
+    if (atIndex === -1) return null;
+
+    const password = s.slice(0, atIndex);
+    const hostPort = s.slice(atIndex + 1);
+
+    const lastColon = hostPort.lastIndexOf(":");
+    if (lastColon === -1) return null;
+
+    const server = hostPort.slice(0, lastColon);
+    const portStr = hostPort.slice(lastColon + 1);
+    const port = parseInt(portStr, 10);
+    if (!server || !Number.isFinite(port)) return null;
+
+    let sni = server;
+    let portHopping = "";
+    let skipCertVerify = false;
+
+    if (query) {
+      const params = new URLSearchParams(query);
+
+      const peer = params.get("peer");
+      if (peer) sni = peer;
+
+      const mport = params.get("mport") || params.get("mport-range");
+      if (mport) portHopping = mport;
+
+      const insecure = params.get("insecure");
+      if (insecure === "1" || insecure === "true") {
+        skipCertVerify = true;
+      }
+    }
+
+    return {
+      type: "hysteria2",
+      name: name || `${server}:${port}`,
+      server,
+      port,
+      password,
+      sni,
+      portHopping,
+      skipCertVerify,
+    };
+  } catch (_e) {
+    return null;
+  }
+}
+
 /* 根据节点类型构造 Surge 行 */
 function buildSurgeLine(node) {
   if (!node || !node.type) return "";
   if (node.type === "ss") return buildSurgeShadowsocksLine(node);
   if (node.type === "trojan") return buildSurgeTrojanLine(node);
   if (node.type === "vmess") return buildSurgeVmessLine(node);
+  if (node.type === "hysteria2") return buildSurgeHysteria2Line(node);
   return "";
 }
 
@@ -494,6 +576,43 @@ function buildSurgeVmessLine(node) {
       parts.push(`ws-headers=Host:"${escapeQuote(wsHost)}"`);
     }
   }
+
+  return parts.join(",");
+}
+
+/* hysteria2（hy2） */
+function buildSurgeHysteria2Line(node) {
+  const server = node.server || "";
+  const port = node.port;
+  const password = node.password || "";
+  const tag = node.name || `${server}:${port}`;
+  const sni = node.sni || server;
+  const portHopping = node.portHopping || "";
+  const skipCertVerify = !!node.skipCertVerify;
+
+  if (!server || !Number.isFinite(port) || !password) return "";
+
+  const parts = [];
+
+  parts.push(`${escapeComma(tag)}=hysteria2`);
+  parts.push(server);
+  parts.push(String(port));
+  parts.push(`password="${escapeQuote(password)}"`);
+
+  if (portHopping) {
+    parts.push(`port-hopping="${escapeQuote(portHopping)}"`);
+  }
+
+  if (sni) {
+    parts.push(`sni=${escapeComma(sni)}`);
+  }
+
+  if (skipCertVerify) {
+    parts.push("skip-cert-verify=true");
+  }
+
+  // 你示例里固定 tfo=false
+  parts.push("tfo=false");
 
   return parts.join(",");
 }
