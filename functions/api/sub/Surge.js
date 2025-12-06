@@ -1,25 +1,22 @@
 // functions/api/sub/Surge.js
 //
 // 支持输入：
-// -  URL 格式：ss://...
-// -  URL / Base64 混合格式（一行一个）
-// -  Base64 订阅（单条或多条）
+// - URL 格式（ss://）
+// - URL / Base64 混合（逐行）
+// - Base64 订阅
 //
 // 支持输出：
-// -  Surge：shadowsocks / UDP
-//   例如：
-//   HK IEPL 05=ss,gs7ds312f.gdufds.xyz,38550,encrypt-method=chacha20-ietf-poly1305,password="4a24574e-a9a2-48b6-a8e9-66fe08fd1dfb"
-//   HK - 香港=ss,cncgzbgp01.224837439.xyz,14091,encrypt-method=chacha20-ietf-poly1305,password="lE9uL5fR3yR9",obfs=http,obfs-host=4aaef245bd.iqiyi.com
+// - Surge：shadowsocks / UDP（含 http / tls 混淆）
 //
 // 已支持的客户端：
-// -  Surge
+// - Surge
 
 export async function onRequestPost(context) {
   const { request } = context;
   const raw = (await request.text()) || "";
   let text = raw.trim();
 
-  // ===== 1. 如果整段是 Base64 订阅，尝试整体解码 =====
+  // 整段尝试 Base64 解码
   const compact = text.replace(/\s+/g, "");
   const decodedBulk = tryBase64DecodeToString(compact);
   if (decodedBulk && decodedBulk.includes("ss://")) {
@@ -33,7 +30,7 @@ export async function onRequestPost(context) {
     line = line.trim();
     if (!line || line.startsWith("#")) continue;
 
-    // 如果不是 ss:// 开头，可能是一行 Base64，尝试解码
+    // 单行尝试 Base64
     if (!line.startsWith("ss://")) {
       const decodedLine = tryBase64DecodeToString(line);
       if (decodedLine && decodedLine.startsWith("ss://")) {
@@ -44,9 +41,7 @@ export async function onRequestPost(context) {
     }
 
     const node = parseShadowsocksUrl(line);
-    if (node) {
-      nodes.push(node);
-    }
+    if (node) nodes.push(node);
   }
 
   let out = "";
@@ -59,14 +54,9 @@ export async function onRequestPost(context) {
       const surgeLine = buildSurgeShadowsocksLine(n);
       if (surgeLine) outLines.push(surgeLine);
     }
-    if (!outLines.length) {
-      out = "# no shadowsocks nodes\n";
-    } else {
-      out =
-        "# Surge shadowsocks subscription\n" +
-        outLines.join("\n") +
-        "\n";
-    }
+    out =
+      (outLines.length ? "# Surge shadowsocks\n" + outLines.join("\n") : "# no shadowsocks nodes") +
+      "\n";
   }
 
   return new Response(out, {
@@ -75,19 +65,13 @@ export async function onRequestPost(context) {
   });
 }
 
-/* ========== 工具：Base64 解码（兼容 URL 安全形式） ========== */
-
+/* Base64 解码（兼容 URL 安全形式） */
 function tryBase64DecodeToString(str) {
   if (!str) return "";
   let s = str.replace(/\s+/g, "");
-
   if (!/^[A-Za-z0-9+/=_-]+$/.test(s)) return "";
-
   s = s.replace(/-/g, "+").replace(/_/g, "/");
-  while (s.length % 4 !== 0) {
-    s += "=";
-  }
-
+  while (s.length % 4 !== 0) s += "=";
   try {
     const decoded = atob(s);
     if (!decoded) return "";
@@ -97,15 +81,14 @@ function tryBase64DecodeToString(str) {
   }
 }
 
-/* ========== 解析 Shadowsocks URL ========== */
-
+/* 解析 Shadowsocks URL */
 function parseShadowsocksUrl(url) {
   try {
     if (!url.startsWith("ss://")) return null;
 
-    let s = url.slice(5); // 去掉 "ss://"
+    let s = url.slice(5);
 
-    // 1) 分离 #name（节点名称）
+    // 名称
     let name = "";
     const hashIndex = s.indexOf("#");
     if (hashIndex !== -1) {
@@ -113,12 +96,10 @@ function parseShadowsocksUrl(url) {
       s = s.slice(0, hashIndex);
       try {
         name = decodeURIComponent(name);
-      } catch (_e) {
-        // 保留原样
-      }
+      } catch (_e) {}
     }
 
-    // 2) s 现在是 [userinfo@]server:port[?params] 或 整体 Base64
+    // 主体或整体 Base64
     if (!s.includes("@")) {
       const decoded = tryBase64DecodeToString(s);
       if (decoded && decoded.includes("@")) {
@@ -128,18 +109,14 @@ function parseShadowsocksUrl(url) {
       }
     }
 
-    // 3) 切 userinfo 与 serverPortAndParams（按最后一个 @）
+    // userinfo 与 server:port
     const atIndex = s.lastIndexOf("@");
     if (atIndex === -1) return null;
 
     let userinfo = s.slice(0, atIndex);
     let serverPortAndParams = s.slice(atIndex + 1);
 
-    // 4) 解析 userinfo → method:password
-    let method = "";
-    let password = "";
-
-    // userinfo 可能是 Base64，也可能已经是 method:password
+    // userinfo → method:password
     const decodedUserinfo = tryBase64DecodeToString(userinfo);
     if (decodedUserinfo && decodedUserinfo.includes(":")) {
       userinfo = decodedUserinfo;
@@ -151,10 +128,10 @@ function parseShadowsocksUrl(url) {
 
     const colonIndex = userinfo.indexOf(":");
     if (colonIndex === -1) return null;
-    method = userinfo.slice(0, colonIndex);
-    password = userinfo.slice(colonIndex + 1);
+    const method = userinfo.slice(0, colonIndex);
+    const password = userinfo.slice(colonIndex + 1);
 
-    // 5) serverPortAndParams → server:port + params
+    // server:port[?params]
     let query = "";
     const qIndex = serverPortAndParams.indexOf("?");
     if (qIndex !== -1) {
@@ -162,7 +139,6 @@ function parseShadowsocksUrl(url) {
       serverPortAndParams = serverPortAndParams.slice(0, qIndex);
     }
 
-    // server:port（按最后一个 : 分割，避免 IPv6 干扰）
     const lastColon = serverPortAndParams.lastIndexOf(":");
     if (lastColon === -1) return null;
 
@@ -171,7 +147,7 @@ function parseShadowsocksUrl(url) {
     const port = parseInt(portStr, 10);
     if (!server || !Number.isFinite(port)) return null;
 
-    // 6) 解析 plugin 参数（obfs-local;obfs=http;obfs-host=xxx;obfs-uri=/）
+    // plugin 混淆
     let obfsMode = "";
     let obfsHost = "";
 
@@ -185,17 +161,14 @@ function parseShadowsocksUrl(url) {
           const key = (k || "").trim();
           const val = (v || "").trim();
           if (!key) continue;
-
-          if (key === "obfs") {
-            obfsMode = val; // http / tls
-          } else if (key === "obfs-host") {
+          if (key === "obfs") obfsMode = val;
+          if (key === "obfs-host") {
             try {
               obfsHost = decodeURIComponent(val);
             } catch (_e) {
               obfsHost = val;
             }
           }
-          // obfs-uri 对 Surge 不需要
         }
       }
     }
@@ -215,8 +188,7 @@ function parseShadowsocksUrl(url) {
   }
 }
 
-/* ========== 构造 Surge shadowsocks 行 ========== */
-
+/* 构造 Surge shadowsocks 行：名称=ss,server,port,encrypt-method=...,password="...",obfs=...,obfs-host=... */
 function buildSurgeShadowsocksLine(node) {
   if (!node || node.type !== "ss") return "";
 
@@ -226,22 +198,16 @@ function buildSurgeShadowsocksLine(node) {
   const password = node.password || "";
   const tag = node.name || `${server}:${port}`;
 
-  if (!server || !Number.isFinite(port) || !method || !password) {
-    return "";
-  }
+  if (!server || !Number.isFinite(port) || !method || !password) return "";
 
   const parts = [];
 
-  // 名称=ss,server,port
   parts.push(`${escapeComma(tag)}=ss`);
   parts.push(server);
   parts.push(String(port));
-
-  // 加密方式 & 密码（密码按示例包上双引号）
   parts.push(`encrypt-method=${method}`);
   parts.push(`password="${escapeQuote(password)}"`);
 
-  // 混淆：HTTP / TLS
   if (node.obfsMode === "http" || node.obfsMode === "tls") {
     parts.push(`obfs=${node.obfsMode}`);
     if (node.obfsHost) {
@@ -249,19 +215,14 @@ function buildSurgeShadowsocksLine(node) {
     }
   }
 
-  // UDP：Surge 默认支持，无需额外参数。
-  // 如需强制开启可追加：parts.push("udp-relay=true");
-
   return parts.join(",");
 }
 
-// 处理逗号，避免打乱参数
 function escapeComma(str) {
   if (!str) return "";
   return String(str).replace(/,/g, "，");
 }
 
-// 处理引号，避免破坏 password="..."
 function escapeQuote(str) {
   if (!str) return "";
   return String(str).replace(/"/g, '\\"');
