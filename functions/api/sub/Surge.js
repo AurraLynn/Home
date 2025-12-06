@@ -1,12 +1,12 @@
 // functions/api/sub/Surge.js
 //
 // 支持类型输入：
-// - URL 格式
-// - URL / Base64 混合
-// - Base64 单条 / 多条
+// -  URL 格式
+// -  URL / Base64 混合
+// -  Base64 单条 / 多条
 //
 // 支持协议输出（仅支持白名单列表）：
-// - Surge：
+// -  Surge：
 //      - Shadowsocks / UDP
 //      - Shadowsocks / HTTP / UDP
 //      - Trojan / UDP
@@ -16,34 +16,53 @@
 //
 // 已支持的客户端：
 // - Surge
+//
+// 说明：
+// - 本文件作为 /api/sub/Surge 的处理器：POST 请求 body 为原始节点文本，返回 Surge 一行一节点配置。
+// - 解析与白名单过滤都在本文件完成，Converter 只负责转发。
 
-// ===== 对外导出：Converter 会调用这个方法 =====
-export function buildSurge(bodyText) {
-  const text = (bodyText || "").trim();
+export async function onRequestPost(context) {
+  const { request } = context;
+  const raw = (await request.text()) || "";
+  let text = raw.trim();
+
   if (!text) {
-    return "# empty input\n";
+    return new Response("# empty input\n", {
+      status: 200,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
   }
 
   const nodes = parseMixedNodesForSurge(text);
   if (!nodes.length) {
-    return "# no supported surge nodes\n";
+    return new Response("# no supported surge nodes\n", {
+      status: 200,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
   }
 
   const lines = [];
   for (const n of nodes) {
     const line = buildSurgeLineFromNode(n);
-    if (line) {
-      lines.push(line);
-    }
+    if (line) lines.push(line);
   }
 
   if (!lines.length) {
-    return "# no supported surge nodes\n";
+    return new Response("# no supported surge nodes\n", {
+      status: 200,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
   }
-  return lines.join("\n") + "\n";
+
+  const out = lines.join("\n") + "\n";
+  return new Response(out, {
+    status: 200,
+    headers: { "content-type": "text/plain; charset=utf-8" },
+  });
 }
 
-// ===== 白名单形状：仅下发这些类型 =====
+// =================== 白名单形状：只下发这些类型 ===================
+
 const SURGE_ALLOWED_SHAPES = new Set([
   "ss-udp",
   "ss-http-udp",
@@ -82,18 +101,17 @@ function getSurgeShape(node) {
     return "hysteria2-udp";
   }
 
-  // Surge 暂不支持 vless 等其它类型
+  // Surge 暂不支持 vless 等其它类型（会被白名单过滤掉）
   return "";
 }
 
-// ===== 将解析出的节点对象转换为 Surge 行 =====
+// =================== 节点对象 → Surge 行 ===================
+
 function buildSurgeLineFromNode(n) {
   if (!n || !n.type) return null;
 
   const shape = getSurgeShape(n);
-  if (!SURGE_ALLOWED_SHAPES.has(shape)) {
-    return null;
-  }
+  if (!SURGE_ALLOWED_SHAPES.has(shape)) return null;
 
   const name =
     n.name ||
@@ -113,8 +131,8 @@ function buildSurgeLineFromNode(n) {
       password
     )}"`;
 
-    if (n.plugin === "obfs" && n.pluginMode) {
-      line += `,obfs=${n.pluginMode}`;
+    if (shape === "ss-http-udp" && n.plugin === "obfs") {
+      line += `,obfs=http`;
       if (n.pluginHost) {
         line += `,obfs-host=${n.pluginHost}`;
       }
@@ -190,7 +208,8 @@ function buildSurgeLineFromNode(n) {
   return null;
 }
 
-// ===== 解析整段文本：支持 URL / Base64 / 混合 =====
+// =================== 解析整段文本：URL / Base64 / 混合 ===================
+
 function parseMixedNodesForSurge(text) {
   let t = text || "";
   const nodes = [];
@@ -210,20 +229,18 @@ function parseMixedNodesForSurge(text) {
   }
 
   const re =
-    /(ss:\/\/[^\s#]+(?:#[^\s]*)?|trojan:\/\/[^\s#]+(?:#[^\s]*)?|vmess:\/\/[^\s#]+(?:#[^\s]*)?|vless:\/\/[^\s#]+(?:#[^\s]*)?|hysteria2:\/\/[^\s#]+(?:#[^\s]*)?)/gi;
+    /(ss:\/\/[\S]+|trojan:\/\/[\S]+|vmess:\/\/[\S]+|vless:\/\/[\S]+|hysteria2:\/\/[\S]+)/gi;
 
   const seenRaw = new Set();
-
   let m;
   while ((m = re.exec(t))) {
     const uri = m[0].trim();
-    if (!uri) continue;
-    if (seenRaw.has(uri)) continue;
+    if (!uri || seenRaw.has(uri)) continue;
     seenRaw.add(uri);
 
     const lower = uri.toLowerCase();
-
     let parsed = null;
+
     if (lower.startsWith("ss://")) {
       parsed = parseShadowsocksLenient(uri);
     } else if (lower.startsWith("trojan://")) {
@@ -233,8 +250,7 @@ function parseMixedNodesForSurge(text) {
     } else if (lower.startsWith("hysteria2://")) {
       parsed = parseHysteria2Lenient(uri);
     } else if (lower.startsWith("vless://")) {
-      // Surge 暂不支持 vless，下游白名单会丢弃
-      parsed = parseVlessLenient(uri);
+      parsed = parseVlessLenient(uri); // Surge 不下发，白名单会过滤掉
     }
 
     if (parsed && parsed.type) {
@@ -245,12 +261,13 @@ function parseMixedNodesForSurge(text) {
   return nodes;
 }
 
-// ===== Shadowsocks 解析（兼容 URL / Base64 / 带混淆）=====
+// =================== Shadowsocks 解析（含 HTTP 混淆） ===================
+
 function parseShadowsocksLenient(uri) {
   try {
     let u = uri.replace(/^ss:\/\//i, "");
 
-    // 名称：# 之后
+    // 名称（# 之后）
     let name = "";
     const hashIndex = u.indexOf("#");
     if (hashIndex !== -1) {
@@ -265,7 +282,7 @@ function parseShadowsocksLenient(uri) {
       }
     }
 
-    // 拆 main + query
+    // main + query
     let main = u;
     let queryStr = "";
     const qIndex = u.indexOf("?");
@@ -274,48 +291,49 @@ function parseShadowsocksLenient(uri) {
       queryStr = u.slice(qIndex + 1);
     }
 
-    // main 先整段尝试 Base64 解码：method:password@host:port
-    let userinfoHostPort;
+    let userinfo = "";
+    let hostPortRaw = "";
+
+    // 尝试 main 整段 Base64 解码
     const decodedMain = safeBase64Decode(main);
-    if (decodedMain && decodedMain.includes("@")) {
-      userinfoHostPort = decodedMain;
+    if (decodedMain && decodedMain.includes("@") && decodedMain.includes(":")) {
+      const atIdx = decodedMain.lastIndexOf("@");
+      userinfo = decodedMain.slice(0, atIdx);
+      hostPortRaw = decodedMain.slice(atIdx + 1);
     } else {
-      userinfoHostPort = main;
+      const atIdx = main.lastIndexOf("@");
+      if (atIdx === -1) return null;
+      userinfo = main.slice(0, atIdx);
+      hostPortRaw = main.slice(atIdx + 1);
     }
 
-    const atIndex = userinfoHostPort.lastIndexOf("@");
-    if (atIndex === -1) return null;
-
-    let userinfo = userinfoHostPort.slice(0, atIndex);
-    let serverPart = userinfoHostPort.slice(atIndex + 1);
-
-    // userinfo 再试一次 Base64 解码：method:password
+    // userinfo: 可能是 cipher:password / base64(cipher):password / base64("cipher:password")
     let cipher = "";
     let password = "";
-    if (userinfo && userinfo.includes(":")) {
-      const idx = userinfo.indexOf(":");
-      cipher = userinfo.slice(0, idx);
-      password = userinfo.slice(idx + 1);
-    } else if (userinfo) {
+
+    if (userinfo.includes(":")) {
+      const lastColon = userinfo.lastIndexOf(":");
+      const cipherPart = userinfo.slice(0, lastColon);
+      const passPart = userinfo.slice(lastColon + 1);
+
+      const decodedCipher = safeBase64Decode(cipherPart);
+      if (decodedCipher && !decodedCipher.includes("@") && decodedCipher.includes("-")) {
+        cipher = decodedCipher;
+      } else {
+        cipher = cipherPart;
+      }
+
+      password = passPart;
+    } else {
       const decUi = safeBase64Decode(userinfo);
       if (decUi && decUi.includes(":")) {
-        const idx2 = decUi.indexOf(":");
-        cipher = decUi.slice(0, idx2);
-        password = decUi.slice(idx2 + 1);
+        const lastColon2 = decUi.lastIndexOf(":");
+        cipher = decUi.slice(0, lastColon2);
+        password = decUi.slice(lastColon2 + 1);
       }
     }
 
-    // 再看 serverPart 里是否还带 query
-    let hostPortRaw = serverPart;
-    let queryStr2 = queryStr;
-    if (!queryStr2) {
-      const q2 = serverPart.indexOf("?");
-      if (q2 !== -1) {
-        hostPortRaw = serverPart.slice(0, q2);
-        queryStr2 = serverPart.slice(q2 + 1);
-      }
-    }
-
+    // host:port
     let host = hostPortRaw;
     let port = 8388;
     const m = hostPortRaw.match(/:(\d+)$/);
@@ -324,22 +342,19 @@ function parseShadowsocksLenient(uri) {
       host = hostPortRaw.slice(0, m.index);
     }
 
-    // 解析 obfs 插件
+    // 插件（obfs-local）
     let plugin = "";
     let pluginMode = "";
     let pluginHost = "";
 
-    if (queryStr2) {
-      const sp = new URLSearchParams(queryStr2);
+    if (queryStr) {
+      const sp = new URLSearchParams(queryStr);
       const pluginParam = sp.get("plugin") || "";
 
       if (pluginParam && pluginParam.includes("obfs-local")) {
         plugin = "obfs";
 
-        // obfs=http
         pluginMode = sp.get("obfs") || "";
-
-        // obfs-host=...
         let ph = sp.get("obfs-host") || "";
         if (ph) {
           try {
@@ -348,7 +363,6 @@ function parseShadowsocksLenient(uri) {
         }
         pluginHost = ph;
 
-        // 如果 query 里没有单独给 obfs / obfs-host，就从 plugin=obfs-local;... 里再扒一次
         if (!pluginMode) {
           const mm = pluginParam.match(/obfs=([^;]+)/);
           if (mm) pluginMode = mm[1];
@@ -388,16 +402,19 @@ function parseShadowsocksLenient(uri) {
   }
 }
 
-// ===== Trojan 解析 =====
+// =================== Trojan 解析 ===================
+
 function parseTrojanLenient(uri) {
   try {
     let u = uri.replace(/^trojan:\/\//i, "");
 
     let name = "";
+    let mainAndQuery = u;
+
     const hashIndex = u.indexOf("#");
     if (hashIndex !== -1) {
       const namePart = u.slice(hashIndex + 1);
-      u = u.slice(0, hashIndex);
+      mainAndQuery = u.slice(0, hashIndex);
       if (namePart) {
         try {
           name = decodeURIComponent(namePart);
@@ -407,19 +424,20 @@ function parseTrojanLenient(uri) {
       }
     }
 
-    let main = u;
+    let main = mainAndQuery;
     let queryStr = "";
-    const qIndex = u.indexOf("?");
+    const qIndex = mainAndQuery.indexOf("?");
     if (qIndex !== -1) {
-      main = u.slice(0, qIndex);
-      queryStr = u.slice(qIndex + 1);
+      main = mainAndQuery.slice(0, qIndex);
+      queryStr = mainAndQuery.slice(qIndex + 1);
     }
 
     const atIndex = main.lastIndexOf("@");
     if (atIndex === -1) return null;
 
     const passwordPart = main.slice(0, atIndex);
-    let hostPortRaw = main.slice(atIndex + 1);
+    const hostPortRaw = main.slice(atIndex + 1);
+    const hostPortNoPath = hostPortRaw.split("/")[0];
 
     let password = "";
     try {
@@ -428,14 +446,12 @@ function parseTrojanLenient(uri) {
       password = passwordPart;
     }
 
-    hostPortRaw = hostPortRaw.split("/")[0];
-
-    let host = hostPortRaw || "0.0.0.0";
+    let host = hostPortNoPath || "0.0.0.0";
     let port = 443;
-    const m = hostPortRaw.match(/:(\d+)$/);
+    const m = hostPortNoPath.match(/:(\d+)$/);
     if (m) {
       port = parseInt(m[1], 10) || 443;
-      host = hostPortRaw.slice(0, m.index);
+      host = hostPortNoPath.slice(0, m.index);
     }
 
     let sni = "";
@@ -489,7 +505,8 @@ function parseTrojanLenient(uri) {
   }
 }
 
-// ===== VLESS 解析（Surge 目前不用，仅保持结构）=====
+// =================== VLESS 解析（Surge 不用，仅保留结构） ===================
+
 function parseVlessLenient(uri) {
   try {
     let u = uri.replace(/^vless:\/\//i, "");
@@ -605,32 +622,36 @@ function parseVlessLenient(uri) {
   }
 }
 
-// ===== VMESS 解析 =====
+// =================== VMESS 解析 ===================
+
 function parseVmessLenient(uri) {
   try {
     let u = uri.replace(/^vmess:\/\//i, "");
 
-    let main = u;
+    let mainAndQuery = u;
     let queryStr = "";
     const qIndex = u.indexOf("?");
     if (qIndex !== -1) {
-      main = u.slice(0, qIndex);
+      mainAndQuery = u.slice(0, qIndex);
       queryStr = u.slice(qIndex + 1);
     }
 
-    let userinfoHostPort;
+    let main = mainAndQuery;
+
     const decodedMain = safeBase64Decode(main);
-    if (decodedMain && decodedMain.includes("@") && decodedMain.includes(":")) {
-      userinfoHostPort = decodedMain;
-    } else {
-      userinfoHostPort = main;
+    if (
+      decodedMain &&
+      decodedMain.includes("@") &&
+      decodedMain.includes(":")
+    ) {
+      main = decodedMain;
     }
 
     let name = "";
-    const hashIndex = userinfoHostPort.indexOf("#");
+    const hashIndex = main.indexOf("#");
     if (hashIndex !== -1) {
-      const namePart = userinfoHostPort.slice(hashIndex + 1);
-      userinfoHostPort = userinfoHostPort.slice(0, hashIndex);
+      const namePart = main.slice(hashIndex + 1);
+      main = main.slice(0, hashIndex);
       if (namePart) {
         try {
           name = decodeURIComponent(namePart);
@@ -640,11 +661,11 @@ function parseVmessLenient(uri) {
       }
     }
 
-    const atIndex = userinfoHostPort.lastIndexOf("@");
+    const atIndex = main.lastIndexOf("@");
     if (atIndex === -1) return null;
 
-    const userinfo = userinfoHostPort.slice(0, atIndex);
-    const hostPortRaw = userinfoHostPort.slice(atIndex + 1);
+    const userinfo = main.slice(0, atIndex);
+    const hostPortRaw = main.slice(atIndex + 1);
     const hostPortNoPath = hostPortRaw.split("/")[0];
 
     let host = hostPortNoPath || "0.0.0.0";
@@ -728,16 +749,19 @@ function parseVmessLenient(uri) {
   }
 }
 
-// ===== Hysteria2 解析 =====
+// =================== Hysteria2 解析 ===================
+
 function parseHysteria2Lenient(uri) {
   try {
     let u = uri.replace(/^hysteria2:\/\//i, "");
 
     let name = "";
+    let mainAndQuery = u;
+
     const hashIndex = u.indexOf("#");
     if (hashIndex !== -1) {
       const namePart = u.slice(hashIndex + 1);
-      u = u.slice(0, hashIndex);
+      mainAndQuery = u.slice(0, hashIndex);
       if (namePart) {
         try {
           name = decodeURIComponent(namePart);
@@ -747,12 +771,12 @@ function parseHysteria2Lenient(uri) {
       }
     }
 
-    let main = u;
+    let main = mainAndQuery;
     let queryStr = "";
-    const qIndex = u.indexOf("?");
+    const qIndex = mainAndQuery.indexOf("?");
     if (qIndex !== -1) {
-      main = u.slice(0, qIndex);
-      queryStr = u.slice(qIndex + 1);
+      main = mainAndQuery.slice(0, qIndex);
+      queryStr = mainAndQuery.slice(qIndex + 1);
     }
 
     const atIndex = main.lastIndexOf("@");
@@ -831,7 +855,8 @@ function parseHysteria2Lenient(uri) {
   }
 }
 
-// ===== 工具函数 =====
+// =================== 基础工具 ===================
+
 function safeBase64Decode(str) {
   if (!str) return "";
   let s = str.trim().replace(/-/g, "+").replace(/_/g, "/");
@@ -843,10 +868,9 @@ function safeBase64Decode(str) {
   try {
     const bin = atob(s);
     try {
-      // 尝试按 UTF-8 还原
       return decodeURIComponent(
-        Array.prototype.map
-          .call(bin, (c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        Array.prototype
+          .map.call(bin, (c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
           .join("")
       );
     } catch (_e) {
