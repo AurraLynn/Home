@@ -10,13 +10,12 @@
 //     - 端口 + 阿里 DNS
 //     - proxy-groups: 🐹Lyn · Node
 //     - 简单规则（GEOIP,LAN / GEOIP,CN / MATCH）
-//  5. 其它 client：保持 Converter 输出不动（比如 QX 行、Surge 行、Base64 订阅）
+//  5. 其它 client：保持 Converter 输出不动（比如 QX 行、Base64 订阅）
 //
 // 已支持的 client 名：
 //  - quantumultx：Quantumult X
-//  - surge：Surge / Surfboard
 //  - clash：Clash / Clash.Meta / Mihomo / FlyClash
-//  - 空 / 其它：交给 Converter 默认处理（通常输出 Base64 订阅）
+//  - 其它 / 空：交给 Converter 默认处理（通常输出 Base64 订阅）
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -129,10 +128,7 @@ function detectClientFromUA(ua) {
   if (u.includes("meta/") || u.includes(".meta")) return "clash";
   if (u.includes("clash") || u.includes("mihomo")) return "clash";
 
-  // Surge / Surfboard
-  if (u.includes("surge")) return "surge";
-
-  // Quantumult X
+  // Quantumult X（如果不带 ?client=quantumultx，用 UA 也能识别）
   if (
     u.includes("quantumult%20x") ||
     u.includes("quantumult x") ||
@@ -142,7 +138,7 @@ function detectClientFromUA(ua) {
     return "quantumultx";
   }
 
-  // 其它（Shadowrocket / v2rayNG / Sing-box 等）：走 Base64
+  // 其它（Surge / Shadowrocket / v2rayNG / Sing-box 等）：走 Base64
   return "";
 }
 
