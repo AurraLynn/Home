@@ -1,95 +1,65 @@
 // functions/api/sub/Converter.js
 //
-// 支持输入：
-// -  body: 原始节点文本（从 KV 拿出来的内容，或前端直接 POST）
-// -  client: quantumultx / surge / clash / base64（其它值也当 base64 处理）
+// 作用：统一的「多客户端节点转换入口」
 //
-// 支持输出：
-// -  Quantumult X 订阅行（由 /api/sub/QuantumultX 生成）
-// -  Surge 订阅行（由 /api/sub/Surge 生成）
-// -  Clash / Mihomo proxies 段（由 /api/sub/Clash 生成）
-// -  Base64 订阅（整段原文按 UTF-8 → Base64 编码）
+// 收到 POST /api/sub/Converter?client=xxx
+//   - 读取请求体中的原始节点文本（URL / Base64 / 混合都行）
+//   - 根据 client 调用对应子模块（QuantumultX.js / Surge.js / Clash.js）
+//   - 返回该客户端需要的订阅内容（纯文本）
 //
-// client 行为：
-// -  client=quantumultx：转给 /api/sub/QuantumultX 处理
-// -  client=surge：转给 /api/sub/Surge 处理
-// -  client=clash：转给 /api/sub/Clash 处理
-// -  其它或空：整段原文做 Base64 返回
-//
-// 已支持的客户端：
-// -  Quantumult X
-// -  Surge
-// -  Clash / Mihomo
-// -  使用 Base64 订阅的客户端
+// 说明：
+//   - 这里只做「分发」，真正的解析和格式拼接都在各自的文件里完成：
+//       QuantumultX.js  →  export function buildQuantumultX(bodyText) { ... }
+//       Surge.js        →  export function buildSurge(bodyText) { ... }
+//       Clash.js        →  export function buildClash(bodyText) { ... }   （如果你已经实现了）
+
+import { buildQuantumultX } from "./QuantumultX.js";
+import { buildSurge } from "./Surge.js";
+// 如果已经有 Clash.js，并且里面导出了 buildClash，就保留；
+// 如果你暂时没做 Clash 支持，可以先注释掉下面这行以及后面的分支。
+import { buildClash } from "./Clash.js";
 
 export async function onRequestPost(context) {
   const { request } = context;
   const url = new URL(request.url);
-  const origin = url.origin;
+  const client = (url.searchParams.get("client") || "").toLowerCase();
 
-  let client = (url.searchParams.get("client") || "base64").toLowerCase();
-  const rawText = await request.text();
-  const bodyText = rawText || "";
+  const bodyText = await request.text();
 
-  // ===== Quantumult X：转发到 /api/sub/QuantumultX =====
-  if (client === "quantumultx") {
-    const qxUrl = `${origin}/api/sub/QuantumultX`;
-    const res = await fetch(qxUrl, {
-      method: "POST",
-      body: bodyText,
-    });
+  let out;
 
-    const text = await res.text();
-    return new Response(text, {
-      status: res.status,
+  try {
+    if (client === "quantumultx") {
+      // Quantumult X 订阅
+      out = buildQuantumultX(bodyText);
+    } else if (client === "surge") {
+      // Surge 订阅
+      out = buildSurge(bodyText);
+    } else if (client === "clash" || client === "stash") {
+      // Clash / Stash 订阅（如果你已经实现了 Clash.js）
+      out = buildClash(bodyText);
+    } else {
+      // 其它客户端一律视为不支持（这里不会再继续调用）
+      return new Response("unsupported client", {
+        status: 400,
+        headers: { "content-type": "text/plain; charset=utf-8" },
+      });
+    }
+  } catch (e) {
+    // 任何 JS 运行异常，统一包装成 convert error，避免直接 1101
+    const msg =
+      e && typeof e === "object" && "message" in e
+        ? e.message
+        : String(e || "unknown error");
+    return new Response("convert error: " + msg, {
+      status: 500,
       headers: { "content-type": "text/plain; charset=utf-8" },
     });
   }
 
-  // ===== Surge：转发到 /api/sub/Surge =====
-  if (client === "surge") {
-    const surgeUrl = `${origin}/api/sub/Surge`;
-    const res = await fetch(surgeUrl, {
-      method: "POST",
-      body: bodyText,
-    });
-
-    const text = await res.text();
-    return new Response(text, {
-      status: res.status,
-      headers: { "content-type": "text/plain; charset=utf-8" },
-    });
-  }
-
-  // ===== Clash / Mihomo：转发到 /api/sub/Clash =====
-  if (client === "clash") {
-    const clashUrl = `${origin}/api/sub/Clash`;
-    const res = await fetch(clashUrl, {
-      method: "POST",
-      body: bodyText,
-    });
-
-    const text = await res.text();
-    return new Response(text, {
-      status: res.status,
-      headers: { "content-type": "text/plain; charset=utf-8" },
-    });
-  }
-
-  // ===== Base64：整段原文做成订阅内容 =====
-  const b64 = utf8ToBase64(bodyText.trim());
-
-  return new Response(b64, {
+  // 正常返回客户端订阅内容
+  return new Response(out, {
     status: 200,
     headers: { "content-type": "text/plain; charset=utf-8" },
   });
-}
-
-// UTF-8 → Base64（用于生成订阅内容）
-function utf8ToBase64(str) {
-  try {
-    return btoa(unescape(encodeURIComponent(str)));
-  } catch (_e) {
-    return "";
-  }
 }
