@@ -8,7 +8,7 @@
 // 支持输出：
 // - Surge：shadowsocks / UDP（含 http / tls 混淆）
 // - Surge：trojan / UDP
-// - Surge：vmess / UDP（含 websocket）
+// - Surge：vmess / UDP（含 websocket，跳过 http 伪装）
 //
 // 已支持的客户端：
 // - Surge
@@ -18,6 +18,7 @@ export async function onRequestPost(context) {
   const raw = (await request.text()) || "";
   let text = raw.trim();
 
+  // 整段尝试 Base64 解码
   const compact = text.replace(/\s+/g, "");
   const decodedBulk = tryBase64DecodeToString(compact);
   if (
@@ -36,6 +37,7 @@ export async function onRequestPost(context) {
     line = line.trim();
     if (!line || line.startsWith("#")) continue;
 
+    // 单行 Base64
     if (
       !line.startsWith("ss://") &&
       !line.startsWith("trojan://") &&
@@ -110,6 +112,7 @@ function parseShadowsocksUrl(url) {
 
     let s = url.slice(5);
 
+    // 名称
     let name = "";
     const hashIndex = s.indexOf("#");
     if (hashIndex !== -1) {
@@ -120,6 +123,7 @@ function parseShadowsocksUrl(url) {
       } catch (_e) {}
     }
 
+    // 主体或整体 Base64
     if (!s.includes("@")) {
       const decoded = tryBase64DecodeToString(s);
       if (decoded && decoded.includes("@")) {
@@ -129,12 +133,14 @@ function parseShadowsocksUrl(url) {
       }
     }
 
+    // userinfo 与 server:port
     const atIndex = s.lastIndexOf("@");
     if (atIndex === -1) return null;
 
     let userinfo = s.slice(0, atIndex);
     let serverPortAndParams = s.slice(atIndex + 1);
 
+    // userinfo → method:password
     const decodedUserinfo = tryBase64DecodeToString(userinfo);
     if (decodedUserinfo && decodedUserinfo.includes(":")) {
       userinfo = decodedUserinfo;
@@ -149,6 +155,7 @@ function parseShadowsocksUrl(url) {
     const method = userinfo.slice(0, colonIndex);
     const password = userinfo.slice(colonIndex + 1);
 
+    // server:port[?params]
     let query = "";
     const qIndex = serverPortAndParams.indexOf("?");
     if (qIndex !== -1) {
@@ -164,6 +171,7 @@ function parseShadowsocksUrl(url) {
     const port = parseInt(portStr, 10);
     if (!server || !Number.isFinite(port)) return null;
 
+    // plugin 混淆
     let obfsMode = "";
     let obfsHost = "";
 
@@ -196,8 +204,8 @@ function parseShadowsocksUrl(url) {
       port,
       method,
       password,
-      obfsMode,
-      obfsHost,
+      obfsMode, // http / tls / ""
+      obfsHost, // 可能为空
     };
   } catch (_e) {
     return null;
@@ -211,6 +219,7 @@ function parseTrojanUrl(url) {
 
     let s = url.slice("trojan://".length);
 
+    // 名称
     let name = "";
     const hashIndex = s.indexOf("#");
     if (hashIndex !== -1) {
@@ -221,6 +230,7 @@ function parseTrojanUrl(url) {
       } catch (_e) {}
     }
 
+    // 查询参数
     let query = "";
     const qIndex = s.indexOf("?");
     if (qIndex !== -1) {
@@ -228,6 +238,7 @@ function parseTrojanUrl(url) {
       s = s.slice(0, qIndex);
     }
 
+    // password@server:port
     const atIndex = s.lastIndexOf("@");
     if (atIndex === -1) return null;
 
@@ -284,7 +295,7 @@ function parseVmessUrl(url) {
 
     let s = url.slice("vmess://".length);
 
-    // # 后面的内容（一般很少用，我们先取出来备用）
+    // # 名称（备用）
     let nameFromHash = "";
     const hashIndex = s.indexOf("#");
     if (hashIndex !== -1) {
@@ -295,7 +306,7 @@ function parseVmessUrl(url) {
       } catch (_e) {}
     }
 
-    // ? 后面的查询参数
+    // ? 查询参数
     let query = "";
     const qIndex = s.indexOf("?");
     if (qIndex !== -1) {
@@ -303,7 +314,7 @@ function parseVmessUrl(url) {
       s = s.slice(0, qIndex);
     }
 
-    // s 是 Base64：auto:uuid@host:port 或 uuid@host:port
+    // Base64: auto:uuid@host:port 或 uuid@host:port
     const decoded = tryBase64DecodeToString(s);
     if (!decoded) return null;
 
@@ -333,12 +344,13 @@ function parseVmessUrl(url) {
     let ws = false;
     let wsPath = "";
     let wsHost = "";
-    let displayName = nameFromHash; // 先用 # 的名字
+    let displayName = nameFromHash;
+    let transport = "tcp"; // tcp / ws / http
 
     if (query) {
       const params = new URLSearchParams(query);
 
-      // 优先使用 remarks 作为名称
+      // 名称优先用 remarks
       const remarks = params.get("remarks");
       if (remarks) {
         try {
@@ -348,16 +360,22 @@ function parseVmessUrl(url) {
         }
       }
 
+      // tls / security
       const tlsParam = params.get("tls") || params.get("security");
       if (tlsParam === "1" || tlsParam === "true" || tlsParam === "tls") {
         tls = true;
       }
 
+      // 传输：ws / http
       const obfs = params.get("obfs") || params.get("network");
       if (obfs === "websocket" || obfs === "ws") {
+        transport = "ws";
         ws = true;
         wsPath = params.get("path") || "/";
         wsHost = params.get("obfsParam") || params.get("host") || "";
+      } else if (obfs === "http") {
+        // vmess/http：标记为 http，Surge 不支持，后面直接跳过
+        transport = "http";
       }
     }
 
@@ -371,13 +389,14 @@ function parseVmessUrl(url) {
       ws,
       wsPath,
       wsHost,
+      transport, // tcp / ws / http
     };
   } catch (_e) {
     return null;
   }
 }
 
-/* 构造 Surge 行 */
+/* 根据节点类型构造 Surge 行 */
 function buildSurgeLine(node) {
   if (!node || !node.type) return "";
   if (node.type === "ss") return buildSurgeShadowsocksLine(node);
@@ -442,7 +461,7 @@ function buildSurgeTrojanLine(node) {
   return parts.join(",");
 }
 
-/* vmess（含 websocket） */
+/* vmess（含 websocket，跳过 http） */
 function buildSurgeVmessLine(node) {
   const server = node.server || "";
   const port = node.port;
@@ -452,6 +471,10 @@ function buildSurgeVmessLine(node) {
   const ws = !!node.ws;
   const wsPath = node.wsPath || "/";
   const wsHost = node.wsHost || "";
+  const transport = node.transport || "tcp";
+
+  // vmess/http：Surge 不支持，直接跳过
+  if (transport === "http") return "";
 
   if (!server || !Number.isFinite(port) || !uuid) return "";
 
@@ -461,8 +484,8 @@ function buildSurgeVmessLine(node) {
   parts.push(server);
   parts.push(String(port));
   parts.push(`username=${escapeQuote(uuid)}`);
-  parts.push("vmess-aead=true");
   parts.push(`tls=${tls ? "true" : "false"}`);
+  parts.push("vmess-aead=true");
 
   if (ws) {
     parts.push("ws=true");
