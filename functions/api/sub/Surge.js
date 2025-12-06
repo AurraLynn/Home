@@ -277,23 +277,25 @@ function parseTrojanUrl(url) {
   }
 }
 
-/* 解析 Vmess URL（vmess://Base64） */
+/* 解析 Vmess URL（vmess://Base64 + ?remarks=） */
 function parseVmessUrl(url) {
   try {
     if (!url.startsWith("vmess://")) return null;
 
     let s = url.slice("vmess://".length);
 
-    let name = "";
+    // # 后面的内容（一般很少用，我们先取出来备用）
+    let nameFromHash = "";
     const hashIndex = s.indexOf("#");
     if (hashIndex !== -1) {
-      name = s.slice(hashIndex + 1);
+      nameFromHash = s.slice(hashIndex + 1);
       s = s.slice(0, hashIndex);
       try {
-        name = decodeURIComponent(name);
+        nameFromHash = decodeURIComponent(nameFromHash);
       } catch (_e) {}
     }
 
+    // ? 后面的查询参数
     let query = "";
     const qIndex = s.indexOf("?");
     if (qIndex !== -1) {
@@ -301,6 +303,7 @@ function parseVmessUrl(url) {
       s = s.slice(0, qIndex);
     }
 
+    // s 是 Base64：auto:uuid@host:port 或 uuid@host:port
     const decoded = tryBase64DecodeToString(s);
     if (!decoded) return null;
 
@@ -330,9 +333,20 @@ function parseVmessUrl(url) {
     let ws = false;
     let wsPath = "";
     let wsHost = "";
+    let displayName = nameFromHash; // 先用 # 的名字
 
     if (query) {
       const params = new URLSearchParams(query);
+
+      // 优先使用 remarks 作为名称
+      const remarks = params.get("remarks");
+      if (remarks) {
+        try {
+          displayName = decodeURIComponent(remarks);
+        } catch (_e) {
+          displayName = remarks;
+        }
+      }
 
       const tlsParam = params.get("tls") || params.get("security");
       if (tlsParam === "1" || tlsParam === "true" || tlsParam === "tls") {
@@ -349,7 +363,7 @@ function parseVmessUrl(url) {
 
     return {
       type: "vmess",
-      name: name || `${server}:${port}`,
+      name: displayName || `${server}:${port}`,
       server,
       port,
       uuid,
