@@ -12,11 +12,11 @@
 //     - 简单规则（GEOIP,LAN / GEOIP,CN / MATCH）
 //  5. 其它 client：保持 Converter 输出不动（比如 QX 行、Surge 行、Base64 订阅）
 //
-// 已支持的 client 名（由本文件负责识别与路由）：
-//  - quantumultx：Quantumult X（UA 或 ?client=quantumultx）
-//  - surge：Surge / Surfboard（UA 或 ?client=surge）
-//  - clash：Clash / Clash.Meta / Mihomo / FlyClash（UA 或 ?client=clash）
-//  - 空 / 其它：交给 Converter 默认处理（通常输出 Base64 订阅，给 Shadowrocket / v2rayNG 等吃）
+// 已支持的 client 名：
+//  - quantumultx：Quantumult X
+//  - surge：Surge / Surfboard
+//  - clash：Clash / Clash.Meta / Mihomo / FlyClash
+//  - 空 / 其它：交给 Converter 默认处理（通常输出 Base64 订阅）
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -53,13 +53,11 @@ export async function onRequestGet(context) {
   // ===== 3. 拼接 Converter 地址 =====
   const origin = url.origin;
   let converterUrl = `${origin}/api/sub/Converter`;
-
   if (client) {
     converterUrl = `${origin}/api/sub/Converter?client=${encodeURIComponent(
       client
     )}`;
   }
-  // 如果 client 为空，就不带 client 参数，让 Converter 用默认逻辑（Base64）
 
   // 把原始内容 POST 给 Converter
   const res = await fetch(converterUrl, {
@@ -91,10 +89,7 @@ export async function onRequestGet(context) {
   });
 }
 
-/* =========================================================
- * 工具：从 KV 记录里把「节点文本」抽出来
- * 兼容你之前保存的各种 JSON 结构
- * =======================================================*/
+/* ========== 从 KV 记录里提取节点文本 ========== */
 
 function extractContentFromRecord(stored) {
   if (!stored) return "";
@@ -124,10 +119,7 @@ function extractContentFromRecord(stored) {
   }
 }
 
-/* =========================================================
- * 工具：根据 UA 自动识别 client
- * 这里只负责大类，具体格式由 Converter + 各客户端 JS 处理
- * =======================================================*/
+/* ========== UA → client 名 ========== */
 
 function detectClientFromUA(ua) {
   const u = (ua || "").toLowerCase();
@@ -150,14 +142,11 @@ function detectClientFromUA(ua) {
     return "quantumultx";
   }
 
-  // 其它（Shadowrocket / v2rayNG / Sing-box 等）：不再单独识别，走 Base64
+  // 其它（Shadowrocket / v2rayNG / Sing-box 等）：走 Base64
   return "";
 }
 
-/* =========================================================
- * Clash 完整配置（端口 + DNS + 分组 + 规则）
- * Converter 返回的是一个 proxies 段，这里把它包成完整 config
- * =======================================================*/
+/* ========== Clash 完整配置包装 ========== */
 
 // 简化版：端口 + 阿里 DNS
 const CLASH_BASE_HEADER = `port: 7890
@@ -177,8 +166,8 @@ dns:
 
 // 从 Converter 返回的文本里抓出所有节点名称
 // 兼容：
-//  1）YAML 风格：- name: xxx
-//  2）JSON 风格：- {"name":"xxx", ...}
+//  1）- name: xxx
+//  2）- {"name":"xxx", ...}
 function extractClashProxyNames(nodesYaml) {
   const lines = (nodesYaml || "").split(/\r?\n/);
   const names = [];
