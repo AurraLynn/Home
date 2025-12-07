@@ -14,27 +14,26 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Pastebox">
     <meta property="og:title" content="Pastebox">
-    <meta property="og:description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
-    <meta property="og:image" content="https://save.aura.us.kg/Picture/Preview/YL10.png">
-    <meta property="og:url" content="https://aura.us.kg/Paste">
+    <meta property="og:description" content="简洁、安静的 Paste 工具，支持文本与代码存储。">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/Fm2.png">
+    <meta property="og:url" content="https://aura.us.kg/Paste/">
 
-    <!-- Twitter 卡片 -->
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Pastebox">
-    <meta name="twitter:description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
-    <meta name="twitter:image" content="https://save.aura.us.kg/Picture/Preview/YL6.png">
+    <meta name="twitter:description" content="简洁、安静的 Paste 工具，支持文本与代码存储。">
+    <meta name="twitter:image" content="https://save.aura.us.kg/Picture/Fm2.png">
 
     <style>
         :root{
-            color-scheme: light dark;
             --bg:#020617;
-            --layer:#020617;
-            --layer-soft:rgba(15,23,42,0.96);
+            --layer:rgba(15,23,42,0.96);
+            --layer-soft:rgba(15,23,42,0.88);
+            --border-soft:rgba(148,163,184,0.4);
+            --border-strong:rgba(148,163,184,0.9);
             --text-main:#e5e7eb;
             --text-sub:#9ca3af;
-            --border-soft:rgba(55,65,81,0.9);
-            --border-strong:rgba(148,163,184,0.9);
-            --accent:#38bdf8;
+            --accent:#eab308;
             --accent2:#6366f1;
             --danger:#fecaca;
             --shadow-main:0 22px 60px rgba(15,23,42,0.9);
@@ -49,1038 +48,965 @@
             --border-soft:rgba(148,163,184,0.5);
             --border-strong:rgba(148,163,184,0.9);
             --accent:#2563eb;
-            --accent2:#6366f1;
-            --danger:#b91c1c;
-            --shadow-main:0 18px 40px rgba(15,23,42,0.14);
+            --accent2:#7c3aed;
+            --danger:#ef4444;
+            --shadow-main:0 22px 60px rgba(148,163,184,0.45);
             --input-bg:#f9fafb;
         }
-        *{box-sizing:border-box;}
-        body{
+        *{
+            box-sizing:border-box;
             margin:0;
-            min-height:100vh;
-            font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            padding:30px 12px;
-            background:
-                    radial-gradient(circle at top,rgba(56,189,248,0.18),transparent 60%),
-                    radial-gradient(circle at bottom,rgba(129,140,248,0.18),transparent 60%),
-                    var(--bg);
+            padding:0;
+        }
+        html,body{
+            height:100%;
+        }
+        body{
+            font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,system-ui,sans-serif;
+            background:radial-gradient(circle at 0% 0%,#1f2937 0,transparent 55%),
+                       radial-gradient(circle at 100% 100%,#111827 0,transparent 55%),
+                       var(--bg);
             color:var(--text-main);
+            -webkit-font-smoothing:antialiased;
+            padding:24px;
         }
-        .shell{width:100%;max-width:880px;}
-
-        /* 顶部 */
-        .header{
-            margin-bottom:18px;
-            display:flex;
-            justify-content:space-between;
-            gap:12px;
-            align-items:center;
-        }
-        .brand{
-            display:flex;
-            align-items:center;
-            gap:10px;
-            padding:10px 14px;
-            border-radius:18px;
-            background:linear-gradient(135deg,rgba(15,23,42,0.96),rgba(56,189,248,0.15));
-            border:1px solid rgba(148,163,184,0.5);
-            box-shadow:0 14px 40px rgba(15,23,42,0.7);
-        }
-        body.theme-light .brand{
-            background:linear-gradient(135deg,#ffffff,rgba(219,234,254,0.95));
-            box-shadow:0 12px 30px rgba(15,23,42,0.15);
-        }
-        .brand-logo{
-            width:44px;height:44px;border-radius:10px;overflow:hidden;
-            background:radial-gradient(circle at top left, rgba(255, 255, 255, 0.8), rgba(253, 0, 210, 0.83));
-            display:flex;align-items:center;justify-content:center;
-        }
-        .brand-logo img{width:100%;height:100%;object-fit:cover;border-radius:10px;}
-        .brand-text{display:flex;flex-direction:column;gap:3px;}
-        .brand-title{font-size:19px;font-weight:600;letter-spacing:.03em;}
-        .brand-sub{font-size:11px;color:var(--text-sub);}
-
-        .header-actions{display:flex;align-items:center;gap:8px;}
-
-        button{
-            border:none;outline:none;cursor:pointer;
-            border-radius:999px;
-            padding:6px 14px;
-            display:inline-flex;align-items:center;gap:6px;
-            font-size:12px;
-            background:transparent;
-            color:var(--text-main);
-            transition:background .15s ease,box-shadow .15s ease,transform .1s ease,opacity .15s ease;
-        }
-        button:hover{
-            transform:translateY(-1px);
-            opacity:.96;
-        }
-        button:active{
-            transform:translateY(0);
-            opacity:.9;
-        }
-
-        .icon-svg{width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;}
-        .icon-svg svg{width:14px;height:14px;fill:currentColor;}
-
-        .theme-toggle{
-            border:1px solid var(--border-soft);
-            background:rgba(15,23,42,0.8);
-            font-size:11px;color:var(--text-sub);
-            box-shadow:0 8px 18px rgba(15,23,42,0.5);
-        }
-        body.theme-light .theme-toggle{
-            background:#ffffff;
-            box-shadow:0 6px 14px rgba(148,163,184,0.4);
-        }
-        .theme-toggle:hover{
-            box-shadow:0 9px 20px rgba(15,23,42,0.55);
-        }
-        .theme-icon{width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;}
-        .theme-icon svg{width:16px;height:16px;fill:currentColor;}
-        body.theme-dark .theme-icon-sun{display:none;}
-        body.theme-dark .theme-icon-moon{display:inline-flex;}
-        body.theme-light .theme-icon-moon{display:none;}
-
-        .pill-btn{
-            border:1px solid var(--border-soft);
-            background:var(--layer-soft);
-            font-size:11px;
-            box-shadow:0 6px 14px rgba(15,23,42,0.35);
-        }
-        body.theme-light .pill-btn{background:#ffffff;}
-
-        /* 旋转动画关键帧 */
-        @keyframes spin-reset-once {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        .btn-reset .icon-svg svg { transform-origin: 50% 50%; }
-        .btn-reset:hover .icon-svg svg { animation: spin-reset-once 0.6s linear; }
-
-        /* 主卡片 */
-        .card{
-            background:var(--layer);
-            border-radius:22px;
-            border:1px solid var(--border-soft);
-            box-shadow:var(--shadow-main);
-            padding:18px 20px 16px;
+        .page{
+            max-width:1120px;
+            margin:0 auto;
             display:flex;
             flex-direction:column;
-            gap:14px;
+            gap:20px;
         }
-        .card-section{
-            border-radius:16px;
-            padding:12px 12px;
-            background:var(--layer-soft);
-            border:1px solid rgba(148,163,184,0.25);
+        .layout-main{
+            display:grid;
+            grid-template-columns: minmax(0, 3fr) minmax(0, 2.1fr);
+            gap:20px;
         }
-        .card-section + .card-section{margin-top:6px;}
-        .section-title{
-            font-size:12px;
-            font-weight:600;
-            margin-bottom:8px;
-            display:flex;align-items:center;gap:6px;
+        @media(max-width:960px){
+            body{padding:16px;}
+            .layout-main{grid-template-columns:1fr;}
         }
-        .section-title .tag{
-            font-size:10px;
-            padding:1px 6px;
+        .card{
+            background:radial-gradient(circle at 0 0,rgba(148,163,184,0.16),transparent 55%),
+                       radial-gradient(circle at 100% 100%,rgba(148,163,184,0.2),transparent 55%),
+                       var(--layer);
+            border-radius:24px;
+            border:1px solid rgba(148,163,184,0.45);
+            box-shadow:var(--shadow-main);
+            padding:18px 18px 16px;
+            position:relative;
+            overflow:hidden;
+        }
+        .card::before{
+            content:"";
+            position:absolute;
+            inset:-40%;
+            background:radial-gradient(circle at 0 0,rgba(251,191,36,0.08) 0,transparent 55%),
+                       radial-gradient(circle at 100% 100%,rgba(59,130,246,0.08) 0,transparent 55%);
+            opacity:0.65;
+            mix-blend-mode:screen;
+            pointer-events:none;
+        }
+        .card-inner{
+            position:relative;
+            z-index:1;
+        }
+        .card-header{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:10px;
+        }
+        .title-block{
+            display:flex;
+            flex-direction:column;
+            gap:2px;
+        }
+        .title{
+            font-size:18px;
+            letter-spacing:.06em;
+            text-transform:uppercase;
+            color:var(--text-main);
+        }
+        .subtitle{
+            font-size:11px;
+            text-transform:uppercase;
+            color:var(--text-sub);
+            letter-spacing:.14em;
+        }
+        .badge{
+            font-size:11px;
+            padding:2px 8px;
             border-radius:999px;
             border:1px solid rgba(148,163,184,0.5);
             color:var(--text-sub);
         }
-        .section-text{
+        .hint{
             font-size:11px;
             color:var(--text-sub);
-            line-height:1.8;
         }
-        .warning-label{color:#dc2626;font-weight:700;}
-
-        form{display:flex;flex-direction:column;gap:10px;}
-        .field{display:flex;flex-direction:column;gap:4px;margin-top:2px;}
-        .field-label{font-size:12px;color:var(--text-sub);}
-        .field-inline{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
-        .field-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;}
-        .field-block{flex:1 1 200px;}
-
-        input[type="text"],input[type="password"]{
-            border-radius:999px;
-            border:1px solid var(--border-strong);
-            background:var(--input-bg);
-            color:var(--text-main);
-            font-size:12px;
-            padding:6px 10px;
-            outline:none;
-            width:100%;
-        }
-        input::placeholder{color:rgba(148,163,184,0.7);}
-        .input-error{
-            border-color:#f97373;
-            box-shadow:0 0 0 1px rgba(248,113,113,0.6);
-        }
-
-        .ttl-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;}
-        .ttl-btn{
-            border-radius:999px;
-            border:1px solid #d4d4d8;
-            background:#fff;
-            color:#374151;
-            font-size:12px;
-            padding:4px 14px;
-            cursor:pointer;
-        }
-        body.theme-dark .ttl-btn{
-            background:rgba(15,23,42,0.96);
-            border-color:rgba(75,85,99,0.9);
-            color:var(--text-sub);
-        }
-        .ttl-btn.active{
-            background:#111827;
-            color:#ffffff;
-            border-color:#111827;
-            box-shadow:0 4px 10px rgba(15,23,42,0.25);
-        }
-        .ttl-btn:hover{ border-color:var(--accent2); }
-        .ttl-btn[disabled]{opacity:.45;cursor:not-allowed;}
-        .ttl-hint{font-size:11px;color:var(--text-sub);margin-top:6px;}
-
-        .textarea-wrap{ position:relative; }
-        textarea{
-            width:100%;
-            min-height:220px;
-            resize:vertical;
-            padding:10px 12px;
-            border-radius:14px;
-            border:1px solid var(--border-strong);
-            background:var(--input-bg);
-            color:var(--text-main);
-            font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
-            font-size:13px;
-            line-height:1.5;
-            outline:none;
-        }
-        textarea::placeholder{color:rgba(148,163,184,0.8);}
-        .line-counter{
-            position:absolute;
-            right:10px;
-            bottom:6px;
-            font-size:10px;
-            padding:2px 8px;
-            border-radius:999px;
-            background:rgba(15,23,42,0.7);
-            color:var(--text-sub);
-            pointer-events:none;
-        }
-        body.theme-light .line-counter{
-            background:rgba(243,244,246,0.9);
-        }
-
-        .hint{font-size:11px;color:var(--text-sub);}
         .hint-error{color:#f97373;}
         .hint-success{color:#22c55e;}
         .byte-count{font-size:11px;color:var(--text-sub);}
         .byte-num{color:var(--accent2);font-weight:600;}
+
+        /* 节点类型提示 */
+        .node-detect{
+            font-size:11px;
+            color:var(--text-sub);
+            margin-left:12px;
+            opacity:.9;
+        }
+
+        /* 备注行里的订阅按钮区域 */
+        .node-sub-wrap{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            margin-left:8px;
+        }
+        .node-sub-btn{
+            padding:3px 10px;
+            border-radius:999px;
+            font-size:11px;
+            border:none;
+            cursor:pointer;
+            background:#22c55e;
+            color:#022c22;
+            font-weight:500;
+            box-shadow:0 4px 10px rgba(34,197,94,0.35);
+            white-space:nowrap;
+        }
+        .node-sub-btn:hover{
+            filter:brightness(1.06);
+        }
+        .node-sub-select{
+            border-radius:999px;
+            border:1px solid var(--border-soft);
+            background:var(--input-bg);
+            color:var(--text-main);
+            font-size:11px;
+            padding:3px 8px;
+        }
 
         /* 原本字节 + 小药丸，现在只用作右侧小药丸样式 */
         .byte-actions{
             display:flex;
             align-items:center;
             gap:6px;
-            margin-left:auto;
         }
-
-        .btn-primary{
+        .pill{
+            display:inline-flex;
+            align-items:center;
+            border-radius:999px;
+            padding:2px 8px;
+            font-size:11px;
+            background:radial-gradient(circle at 0 0,rgba(251,191,36,0.12),transparent 55%),
+                       radial-gradient(circle at 100% 100%,rgba(59,130,246,0.12),transparent 55%);
+            border:1px solid rgba(148,163,184,0.45);
+            color:var(--text-sub);
+            gap:4px;
+        }
+        .pill svg{width:12px;height:12px;}
+        .btn{
+            border:none;
+            border-radius:999px;
+            padding:6px 16px;
+            font-size:13px;
+            cursor:pointer;
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            background:linear-gradient(135deg,#facc15,#f97316);
+            color:#111827;
             font-weight:500;
-            background:linear-gradient(90deg,var(--accent),var(--accent2));
-            color:#f9fafb;
-            box-shadow:0 8px 20px rgba(37,99,235,0.35);
+            box-shadow:0 12px 35px rgba(248,250,252,0.08);
         }
-        .btn-primary:hover{box-shadow:0 10px 24px rgba(37,99,235,0.5);}
-        .btn-primary.btn-disabled{opacity:.5;cursor:not-allowed;box-shadow:none;}
-        /* 只改登录弹窗里的 LOG IN 按钮，不影响上传按钮 */
-        .auth-panel #btnDoLogin{
-            background: rgb(41, 195, 30);
-            border-color: rgba(0, 0, 0, 0.42);
-            color:#f9fafb;
-            box-shadow:0 8px 20px rgba(255, 255, 255, 0);
-        }
-        .auth-panel #btnDoLogin:hover{
-            background: rgba(255, 0, 207, 0.29);
-        }
+        .btn:hover{filter:brightness(1.04);}
         .btn-secondary{
-            background:var(--layer-soft);
-            color:var(--text-main);
-            border:1px solid var(--border-strong);
-        }
-        .btn-secondary:hover{background:#e5e7eb;}
-        body.theme-dark .btn-secondary:hover{background:rgba(31,41,55,0.96);}
-
-        .btn-danger{
-            background:rgba(248,113,113,0.12);
-            color:var(--danger);
-            border:1px solid rgba(248,113,113,0.7);
-        }
-        .btn-xs{padding:3px 8px;font-size:11px;}
-        .btn-sm{padding:4px 12px;font-size:12px;}
-
-        .btn-reset{
-            background:#020617;
-            color:#e5e7eb;
-            border:1px solid var(--border-strong);
-            padding:6px 14px;
+            border-radius:999px;
+            padding:5px 12px;
             font-size:12px;
+            background:rgba(15,23,42,0.8);
+            color:var(--text-main);
+            border:1px solid rgba(148,163,184,0.6);
+            cursor:pointer;
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
         }
-        body.theme-light .btn-reset{
-            background:#111827;
-            color:#f9fafb;
+        .btn-secondary:hover{
+            background:rgba(15,23,42,0.96);
         }
-
-        .action-row{
+        .btn-danger{
+            border-radius:999px;
+            padding:5px 12px;
+            font-size:12px;
+            background:rgba(153,27,27,0.92);
+            color:#fecaca;
+            border:1px solid rgba(248,113,113,0.9);
+            cursor:pointer;
+            display:inline-flex;
+            align-items:center;
+            gap:4px;
+        }
+        .btn-danger:hover{
+            background:rgba(127,29,29,0.98);
+        }
+        .btn-xs{
+            padding:4px 9px;
+            font-size:11px;
+        }
+        .btn-icon{
+            padding-inline:10px;
+        }
+        .icon-svg{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+        }
+        .field-block{
+            margin-bottom:12px;
+        }
+        .field-label{
+            font-size:12px;
+            color:var(--text-sub);
+            margin-bottom:4px;
             display:flex;
-            justify-content:flex-end;
+            align-items:center;
+            justify-content:space-between;
             gap:8px;
-            flex-wrap:wrap;
-            margin-top:4px;
         }
-
-        .upload-row{
-            margin-top:4px;
+        .field-inline{
+            display:flex;
             align-items:center;
             gap:8px;
-            justify-content:space-between;
         }
-        .upload-btn{
-            display:inline-flex;align-items:center;gap:4px;
-            padding:4px 10px;border-radius:999px;
-            border:1px dashed var(--border-strong);
-            background:rgba(15,23,42,0.5);
+        .field-inline .btn-secondary{
+            white-space:nowrap;
+        }
+        .input{
+            width:100%;
+            border-radius:14px;
+            border:1px solid rgba(148,163,184,0.55);
+            padding:7px 10px;
+            font-size:13px;
+            background:var(--input-bg);
+            color:var(--text-main);
+            outline:none;
+        }
+        .input:focus{
+            border-color:var(--accent2);
+            box-shadow:0 0 0 1px rgba(99,102,241,0.4);
+        }
+        .input::placeholder{
+            color:rgba(148,163,184,0.7);
+        }
+        .input-error{
+            border-color:#f97373 !important;
+        }
+        .textarea-wrap{
+            position:relative;
+            border-radius:20px;
+            border:1px solid rgba(148,163,184,0.65);
+            background:var(--input-bg);
+            overflow:hidden;
+        }
+        .textarea-inner{
+            position:relative;
+            display:flex;
+        }
+        .line-counter{
+            width:54px;
+            padding:8px 6px 8px 10px;
+            border-right:1px solid rgba(148,163,184,0.35);
+            font-size:11px;
             color:var(--text-sub);
+            background:linear-gradient(to bottom,rgba(15,23,42,1),rgba(15,23,42,0.9));
+            text-align:right;
+            user-select:none;
+        }
+        textarea{
+            flex:1;
+            border:none;
+            outline:none;
+            resize:vertical;
+            min-height:220px;
+            max-height:460px;
+            padding:8px 10px;
+            font-size:13px;
+            line-height:1.6;
+            background:transparent;
+            color:var(--text-main);
+            font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+        }
+        textarea::placeholder{
+            color:rgba(148,163,184,0.65);
+        }
+        .textarea-footer{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:6px 10px;
+            border-top:1px solid rgba(148,163,184,0.4);
+            background:linear-gradient(to right,rgba(15,23,42,0.96),rgba(15,23,42,0.92));
             font-size:11px;
         }
-        body.theme-light .upload-btn{background:#ffffff;}
-        .upload-btn:hover{ border-style:solid; }
-
+        .status{
+            margin-top:6px;
+            font-size:11px;
+            color:var(--text-sub);
+            min-height:16px;
+        }
+        .status.error{color:#fecaca;}
+        .status.success{color:#86efac;}
         .result-box{
-            font-size:12px;color:var(--text-sub);
-            padding:10px;border-radius:12px;
-            background:var(--layer-soft);
-            border:1px dashed var(--border-strong);
-            display:flex;flex-direction:column;gap:8px;
-        }
-        .result-row{display:flex;flex-direction:column;gap:6px;}
-        .result-main{flex:1;min-width:0;}
-        .result-label{
-            font-size:11px;
-            padding:2px 6px;border-radius:999px;
-            background:rgba(148,163,184,0.15);
+            margin-top:10px;
+            border-radius:16px;
+            border:1px dashed rgba(148,163,184,0.6);
+            background:radial-gradient(circle at 0 0,rgba(59,130,246,0.06),transparent 55%),
+                       radial-gradient(circle at 100% 100%,rgba(234,179,8,0.06),transparent 55%),
+                       rgba(15,23,42,0.9);
+            padding:8px 10px;
+            font-size:12px;
+            display:none;
         }
         .result-link{
-            font-size:11px;
+            margin:4px 0 6px;
             word-break:break-all;
-            color:var(--text-main);
-            margin-top:2px;
+            font-family:ui-monospace,monospace;
+            color:var(--accent2);
         }
         .result-actions{
             display:flex;
-            gap:6px;
             flex-wrap:wrap;
+            gap:8px;
             justify-content:flex-end;
         }
-
-        .status-msg{
-            font-size:11px;margin-top:4px;min-height:1.2em;color:var(--text-sub);
+        .link-base{
+            font-size:11px;
+            color:var(--text-sub);
+            margin-bottom:4px;
         }
-        .status-msg.success{color:#16a34a;}
-        .status-msg.error{color:#dc2626;}
-
-        .footer-row{
-            display:flex;justify-content:space-between;
-            gap:8px;flex-wrap:wrap;
-            font-size:11px;color:var(--text-sub);
-            margin-top:4px;padding-top:6px;
-            border-top:1px dashed var(--border-soft);
+        .switch-row{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:8px;
+            margin-bottom:6px;
         }
-
-        /* 登录弹窗：居中小方块 */
-        .modal-backdrop{
-            position:fixed;inset:0;
-            background: rgba(0, 0, 0, 0.47);
-            display:flex;align-items:center;justify-content:center;
-            padding:16px;z-index:40;
+        .switch-label{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            font-size:11px;
+            color:var(--text-sub);
         }
-        .auth-panel{
-            width:260px;
-            border-radius:18px;
-            background:linear-gradient(135deg,rgba(15,23,42,0.98),rgba(30,64,175,0.96));
-            border:1px solid rgba(56,189,248,0.8);
-            box-shadow:0 20px 60px rgba(15,23,42,0.95);
-            padding:12px 12px 10px;
-            display:flex;flex-direction:column;gap:10px;
-            color:#e5e7eb;
+        .switch{
+            position:relative;
+            width:38px;
+            height:20px;
         }
-        body.theme-light .auth-panel{
-            background:linear-gradient(135deg,#ffffff,rgba(219,234,254,0.95));
-            color:#111827;
+        .switch input{
+            display:none;
         }
-        .auth-panel-header{
-            display:flex;justify-content:space-between;gap:8px;align-items:flex-start;
-        }
-        .auth-panel-title{font-size:14px;font-weight:600;}
-        .auth-panel-sub{font-size:11px;opacity:.8;margin-top:2px;}
-        .auth-panel-close{
-            border-radius:999px;width:24px;height:24px;
-            display:inline-flex;align-items:center;justify-content:center;
+        .switch-slider{
+            position:absolute;
+            inset:0;
+            border-radius:999px;
             background:rgba(15,23,42,0.9);
             border:1px solid rgba(148,163,184,0.7);
+            transition:.15s ease-out;
         }
-        body.theme-light .auth-panel-close{background:#eef2ff;}
-        .auth-panel-form{display:flex;flex-direction:column;gap:8px;}
-        .auth-panel-row{display:flex;flex-direction:column;gap:6px;}
-        .auth-panel-row input{
-            font-size:12px;border-radius:999px;
-            border:1px solid rgba(148,163,184,0.9);
+        .switch-slider::before{
+            content:"";
+            position:absolute;
+            width:16px;
+            height:16px;
+            border-radius:999px;
+            background:radial-gradient(circle at 20% 20%,#facc15 0,#f97316 40%,#ea580c 100%);
+            top:1px;
+            left:1px;
+            transition:.15s ease-out;
+            box-shadow:0 4px 10px rgba(15,23,42,0.7);
+        }
+        .switch input:checked + .switch-slider{
+            border-color:rgba(251,191,36,0.9);
+            background:rgba(15,23,42,1);
+        }
+        .switch input:checked + .switch-slider::before{
+            transform:translateX(18px);
+        }
+        .ttl-group{
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            margin-top:4px;
+        }
+        .ttl-btn{
+            font-size:11px;
+            padding:4px 10px;
+            border-radius:999px;
+            border:1px solid rgba(148,163,184,0.6);
             background:rgba(15,23,42,0.9);
-            color:inherit;padding:6px 10px;
+            color:var(--text-sub);
+            cursor:pointer;
         }
-        body.theme-light .auth-panel-row input{background:#ffffff;}
-        .auth-panel-actions{display:flex;gap:6px;justify-content:flex-end;}
-        .auth-panel-msg{font-size:11px;min-height:1.2em;}
-        .auth-panel-msg.success{color:#4ade80;}
-        .auth-panel-msg.error{color: #e80707;}
+        .ttl-btn.active{
+            border-color:var(--accent2);
+            background:rgba(37,99,235,0.18);
+            color:var(--accent2);
+        }
+        .ttl-hint{
+            font-size:11px;
+            color:var(--text-sub);
+            margin-top:4px;
+        }
 
-        /* 用户中心弹层 */
+        /* 用户中心 */
         .uc-backdrop{
-            position:fixed;inset:0;
-            background: rgba(0, 0, 0, 0.47);
-            display:flex;align-items:center;justify-content:center;
-            padding:20px 10px;z-index:30;
+            position:fixed;
+            inset:0;
+            background:rgba(15,23,42,0.8);
+            backdrop-filter:blur(18px);
+            display:none;
+            align-items:center;
+            justify-content:center;
+            z-index:40;
         }
         .uc-panel{
-            width:100%;max-width:880px;max-height:90vh;
-            background:var(--layer);
-            border-radius:20px;
-            border:1px solid rgba(148,163,184,0.7);
-            box-shadow:0 24px 70px rgba(15,23,42,0.95);
-            padding:14px 14px 12px;
-            display:flex;flex-direction:column;gap:10px;
+            width:100%;
+            max-width:760px;
+            max-height:80vh;
+            border-radius:24px;
+            background:radial-gradient(circle at 0 0,rgba(59,130,246,0.08),transparent 55%),
+                       radial-gradient(circle at 100% 100%,rgba(234,179,8,0.08),transparent 55%),
+                       var(--layer);
+            border:1px solid rgba(148,163,184,0.8);
+            box-shadow:0 24px 60px rgba(15,23,42,0.95);
+            padding:16px 16px 14px;
+            display:flex;
+            flex-direction:column;
+            gap:10px;
         }
         .uc-header{
-            display:flex;justify-content:space-between;
-            gap:10px;align-items:flex-start;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
         }
-        .uc-title-box{display:flex;align-items:flex-start;gap:8px;}
-        .uc-title-main{font-size:14px;font-weight:600;}
-        .uc-title-sub{font-size:11px;color:var(--text-sub);margin-top:2px;}
-        .uc-actions{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;}
+        .uc-title{
+            font-size:15px;
+            text-transform:uppercase;
+            letter-spacing:.18em;
+        }
+        .uc-subtitle{
+            font-size:11px;
+            color:var(--text-sub);
+        }
         .uc-body{
-            border-radius:14px;
-            background:var(--layer-soft);
-            border:1px solid rgba(51,65,85,0.9);
-            padding:8px;overflow:auto;
+            margin-top:2px;
+            border-radius:16px;
+            border:1px solid rgba(148,163,184,0.6);
+            background:rgba(15,23,42,0.94);
+            padding:10px;
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+            min-height:160px;
         }
-        .uc-empty{font-size:12px;color:var(--text-sub);padding:16px 6px;text-align:center;}
-        .uc-list{display:flex;flex-direction:column;gap:6px;}
+        .uc-empty{
+            font-size:12px;
+            color:var(--text-sub);
+        }
+        .uc-list{
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+            font-size:12px;
+        }
         .uc-item{
             border-radius:12px;
-            border:1px solid rgba(75,85,99,0.9);
-            background:rgba(15,23,42,0.96);
-            padding:8px 8px 6px;
-            display:flex;flex-direction:column;gap:4px;
-            font-size:11px;
+            border:1px solid rgba(55,65,81,0.85);
+            padding:8px 8px 7px;
+            background:radial-gradient(circle at 0 0,rgba(59,130,246,0.04),transparent 55%),
+                       radial-gradient(circle at 100% 100%,rgba(234,179,8,0.04),transparent 55%),
+                       rgba(15,23,42,0.96);
         }
-        body.theme-light .uc-item{background:#ffffff;}
         .uc-item-top{
             display:flex;justify-content:space-between;gap:6px;
         }
         .uc-item-title{font-size:12px;font-weight:600;display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
         .uc-item-meta{font-size:10px;color:var(--text-sub);text-align:right;}
+
+        .uc-sub-wrap{
+            display:inline-flex;
+            align-items:center;
+            position:relative;
+            margin-left:6px;
+        }
+        .uc-sub-btn{
+            padding:2px 8px;
+            border-radius:999px;
+            font-size:10px;
+            border:none;
+            cursor:pointer;
+            background:#22c55e;
+            color:#022c22;
+            font-weight:500;
+            box-shadow:0 4px 10px rgba(34,197,94,0.35);
+        }
+        .uc-sub-btn:hover{
+            filter:brightness(1.06);
+        }
+        .uc-sub-menu{
+            position:absolute;
+            top:120%;
+            right:0;
+            background:var(--layer);
+            border-radius:10px;
+            border:1px solid var(--border-soft);
+            box-shadow:0 12px 30px rgba(15,23,42,0.45);
+            padding:6px;
+            display:none;
+            z-index:20;
+        }
+        .uc-sub-wrap.open .uc-sub-menu{
+            display:block;
+        }
+        .uc-sub-menu button{
+            display:block;
+            width:100%;
+            border:none;
+            background:transparent;
+            color:var(--text-main);
+            font-size:10px;
+            padding:4px 10px;
+            text-align:left;
+            border-radius:6px;
+            cursor:pointer;
+            white-space:nowrap;
+        }
+        .uc-sub-menu button:hover{
+            background:var(--layer-soft);
+        }
         .uc-remark-tag{
             display:inline-flex;
             align-items:center;
             padding:2px 8px;
             border-radius:999px;
-            background:rgba(129,140,248,0.18);
-            color:var(--accent2);
-            font-size:11px;
+            background:rgba(15,23,42,0.96);
+            border:1px solid rgba(148,163,184,0.7);
+            color:var(--text-main);
         }
         .uc-slug-tag{
-            display:inline-flex;
-            align-items:center;
-            padding:2px 8px;
+            font-size:11px;
+            padding:2px 6px;
             border-radius:999px;
-            background:rgba(148,163,184,0.12);
+            border:1px dashed rgba(148,163,184,0.7);
             color:var(--text-sub);
-            font-size:10px;
         }
-        .uc-link-row{margin-top:4px;}
+        .uc-link-row{
+            margin-top:4px;
+            font-size:11px;
+            color:var(--accent2);
+        }
         .uc-link-tag{
-            display:inline-flex;
-            align-items:center;
-            padding:2px 8px;
-            border-radius:999px;
-            background:rgba(15,23,42,0.9);
-            color:var(--text-main);
-            font-size:10px;
+            font-family:ui-monospace,monospace;
             word-break:break-all;
         }
-        body.theme-light .uc-link-tag{
-            background:#f3f4f6;
-        }
-        .uc-item-actions{margin-top:4px;display:flex;flex-wrap:wrap;gap:6px;}
-
-        /* 解码按钮交互：点击时变黑 + 替换图标 */
-        .base64-decode-btn.decode-active{
-            background:#000000;
-            color:#f9fafb;
-            border-color:#000000;
-        }
-        .base64-decode-btn .decode-icon-active{
-            display:none;
-        }
-        .base64-decode-btn.decode-active .decode-icon-normal{
-            display:none;
-        }
-        .base64-decode-btn.decode-active .decode-icon-active{
-            display:inline-flex;
-        }
-
-        /* >>> 节点检测区域样式（备注右侧的小区域） */
-        .node-detect-info{
-            margin-left:auto;
+        .uc-item-actions{
+            margin-top:6px;
             display:flex;
+            flex-wrap:wrap;
+            gap:6px;
+            justify-content:flex-end;
+        }
+
+        .theme-toggle{
+            display:inline-flex;
             align-items:center;
             gap:6px;
-            font-size:10px;
+            font-size:11px;
             color:var(--text-sub);
         }
-        .node-detect-pill{
-            padding:2px 8px;
+        .theme-toggle button{
             border-radius:999px;
-            border:1px solid var(--border-soft);
-            background:rgba(15,23,42,0.85);
+            border:1px solid rgba(148,163,184,0.6);
+            background:rgba(15,23,42,0.9);
+            color:var(--text-main);
+            padding:3px 10px;
+            font-size:11px;
+            cursor:pointer;
         }
-        body.theme-light .node-detect-pill{
-            background:#f9fafb;
-        }
-        .node-detect-select{
-            border-radius:999px;
-            border:1px solid var(--border-soft);
-            background:var(--layer-soft);
-            color:var(--text-sub);
-            font-size:10px;
-            padding:2px 6px;
-            outline:none;
+        .theme-toggle button.active{
+            background:rgba(234,179,8,0.15);
+            color:var(--accent);
+            border-color:rgba(234,179,8,0.7);
         }
 
-        @media(max-width:780px){
-            body{padding:22px 10px;}
-            .card{padding:14px 12px 12px;border-radius:18px;}
-            .header{flex-direction:column;align-items:flex-start;gap:10px;}
-            .brand{width:100%;}
-            .header-actions{align-self:flex-end;}
-            .uc-header{flex-direction:column;align-items:flex-start;}
-            .uc-actions{justify-content:flex-start;}
+        .status-top-row{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
         }
+        .status-top-row-left{
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+
+        .tag-chip{
+            font-size:10px;
+            padding:2px 7px;
+            border-radius:999px;
+            border:1px solid rgba(148,163,184,0.6);
+            color:var(--text-sub);
+        }
+
+        .auth-pill{
+            display:inline-flex;
+            align-items:center;
+            gap:4px;
+            padding:3px 9px;
+            border-radius:999px;
+            border:1px solid rgba(148,163,184,0.7);
+            background:rgba(15,23,42,0.9);
+            font-size:11px;
+            color:var(--text-sub);
+            cursor:pointer;
+        }
+        .auth-pill strong{
+            color:var(--accent);
+            font-weight:600;
+        }
+
+        .auth-modal{
+            position:fixed;
+            inset:0;
+            background:rgba(15,23,42,0.82);
+            backdrop-filter:blur(20px);
+            display:none;
+            align-items:center;
+            justify-content:center;
+            z-index:50;
+        }
+        .auth-panel{
+            width:100%;
+            max-width:360px;
+            border-radius:20px;
+            background:radial-gradient(circle at 0 0,rgba(59,130,246,0.15),transparent 55%),
+                       radial-gradient(circle at 100% 100%,rgba(234,179,8,0.15),transparent 55%),
+                       var(--layer);
+            border:1px solid rgba(148,163,184,0.8);
+            box-shadow:0 24px 60px rgba(15,23,42,0.98);
+            padding:16px 16px 14px;
+        }
+        .auth-title{
+            font-size:16px;
+            margin-bottom:4px;
+        }
+        .auth-desc{
+            font-size:11px;
+            color:var(--text-sub);
+            margin-bottom:10px;
+        }
+        .auth-footer{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-top:8px;
+            font-size:11px;
+            color:var(--text-sub);
+        }
+        .auth-msg{
+            font-size:11px;
+            min-height:16px;
+            margin-top:4px;
+        }
+        .auth-msg.error{color:#fecaca;}
+        .auth-msg.success{color:#86efac;}
+
+        .decode-active{
+            background:#000;
+            color:#fef3c7;
+        }
+
+        .footer{
+            font-size:11px;
+            color:var(--text-sub);
+            text-align:right;
+            margin-top:6px;
+        }
+        .footer a{
+            color:var(--accent2);
+            text-decoration:none;
+        }
+        .footer a:hover{text-decoration:underline;}
     </style>
 </head>
-<body class="theme-light">
-<div class="shell">
-    <header class="header">
-        <div class="brand">
-            <div class="brand-logo"><img id="brandIcon" alt="icon"></div>
-            <div class="brand-text">
-                <div class="brand-title">PasteBox</div>
-                <div class="brand-sub">Paste text. Get URL. Move on.</div>
+<body>
+<div class="page">
+    <div class="card">
+        <div class="card-inner">
+            <div class="card-header">
+                <div class="title-block">
+                    <div class="title">PASTEBOX</div>
+                    <div class="subtitle">silent snippets, quiet storage</div>
+                </div>
+                <div class="status-top-row">
+                    <div class="status-top-row-left">
+                        <span class="tag-chip" id="baseUrlText">https://aura.us.kg/paste/{id}</span>
+                        <button type="button" class="auth-pill" id="btnAuthLabel">
+                            <span class="icon-svg">
+                                <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true">
+                                    <path fill="none" stroke="currentColor" stroke-width="1.6" d="M10 2a4 4 0 0 1 4 4v2h1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h1V6a4 4 0 0 1 4-4Zm0 2a2 2 0 0 0-2 2v2h4V6a2 2 0 0 0-2-2Z"/>
+                                </svg>
+                            </span>
+                            <span>LogIn</span>
+                        </button>
+                    </div>
+                    <div class="theme-toggle">
+                        <span>主题</span>
+                        <button type="button" data-theme="dark" class="active">Dark</button>
+                        <button type="button" data-theme="light">Light</button>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="header-actions">
-            <button type="button" class="theme-toggle" id="themeToggle">
-                <span class="theme-icon theme-icon-sun">
-                    <svg viewBox="0 0 20 20">
-                        <path d="M10 3.5a1 1 0 0 1-1-1V1.75a1 1 0 1 1 2 0V2.5a1 1 0 0 1-1 1zM10 18.25a1 1 0 0 1-1-1V16.5a1 1 0 1 1 2 0v.75a1 1 0 0 1-1 1zM4.22 5.03a1 1 0 0 1 1.41-1.41l.53.53a1 1 0 1 1-1.41 1.41l-.53-.53zM13.84 14.66a1 1 0 0 1 1.41-1.41l.53.53a1 1 0 1 1-1.41 1.41l-.53-.53zM1.75 11a1 1 0 0 1 0-2H2.5a1 1 0 1 1 0 2h-.75zM17.5 11a1 1 0 0 1 0-2h.75a1 1 0 0 1 0 2h-.75zM4.22 14.97l.53-.53a1 1 0 1 1 1.41 1.41l-.53.53a1 1 0 0 1-1.41-1.41zM13.84 5.34l.53-.53a1 1 0 1 1 1.41 1.41l-.53.53a1 1 0 0 1-1.41-1.41zM10 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/>
-                    </svg>
-                </span>
-                <span class="theme-icon theme-icon-moon">
-                    <svg viewBox="0 0 20 20">
-                        <path d="M15.25 11.1A5.5 5.5 0 0 1 8.9 4.75 5.5 5.5 0 1 0 15.25 11.1z"/>
-                    </svg>
-                </span>
-                <span class="label">Light</span>
-            </button>
 
-            <!-- Home 只在编辑模式下显示，默认隐藏 -->
-            <button type="button" class="pill-btn" id="btnHome" style="display:none;">
-                <span class="icon-svg">
-                    <svg viewBox="0 0 20 20">
-                        <path d="M10.707 2.293a1 1 0 0 0-1.414 0l-7 7A1 1 0 0 0 3 10h1v7a1 1 0 0 0 1 1h3v-4h4v4h3a1 1 0 0 0 1-1v-7h1a1 1 0 0 0 .707-1.707l-7-7z"/>
-                    </svg>
-                </span>
-                Home
-            </button>
-
-            <button type="button" class="pill-btn pill-btn-primary" id="btnAuthOpen">
-                <span class="icon-svg">
-                    <svg viewBox="0 0 20 20">
-                        <path d="M10 2a3 3 0 0 1 3 3v1a3 3 0 1 1-6 0V5a3 3 0 0 1 3-3zm0 10c3.314 0 6 1.79 6 4v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-1c0-2.21 2.686-4 6-4z"/>
-                    </svg>
-                </span>
-                <span id="btnAuthLabel">Login</span>
-            </button>
-        </div>
-    </header>
-
-    <main class="card" id="mainCard">
-        <section class="card-section">
-            <div class="section-title">使用说明<span class="tag">GUIDE</span></div>
-            <div class="section-text">
-                在下面粘贴文本或从文件导入，选择有效期后生成一个可分享的访问链接（以 <code>text/plain</code> 打开）。<br>
-                登录可管理已生成的内容。🐹<br>
-                <span class="warning-label">警告：</span>请勿存储敏感信息，本工具仅适用于临时共享内容。<br>
-                <span class="warning-label">警告：</span>你上传的内容文件，可能会在不通知的情况下被删除！
-            </div>
-        </section>
-
-        <div id="editorContainer">
             <form id="pasteForm">
-                <section class="card-section">
-                    <div class="section-title">编辑 / 粘贴<span class="tag">BODY</span></div>
-                    <div class="field">
-                        <div class="textarea-wrap">
-                            <textarea id="content" placeholder="在这里粘贴内容（代码、日志、随手记都可以），或下方选择文件导入…" required></textarea>
+                <div class="field-block">
+                    <div class="field-label">
+                        <span>内容</span>
+                        <button type="button" class="btn-secondary btn-xs" id="btnResetContent">
+                            <span class="icon-svg">
+                                <svg viewBox="0 0 20 20" width="14" height="14">
+                                    <path fill="none" stroke="currentColor" stroke-width="1.6" d="M4.5 4.5 2 7m0 0 2.5 2.5M2 7h9a4 4 0 0 1 0 8h-1"/>
+                                </svg>
+                            </span>
+                            清空
+                        </button>
+                    </div>
+                    <div class="textarea-wrap">
+                        <div class="textarea-inner">
                             <div class="line-counter" id="lineCounter">0 行</div>
+                            <textarea id="content" placeholder="在这里粘贴文本、代码或节点订阅……" spellcheck="false"></textarea>
                         </div>
-                    </div>
+                        <div class="textarea-footer">
+                            <!-- 字节统计 + 节点识别 -->
+                            <div class="field field-inline" style="display:flex;align-items:center;gap:8px;">
+                                <span class="byte-count">
+                                    已输入 <span class="byte-num" id="byteNum">0</span> 字节
+                                </span>
+                                <span class="node-detect" id="nodeDetectInfo">内容类型：普通文本</span>
+                            </div>
 
-                    <!-- 字节统计：单独一行 -->
-                    <div class="field">
-                        <span class="byte-count">
-                            已输入 <span class="byte-num" id="byteNum">0</span> 字节
-                        </span>
-                    </div>
-                    <!-- 导入文本行 + 右侧 Base64 小药丸 -->
-                    <div class="field">
-                        <div class="field-inline upload-row">
-                            <!-- ✅ 只有一个导入按钮 -->
-                            <label class="upload-btn" id="uploadBtn" for="fileInput">
-    <span class="icon-svg">
-        <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#000000"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-alarge-small-icon lucide-a-large-small"
-                style="fill:none;"
-        >
-            <path d="m15 16 2.536-7.328a1.02 1.02 0 0 1 1.928 0L22 16" />
-            <path d="M15.697 14h5.606" />
-            <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
-            <path d="M3.304 13h6.392" />
-        </svg>
-    </span>
-                                <span id="uploadBtnText">导入文本</span>
-                            </label>
-
-                            <!-- ✅ 隐藏的文件选择框，只保留这一个 -->
-                            <input
-                                    type="file"
-                                    id="fileInput"
-                                    accept=".txt,.log,.conf,.json,.md,.yaml,.yml,.ini,.cfg,.csv,.html,.js,.ts,.py,.go,.rs,.php,.java,.c,.cpp,.sh,.bat,.ps1,.rb,.lua,.sql,.xml"
-                                    style="display:none;">
-
-                            <!-- ✅ 右侧 Base64 小药丸按钮 -->
                             <div class="byte-actions">
-                                <!-- Base64 编码：使用你给的上箭头 SVG -->
+                                <!-- 导入 / Base64 小药丸区 -->
+                                <button type="button" class="btn-secondary btn-xs" id="uploadBtn">
+                                    <span class="icon-svg">
+                                        <svg viewBox="0 0 20 20" width="13" height="13">
+                                            <path fill="none" stroke="currentColor" stroke-width="1.6" d="M4 15h12M10 3v9m0 0 3-3m-3 3-3-3"/>
+                                        </svg>
+                                    </span>
+                                    导入文本
+                                </button>
+
+                                <!-- Base64 编码 -->
                                 <button type="button" class="btn-secondary btn-xs" id="btnBase64Encode">
-        <span class="icon-svg">
-            <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    width="20"
-                    height="20"
-                    fill="none"
-                    stroke="#000000"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-aarrow-up-icon lucide-a-arrow-up"
-                    style="fill:none;"
-            >
-                <path d="m14 11 4-4 4 4" />
-                <path d="M18 16V7" />
-                <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
-                <path d="M3.304 13h6.392" />
-            </svg>
-        </span>
+                                    <span class="icon-svg">
+                                        <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                width="20"
+                                                height="20"
+                                                fill="none"
+                                                stroke="#e5e7eb"
+                                                stroke-width="1.8"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                        >
+                                            <path d="M6 9l6-6 6 6"/>
+                                            <path d="M12 3v14"/>
+                                        </svg>
+                                    </span>
                                     Base64 编码
                                 </button>
 
-                                <!-- Base64 解码：使用你给的下箭头 SVG -->
-                                <button type="button" class="btn-secondary btn-xs base64-decode-btn" id="btnBase64Decode">
-                                    <!-- 默认状态图标 -->
-                                    <span class="icon-svg decode-icon-normal">
-            <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    width="20"
-                    height="20"
-                    fill="none"
-                    stroke="#000000"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-aarrow-down-icon lucide-a-arrow-down"
-                    style="fill:none;"
-            >
-                <path d="m14 12 4 4 4-4" />
-                <path d="M18 16V7" />
-                <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
-                <path d="M3.304 13h6.392" />
-            </svg>
-        </span>
-
-                                    <!-- 激活状态图标 -->
-                                    <span class="icon-svg decode-icon-active">
-            <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    width="20"
-                    height="20"
-                    fill="none"
-                    stroke="#000000"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-aarrow-down-icon lucide-a-arrow-down"
-                    style="fill:none;"
-            >
-                <path d="m14 12 4 4 4-4" />
-                <path d="M18 16V7" />
-                <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
-                <path d="M3.304 13h6.392" />
-            </svg>
-        </span>
-
+                                <!-- Base64 解码 -->
+                                <button type="button" class="btn-secondary btn-xs" id="btnBase64Decode">
+                                    <span class="icon-svg">
+                                        <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                width="20"
+                                                height="20"
+                                                fill="none"
+                                                stroke="#e5e7eb"
+                                                stroke-width="1.8"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                        >
+                                            <path d="M18 15l-6 6-6-6"/>
+                                            <path d="M12 21V7"/>
+                                        </svg>
+                                    </span>
                                     Base64 解码
                                 </button>
-                            </div>
-                        </div>
 
-                        <span class="hint" id="fileHint">支持文本文件，内容将自动写入上方文本框。</span>
-                    </div>
-                </section>
-
-                <section class="card-section">
-                    <div class="section-title">过期时间<span class="tag">TTL</span></div>
-                    <div class="field">
-                        <div class="ttl-group" id="ttlGroup">
-                            <button type="button" class="ttl-btn" data-ttl="10m">10 Min</button>
-                            <button type="button" class="ttl-btn" data-ttl="1d">1 Day</button>
-                            <button type="button" class="ttl-btn active" data-ttl="7d">7 Day</button>
-                            <button type="button" class="ttl-btn" data-ttl="30d">30 Day</button>
-                            <button type="button" class="ttl-btn" data-ttl="forever" id="ttlForeverBtn">Never</button>
-                        </div>
-                        <div class="ttl-hint" id="ttlHint">内容将在 7 天后过期。</div>
-                    </div>
-                </section>
-
-                <section class="card-section" id="advancedSection">
-                    <div class="section-title">Custom Link <span class="tag">LINK</span></div>
-                    <div class="field-row">
-                        <div class="field-block">
-                            <div class="field-label">自定义 URL（可选）</div>
-                            <div class="field-inline">
-                                <input id="customId" type="text" placeholder="输入自定义内容...">
-                            </div>
-                            <div class="hint" id="customHint">仅支持A-Za-z0-9_- 。留空则自动分配随机 ID。</div>
-                        </div>
-                        <div class="field-block">
-                            <div class="field-label">备注（可选）</div>
-                            <div class="field-inline">
-                                <input id="remark" type="text" placeholder="输入自定义备注...">
-                                <!-- >>> 节点检测 + 订阅按钮区域 -->
-                                <div class="node-detect-info" id="nodeDetectInfo" style="display:none;">
-                                    <span class="node-detect-pill" id="nodeDetectText">检测到 0 条节点</span>
-                                    <select id="nodeClientSelect" class="node-detect-select">
-                                        <option value="">通用</option>
-                                        <option value="surge">Surge</option>
-                                        <option value="clash">Clash</option>
-                                        <option value="stash">Stash</option>
-                                        <option value="qx">Quantumult X</option>
-                                    </select>
-                                    <button type="button" class="btn-secondary btn-xs" id="nodeCopySubBtn">
-                                        复制订阅
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="hint">仅在用户中心显示。</div>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="card-section">
-                    <div class="section-title">确认<span class="tag">ACTION</span></div>
-                    <div class="field" style="gap:8px;">
-                        <!-- 重置按钮在上传上方 -->
-                        <div class="action-row">
-                            <button type="button" class="btn-reset" id="btnResetContent">
-                                <span class="icon-svg">
-                                    <svg viewBox="0 0 20 20">
-                                        <path d="M4 4v4a1 1 0 0 0 1 1h4V7H6.414A4 4 0 1 1 10 14v2a6 6 0 1 0-6-6V4z"/>
-                                    </svg>
-                                </span>
-                                清空
-                            </button>
-                        </div>
-                        <div class="action-row">
-                            <button type="submit" class="btn-primary" id="submitBtn">
-                                <span class="icon-svg">
-                                    <svg viewBox="0 0 20 20">
-                                        <path d="M10 2a1 1 0 0 1 .7.29l3 3a1 1 0 1 1-1.4 1.42L11 5.41V12a1 1 0 1 1-2 0V5.41L7.7 6.71A1 1 0 0 1 6.3 5.29l3-3A1 1 0 0 1 10 2z"/>
-                                        <path d="M4 11a1 1 0 0 1 1 1v3h10v-3a1 1 0 1 1 2 0v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a1 1 0 0 1 1-1z"/>
-                                    </svg>
-                                </span>
-                                <span class="text">上传</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="field" id="resultBox" style="display:none;margin-top:6px;">
-                        <div class="result-box">
-                            <div class="result-row">
-                                <div class="result-main">
-                                    <span class="result-label">访问链接</span>
-                                    <span class="result-link" id="viewLinkText"></span>
-                                </div>
-                                <div class="result-actions">
-                                    <button type="button" class="btn-secondary btn-sm" id="btnCopyView">
-                                        <span class="icon-svg">
-                                            <svg viewBox="0 0 20 20">
-                                                <path d="M7 3a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2v-2h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v2H7z"/>
-                                                <path d="M3 7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7z"/>
-                                            </svg>
-                                        </span>
-                                        Copy
-                                    </button>
-                                    <button type="button" class="btn-secondary btn-sm" id="btnOpenView">
-                                        <span class="icon-svg">
-                                            <svg viewBox="0 0 20 20">
-                                                <path d="M4 5a2 2 0 0 1 2-2h4a1 1 0 1 1 0 2H6v10h8v-4a1 1 0 1 1 2 0v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5z"/>
-                                                <path d="M11 4a1 1 0 0 1 1-1h4.5a.5.5 0 0 1 .5.5V8a1 1 0 1 1-2 0V6.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L13.586 5H12a1 1 0 0 1-1-1z"/>
-                                            </svg>
-                                        </span>
-                                        Open
-                                    </button>
-                                    <button type="button" class="btn-secondary btn-sm" id="btnManageFromResult" style="display:none;">
-                                        <span class="icon-svg">
-                                            <svg viewBox="0 0 20 20">
-                                                <path d="M3 4a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.414.586l2.5 2.5A2 2 0 0 1 17 6.914V16a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4z"/>
-                                            </svg>
-                                        </span>
-                                        Manage
-                                    </button>
-                                </div>
+                                <input type="file" id="fileInput" style="display:none" accept=".txt,.log,.conf,.json,.yaml,.yml,.ini,.cfg,.md">
                             </div>
                         </div>
                     </div>
+                    <div class="hint" id="fileHint">支持 TXT / 配置文件导入。</div>
+                </div>
 
-                    <div id="statusMsg" class="status-msg"></div>
-                </section>
-            </form>
-        </div>
+                <div class="field-block">
+                    <div class="field-label">
+                        <span>有效期</span>
+                    </div>
+                    <div class="ttl-group" id="ttlGroup">
+                        <button type="button" class="ttl-btn" data-ttl="1d">1 天</button>
+                        <button type="button" class="ttl-btn" data-ttl="7d">7 天</button>
+                        <button type="button" class="ttl-btn" data-ttl="30d">30 天</button>
+                        <button type="button" class="ttl-btn" data-ttl="forever" id="ttlForeverBtn">Never（登录后可选）</button>
+                    </div>
+                    <div class="ttl-hint" id="ttlHint"></div>
+                </div>
 
-        <section class="footer-row">
-            <span>访问入口：<span id="baseUrlText"></span></span>
-            <span>PasteBox By AurraLynn</span>
-        </section>
-    </main>
-</div>
+                <div class="field-block">
+                    <div class="field-label">
+                        <span>自定义 URL（可选）</span>
+                        <span class="hint">留空则自动生成随机 ID。</span>
+                    </div>
+                    <input id="customId" class="input" placeholder="只允许字母、数字、连字符与下划线">
+                    <div class="hint" id="customHint"></div>
+                </div>
 
-<!-- 登录弹窗 -->
-<div class="modal-backdrop" id="authModal" style="display:none;">
-    <div class="auth-panel">
-        <div class="auth-panel-header">
-            <div>
-                <div class="auth-panel-title">登录 Pastebox</div>
-                <div class="auth-panel-sub">登录后可使用自定义 URL 与用户中心。</div>
-            </div>
-            <button type="button" class="auth-panel-close" id="authCloseBtn" aria-label="关闭登录">
-                <span class="icon-svg">
-                    <svg viewBox="0 0 20 20">
-                        <path d="M5.293 5.293a1 1 0 0 1 1.414 0L10 8.586l3.293-3.293a1 1 0 1 1 1.414 1.414L11.414 10l3.293 3.293a1 1 0 0 1-1.414 1.414L10 11.414l-3.293 3.293a1 1 0 0 1-1.414-1.414L8.586 10 5.293 6.707a1 1 0 0 1 0-1.414z"/>
-                    </svg>
-                </span>
-            </button>
-        </div>
-        <form class="auth-panel-form" id="authForm">
-            <div class="auth-panel-row">
-                <input id="authUsername" type="text" placeholder="用户名" autocomplete="username">
-                <input id="authPassword" type="password" placeholder="密码（至少 6 位）" autocomplete="current-password">
-            </div>
+                <div class="field-block">
+                    <div class="field-label">备注（可选）</div>
+                    <div class="field-inline">
+                        <input id="remark" type="text" class="input" placeholder="输入自定义备注...">
+                        <!-- 节点订阅按钮（仅当内容为节点、且可确定 ID 时显示） -->
+                        <div class="node-sub-wrap" id="nodeSubWrap" style="display:none;">
+                            <button type="button" class="node-sub-btn" id="nodeSubBtn">复制订阅</button>
+                            <select id="nodeSubClient" class="node-sub-select">
+                                <option value="">通用</option>
+                                <option value="surge">Surge</option>
+                                <option value="clash">Clash</option>
+                                <option value="stash">Stash</option>
+                                <option value="quantumultx">Quantumult X</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="hint">仅在用户中心显示。</div>
+                </div>
 
-            <!-- ✨ 记住登录状态（默认已勾选） -->
-            <label style="display:flex;align-items:center;gap:6px;font-size:11px;opacity:.9;margin-top:2px;">
-                <input id="authRemember" type="checkbox" checked style="width:12px;height:12px;">
-                <span>记住状态</span>
-            </label>
-
-            <div class="auth-panel-actions">
-                <button type="button" class="btn-secondary btn-xs" id="btnDoRegister">
-    <span class="icon-svg">
-        <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#000000"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-user-round-plus-icon lucide-user-round-plus"
-                style="fill:none;"
-        >
-            <path d="M2 21a8 8 0 0 1 13.292-6" />
-            <circle cx="10" cy="8" r="5" />
-            <path d="M19 16v6" />
-            <path d="M22 19h-6" />
-        </svg>
-    </span>
-                    SIGN UP
-                    <button type="submit" class="btn-primary btn-xs" id="btnDoLogin">
-    <span class="icon-svg">
-        <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#000000"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-scan-face-icon lucide-scan-face"
-                style="fill:none;"
-        >
-            <path d="M3 7V5a2 2 0 0 1 2-2h2" />
-            <path d="M17 3h2a2 2 0 0 1 2 2v2" />
-            <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
-            <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
-            <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-            <path d="M9 9h.01" />
-            <path d="M15 9h.01" />
-        </svg>
-    </span>
-                        LOG IN
+                <div class="field-block">
+                    <button type="submit" class="btn" id="submitBtn">
+                        <span class="icon-svg">
+                            <svg viewBox="0 0 20 20" width="16" height="16">
+                                <path fill="none" stroke="#111827" stroke-width="1.8" d="M3 10h11.5M9.5 4L15 10l-5.5 6"/>
+                            </svg>
+                        </span>
+                        <span class="text">创建</span>
                     </button>
-            </div>
-        </form>
-        <div class="auth-panel-msg" id="authMsg"></div>
-    </div>
-</div>
+                    <button type="button" class="btn-secondary btn-xs btn-icon" id="btnHome" style="display:none;margin-left:6px;">
+                        返回创建
+                    </button>
+                    <button type="button" class="btn-secondary btn-xs btn-icon" id="btnAuthOpen" style="margin-left:6px;">
+                        用户中心
+                    </button>
+                </div>
 
-<!-- 用户中心 -->
-<div class="uc-backdrop" id="userCenter" style="display:none;">
-    <div class="uc-panel">
-        <div class="uc-header">
-            <div class="uc-title-box">
-                <span class="icon-svg">
-                    <svg viewBox="0 0 20 20">
-                        <path d="M3 4a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.414.586l2.5 2.5A2 2 0 0 1 17 6.914V16a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4z"/>
-                    </svg>
-                </span>
+                <div class="status" id="statusMsg"></div>
+
+                <div class="result-box" id="resultBox">
+                    <div class="link-base">访问入口：</div>
+                    <div class="result-link" id="viewLinkText"></div>
+                    <div class="result-actions">
+                        <button type="button" class="btn-secondary btn-xs" id="btnCopyView">复制链接</button>
+                        <button type="button" class="btn-secondary btn-xs" id="btnOpenView">新窗口打开</button>
+                        <button type="button" class="btn-secondary btn-xs" id="btnManageFromResult">在用户中心查看</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="footer">
+                Pastebox by AurraLynn · 基于 Cloudflare KV / R2 构建。
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户中心 -->
+    <div class="uc-backdrop" id="userCenter">
+        <div class="uc-panel">
+            <div class="uc-header">
                 <div>
-                    <div class="uc-title-main">Manage / 📝</div>
-                    <div class="uc-title-sub" id="ucSubtitle">查看、编辑和删除你创建的所有 Paste。</div>
+                    <div class="uc-title">YOUR PASTES</div>
+                    <div class="uc-subtitle">仅显示未过期记录。</div>
+                </div>
+                <div class="field-inline">
+                    <button type="button" class="btn-secondary btn-xs" id="ucRefreshBtn">刷新</button>
+                    <button type="button" class="btn-secondary btn-xs" id="ucLogoutBtn">退出登录</button>
+                    <button type="button" class="btn-secondary btn-xs" id="ucCloseBtn">关闭</button>
                 </div>
             </div>
-            <div class="uc-actions">
-                <button type="button" class="btn-secondary btn-xs" id="ucRefreshBtn">
-                    <span class="icon-svg">
-                        <svg viewBox="0 0 20 20">
-                            <path d="M4 4a7 7 0 0 1 11.31-1.41L17 2v5a1 1 0 0 1-1 1H11a1 1 0 1 1 0-2h2.535A5 5 0 0 0 5 7a1 1 0 1 1-2 0 7 7 0 0 1 1-3z"/>
-                            <path d="M16 16a7 7 0 0 1-11.31 1.41L3 18v-5a1 1 0 0 1 1-1h5a1 1 0 1 1 0 2H6.465A5 5 0 0 0 15 13a1 1 0 0 1 2 0 7 7 0 0 1-1 3z"/>
-                        </svg>
-                    </span>
-                    刷新
-                </button>
-                <button type="button" class="btn-secondary btn-xs" id="ucLogoutBtn">
-                    <span class="icon-svg">
-                        <svg viewBox="0 0 20 20">
-                            <path d="M9 4a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V5h-3v10h3v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1V4z"/>
-                            <path d="M5.293 7.293a1 1 0 0 1 1.414 0L9 9.586 6.707 11.88a1 1 0 0 1-1.414-1.414L6.586 10 5.293 8.707a1 1 0 0 1 0-1.414z"/>
-                        </svg>
-                    </span>
-                    LOG OUT
-                </button>
-                <button type="button" class="btn-secondary btn-xs" id="ucCloseBtn">
-                    <span class="icon-svg">
-                        <svg viewBox="0 0 20 20">
-                            <path d="M5.293 5.293a1 1 0 0 1 1.414 0L10 8.586l3.293-3.293a1 1 0 1 1 1.414 1.414L11.414 10l3.293 3.293a1 1 0 0 1-1.414 1.414L10 11.414l-3.293 3.293a1 1 0 0 1-1.414-1.414L8.586 10 5.293 6.707a1 1 0 0 1 0-1.414z"/>
-                        </svg>
-                    </span>
-                    关闭
-                </button>
+            <div class="uc-body">
+                <div class="uc-empty" id="ucEmpty">正在加载你的记录…</div>
+                <div class="uc-list" id="ucList" style="display:none;"></div>
             </div>
         </div>
-        <div class="uc-body">
-            <div class="uc-empty" id="ucEmpty">正在加载你的记录…</div>
-            <div class="uc-list" id="ucList" style="display:none;"></div>
+    </div>
+
+    <!-- 登录 / 注册弹窗 -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-panel">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                <div>
+                    <div class="auth-title">登录 / 注册</div>
+                    <div class="auth-desc">登录后可以使用「Never(不过期)」、管理自己的链接。</div>
+                </div>
+                <button type="button" class="btn-secondary btn-xs" id="authCloseBtn">关闭</button>
+            </div>
+            <form id="authForm" style="margin-top:10px;">
+                <div class="field-block">
+                    <div class="field-label">用户名</div>
+                    <input id="authUsername" class="input" autocomplete="username">
+                </div>
+                <div class="field-block">
+                    <div class="field-label">密码</div>
+                    <input id="authPassword" class="input" type="password" autocomplete="current-password">
+                </div>
+                <div class="field-inline" style="justify-content:space-between;margin-bottom:6px;">
+                    <label class="switch-label">
+                        <input type="checkbox" id="authRemember" checked>
+                        <span>记住登录状态</span>
+                    </label>
+                    <div>
+                        <button type="button" class="btn-secondary btn-xs" id="btnDoLogin">登录</button>
+                        <button type="button" class="btn-secondary btn-xs" id="btnDoRegister">注册</button>
+                    </div>
+                </div>
+                <div class="auth-msg" id="authMsg"></div>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
-    const THEME_KEY="lyn_paste_theme_v3";
-    const themeToggle=document.getElementById("themeToggle");
-
-    function applyTheme(t){
-        document.body.classList.remove("theme-light","theme-dark");
-        document.body.classList.add("theme-"+t);
-        if(themeToggle){
-            const label=themeToggle.querySelector(".label");
-            if(label) label.textContent = (t==="dark" ? "Dark" : "Light");
-        }
-        try{localStorage.setItem(THEME_KEY,t);}catch(_){}
-    }
-
-    (function(){
-        let t="light";
-        try{
-            const s=localStorage.getItem(THEME_KEY);
-            if(s==="dark"||s==="light")t=s;
-        }catch(_){}
-        applyTheme(t);
-    })();
-
-    themeToggle && themeToggle.addEventListener("click",()=>{
-        const cur=document.body.classList.contains("theme-dark")?"dark":"light";
-        applyTheme(cur==="dark"?"light":"dark");
-    });
-
-    (function(){
-        const ICONS=[];
-        for(let i=1;i<=10;i++)ICONS.push(`https://save.aura.us.kg/Picture/Preview/YL${i}.png`);
-        const img=document.getElementById("brandIcon");
-        if(img&&ICONS.length)img.src=ICONS[Math.floor(Math.random()*ICONS.length)];
-    })();
+    const qs=id=>document.getElementById(id);
 
     const BASE_URL=location.origin+"/Paste";
-    const VIEW_BASE=location.origin+"/api/paste";
     const API_BASE=location.origin+"/api/paste";
+    const VIEW_BASE=location.origin+"/api/paste";
+
     const AUTH_BASE=location.origin+"/api/auth";
-    const qs=id=>document.getElementById(id);
 
     const $content=qs("content");
     const $byteNum=qs("byteNum");
+    const $nodeDetectInfo=qs("nodeDetectInfo");
     const $lineCounter=qs("lineCounter");
     const $ttlGroup=qs("ttlGroup");
     const $ttlHint=qs("ttlHint");
@@ -1093,11 +1019,14 @@
     const $btnManageFromResult=qs("btnManageFromResult");
     const $statusMsg=qs("statusMsg");
     const $baseUrlText=qs("baseUrlText");
-    const $advancedSection=qs("advancedSection");
+    const $advancedSection=null;
     const $ttlForeverBtn=qs("ttlForeverBtn");
     const $customId=qs("customId");
     const $customHint=qs("customHint");
     const $remark=qs("remark");
+    const $nodeSubWrap=qs("nodeSubWrap");
+    const $nodeSubBtn=qs("nodeSubBtn");
+    const $nodeSubClient=qs("nodeSubClient");
     const $fileInput=qs("fileInput");
     const $fileHint=qs("fileHint");
     const $uploadBtn=qs("uploadBtn");
@@ -1106,12 +1035,6 @@
     // Base64 按钮
     const $btnBase64Encode = qs("btnBase64Encode");
     const $btnBase64Decode = qs("btnBase64Decode");
-
-    // >>> 节点检测相关 DOM
-    const $nodeDetectInfo = qs("nodeDetectInfo");
-    const $nodeDetectText = qs("nodeDetectText");
-    const $nodeClientSelect = qs("nodeClientSelect");
-    const $nodeCopySubBtn = qs("nodeCopySubBtn");
 
     const $btnHome=qs("btnHome");
     const $btnAuthOpen=qs("btnAuthOpen");
@@ -1155,7 +1078,7 @@
     function setStatus(msg,type){
         if(!$statusMsg)return;
         $statusMsg.textContent=msg||"";
-        $statusMsg.classList.remove("success","error");
+        $statusMsg.classList.remove("error","success");
         if(type)$statusMsg.classList.add(type);
     }
     function setAuthTip(msg,type){
@@ -1182,6 +1105,99 @@
         }
     }
 
+    // ===== 节点识别（支持 URL / Base64 订阅） =====
+    const NODE_SCHEME_RE = /^(ss|vmess|vless|trojan|hysteria2?|hy2|tuic|snell|http|https|socks5?):\/\//i;
+
+    function countNodesInText(text){
+        if(!text)return 0;
+        let count=0;
+        const lines=text.split(/\r?\n/);
+        for(const line of lines){
+            const s=line.trim();
+            if(!s) continue;
+            if(NODE_SCHEME_RE.test(s)) count++;
+        }
+        return count;
+    }
+
+    // 返回 { kind: "none" | "url" | "base64", count:number }
+    function detectNodeInfoFromText(raw){
+        if(!raw) return {kind:"none",count:0};
+        const text=raw.trim();
+        if(!text) return {kind:"none",count:0};
+
+        // 1）直接在原文里找节点
+        const directCount=countNodesInText(text);
+        if(directCount>0){
+            return {kind:"url",count:directCount};
+        }
+
+        // 2）尝试把整体当作 Base64 订阅解码，再找节点
+        const compact=text.replace(/\s+/g,"");
+        if(/^[A-Za-z0-9+/=]+$/.test(compact) && compact.length%4===0){
+            const decoded=base64DecodeUtf8(compact);
+            if(decoded!=null){
+                const decodedCount=countNodesInText(decoded);
+                if(decodedCount>0){
+                    return {kind:"base64",count:decodedCount};
+                }
+            }
+        }
+
+        return {kind:"none",count:0};
+    }
+
+    function getCurrentSubId(){
+        // 优先使用编辑模式下原始 slug
+        if(state && state.mode==="edit" && state.originalSlug){
+            return state.originalSlug;
+        }
+        // 其次使用自定义 URL
+        if($customId){
+            const v=$customId.value.trim();
+            if(v) return v;
+        }
+        // 创建模式且未填写自定义 URL 时，ID 还未生成，此时返回 null
+        return null;
+    }
+
+    function buildSubUrl(client){
+        const id=getCurrentSubId();
+        if(!id) return null;
+        const base=location.origin + "/api/sub";
+        const u=new URL(base);
+        u.searchParams.set("id",id);
+        if(client){
+            u.searchParams.set("client",client);
+        }
+        return u.toString();
+    }
+
+    function updateNodeDetect(){
+        if(!$content) return;
+        const raw=$content.value||"";
+        const info=detectNodeInfoFromText(raw);
+
+        if($nodeDetectInfo){
+            if(info.kind==="none"){
+                $nodeDetectInfo.textContent="内容类型：普通文本";
+            }else if(info.kind==="url"){
+                $nodeDetectInfo.textContent=`识别到 ${info.count} 条代理节点`;
+            }else{
+                $nodeDetectInfo.textContent=`识别到 ${info.count} 条代理节点（Base64 订阅）`;
+            }
+        }
+
+        if($nodeSubWrap){
+            const id=getCurrentSubId();
+            if(info.kind==="none" || !id){
+                $nodeSubWrap.style.display="none";
+            }else{
+                $nodeSubWrap.style.display="inline-flex";
+            }
+        }
+    }
+
     async function postJSON(url,body){
         const res=await fetch(url,{
             method:"POST",
@@ -1196,44 +1212,6 @@
         return data;
     }
 
-    // >>> 节点检测逻辑
-    function updateNodeDetectUI(){
-        if(!$content || !$nodeDetectInfo || !$nodeDetectText) return;
-
-        let text = $content.value || "";
-        text = text.trim();
-        if(!text){
-            $nodeDetectInfo.style.display = "none";
-            return;
-        }
-
-        let scan = text;
-
-        // 尝试把整体当成 Base64 解一层，如果里面有节点协议，就用解码后的内容来统计
-        const compact = text.replace(/\s+/g,"");
-        const decodedWhole = base64DecodeUtf8(compact);
-        if(decodedWhole && (
-                decodedWhole.includes("ss://") ||
-                decodedWhole.includes("vmess://") ||
-                decodedWhole.includes("vless://") ||
-                decodedWhole.includes("trojan://") ||
-                decodedWhole.includes("hysteria2://") ||
-                decodedWhole.includes("hy2://")
-        )){
-            scan = decodedWhole;
-        }
-
-        const m = scan.match(/(ss|vmess|vless|trojan|hysteria2|hy2):\/\//gi);
-        const count = m ? m.length : 0;
-
-        if(count > 0){
-            $nodeDetectText.textContent = `检测到 ${count} 条节点`;
-            $nodeDetectInfo.style.display = "flex";
-        }else{
-            $nodeDetectInfo.style.display = "none";
-        }
-    }
-
     function updateByteCount(){
         if(!$content||!$byteNum)return;
         let len=0;
@@ -1243,12 +1221,12 @@
 
         if($lineCounter){
             const v=$content.value||"";
-            const lines=v ? v.split(/\r\n|\r|\n/).length : 0;
+            const lines=v ? v.split(/\r\n|\r|\\n/).length : 0;
             $lineCounter.textContent = lines+" 行";
         }
 
-        // 同步做一次节点检测
-        updateNodeDetectUI();
+        // 同步更新节点识别 / 订阅按钮显示
+        updateNodeDetect();
     }
     if($content){
         updateByteCount();
@@ -1260,6 +1238,7 @@
             e.preventDefault();
             $fileInput.click();
         });
+
         $fileInput.addEventListener("change",()=>{
             const file=$fileInput.files&&$fileInput.files[0];
             if(!file)return;
@@ -1274,26 +1253,15 @@
                     $fileHint.classList.remove("hint-error");
                     $fileHint.classList.add("hint-success");
                 }
-                setStatus(`已从文件「${file.name}」加载内容。`,"success");
             };
             reader.onerror=()=>{
                 if($fileHint){
-                    $fileHint.textContent="读取文件失败，请确认是文本文件。";
+                    $fileHint.textContent="文件读取失败。";
                     $fileHint.classList.remove("hint-success");
                     $fileHint.classList.add("hint-error");
                 }
-                setStatus("读取文件失败，请确认是文本文件。","error");
             };
             reader.readAsText(file);
-        });
-    }
-
-    if($btnResetContent){
-        $btnResetContent.addEventListener("click",()=>{
-            if($content)$content.value="";
-            if($remark)$remark.value="";
-            updateByteCount();
-            setStatus("已重置输入。");
         });
     }
 
@@ -1343,11 +1311,28 @@
         });
     }
 
+    // 备注行订阅按钮：根据选择客户端复制对应订阅链接
+    if($nodeSubBtn && $nodeSubClient){
+        $nodeSubBtn.addEventListener("click", async ()=>{
+            const client=$nodeSubClient.value||"";
+            const url=buildSubUrl(client);
+            if(!url){
+                setStatus("当前内容尚未保存或未填写自定义 URL，无法生成订阅链接。","error");
+                return;
+            }
+            try{
+                await navigator.clipboard.writeText(url);
+                setStatus("订阅链接已复制。","success");
+            }catch(_){
+                setStatus("复制失败，请手动复制。","error");
+            }
+        });
+    }
+
     const ttlText={
-        "10m":"内容将在 10 分钟后过期。",
-        "1d":"内容将在 1 天后过期。",
-        "7d":"内容将在 7 天后过期。",
-        "30d":"内容将在 30 天后过期。",
+        "1d":"内容将保留 1 天，之后自动清除。",
+        "7d":"内容将保留 7 天，适合临时共享。",
+        "30d":"内容将保留 30 天。",
         "forever":"内容不会自动过期（后台清理除外）。"
     };
     function setTtl(key){
@@ -1364,38 +1349,34 @@
         $ttlGroup.addEventListener("click",e=>{
             const btn=e.target.closest(".ttl-btn");
             if(!btn)return;
-            if(btn.disabled)return;
             const key=btn.dataset.ttl;
-            if(!key)return;
+            if(key==="forever" && !state.loggedIn){
+                setStatus("请先登录以使用「Never(不过期)」。","error");
+                return;
+            }
             setTtl(key);
         });
     }
 
     function validateCustomSlug(){
-        state.customSlugError=false;
         if(!$customId)return;
-        const val=$customId.value.trim();
-        if(!state.loggedIn){
-            if($advancedSection)$advancedSection.style.display="none";
-            return;
-        }else{
-            if($advancedSection)$advancedSection.style.display="";
-        }
-        if(!val){
+        const v=$customId.value.trim();
+        if(!v){
+            state.customSlugError=false;
             if($customHint){
-                $customHint.textContent="留空则自动分配随机 ID。";
+                $customHint.textContent="留空则自动生成随机 ID。";
                 $customHint.classList.remove("hint-error","hint-success");
             }
             $customId.classList.remove("input-error");
             return;
         }
-        const ok=/^[A-Za-z0-9_-]+$/.test(val);
+        const ok=/^[a-zA-Z0-9_-]{1,64}$/.test(v);
+        state.customSlugError=!ok;
         if(!ok){
-            state.customSlugError=true;
             if($customHint){
-                $customHint.textContent="仅支持A-Za-z0-9_- 。";
-                $customHint.classList.add("hint-error");
+                $customHint.textContent="只允许字母、数字、连字符与下划线，长度 1~64。";
                 $customHint.classList.remove("hint-success");
+                $customHint.classList.add("hint-error");
             }
             $customId.classList.add("input-error");
         }else{
@@ -1407,17 +1388,14 @@
             $customId.classList.remove("input-error");
         }
     }
-    if($customId)$customId.addEventListener("input",()=>{
-        validateCustomSlug();
-        // 自定义 ID 变化时，订阅链接的 id 也会变；复制时实时读取即可
-    });
+    if($customId)$customId.addEventListener("input",validateCustomSlug);
 
     function enterCreateMode(clear){
         state.mode="create";
         state.originalSlug=null;
         if($submitBtn){
             const span=$submitBtn.querySelector(".text");
-            if(span)span.textContent="上传";
+            if(span)span.textContent="创建";
         }
         if($btnHome)$btnHome.style.display="none";
         if(clear){
@@ -1451,13 +1429,8 @@
                 $ttlForeverBtn.disabled = false;
             } else {
                 $ttlForeverBtn.disabled = true;
-                if (state.ttlKey === "forever") {
-                    setTtl("7d");
-                }
             }
         }
-
-        validateCustomSlug();
     }
 
     function setLoggedIn(username){
@@ -1494,6 +1467,30 @@
         }
     }
 
+    // 主题切换
+    const themeButtons=document.querySelectorAll(".theme-toggle button");
+    themeButtons.forEach(btn=>{
+        btn.addEventListener("click",()=>{
+            const theme=btn.dataset.theme;
+            if(!theme)return;
+            themeButtons.forEach(b=>b.classList.remove("active"));
+            btn.classList.add("active");
+            if(theme==="light"){
+                document.body.classList.add("theme-light");
+            }else{
+                document.body.classList.remove("theme-light");
+            }
+            try{localStorage.setItem("pbx_theme",theme);}catch(_){}
+        });
+    });
+    (function restoreTheme(){
+        let t=null;
+        try{t=localStorage.getItem("pbx_theme");}catch(_){}
+        if(!t)return;
+        const btn=[...themeButtons].find(b=>b.dataset.theme===t);
+        if(btn)btn.click();
+    })();
+
     function openAuthModal(){
         if(!$authModal)return;
         $authModal.style.display="flex";
@@ -1525,32 +1522,42 @@
     }
     if($ucCloseBtn)$ucCloseBtn.addEventListener("click",closeUserCenter);
     if($userCenter){
-        $userCenter.addEventListener("click",e=>{
-            if(e.target===$userCenter)closeUserCenter();
+        document.addEventListener("keydown",e=>{
+            if(e.key==="Escape")closeUserCenter();
         });
     }
 
     if($btnAuthOpen){
         $btnAuthOpen.addEventListener("click",()=>{
-            if(state.loggedIn)openUserCenter();
-            else openAuthModal();
+            if(!state.loggedIn){
+                openAuthModal();
+            }else{
+                openUserCenter();
+            }
+        });
+    }
+    if($btnAuthLabel){
+        $btnAuthLabel.addEventListener("click",()=>{
+            if(!state.loggedIn){
+                openAuthModal();
+            }else{
+                openUserCenter();
+            }
         });
     }
 
-    if($authForm){
-        $authForm.addEventListener("submit",async e=>{
-            e.preventDefault();
+    if($btnDoLogin){
+        $btnDoLogin.addEventListener("click",async ()=>{
             const u=$authUsername.value.trim();
             const p=$authPassword.value;
-            const remember = $authRemember ? $authRemember.checked : true;
-
             if(!u||!p){
-                setAuthTip("用户名和密码不能为空。","error");
+                setAuthTip("请填写用户名和密码。","error");
                 return;
             }
             setAuthTip("登录中…");
             try{
-                const data=await postJSON(AUTH_BASE+"/login",{
+                const remember = $authRemember && $authRemember.checked;
+                const data = await postJSON(AUTH_BASE+"/login",{
                     username:u,
                     password:p,
                     remember
@@ -1567,7 +1574,7 @@
         $btnDoRegister.addEventListener("click",async ()=>{
             const u=$authUsername.value.trim();
             const p=$authPassword.value;
-            if(!u||!p){setAuthTip("请先填写用户名和密码。","error");return;}
+            if(!u||!p){setAuthTip("请填写用户名和密码。","error");return;}
             if(p.length<6){setAuthTip("密码至少 6 位。","error");return;}
             setAuthTip("注册中…");
             try{
@@ -1585,18 +1592,18 @@
         if(Number.isNaN(dt.getTime()))return"-";
         const y=dt.getFullYear();
         const m=String(dt.getMonth()+1).padStart(2,"0");
-        const da=String(dt.getDate()).padStart(2,"0");
-        const h=String(dt.getHours()).padStart(2,"0");
-        const mi=String(dt.getMinutes()).padStart(2,"0");
-        return `${y}-${m}-${da} ${h}:${mi}`;
+        const day=String(dt.getDate()).padStart(2,"0");
+        const hh=String(dt.getHours()).padStart(2,"0");
+        const mm=String(dt.getMinutes()).padStart(2,"0");
+        return `${y}-${m}-${day} ${hh}:${mm}`;
     }
-    function calcRemainDays(expires){
-        if(!expires)return null;
-        const t=new Date(expires).getTime();
+    function calcRemainDays(expiresAt){
+        if(!expiresAt)return null;
+        const t=+new Date(expiresAt);
         if(Number.isNaN(t))return null;
         const now=Date.now();
         const diff=t-now;
-        const d=Math.ceil(diff/86400000);
+        const d=Math.floor(diff/(24*3600*1000));
         return d;
     }
 
@@ -1681,16 +1688,66 @@
                 const meta=row.querySelector(".uc-item-meta");
                 const act=row.querySelector(".uc-item-actions");
 
-                let metaText=`创建：${formatDate(created)} · `;
+                let metaText="";
                 if(!expires || ttlKey==="forever"){
-                    metaText+=`到期：Never🙌🏿`;
+                    metaText=`到期：Never🙌🏿`;
                 }else{
-                    metaText+=`到期：${formatDate(expires)}`;
+                    metaText=`到期：${formatDate(expires)}`;
                     if(remain!=null && remain>=0){
                         metaText+=` · 自动清除还有 ${remain} 天`;
                     }
                 }
                 meta.textContent=metaText;
+
+                // 若该条内容为代理节点，追加绿色订阅按钮
+                const nodeInfo = detectNodeInfoFromText(d.content || "");
+                const isNode = nodeInfo && nodeInfo.kind !== "none";
+                if(isNode){
+                    const subWrap=document.createElement("div");
+                    subWrap.className="uc-sub-wrap";
+
+                    const subBtn=document.createElement("button");
+                    subBtn.type="button";
+                    subBtn.className="uc-sub-btn";
+                    subBtn.textContent="订阅";
+
+                    const subMenu=document.createElement("div");
+                    subMenu.className="uc-sub-menu";
+
+                    const baseSub=`${location.origin}/api/sub?id=${encodeURIComponent(slug)}`;
+                    const clients = [
+                        {key:"", label:"通用"},
+                        {key:"surge", label:"Surge"},
+                        {key:"clash", label:"Clash"},
+                        {key:"stash", label:"Stash"},
+                        {key:"quantumultx", label:"Quantumult X"},
+                    ];
+
+                    clients.forEach(c=>{
+                        const b=document.createElement("button");
+                        b.type="button";
+                        b.textContent=c.label;
+                        b.addEventListener("click", async ()=>{
+                            const url = c.key ? `${baseSub}&client=${c.key}` : baseSub;
+                            try{
+                                await navigator.clipboard.writeText(url);
+                                setStatus(`已复制订阅链接（${c.label}）`,"success");
+                            }catch(_){
+                                window.prompt("复制失败，请手动复制：", url);
+                            }
+                            subWrap.classList.remove("open");
+                        });
+                        subMenu.appendChild(b);
+                    });
+
+                    subBtn.addEventListener("click", ()=>{
+                        subWrap.classList.toggle("open");
+                    });
+
+                    subWrap.appendChild(subBtn);
+                    subWrap.appendChild(subMenu);
+                    meta.appendChild(subWrap);
+                }
 
                 const btnEdit=document.createElement("button");
                 btnEdit.type="button";
@@ -1711,7 +1768,7 @@
             style="fill:none;"
         >
             <path d="M11.5 15H7a4 4 0 0 0-4 4v2" />
-            <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />
+            <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.01a2 2 0 0 0-.505.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />
             <circle cx="10" cy="7" r="4" />
         </svg>
     </span>
@@ -1726,14 +1783,14 @@
                 btnCopy.type="button";
                 btnCopy.className="btn-secondary btn-xs";
                 btnCopy.innerHTML=`<span class="icon-svg">
-                    <svg viewBox="0 0 20 20"><path d="M7 3a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2v-2h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v2H7z"/><path d="M3 7a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7z"/></svg>
+                    <svg viewBox="0 0 20 20"><path d="M7 3a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-4a3 3 0 0 1-3-3V3Zm-4 4a2 2 0 0 1 2-2v9a2 2 0 0 0 2 2h6a2 2 0 0 1-2 2H7a4 4 0 0 1-4-4V7Z" fill="currentColor"/></svg>
                 </span>复制`;
                 btnCopy.addEventListener("click",async ()=>{
                     try{
                         await navigator.clipboard.writeText(viewUrl);
                         setStatus("已复制链接。","success");
                     }catch(_){
-                        setStatus("复制失败，请手动复制。","error");
+                        window.prompt("复制失败，请手动复制：",viewUrl);
                     }
                 });
 
@@ -1771,16 +1828,21 @@
         <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
+            width="18"
+            height="18"
             fill="none"
-            stroke-width="1.5"
             stroke="currentColor"
-            class="size-6"
-            style="fill:none;"
+            stroke-width="1.6"
         >
             <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.3-.14.772-.218 1.072.122 0 0 .43.618.43 1.588v.5a1 1 0 0 1-1 1H5.27a1 1 0 0 1-1-1v-.162c0-1.07.43-1.588.43-1.588.3-.34.772-.262 1.072-.122 0 0 .675.263 2.228.263 1.553 0 2.228-.263 2.228-.263.3-.14.772-.218 1.072.122 0 0 .675.263 2.228.263 1.553 0 2.228-.263 2.228-.263Z"
+            />
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9.879 4.5c.314-.934 1.2-1.5 2.121-1.5 0 0 1.5 0 2.121 1.5M4.5 7h15"
             />
         </svg>
     </span>
@@ -1791,7 +1853,7 @@
                     try{
                         await postJSON(API_BASE,{action:"delete",slug});
                         loadUserPastes();
-                        setStatus("已删除。","success");
+                        setStatus("已删除一条记录。","success");
                     }catch(err){
                         setStatus(err.message||"删除失败。","error");
                     }
@@ -1804,6 +1866,7 @@
 
                 $ucList.appendChild(row);
             });
+
         }catch(err){
             $ucEmpty.style.display="";
             $ucEmpty.textContent=err.message||"加载失败。";
@@ -1811,15 +1874,14 @@
     }
 
     if($ucRefreshBtn)$ucRefreshBtn.addEventListener("click",loadUserPastes);
-    if($ucLogoutBtn){
-        $ucLogoutBtn.addEventListener("click",async ()=>{
-            try{await postJSON(AUTH_BASE+"/logout",{});}catch(_){}
-            setLoggedOut();
-            closeUserCenter();
-            enterCreateMode(true);
-            setStatus("已退出登录。","success");
-        });
-    }
+    if($ucLogoutBtn)$ucLogoutBtn.addEventListener("click",async ()=>{
+        try{
+            await fetch(AUTH_BASE+"/logout",{method:"POST",credentials:"include"});
+        }catch(_){}
+        setLoggedOut();
+        setStatus("已退出登录。","success");
+        closeUserCenter();
+    });
 
     async function enterEditMode(slug){
         state.mode="edit";
@@ -1872,9 +1934,9 @@
             if(!text)return;
             try{
                 await navigator.clipboard.writeText(text);
-                setStatus("访问链接已复制。","success");
+                setStatus("已复制访问链接。","success");
             }catch(_){
-                setStatus("复制失败，请手动复制。","error");
+                window.prompt("复制失败，请手动复制：",text);
             }
         });
     }
@@ -1887,134 +1949,84 @@
     }
     if($btnManageFromResult){
         $btnManageFromResult.addEventListener("click",()=>{
-            if(!state.loggedIn){
-                openAuthModal();
-                return;
-            }
             openUserCenter();
         });
     }
 
-    // >>> 订阅链接生成：根据当前模式 + 自定义 ID / 原始 slug
-    function getCurrentSubId(){
-        let slug = null;
-        if(state.mode === "edit" && state.originalSlug){
-            slug = state.originalSlug;
-        }else if($customId){
-            const v = $customId.value.trim();
-            if(v) slug = v;
-        }
-        if(!slug) slug = "{id}";
-        return slug;
-    }
-
-    function buildSubUrl(client){
-        const base = location.origin + "/api/sub";
-        const id = getCurrentSubId();
-        const u = new URL(base);
-        u.searchParams.set("id", id);
-        if(client){
-            u.searchParams.set("client", client);
-        }
-        return u.toString();
-    }
-
-    if($nodeCopySubBtn){
-        $nodeCopySubBtn.addEventListener("click", async ()=>{
-            // 如果当前没检测到节点，整个区域本来就是隐藏的，这里再稳一手
-            if(!$nodeDetectInfo || $nodeDetectInfo.style.display === "none"){
-                setStatus("当前内容不是节点，未生成订阅链接。","error");
-                return;
-            }
-            const client = $nodeClientSelect ? ($nodeClientSelect.value || "") : "";
-            const url = buildSubUrl(client);
-            try{
-                await navigator.clipboard.writeText(url);
-                setStatus("订阅链接已复制。","success");
-            }catch(_){
-                setStatus("复制失败，请手动复制。","error");
-            }
+    if($btnResetContent){
+        $btnResetContent.addEventListener("click",()=>{
+            if($content)$content.value="";
+            updateByteCount();
+            setStatus("内容已清空。","success");
         });
     }
-
-    if($baseUrlText)$baseUrlText.textContent=VIEW_BASE+"/{id}";
 
     if($form){
         $form.addEventListener("submit",async e=>{
             e.preventDefault();
-            const text=($content&&$content.value.trim())||"";
-            if(!text){setStatus("内容不能为空。","error");return;}
-            if(state.customSlugError){setStatus("自定义 URL 不合法。","error");return;}
-
-            let slug=null;
-            let newSlug=null;
-            if(state.mode==="edit"){
-                slug=state.originalSlug;
-                if($customId){
-                    const v=$customId.value.trim();
-                    if(v&&v!==slug)newSlug=v;
-                }
-            }else{
-                if(state.loggedIn&&$customId){
-                    const v=$customId.value.trim();
-                    if(v)slug=v;
-                }
+            if(state.isSubmitting)return;
+            if(!$content){
+                setStatus("页面初始化异常，缺少内容区域。","error");
+                return;
+            }
+            const text=$content.value||"";
+            if(!text.trim()){
+                setStatus("内容不能为空。","error");
+                return;
             }
 
+            validateCustomSlug();
+            if(state.customSlugError){
+                setStatus("自定义 URL 不符合规则。","error");
+                return;
+            }
+
+            const ttlKey=state.ttlKey||"7d";
             const payload={
-                action:state.mode==="edit"?"update":"create",
                 content:text,
-                ttlKey:state.ttlKey,
-                remark:$remark?$remark.value.trim():""
+                ttl:ttlKey,
+                remark:$remark?$remark.value.trim():"",
+                customId:$customId?$customId.value.trim():""
             };
-            if(slug)payload.slug=slug;
-            if(newSlug)payload.newSlug=newSlug;
+            if(state.mode==="edit" && state.originalSlug){
+                payload.slug=state.originalSlug;
+            }
 
             state.isSubmitting=true;
-            if($submitBtn){
-                $submitBtn.disabled=true;
-                $submitBtn.classList.add("btn-disabled");
-                const span=$submitBtn.querySelector(".text");
-                if(span)span.textContent=state.mode==="edit"?"保存中…":"上传中…";
-            }
-            setStatus("正在提交…");
+            setStatus(state.mode==="edit"?"正在更新…":"正在创建…");
+            if($submitBtn)$submitBtn.disabled=true;
             try{
                 const data=await postJSON(API_BASE,payload);
-                const finalSlug=data.slug||newSlug||slug;
-                if(!finalSlug)throw new Error("返回数据缺少 slug。");
-                showResultLink(finalSlug);
-
-                if(state.mode==="edit"){
-                    setStatus("更新成功，已回到主页。","success");
-                }else{
-                    setStatus("上传完成，已生成链接。","success");
+                const slug=data.slug;
+                state.mode="edit";
+                state.originalSlug=slug;
+                showResultLink(slug);
+                setStatus(state.mode==="edit"?"已更新。":"已创建。","success");
+                if($btnHome)$btnHome.style.display="inline-flex";
+                if($customId && !payload.customId){
+                    $customId.value=slug;
                 }
-                enterCreateMode(true);
+                updateNodeDetect();
             }catch(err){
-                setStatus(err.message||"操作失败。","error");
+                setStatus(err.message||"提交失败。","error");
             }finally{
                 state.isSubmitting=false;
-                if($submitBtn){
-                    $submitBtn.disabled=false;
-                    $submitBtn.classList.remove("btn-disabled");
-                    const span=$submitBtn.querySelector(".text");
-                    if(span)span.textContent=state.mode==="edit"?"更新":"上传";
-                }
+                if($submitBtn)$submitBtn.disabled=false;
             }
         });
     }
 
-    document.addEventListener("keydown",e=>{
-        if(e.key==="Escape"){
-            if($userCenter&&$userCenter.style.display==="flex")closeUserCenter();
-            else if($authModal&&$authModal.style.display==="flex")closeAuthModal();
+    (async function initFromQuery(){
+        const url=new URL(location.href);
+        const id=url.searchParams.get("id");
+        if(id){
+            try{
+                await enterEditMode(id);
+            }catch(_){}
         }
-    });
-
-    (async function init(){
-        await initAuthFromServer();
-        applyAuthUI();
     })();
+
+    initAuthFromServer();
 </script>
 </body>
 </html>
