@@ -1,22 +1,16 @@
 // functions/api/sub/Clash.js
 //
 // 支持输入：
-// -  URL 格式
-// -  URL / Base64 混合格式
-// -  Base64（单条、多条）
+// - URL 格式
+// - URL / Base64 混合格式
+// - Base64（单条、多条）
 //
-// 支持输出（仅支持白名单列表）：
-// -  Clash / Mihomo：
-//         Shadowsocks / UDP
-//         Shadowsocks / HTTP / UDP
-//         TROJAN / UDP
-//         Hysteria2 / UDP
-//         VMESS / UDP
-//         VMESS / HTTP / UDP
-//         VMESS / WEBSOCKET / UDP
-//         VLESS / UDP
-//         VLESS / XTLS-RPRX-VISION / UDP
-//         VLESS / WEBSOCKET / UDP
+// 支持输出（仅白名单协议）：
+// - Shadowsocks / UDP、HTTP+UDP
+// - Trojan / UDP
+// - Hysteria2 / UDP
+// - VMess / UDP、HTTP+UDP、WS+UDP
+// - VLESS / UDP、XTLS-RPRX-VISION+UDP、WS+UDP
 
 export async function onRequestPost(context) {
   const { request } = context;
@@ -30,7 +24,7 @@ export async function onRequestPost(context) {
     });
   }
 
-  // 尝试整体按订阅 Base64 解一层
+  // 尝试把整个当订阅 Base64 解一层
   const compact = text.replace(/\s+/g, "");
   const decodedWhole = safeBase64Decode(compact);
   if (
@@ -90,14 +84,15 @@ export async function onRequestPost(context) {
       };
       lines.push("  - " + JSON.stringify(obj));
     } else if (n.type === "hysteria2") {
+      // 按你给的格式：password + tfo
       const obj = {
         type: "hysteria2",
         name: n.name,
         server: n.server,
         port: n.port,
         "skip-cert-verify": n.skipCertVerify === true,
-        "fast-open": !n.ports, // 有 ports 就 false，否则 true
-        auth: n.auth,
+        tfo: !n.ports, // 有 ports 就认为关闭 tfo
+        password: n.auth,
       };
       if (n.ports) obj.ports = n.ports;
       if (n.sni) obj.sni = n.sni;
@@ -270,10 +265,7 @@ function parseWhitelistNodes(text) {
       const n = parseVless(uri);
       if (!n) continue;
 
-      // 这里目前所有解析成功的 vless 都放行：
-      // - vless/udp（Reality）
-      // - vless/xtls-rprx-vision/udp
-      // - vless/websocket/udp
+      // vless/udp, vless/xtls-rprx-vision/udp, vless/websocket/udp
       nodes.push(n);
     }
   }
@@ -588,7 +580,6 @@ function parseHysteria2(uri) {
 /* ================= VMess 解析：vmess://（URL 形态） ================= */
 
 function getVmessShape(n) {
-  // network: tcp / http / ws
   if (n.network === "http") return "vmess-http-udp";
   if (n.network === "ws") return "vmess-ws-udp";
   return "vmess-udp";
@@ -599,14 +590,8 @@ function parseVMess(uri) {
     if (!uri.toLowerCase().startsWith("vmess://")) return null;
 
     let u = uri.replace(/^vmess:\/\//i, "");
+    u = u.replace(/\s+$/g, ""); // 去掉末尾空白
 
-    // 可能被 encode 两次，先保留原始
-    // 这里不直接 decode，两边处理 query 时再用 decodeNameMaybeTwice
-
-    // 先拆掉换行尾部的 %0A 之类
-    u = u.replace(/\s+$/g, "");
-
-    // 节点名（有些写在 query 里的 remarks，我们统一用 query 的）
     let name = "";
 
     let mainPart = u;
@@ -737,7 +722,7 @@ function parseVless(uri) {
 
     if (!s.toLowerCase().startsWith("vless://")) return null;
 
-    // 用 URL 统一解析，临时换成 http:// 方案
+    // 用 URL 统一解析，临时换成 http://
     let url;
     try {
       url = new URL(s.replace(/^vless:\/\//i, "http://"));
@@ -756,12 +741,19 @@ function parseVless(uri) {
       name = decodeNameMaybeTwice(name);
     }
 
-    // username 一般是 base64("auto:uuid")
+    // username 通常是 Base64("auto:uuid@ip:port")
     let uuid = "";
     if (url.username) {
       const decoded = safeBase64Decode(url.username);
       if (decoded && decoded.includes(":")) {
-        uuid = decoded.substring(decoded.indexOf(":") + 1);
+        // auto:UUID@ip:port  =>  截取 UUID
+        const colon = decoded.indexOf(":");
+        let afterColon = decoded.substring(colon + 1);
+        const atPos = afterColon.indexOf("@");
+        if (atPos !== -1) {
+          afterColon = afterColon.substring(0, atPos);
+        }
+        uuid = afterColon;
       } else if (decoded) {
         uuid = decoded;
       } else {
@@ -781,7 +773,7 @@ function parseVless(uri) {
       tlsParam === "true" ||
       tlsParam === "tls";
 
-    // Reality 相关
+    // Reality
     const pbk = params.get("pbk") || params.get("public-key") || "";
     const sid = params.get("sid") || params.get("short-id") || "";
 
@@ -855,7 +847,7 @@ function parseVless(uri) {
   }
 }
 
-/* ================= 工具 ================= */
+/* ================= 工具函数 ================= */
 
 function decodeNameMaybeTwice(str) {
   let s = str || "";
