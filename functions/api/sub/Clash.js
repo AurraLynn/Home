@@ -722,69 +722,88 @@ function parseVMess(uri) {
 
 function parseVless(uri) {
   try {
-    let s = uri.trim();
+    let raw = uri.trim();
 
     // 有可能整条被 encode 一次
     try {
-      const d1 = decodeURIComponent(s);
+      const d1 = decodeURIComponent(raw);
       if (d1.startsWith("vless://")) {
-        s = d1;
+        raw = d1;
       }
     } catch (_e) {}
 
-    if (!s.toLowerCase().startsWith("vless://")) return null;
+    if (!raw.toLowerCase().startsWith("vless://")) return null;
 
-    // 用 URL 统一解析，临时换成 http://
-    let url;
-    try {
-      url = new URL(s.replace(/^vless:\/\//i, "http://"));
-    } catch (_e) {
-      return null;
+    // 去掉 scheme
+    let s = raw.replace(/^vless:\/\//i, "");
+
+    // 先剥掉 fragment
+    let fragment = "";
+    const hashIdx = s.indexOf("#");
+    if (hashIdx !== -1) {
+      fragment = s.substring(hashIdx + 1);
+      s = s.substring(0, hashIdx);
     }
 
-    const params = url.searchParams;
+    // 再拆 query
+    let main = s;
+    let queryStr = "";
+    const qIdx = s.indexOf("?");
+    if (qIdx !== -1) {
+      main = s.substring(0, qIdx);
+      queryStr = s.substring(qIdx + 1);
+    }
 
-    // ========== 备注：优先 ?remarks=，其次 #fragment ==========
+    const params = new URLSearchParams(queryStr);
+
+    // 备注：优先 ?remarks=，其次 #fragment
     let name = params.get("remarks") || "";
-    if (!name && url.hash && url.hash.length > 1) {
-      name = url.hash.slice(1);
+    if (!name && fragment) {
+      name = fragment;
     }
     if (name) {
       name = decodeNameMaybeTwice(name);
     }
 
-    // ========== 先给 host / port 一个默认值 ==========
-    let host = url.hostname || "0.0.0.0";
-    let port = url.port ? parseInt(url.port, 10) || 443 : 443;
-
-    // ========== 解析 UUID ==========
+    // ========== 解析 main，提取 uuid / host / port ==========
+    let host = "0.0.0.0";
+    let port = 443;
     let uuid = "";
 
-    if (url.username) {
-      // 常见写法：username 是 Base64("auto:uuid@ip:port") 或 Base64("auto:uuid")
-      const decoded = safeBase64Decode(url.username);
-      if (decoded && decoded.includes(":")) {
-        // auto:UUID 或 auto:UUID@ip:port
-        const colon = decoded.indexOf(":");
-        let afterColon = decoded.substring(colon + 1);
-        const atPos = afterColon.indexOf("@");
-        if (atPos !== -1) {
-          afterColon = afterColon.substring(0, atPos);
-        }
-        uuid = afterColon;
-      } else if (decoded) {
-        uuid = decoded;
+    if (main.includes("@")) {
+      // 形态：userinfo@host:port
+      const atIdx = main.lastIndexOf("@");
+      const userinfoRaw = main.substring(0, atIdx);
+      const hostPortRaw = main.substring(atIdx + 1);
+
+      let userinfoDecoded = safeBase64Decode(userinfoRaw);
+      let userinfo = userinfoDecoded || userinfoRaw;
+
+      // userinfo 可能是 auto:uuid 或 直接 uuid
+      const colonIdx = userinfo.indexOf(":");
+      if (colonIdx !== -1) {
+        uuid = userinfo.substring(colonIdx + 1);
       } else {
-        uuid = url.username;
+        uuid = userinfo;
+      }
+
+      let hp = hostPortRaw;
+      const m = hp.match(/:(\d+)$/);
+      if (m) {
+        port = parseInt(m[1], 10) || 443;
+        host = hp.substring(0, m.index);
+      } else {
+        host = hp || host;
       }
     } else {
-      // 兼容“整块 Base64 放在 host 里”的写法：
-      // vless://BASE64(auto:uuid@host:port)?...
-      const decodedHost = safeBase64Decode(url.hostname);
-      if (decodedHost && decodedHost.includes("@")) {
-        const atIdx = decodedHost.lastIndexOf("@");
-        const userinfo = decodedHost.substring(0, atIdx);   // auto:uuid
-        const hostPort = decodedHost.substring(atIdx + 1);  // host:port
+      // 形态可能是：
+      // 1) BASE64(auto:uuid@host:port)
+      // 2) host[:port]
+      const decoded = safeBase64Decode(main);
+      if (decoded && decoded.includes("@")) {
+        const atIdx = decoded.lastIndexOf("@");
+        const userinfo = decoded.substring(0, atIdx);
+        const hostPortRaw = decoded.substring(atIdx + 1);
 
         const colonIdx = userinfo.indexOf(":");
         if (colonIdx !== -1) {
@@ -793,17 +812,24 @@ function parseVless(uri) {
           uuid = userinfo;
         }
 
-        // 从 hostPort 里拆 host / port
-        let realHost = hostPort;
-        let realPort = port;
-        const m = hostPort.match(/:(\d+)$/);
+        let hp = hostPortRaw;
+        const m = hp.match(/:(\d+)$/);
         if (m) {
-          realPort = parseInt(m[1], 10) || port;
-          realHost = hostPort.substring(0, m.index);
+          port = parseInt(m[1], 10) || 443;
+          host = hp.substring(0, m.index);
+        } else {
+          host = hp || host;
         }
-
-        host = realHost;
-        port = realPort;
+      } else {
+        // 直接 host[:port]
+        let hp = main;
+        const m = hp.match(/:(\d+)$/);
+        if (m) {
+          port = parseInt(m[1], 10) || 443;
+          host = hp.substring(0, m.index);
+        } else {
+          host = hp || host;
+        }
       }
     }
 
