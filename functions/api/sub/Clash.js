@@ -11,14 +11,6 @@
 // - Hysteria2 / UDP
 // - VMess / UDP、HTTP+UDP、WS+UDP
 // - VLESS / UDP、XTLS-RPRX-VISION+UDP、WS+UDP
-//
-// 统一输出格式：
-// proxies:
-//   - {"type":"ss", ...}
-//   - {"type":"trojan", ...}
-//   - {"type":"vmess", ...}
-//   - {"type":"hysteria2", ...}
-//   - {"type":"vless", ...}
 
 export async function onRequestPost(context) {
   const { request } = context;
