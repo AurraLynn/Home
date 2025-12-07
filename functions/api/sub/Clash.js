@@ -56,7 +56,7 @@ export async function onRequestPost(context) {
 
       if ((n.plugin || "").toLowerCase() === "obfs" && n.pluginMode) {
         obj.plugin = "obfs";
-        const opts = { mode: n.pluginMode };
+        const opts = { mode: n.pluginMode }; // http / tls
         if (n.pluginHost) {
           opts.host = n.pluginHost;
         }
@@ -80,14 +80,14 @@ export async function onRequestPost(context) {
         type: "hysteria2",
         server: n.server,
         port: n.port,
-        auth: n.auth,             // password
+        auth: n.auth,
         sni: n.sni || "",
         "skip-cert-verify": n.skipCertVerify === true,
         "fast-open": false,
         name: n.name,
       };
       if (n.ports) {
-        obj.ports = n.ports;      // 例如 "35000-39000"
+        obj.ports = n.ports; // 例如 "35000-39000"
       }
       lines.push("  - " + JSON.stringify(obj));
     }
@@ -109,14 +109,27 @@ function parseWhitelistNodes(text) {
     let line = rawLine.trim();
     if (!line) continue;
 
-    // 行里如果有空格，只取第一个片段
-    const firstToken = line.split(/\s+/)[0];
+    // 一行里如果有空格，只取第一个片段
+    let token = line.split(/\s+/)[0];
+    if (!token) continue;
 
-    const lower = firstToken.toLowerCase();
+    // 有些会整行再 urlencode 一次，这里先尝试解一层
+    try {
+      const decodedOnce = decodeURIComponent(token);
+      if (
+        decodedOnce.startsWith("ss://") ||
+        decodedOnce.startsWith("trojan://") ||
+        decodedOnce.startsWith("hysteria2://") ||
+        decodedOnce.startsWith("hy2://")
+      ) {
+        token = decodedOnce;
+      }
+    } catch (_e) {}
 
-    // 只处理三种前缀，其它行全部忽略
+    const lower = token.toLowerCase();
+
     if (lower.startsWith("ss://")) {
-      const uri = firstToken;
+      const uri = token;
       if (seen.has(uri)) continue;
       seen.add(uri);
 
@@ -124,26 +137,24 @@ function parseWhitelistNodes(text) {
       if (!n) continue;
 
       const shape = getSsShape(n);
-      if (shape !== "ss-udp" && shape !== "ss-http-udp") continue; // 白名单
+      if (shape !== "ss-udp" && shape !== "ss-http-udp") continue;
 
       nodes.push(n);
     } else if (lower.startsWith("trojan://")) {
-      const uri = firstToken;
+      const uri = token;
       if (seen.has(uri)) continue;
       seen.add(uri);
 
       const n = parseTrojan(uri);
       if (!n) continue;
-      // trojan / udp：所有 trojan 节点都视为支持 udp
       nodes.push(n);
     } else if (lower.startsWith("hysteria2://") || lower.startsWith("hy2://")) {
-      const uri = firstToken;
+      const uri = token;
       if (seen.has(uri)) continue;
       seen.add(uri);
 
       const n = parseHysteria2(uri);
       if (!n) continue;
-      // hy2 / udp：所有 hysteria2 节点都视为支持 udp
       nodes.push(n);
     }
   }
@@ -200,7 +211,6 @@ function parseShadowsocks(uri) {
     const hostPortRaw = main.substring(atIndex + 1);
     const hostPortNoPath = hostPortRaw.split("/")[0];
 
-    // userinfo 也可能是 Base64(method:password)
     const decodedUserinfo = safeBase64Decode(userinfo);
     if (decodedUserinfo && decodedUserinfo.includes(":")) {
       userinfo = decodedUserinfo;
@@ -291,7 +301,6 @@ function parseTrojan(uri) {
 
     let u = uri.replace(/^trojan:\/\//i, "");
 
-    // 节点名
     let name = "";
     const hashIdx = u.indexOf("#");
     if (hashIdx !== -1) {
@@ -300,7 +309,6 @@ function parseTrojan(uri) {
       u = u.substring(0, hashIdx);
     }
 
-    // main + query
     let main = u;
     let queryStr = "";
     const qIdx = u.indexOf("?");
@@ -309,7 +317,6 @@ function parseTrojan(uri) {
       queryStr = u.substring(qIdx + 1);
     }
 
-    // password@host:port
     const atIdx = main.lastIndexOf("@");
     if (atIdx === -1) return null;
     let password = main.substring(0, atIdx);
@@ -369,30 +376,41 @@ function parseTrojan(uri) {
 
 function parseHysteria2(uri) {
   try {
-    let lower = uri.toLowerCase();
+    let s = uri.trim();
+
+    // 有些整条再 encode 一层，先试着解一层，还原出带 "#" 的形式
+    try {
+      const d1 = decodeURIComponent(s);
+      if (
+        d1.startsWith("hysteria2://") ||
+        d1.startsWith("hy2://")
+      ) {
+        s = d1;
+      }
+    } catch (_e) {}
+
+    let lower = s.toLowerCase();
     if (!lower.startsWith("hysteria2://") && !lower.startsWith("hy2://")) {
       return null;
     }
 
-    let u = uri.replace(/^hysteria2:\/\//i, "").replace(/^hy2:\/\//i, "");
+    // 去掉 scheme
+    let u = s.replace(/^hysteria2:\/\//i, "").replace(/^hy2:\/\//i, "");
 
-    // main + query(+备注)
+    // 拆备注（# 后面的部分）
+    let name = "";
+    const hashIdx = u.indexOf("#");
+    if (hashIdx !== -1) {
+      const remarkPart = u.substring(hashIdx + 1);
+      name = decodeNameMaybeTwice(remarkPart);
+      u = u.substring(0, hashIdx);
+    }
+
+    // main + query
     const qIdx = u.indexOf("?");
     if (qIdx === -1) return null;
-
     const main = u.substring(0, qIdx);
-    const rest = u.substring(qIdx + 1);
-
-    // rest 可能是 "peer=..&insecure=1&mport=35000-39000%23%25F0..." 这种
-    let queryStr = rest;
-    let name = "";
-
-    const encodedSharpIdx = rest.indexOf("%23"); // %23 = '#'
-    if (encodedSharpIdx !== -1) {
-      queryStr = rest.substring(0, encodedSharpIdx);
-      const remarkEnc = rest.substring(encodedSharpIdx + 3); // 跳过 "%23"
-      name = decodeNameMaybeTwice(remarkEnc);
-    }
+    const queryStr = u.substring(qIdx + 1);
 
     // auth@host:port
     const atIdx = main.lastIndexOf("@");
@@ -467,11 +485,9 @@ function parseHysteria2(uri) {
 
 function decodeNameMaybeTwice(str) {
   let s = str || "";
-  // 第一次解码（从 %25F0.. 变成 %F0..）
   try {
     if (s.includes("%")) s = decodeURIComponent(s);
   } catch (_e) {}
-  // 第二次解码（从 %F0.. 变成 emoji/中文）
   try {
     if (s.includes("%")) s = decodeURIComponent(s);
   } catch (_e) {}
