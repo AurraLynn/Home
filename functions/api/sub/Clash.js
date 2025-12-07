@@ -76,19 +76,17 @@ export async function onRequestPost(context) {
       };
       lines.push("  - " + JSON.stringify(obj));
     } else if (n.type === "hysteria2") {
+      // 按你给的格式：
+      // - {"name":"...","type":"hysteria2","server":"...","port":xxxxx,"password":"...","sni":"...","skip-cert-verify":true}
       const obj = {
+        name: n.name,
         type: "hysteria2",
         server: n.server,
         port: n.port,
-        password: n.password,         // ★ 改成 password
+        password: n.password,
         sni: n.sni || "",
         "skip-cert-verify": n.skipCertVerify === true,
-        "fast-open": false,
-        name: n.name,
       };
-      if (n.ports) {
-        obj.ports = n.ports;          // "35000-39000"
-      }
       lines.push("  - " + JSON.stringify(obj));
     }
   }
@@ -421,7 +419,8 @@ function parseHysteria2(uri) {
 
     let sni = "";
     let skipCertVerify = false;
-    let ports = "";
+    // mport/ports 现在可以不下发，但先读着，后续你要用再加
+    // let ports = "";
 
     if (queryStr) {
       const search = new URLSearchParams(queryStr);
@@ -440,14 +439,14 @@ function parseHysteria2(uri) {
         skipCertVerify = true;
       }
 
-      const mport = search.get("mport") || search.get("ports");
-      if (mport) {
-        try {
-          ports = decodeURIComponent(mport);
-        } catch (_e) {
-          ports = mport;
-        }
-      }
+      // const mport = search.get("mport") || search.get("ports");
+      // if (mport) {
+      //   try {
+      //     ports = decodeURIComponent(mport);
+      //   } catch (_e) {
+      //     ports = mport;
+      //   }
+      // }
     }
 
     if (!name) {
@@ -459,10 +458,9 @@ function parseHysteria2(uri) {
       type: "hysteria2",
       server: host,
       port,
-      password: auth,   // ★ 解析层就叫 password
+      password: auth,
       sni,
       skipCertVerify,
-      ports,
       name,
     };
   } catch (_e) {
