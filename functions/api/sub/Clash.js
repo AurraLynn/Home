@@ -80,14 +80,14 @@ export async function onRequestPost(context) {
         type: "hysteria2",
         server: n.server,
         port: n.port,
-        auth: n.auth, // 这里就是原始密码，不再处理
+        password: n.password,         // ★ 改成 password
         sni: n.sni || "",
         "skip-cert-verify": n.skipCertVerify === true,
         "fast-open": false,
         name: n.name,
       };
       if (n.ports) {
-        obj.ports = n.ports; // 例如 "35000-39000"
+        obj.ports = n.ports;          // "35000-39000"
       }
       lines.push("  - " + JSON.stringify(obj));
     }
@@ -319,7 +319,7 @@ function parseTrojan(uri) {
 
     const atIdx = main.lastIndexOf("@");
     if (atIdx === -1) return null;
-    const password = main.substring(0, atIdx); // 不再 decode，保持原样
+    const password = main.substring(0, atIdx); // 保持原样
     const hostPort = main.substring(atIdx + 1);
 
     let host = hostPort || "0.0.0.0";
@@ -408,7 +408,7 @@ function parseHysteria2(uri) {
     // auth@host:port
     const atIdx = main.lastIndexOf("@");
     if (atIdx === -1) return null;
-    const auth = main.substring(0, atIdx); // 保持原样，不再 decode
+    const auth = main.substring(0, atIdx); // 原始密码
     const hostPort = main.substring(atIdx + 1);
 
     let host = hostPort || "0.0.0.0";
@@ -459,7 +459,7 @@ function parseHysteria2(uri) {
       type: "hysteria2",
       server: host,
       port,
-      auth,
+      password: auth,   // ★ 解析层就叫 password
       sni,
       skipCertVerify,
       ports,
