@@ -6,13 +6,14 @@
 // 2. 决定 client：优先 query，其次 UA 自动识别
 // 3. 调用 /api/sub/Converter?client=xxx 做节点转换
 // 4. 对 Clash / Mihomo：在 Converter 返回的 proxies 段基础上，自动包一份完整配置（含端口 + 阿里 DNS + 分组 + 规则）
-// 5. 其它客户端：保持 Converter 输出不变（例如 Quantumult X 行、Surge 行、Base64 订阅）
+// 5. 其它客户端：保持 Converter 输出不变（例如 Quantumult X 行、Surge 行、Stash proxies 段、Base64 订阅）
 //
 // 已支持的 client 名：
 // - quantumultx：Quantumult X
 // - surge：Surge
 // - clash：Clash / Mihomo / FlyClash（meta/...）
-// - 其它（stash / shadowrocket / v2rayng 等）：默认走 Base64 订阅
+// - stash：Stash（只返回 proxies 段，由 /api/sub/Stash 生成）
+// - 其它（shadowrocket / v2rayng 等）：默认走 Base64 订阅
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -57,8 +58,10 @@ export async function onRequestGet(context) {
     converterUrl = `${origin}/api/sub/Converter?client=surge`;
   } else if (client === "clash") {
     converterUrl = `${origin}/api/sub/Converter?client=clash`;
+  } else if (client === "stash") {
+    converterUrl = `${origin}/api/sub/Converter?client=stash`;
   } else if (client) {
-    // 其它 client（stash 等），统一透传给 Converter（目前会按 Base64 处理）
+    // 其它 client（例如 shadowrocket / v2rayng 等），透传给 Converter，由 Converter 决定行为
     converterUrl = `${origin}/api/sub/Converter?client=${encodeURIComponent(
       client
     )}`;
@@ -130,19 +133,20 @@ function detectClientFromUA(ua) {
   const u = (ua || "").toLowerCase();
   if (!u) return "";
 
-  // FlyClash / Clash Meta：meta/0.2.0.9.Meta 一类
+  // 1) FlyClash / Clash Meta：meta/0.2.0.9.Meta 一类
   if (u.includes("meta/") || u.includes(".meta")) return "clash";
 
-  // Clash 系：Clash, Mihomo, Clash for Windows, Clash for Android 等
-  if (u.includes("clash") || u.includes("mihomo")) return "clash";
-
-  // Surge
-  if (u.includes("surge")) return "surge";
-
-  // Stash（目前还没专用格式，先走 Base64）
+  // 2) Stash：有些 UA 同时带 Stash 和 Clash，这里让 Stash 优先
+  //    例如："Stash/3.2.4 Clash/1.9.0"
   if (u.includes("stash")) return "stash";
 
-  // Quantumult X：Quantumult%20X / Quantumult X / QuantumultX / QuanX
+  // 3) Clash 系：Clash, Mihomo, Clash for Windows, Clash for Android 等
+  if (u.includes("clash") || u.includes("mihomo")) return "clash";
+
+  // 4) Surge
+  if (u.includes("surge")) return "surge";
+
+  // 5) Quantumult X：Quantumult%20X / Quantumult X / QuantumultX / QuanX
   if (
     u.includes("quantumult%20x") ||
     u.includes("quantumult x") ||
@@ -152,7 +156,7 @@ function detectClientFromUA(ua) {
     return "quantumultx";
   }
 
-  // Shadowrocket / 其它客户端：不再单独识别，默认走 Base64 通用订阅
+  // 6) Shadowrocket / 其它客户端：不再单独识别，默认走 Base64 通用订阅
   return "";
 }
 
