@@ -80,7 +80,7 @@ export async function onRequestPost(context) {
         type: "hysteria2",
         server: n.server,
         port: n.port,
-        auth: n.auth,
+        auth: n.auth, // 这里就是原始密码，不再处理
         sni: n.sni || "",
         "skip-cert-verify": n.skipCertVerify === true,
         "fast-open": false,
@@ -319,12 +319,8 @@ function parseTrojan(uri) {
 
     const atIdx = main.lastIndexOf("@");
     if (atIdx === -1) return null;
-    let password = main.substring(0, atIdx);
+    const password = main.substring(0, atIdx); // 不再 decode，保持原样
     const hostPort = main.substring(atIdx + 1);
-
-    try {
-      password = decodeURIComponent(password);
-    } catch (_e) {}
 
     let host = hostPort || "0.0.0.0";
     let port = 443;
@@ -381,10 +377,7 @@ function parseHysteria2(uri) {
     // 有些整条再 encode 一层，先试着解一层，还原出带 "#" 的形式
     try {
       const d1 = decodeURIComponent(s);
-      if (
-        d1.startsWith("hysteria2://") ||
-        d1.startsWith("hy2://")
-      ) {
+      if (d1.startsWith("hysteria2://") || d1.startsWith("hy2://")) {
         s = d1;
       }
     } catch (_e) {}
@@ -415,12 +408,8 @@ function parseHysteria2(uri) {
     // auth@host:port
     const atIdx = main.lastIndexOf("@");
     if (atIdx === -1) return null;
-    let auth = main.substring(0, atIdx);
+    const auth = main.substring(0, atIdx); // 保持原样，不再 decode
     const hostPort = main.substring(atIdx + 1);
-
-    try {
-      auth = decodeURIComponent(auth);
-    } catch (_e) {}
 
     let host = hostPort || "0.0.0.0";
     let port = 443;
