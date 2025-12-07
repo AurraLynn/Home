@@ -292,7 +292,17 @@ function parseShadowsocks(uri) {
       queryStr = u.slice(qIndex + 1);
     }
 
-    // userinfo@host:port
+    // ★ 新增：支持整段 Base64 形式的：
+    //   ss://BASE64(method:password@host:port)#tag
+    const decodedMain = safeBase64Decode(main);
+    if (
+      decodedMain &&
+      decodedMain.includes("@") &&
+      decodedMain.includes(":")
+    ) {
+      main = decodedMain;
+    }
+
     const atIndex = main.lastIndexOf("@");
     if (atIndex === -1) return null;
 
