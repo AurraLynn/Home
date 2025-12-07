@@ -7,9 +7,11 @@
 //
 // 支持协议输出（仅支持白名单列表）(不套配置模版)：
 // - Stash：
-//      - Shadowsocks / UDP
-//      - Shadowsocks / HTTP / UDP
-//
+// - Shadowsocks / UDP、HTTP+UDP
+// - Trojan / UDP
+// - Hysteria2 / UDP
+// - VMess / UDP、HTTP+UDP、WS+UDP
+// - VLESS / UDP、XTLS-RPRX-VISION+UDP、WS+UDP
 
 export async function onRequestPost(context) {
   const { request } = context;
