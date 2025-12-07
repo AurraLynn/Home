@@ -19,16 +19,32 @@
     <!-- 网站图标 -->
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
 
-    <!-- 设备类型检测：如为移动端，自动跳转到 mobile.html -->
-    <script>
-        (function () {
-            var ua = (navigator.userAgent || navigator.vendor || window.opera || "").toLowerCase();
-            var isMobileDevice = /android|iphone|ipad|ipod|mobile|windows phone/i.test(ua);
-            if (isMobileDevice) {
-                window.location.href = "mobile.html";
-            }
-        })();
-    </script>
+   <!-- 设备类型检测：如为移动端，自动跳转到 mobile.html -->
+<script>
+    (function () {
+        var ua = (navigator.userAgent || navigator.vendor || window.opera || "").toLowerCase();
+
+        // ✅ 微信 / QQ 内置浏览器检测
+        // WeChat: micromessenger
+        // QQ 内置：常见包含 qq/ 或 mqqbrowser（注意：qqbrowser 是独立QQ浏览器，这里不强行拦）
+        var isWeChat = /micromessenger/i.test(ua);
+        var isQQInApp = /qq\//i.test(ua) || /mqqbrowser/i.test(ua);
+
+        // ✅ 普通移动设备检测
+        var isMobileDevice = /android|iphone|ipad|ipod|mobile|windows phone/i.test(ua);
+
+        // 优先级：微信/QQ 内打开 → mobile-1.html
+        if (isWeChat || isQQInApp) {
+            window.location.href = "mobile-1.html";
+            return;
+        }
+
+        // 其它移动端 → mobile.html
+        if (isMobileDevice) {
+            window.location.href = "mobile.html";
+        }
+    })();
+</script>
     <style>
         :root {
             --bg-dark: #050508;
