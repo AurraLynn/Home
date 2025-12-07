@@ -5,145 +5,126 @@
 // - URL / Base64 混合格式
 // - Base64 单条 / 多条（整条订阅）
 //
-// 支持协议输出（仅支持白名单列表）：
+// 支持协议输出（仅支持白名单列表）(不套配置模版)：
 // - Stash：
 //      - Shadowsocks / UDP
 //      - Shadowsocks / HTTP / UDP
 //
-// 输出格式：
-// proxies:
-//   - {"type":"ss","server":"...","port":xxxx,"cipher":"...","password":"...","name":"..."}
-//   - {"type":"ss","server":"...","port":xxxx,"cipher":"...","password":"...","plugin":"obfs","plugin-opts":{"mode":"http","host":"xxx"},"name":"..."}
 
 export async function onRequestPost(context) {
   const { request } = context;
   let text = (await request.text()) || "";
-  text = text.trim();
 
-  if (!text) {
-    return new Response("proxies: []\n", {
-      status: 200,
-      headers: { "content-type": "text/plain; charset=utf-8" },
-    });
-  }
-
-  // 1) 尝试把整段当订阅 Base64 解一次
+  // 如果整个 body 是 Base64 订阅，就先整体解一层
   const compact = text.replace(/\s+/g, "");
-  const decoded = safeBase64Decode(compact);
-  if (decoded && decoded.includes("ss://")) {
-    text = decoded;
+  const decodedWhole = safeBase64Decode(compact);
+  if (decodedWhole && decodedWhole.includes("ss://")) {
+    text = decodedWhole;
   }
 
-  // 2) 提取 SS 节点
-  const nodes = parseMixedSsNodes(text);
+  const nodes = parseSsWhitelist(text);
 
   if (!nodes.length) {
-    return new Response("proxies: []\n", {
+    return new Response("# no ss nodes", {
       status: 200,
       headers: { "content-type": "text/plain; charset=utf-8" },
     });
   }
 
-  // 3) 白名单：只保留 SS / UDP 和 SS / HTTP / UDP
   const lines = [];
+  lines.push("proxies:");
   for (const n of nodes) {
-    const shape = getStashShape(n);
-    if (shape !== "ss-udp" && shape !== "ss-http-udp") continue;
-
-    if (!n.cipher || !n.password) continue;
-    if (!n.server || !n.port) continue;
-
-    const entry = {
+    const obj = {
       type: "ss",
       server: n.server,
       port: n.port,
       cipher: n.cipher,
       password: n.password,
-      name: n.name || `${n.server}:${n.port}`,
+      name: n.name,
     };
 
-    if (n.plugin === "obfs") {
-      entry.plugin = "obfs";
-      const opts = { mode: n.pluginMode || "" };
+    // http 混淆
+    if ((n.plugin || "").toLowerCase() === "obfs" && n.pluginMode) {
+      obj.plugin = "obfs";
+      const opts = { mode: n.pluginMode }; // http / tls
       if (n.pluginHost) {
         opts.host = n.pluginHost;
       }
-      entry["plugin-opts"] = opts;
+      obj["plugin-opts"] = opts;
     }
 
-    lines.push("  - " + JSON.stringify(entry));
+    lines.push("  - " + JSON.stringify(obj));
   }
 
-  if (!lines.length) {
-    return new Response("proxies: []\n", {
-      status: 200,
-      headers: { "content-type": "text/plain; charset=utf-8" },
-    });
-  }
-
-  const out = "proxies:\n" + lines.join("\n") + "\n";
-
-  return new Response(out, {
+  return new Response(lines.join("\n") + "\n", {
     status: 200,
     headers: { "content-type": "text/plain; charset=utf-8" },
   });
 }
 
-/* ================= 白名单：仅 SS / UDP + SS / HTTP / UDP ================= */
+/* ========== 只解析 SS，并做白名单过滤 ========== */
 
-function getStashShape(node) {
-  const t = (node.type || "").toLowerCase();
-  if (t !== "ss") return "";
-
-  const plugin = (node.plugin || "").toLowerCase();
-  const mode = (node.pluginMode || "").toLowerCase();
-
-  if (plugin === "obfs" && mode === "http") {
-    return "ss-http-udp";
-  }
-
-  return "ss-udp";
-}
-
-/* ================= 提取并解析 SS 节点 ================= */
-
-function parseMixedSsNodes(text) {
+// 白名单：只保留 ss-udp / ss-http-udp
+function parseSsWhitelist(text) {
   const nodes = [];
   const seen = new Set();
 
-  const re = /(ss:\/\/[^\s#]+(?:#[^\s]*)?)/gi;
-  let m;
-  while ((m = re.exec(text))) {
-    const uri = m[0].trim();
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    // 关键点：只处理「整行以 ss:// 开头」的行
+    // vless://xxxxss://xxxx 这种行会被直接略过
+    if (!line.toLowerCase().startsWith("ss://")) continue;
+
+    // 一行里如果后面还有注释，只取第一个连续的 ss://... 片段
+    const uri = line.split(/\s+/)[0];
     if (!uri || seen.has(uri)) continue;
     seen.add(uri);
 
-    const parsed = parseShadowsocks(uri);
-    if (parsed && parsed.type === "ss") {
-      nodes.push(parsed);
-    }
+    const node = parseShadowsocks(uri);
+    if (!node) continue;
+
+    // 白名单：只允许两种形态
+    const shape = getSsShape(node);
+    if (shape !== "ss-udp" && shape !== "ss-http-udp") continue;
+
+    nodes.push(node);
   }
 
   return nodes;
 }
 
-/* ================= Shadowsocks 解析 ================= */
+// 判断 SS 形态（白名单用）
+function getSsShape(n) {
+  const plugin = (n.plugin || "").toLowerCase();
+  const mode = (n.pluginMode || "").toLowerCase();
+
+  if (plugin === "obfs" && mode === "http") {
+    return "ss-http-udp";
+  }
+  return "ss-udp";
+}
+
+/* ========== Shadowsocks 解析：ss:// ========== */
 
 function parseShadowsocks(uri) {
   try {
+    if (!uri.toLowerCase().startsWith("ss://")) return null;
+
     let u = uri.replace(/^ss:\/\//i, "");
 
     // 备注（节点名）
     let name = "";
     const hashIndex = u.indexOf("#");
     if (hashIndex !== -1) {
-      const remarkPart = u.slice(hashIndex + 1);
+      const remarkPart = u.substring(hashIndex + 1);
       try {
         name = decodeURIComponent(remarkPart);
       } catch (_e) {
         name = remarkPart;
       }
-      u = u.slice(0, hashIndex);
+      u = u.substring(0, hashIndex);
     }
 
     // main + query
@@ -151,17 +132,13 @@ function parseShadowsocks(uri) {
     let queryStr = "";
     const qIndex = u.indexOf("?");
     if (qIndex !== -1) {
-      main = u.slice(0, qIndex);
-      queryStr = u.slice(qIndex + 1);
+      main = u.substring(0, qIndex);
+      queryStr = u.substring(qIndex + 1);
     }
 
-    // 整段 Base64：ss://BASE64(method:password@host:port)
-    const decodedMain = safeBase64Decode(main);
-    if (
-      decodedMain &&
-      decodedMain.includes("@") &&
-      decodedMain.includes(":")
-    ) {
+    // 有些写法 main 整段是 Base64：method:password@host:port
+    let decodedMain = safeBase64Decode(main);
+    if (decodedMain && decodedMain.includes("@") && decodedMain.includes(":")) {
       main = decodedMain;
     }
 
@@ -169,11 +146,11 @@ function parseShadowsocks(uri) {
     const atIndex = main.lastIndexOf("@");
     if (atIndex === -1) return null;
 
-    let userinfo = main.slice(0, atIndex);
-    const hostPortRaw = main.slice(atIndex + 1);
+    let userinfo = main.substring(0, atIndex);
+    const hostPortRaw = main.substring(atIndex + 1);
     const hostPortNoPath = hostPortRaw.split("/")[0];
 
-    // userinfo → method:password（userinfo 也可能是 Base64）
+    // userinfo 也可能是 Base64(method:password)
     const decodedUserinfo = safeBase64Decode(userinfo);
     if (decodedUserinfo && decodedUserinfo.includes(":")) {
       userinfo = decodedUserinfo;
@@ -186,29 +163,27 @@ function parseShadowsocks(uri) {
     const colonIndex = userinfo.indexOf(":");
     if (colonIndex === -1) return null;
 
-    const method = userinfo.slice(0, colonIndex);
-    const password = userinfo.slice(colonIndex + 1);
+    const method = userinfo.substring(0, colonIndex);
+    const password = userinfo.substring(colonIndex + 1);
 
-    // host:port
     let host = hostPortNoPath || "0.0.0.0";
     let port = 8388;
     const pm = hostPortNoPath.match(/:(\d+)$/);
     if (pm) {
       port = parseInt(pm[1], 10) || 8388;
-      host = hostPortNoPath.slice(0, pm.index);
+      host = hostPortNoPath.substring(0, pm.index);
     }
 
-    // 插件参数
     let plugin = "";
     let pluginMode = "";
     let pluginHost = "";
 
     if (queryStr) {
-      const sp = new URLSearchParams(queryStr);
+      const search = new URLSearchParams(queryStr);
 
-      const qObfs = sp.get("obfs") || "";
-      const qObfsHost = sp.get("obfs-host") || "";
-
+      // obfs=tls / obfs=http
+      const qObfs = search.get("obfs") || "";
+      const qObfsHost = search.get("obfs-host") || "";
       if (qObfs) pluginMode = qObfs;
       if (qObfsHost) {
         try {
@@ -218,29 +193,25 @@ function parseShadowsocks(uri) {
         }
       }
 
-      const pluginParam = sp.get("plugin") || "";
+      // plugin=obfs-local;obfs=http;obfs-host=xxx
+      const pluginParam = search.get("plugin") || "";
       if (pluginParam) {
         const segs = pluginParam.split(";");
         for (const seg of segs) {
-          const [k, v] = seg.split("=");
-          if (!k || !v) continue;
-          const kk = k.trim();
-          let vv = v.trim();
+          const [kRaw, vRaw] = seg.split("=");
+          if (!kRaw || typeof vRaw === "undefined") continue;
+          const k = kRaw.trim();
+          let v = vRaw.trim();
           try {
-            vv = decodeURIComponent(vv);
+            v = decodeURIComponent(v);
           } catch (_e) {}
 
-          if (kk === "obfs") {
-            pluginMode = vv;
-          } else if (kk === "obfs-host") {
-            pluginHost = vv;
-          }
+          if (k === "obfs") pluginMode = v;
+          else if (k === "obfs-host") pluginHost = v;
         }
       }
 
-      if (pluginMode) {
-        plugin = "obfs";
-      }
+      if (pluginMode) plugin = "obfs";
     }
 
     if (!name) {
@@ -249,9 +220,7 @@ function parseShadowsocks(uri) {
 
     return {
       raw: uri,
-      scheme: "ss",
       type: "ss",
-      name,
       server: host,
       port,
       cipher: method,
@@ -259,13 +228,14 @@ function parseShadowsocks(uri) {
       plugin,
       pluginMode,
       pluginHost,
+      name,
     };
   } catch (_e) {
     return null;
   }
 }
 
-/* ================= 工具函数 ================= */
+/* ========== Base64 工具（和前面保持一致即可） ========== */
 
 function safeBase64Decode(str) {
   if (!str) return "";
@@ -274,13 +244,12 @@ function safeBase64Decode(str) {
   if (pad === 2) s += "==";
   else if (pad === 3) s += "=";
   else if (pad === 1) return "";
-
   try {
     const bin = atob(s);
     try {
       return decodeURIComponent(
-        Array.prototype
-          .map.call(bin, (c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        Array.prototype.map
+          .call(bin, (c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
           .join("")
       );
     } catch (_e) {
