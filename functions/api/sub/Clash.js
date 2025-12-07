@@ -76,17 +76,24 @@ export async function onRequestPost(context) {
       };
       lines.push("  - " + JSON.stringify(obj));
     } else if (n.type === "hysteria2") {
-      // 按你给的格式：
-      // - {"name":"...","type":"hysteria2","server":"...","port":xxxxx,"password":"...","sni":"...","skip-cert-verify":true}
+      // 按你给的两种格式：
+      // 1) 无端口跳跃: 只要 auth / fast-open:true
+      // 2) 有端口跳跃: ports + sni + fast-open:false
       const obj = {
-        name: n.name,
         type: "hysteria2",
+        name: n.name,
         server: n.server,
         port: n.port,
-        password: n.password,
-        sni: n.sni || "",
         "skip-cert-verify": n.skipCertVerify === true,
+        "fast-open": !n.ports, // 有 ports 就 false，否则 true
+        auth: n.auth,
       };
+      if (n.ports) {
+        obj.ports = n.ports;
+      }
+      if (n.sni) {
+        obj.sni = n.sni;
+      }
       lines.push("  - " + JSON.stringify(obj));
     }
   }
@@ -419,8 +426,7 @@ function parseHysteria2(uri) {
 
     let sni = "";
     let skipCertVerify = false;
-    // mport/ports 现在可以不下发，但先读着，后续你要用再加
-    // let ports = "";
+    let ports = "";
 
     if (queryStr) {
       const search = new URLSearchParams(queryStr);
@@ -439,14 +445,14 @@ function parseHysteria2(uri) {
         skipCertVerify = true;
       }
 
-      // const mport = search.get("mport") || search.get("ports");
-      // if (mport) {
-      //   try {
-      //     ports = decodeURIComponent(mport);
-      //   } catch (_e) {
-      //     ports = mport;
-      //   }
-      // }
+      const mport = search.get("mport") || search.get("ports");
+      if (mport) {
+        try {
+          ports = decodeURIComponent(mport);
+        } catch (_e) {
+          ports = mport;
+        }
+      }
     }
 
     if (!name) {
@@ -458,9 +464,10 @@ function parseHysteria2(uri) {
       type: "hysteria2",
       server: host,
       port,
-      password: auth,
+      auth,            // 直接用 auth 字段
       sni,
       skipCertVerify,
+      ports,
       name,
     };
   } catch (_e) {
