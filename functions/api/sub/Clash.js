@@ -14,6 +14,9 @@
 //         VMESS / UDP
 //         VMESS / HTTP / UDP
 //         VMESS / WEBSOCKET / UDP
+//         VLESS / UDP
+//         VLESS / XTLS-RPRX-VISION / UDP
+//         VLESS / WEBSOCKET / UDP
 
 export async function onRequestPost(context) {
   const { request } = context;
@@ -131,6 +134,48 @@ export async function onRequestPost(context) {
       }
 
       lines.push("  - " + JSON.stringify(obj));
+    } else if (n.type === "vless") {
+      const obj = {
+        type: "vless",
+        name: n.name,
+        server: n.server,
+        port: n.port,
+        uuid: n.uuid,
+        tls: !!n.tls,
+        "skip-cert-verify": n.skipCertVerify === true,
+        network: n.network || "tcp",
+      };
+
+      if (n.servername) {
+        obj.servername = n.servername;
+      }
+
+      // Reality
+      if (n.pbk) {
+        obj["reality-opts"] = {
+          "public-key": n.pbk,
+        };
+        if (n.sid) {
+          obj["reality-opts"]["short-id"] = n.sid;
+        }
+      }
+
+      // xtls-rprx-vision
+      if (n.flow === "xtls-rprx-vision") {
+        obj.flow = "xtls-rprx-vision";
+      }
+
+      // WebSocket
+      if (obj.network === "ws") {
+        obj["ws-opts"] = {
+          path: n.path || "/",
+          headers: {
+            Host: n.hostHeader || n.servername || n.server,
+          },
+        };
+      }
+
+      lines.push("  - " + JSON.stringify(obj));
     }
   }
 
@@ -162,7 +207,8 @@ function parseWhitelistNodes(text) {
         decodedOnce.startsWith("trojan://") ||
         decodedOnce.startsWith("hysteria2://") ||
         decodedOnce.startsWith("hy2://") ||
-        decodedOnce.startsWith("vmess://")
+        decodedOnce.startsWith("vmess://") ||
+        decodedOnce.startsWith("vless://")
       ) {
         token = decodedOnce;
       }
@@ -215,6 +261,19 @@ function parseWhitelistNodes(text) {
         continue;
       }
 
+      nodes.push(n);
+    } else if (lower.startsWith("vless://")) {
+      const uri = token;
+      if (seen.has(uri)) continue;
+      seen.add(uri);
+
+      const n = parseVless(uri);
+      if (!n) continue;
+
+      // 这里目前所有解析成功的 vless 都放行：
+      // - vless/udp（Reality）
+      // - vless/xtls-rprx-vision/udp
+      // - vless/websocket/udp
       nodes.push(n);
     }
   }
@@ -655,6 +714,140 @@ function parseVMess(uri) {
       network,
       path,
       hostHeader,
+      name,
+    };
+  } catch (_e) {
+    return null;
+  }
+}
+
+/* ================= VLESS 解析：vless:// ================= */
+
+function parseVless(uri) {
+  try {
+    let s = uri.trim();
+
+    // 有可能整条被 encode 一次
+    try {
+      const d1 = decodeURIComponent(s);
+      if (d1.startsWith("vless://")) {
+        s = d1;
+      }
+    } catch (_e) {}
+
+    if (!s.toLowerCase().startsWith("vless://")) return null;
+
+    // 用 URL 统一解析，临时换成 http:// 方案
+    let url;
+    try {
+      url = new URL(s.replace(/^vless:\/\//i, "http://"));
+    } catch (_e) {
+      return null;
+    }
+
+    const params = url.searchParams;
+
+    // 备注：优先 ?remarks=，其次 #fragment
+    let name = params.get("remarks") || "";
+    if (!name && url.hash && url.hash.length > 1) {
+      name = url.hash.slice(1);
+    }
+    if (name) {
+      name = decodeNameMaybeTwice(name);
+    }
+
+    // username 一般是 base64("auto:uuid")
+    let uuid = "";
+    if (url.username) {
+      const decoded = safeBase64Decode(url.username);
+      if (decoded && decoded.includes(":")) {
+        uuid = decoded.substring(decoded.indexOf(":") + 1);
+      } else if (decoded) {
+        uuid = decoded;
+      } else {
+        uuid = url.username;
+      }
+    }
+
+    const host = url.hostname || "0.0.0.0";
+    const port = url.port ? parseInt(url.port, 10) || 443 : 443;
+
+    // tls / security
+    const tlsParam =
+      (params.get("tls") || "").toLowerCase() ||
+      (params.get("security") || "").toLowerCase();
+    const tls =
+      tlsParam === "1" ||
+      tlsParam === "true" ||
+      tlsParam === "tls";
+
+    // Reality 相关
+    const pbk = params.get("pbk") || params.get("public-key") || "";
+    const sid = params.get("sid") || params.get("short-id") || "";
+
+    // xtls-rprx-vision
+    const xtls = params.get("xtls") || "";
+    let flow = "";
+    if (xtls === "2") {
+      flow = "xtls-rprx-vision";
+    }
+
+    // obfs / websocket
+    const obfs = (params.get("obfs") || "").toLowerCase();
+    let network = "tcp";
+    if (obfs === "websocket" || obfs === "ws") {
+      network = "ws";
+    }
+
+    // path
+    let path = "/";
+    const pathParam = params.get("path");
+    if (pathParam) {
+      try {
+        path = decodeURIComponent(pathParam) || "/";
+      } catch (_e) {
+        path = pathParam || "/";
+      }
+    }
+
+    // Host / SNI / servername
+    let hostHeader = "";
+    const obfsParam = params.get("obfsParam") || params.get("host") || "";
+    if (obfsParam) {
+      try {
+        hostHeader = decodeURIComponent(obfsParam);
+      } catch (_e) {
+        hostHeader = obfsParam;
+      }
+    }
+
+    const peer = params.get("peer") || params.get("sni") || "";
+    const servername = peer || host;
+
+    // allowInsecure / insecure
+    const insecure =
+      (params.get("allowInsecure") || params.get("insecure") || "").toLowerCase();
+    const skipCertVerify = insecure === "1" || insecure === "true";
+
+    if (!name) {
+      name = `${host}:${port}`;
+    }
+
+    return {
+      raw: uri,
+      type: "vless",
+      server: host,
+      port,
+      uuid,
+      tls,
+      network,
+      path,
+      hostHeader,
+      flow,
+      servername,
+      pbk,
+      sid,
+      skipCertVerify,
       name,
     };
   } catch (_e) {
