@@ -14,26 +14,20 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Pastebox">
     <meta property="og:title" content="Pastebox">
-    <meta property="og:description" content="简洁、安静的 Paste 工具，支持文本与代码存储。">
+    <meta property="og:description" content="Paste text. Get URL. Move on.">
     <meta property="og:image" content="https://save.aura.us.kg/Picture/Fm2.png">
-    <meta property="og:url" content="https://aura.us.kg/Paste/">
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Pastebox">
-    <meta name="twitter:description" content="简洁、安静的 Paste 工具，支持文本与代码存储。">
-    <meta name="twitter:image" content="https://save.aura.us.kg/Picture/Fm2.png">
+    <meta property="og:url" content="https://aura.us.kg/Paste">
 
     <style>
         :root{
             --bg:#020617;
-            --layer:rgba(15,23,42,0.96);
-            --layer-soft:rgba(15,23,42,0.88);
-            --border-soft:rgba(148,163,184,0.4);
-            --border-strong:rgba(148,163,184,0.9);
+            --bg-alt:#020617;
+            --layer:rgba(15,23,42,0.98);
+            --layer-soft:rgba(15,23,42,0.92);
             --text-main:#e5e7eb;
             --text-sub:#9ca3af;
-            --accent:#eab308;
+            --accent:#22c55e;
+            --accent-soft:rgba(34,197,94,0.12);
             --accent2:#6366f1;
             --danger:#fecaca;
             --shadow-main:0 22px 60px rgba(15,23,42,0.9);
@@ -48,9 +42,8 @@
             --border-soft:rgba(148,163,184,0.5);
             --border-strong:rgba(148,163,184,0.9);
             --accent:#2563eb;
-            --accent2:#7c3aed;
-            --danger:#ef4444;
-            --shadow-main:0 22px 60px rgba(148,163,184,0.45);
+            --accent-soft:rgba(37,99,235,0.12);
+            --accent2:#4f46e5;
             --input-bg:#f9fafb;
         }
         *{
@@ -62,504 +55,317 @@
             height:100%;
         }
         body{
-            font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,system-ui,sans-serif;
-            background:radial-gradient(circle at 0% 0%,#1f2937 0,transparent 55%),
-                       radial-gradient(circle at 100% 100%,#111827 0,transparent 55%),
-                       var(--bg);
+            font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+            background:
+                    radial-gradient(circle at 10% -10%,rgba(56,189,248,0.16),transparent 55%),
+                    radial-gradient(circle at 90% 120%,rgba(129,140,248,0.28),transparent 55%),
+                    radial-gradient(circle at -10% 50%,rgba(34,197,94,0.18),transparent 45%),
+                    var(--bg);
             color:var(--text-main);
-            -webkit-font-smoothing:antialiased;
-            padding:24px;
-        }
-        .page{
-            max-width:1120px;
-            margin:0 auto;
+            padding:32px 16px;
             display:flex;
-            flex-direction:column;
-            gap:20px;
+            align-items:center;
+            justify-content:center;
         }
-        .layout-main{
-            display:grid;
-            grid-template-columns: minmax(0, 3fr) minmax(0, 2.1fr);
-            gap:20px;
+        body::before{
+            content:"";
+            position:fixed;
+            inset:-40px;
+            background:
+                    radial-gradient(circle at 20% 0%,rgba(59,130,246,0.16),transparent 50%),
+                    radial-gradient(circle at 90% 80%,rgba(56,189,248,0.18),transparent 55%);
+            opacity:0.7;
+            mix-blend-mode:screen;
+            pointer-events:none;
+            z-index:-1;
         }
-        @media(max-width:960px){
-            body{padding:16px;}
-            .layout-main{grid-template-columns:1fr;}
+        .shell{
+            width:100%;
+            max-width:1080px;
         }
         .card{
-            background:radial-gradient(circle at 0 0,rgba(148,163,184,0.16),transparent 55%),
-                       radial-gradient(circle at 100% 100%,rgba(148,163,184,0.2),transparent 55%),
-                       var(--layer);
-            border-radius:24px;
+            background:radial-gradient(circle at 0 0,rgba(148,163,184,0.28),transparent 58%) border-box,
+                       linear-gradient(135deg,rgba(15,23,42,0.98),rgba(15,23,42,0.98)) padding-box;
+            border-radius:28px;
             border:1px solid rgba(148,163,184,0.45);
             box-shadow:var(--shadow-main);
             padding:18px 18px 16px;
+            display:flex;
+            flex-direction:column;
+            gap:16px;
             position:relative;
             overflow:hidden;
+        }
+        body.theme-light .card{
+            background:radial-gradient(circle at 0 0,rgba(191,219,254,0.7),transparent 60%) border-box,
+                       linear-gradient(135deg,#ffffff,#ffffff) padding-box;
+            border-color:rgba(148,163,184,0.5);
+            box-shadow:0 18px 45px rgba(15,23,42,0.18);
         }
         .card::before{
             content:"";
             position:absolute;
-            inset:-40%;
-            background:radial-gradient(circle at 0 0,rgba(251,191,36,0.08) 0,transparent 55%),
-                       radial-gradient(circle at 100% 100%,rgba(59,130,246,0.08) 0,transparent 55%);
-            opacity:0.65;
-            mix-blend-mode:screen;
+            inset:0;
+            background:
+                linear-gradient(120deg,rgba(255,255,255,0.18),transparent 65%),
+                radial-gradient(circle at 80% 0%,rgba(129,140,248,0.28),transparent 55%);
+            mix-blend-mode:soft-light;
+            opacity:0.75;
             pointer-events:none;
         }
-        .card-inner{
-            position:relative;
-            z-index:1;
+        .card > *{position:relative;z-index:1;}
+
+        .header{
+            display:flex;
+            align-items:flex-start;
+            justify-content:space-between;
+            gap:16px;
         }
-        .card-header{
+        .brand{
             display:flex;
             align-items:center;
-            justify-content:space-between;
-            margin-bottom:10px;
+            gap:12px;
         }
-        .title-block{
+        .brand-logo{
+            width:40px;
+            height:40px;
+            border-radius:18px;
+            background:radial-gradient(circle at 30% 0%,rgba(248,250,252,0.92),rgba(15,23,42,1));
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            overflow:hidden;
+            box-shadow:0 10px 30px rgba(15,23,42,0.85);
+        }
+        .brand-logo img{
+            width:32px;
+            height:32px;
+            border-radius:999px;
+            object-fit:cover;
+        }
+        .brand-text{
             display:flex;
             flex-direction:column;
             gap:2px;
         }
-        .title{
-            font-size:18px;
-            letter-spacing:.06em;
+        .brand-title{
+            font-weight:650;
+            letter-spacing:0.08em;
             text-transform:uppercase;
-            color:var(--text-main);
+            font-size:14px;
         }
-        .subtitle{
-            font-size:11px;
-            text-transform:uppercase;
+        .brand-sub{
+            font-size:12px;
             color:var(--text-sub);
-            letter-spacing:.14em;
         }
-        .badge{
-            font-size:11px;
-            padding:2px 8px;
+        .header-actions{
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+        .pill{
+            display:inline-flex;
+            align-items:center;
+            padding:2px 10px 2px 3px;
             border-radius:999px;
-            border:1px solid rgba(148,163,184,0.5);
+            background:rgba(15,23,42,0.85);
+            border:1px solid rgba(148,163,184,0.6);
+            font-size:11px;
+            color:var(--text-sub);
+            gap:6px;
+        }
+        body.theme-light .pill{
+            background:rgba(255,255,255,0.9);
+            border-color:rgba(148,163,184,0.7);
+        }
+        .pill-dot{
+            width:7px;
+            height:7px;
+            border-radius:999px;
+            background:radial-gradient(circle at 30% 0%,#bbf7d0,#22c55e);
+            box-shadow:0 0 0 3px rgba(34,197,94,0.2);
+        }
+        .pill-label{
+            text-transform:uppercase;
+            letter-spacing:0.1em;
+            font-size:10px;
+        }
+
+        .btn-theme{
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            padding:4px 10px;
+            border-radius:999px;
+            border:1px solid rgba(148,163,184,0.7);
+            background:rgba(15,23,42,0.9);
+            color:var(--text-sub);
+            font-size:11px;
+            cursor:pointer;
+        }
+        body.theme-light .btn-theme{
+            background:#ffffff;
+        }
+        .btn-theme .icon{
+            width:14px;height:14px;
+        }
+        .btn-theme .label{
+            text-transform:uppercase;
+            letter-spacing:0.08em;
+        }
+        .header-buttons{
+            display:flex;
+            gap:8px;
+        }
+        .pill-btn{
+            border-radius:999px;
+            padding:4px 10px;
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            border:1px solid rgba(148,163,184,0.6);
+            background:rgba(15,23,42,0.9);
+            color:var(--text-main);
+            font-size:11px;
+            cursor:pointer;
+        }
+        body.theme-light .pill-btn{
+            background:#ffffff;
+        }
+        .pill-btn-primary{
+            border-color:rgba(34,197,94,0.85);
+            background:linear-gradient(135deg,#22c55e,#4ade80);
+            color:#022c22;
+        }
+        .pill-btn-primary .icon-svg svg{
+            stroke:#022c22;
+        }
+        .pill-btn .icon-svg{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+        }
+        .pill-btn .icon-svg svg{
+            width:14px;height:14px;
+            stroke:#cbd5f5;
+        }
+
+        .card-section{
+            border-radius:18px;
+            background:linear-gradient(145deg,rgba(15,23,42,0.96),rgba(15,23,42,0.92));
+            border:1px solid rgba(51,65,85,0.9);
+            padding:10px 12px 10px;
+            margin-bottom:10px;
+        }
+        body.theme-light .card-section{
+            background:linear-gradient(145deg,#f9fafb,#ffffff);
+            border-color:rgba(148,163,184,0.7);
+        }
+        .card-section:nth-child(1){
+            background:linear-gradient(145deg,rgba(15,23,42,0.98),rgba(15,23,42,0.96));
+        }
+        .section-title{
+            font-size:12px;
+            text-transform:uppercase;
+            letter-spacing:0.2em;
+            color:#e5e7eb;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            margin-bottom:6px;
+        }
+        body.theme-light .card-section:nth-child(1) .section-title{
+            color:#111827;
+        }
+        .tag{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            padding:1px 7px;
+            border-radius:999px;
+            background:rgba(15,23,42,0.95);
+            border:1px solid rgba(148,163,184,0.85);
+            font-size:10px;
             color:var(--text-sub);
         }
-        .hint{
+        body.theme-light .tag{
+            background:#ffffff;
+        }
+        .section-text{
+            font-size:12px;
+            color:var(--text-sub);
+            line-height:1.7;
+        }
+
+        .field{
+            margin-top:8px;
+        }
+        .field-label{font-size:12px;color:var(--text-sub);}
+        .field-inline{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+        .field-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;}
+        .field-block{flex:1 1 200px;}
+
+        input[type="text"],input[type="password"]{
+            border-radius:999px;
+            border:1px solid var(--border-strong);
+            background:var(--input-bg);
+            color:var(--text-main);
+            padding:6px 10px;
+            font-size:12px;
+            width:100%;
+        }
+        input[type="text"]::placeholder,input[type="password"]::placeholder{
+            color:rgba(148,163,184,0.8);
+        }
+
+        textarea{
+            width:100%;
+            min-height:220px;
+            resize:vertical;
+            border-radius:18px;
+            border:1px solid rgba(51,65,85,0.9);
+            background:var(--input-bg);
+            color:var(--text-main);
+            font-size:13px;
+            padding:9px 10px 20px;
+            font-family:ui-monospace,Menlo,Monaco,"SF Mono","Cascadia Mono",monospace;
+            line-height:1.5;
+            outline:none;
+        }
+        textarea::placeholder{
+            color:rgba(148,163,184,0.8);
+        }
+
+        .textarea-wrap{
+            position:relative;
+        }
+        .line-counter{
+            position:absolute;
+            right:10px;
+            bottom:8px;
             font-size:11px;
             color:var(--text-sub);
         }
+
+        .hint{font-size:11px;color:var(--text-sub);}
         .hint-error{color:#f97373;}
         .hint-success{color:#22c55e;}
         .byte-count{font-size:11px;color:var(--text-sub);}
         .byte-num{color:var(--accent2);font-weight:600;}
 
-        /* 节点类型提示 */
-        .node-detect{
-            font-size:11px;
-            color:var(--text-sub);
-            margin-left:12px;
-            opacity:.9;
-        }
-
-        /* 备注行里的订阅按钮区域 */
-        .node-sub-wrap{
-            display:flex;
-            align-items:center;
-            gap:6px;
-            margin-left:8px;
-        }
-        .node-sub-btn{
-            padding:3px 10px;
+        .node-info{font-size:11px;color:var(--text-sub);margin-left:8px;opacity:.85;}
+        .remark-sub-wrap{display:inline-block;position:relative;margin-left:8px;}
+        .remark-sub-btn{
             border-radius:999px;
-            font-size:11px;
-            border:none;
-            cursor:pointer;
+            border:1px solid #16a34a;
             background:#22c55e;
             color:#022c22;
-            font-weight:500;
-            box-shadow:0 4px 10px rgba(34,197,94,0.35);
-            white-space:nowrap;
-        }
-        .node-sub-btn:hover{
-            filter:brightness(1.06);
-        }
-        .node-sub-select{
-            border-radius:999px;
-            border:1px solid var(--border-soft);
-            background:var(--input-bg);
-            color:var(--text-main);
             font-size:11px;
-            padding:3px 8px;
-        }
-
-        /* 原本字节 + 小药丸，现在只用作右侧小药丸样式 */
-        .byte-actions{
-            display:flex;
-            align-items:center;
-            gap:6px;
-        }
-        .pill{
-            display:inline-flex;
-            align-items:center;
-            border-radius:999px;
-            padding:2px 8px;
-            font-size:11px;
-            background:radial-gradient(circle at 0 0,rgba(251,191,36,0.12),transparent 55%),
-                       radial-gradient(circle at 100% 100%,rgba(59,130,246,0.12),transparent 55%);
-            border:1px solid rgba(148,163,184,0.45);
-            color:var(--text-sub);
-            gap:4px;
-        }
-        .pill svg{width:12px;height:12px;}
-        .btn{
-            border:none;
-            border-radius:999px;
-            padding:6px 16px;
-            font-size:13px;
-            cursor:pointer;
-            display:inline-flex;
-            align-items:center;
-            gap:6px;
-            background:linear-gradient(135deg,#facc15,#f97316);
-            color:#111827;
-            font-weight:500;
-            box-shadow:0 12px 35px rgba(248,250,252,0.08);
-        }
-        .btn:hover{filter:brightness(1.04);}
-        .btn-secondary{
-            border-radius:999px;
-            padding:5px 12px;
-            font-size:12px;
-            background:rgba(15,23,42,0.8);
-            color:var(--text-main);
-            border:1px solid rgba(148,163,184,0.6);
-            cursor:pointer;
-            display:inline-flex;
-            align-items:center;
-            gap:6px;
-        }
-        .btn-secondary:hover{
-            background:rgba(15,23,42,0.96);
-        }
-        .btn-danger{
-            border-radius:999px;
-            padding:5px 12px;
-            font-size:12px;
-            background:rgba(153,27,27,0.92);
-            color:#fecaca;
-            border:1px solid rgba(248,113,113,0.9);
-            cursor:pointer;
-            display:inline-flex;
-            align-items:center;
-            gap:4px;
-        }
-        .btn-danger:hover{
-            background:rgba(127,29,29,0.98);
-        }
-        .btn-xs{
-            padding:4px 9px;
-            font-size:11px;
-        }
-        .btn-icon{
-            padding-inline:10px;
-        }
-        .icon-svg{
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-        }
-        .field-block{
-            margin-bottom:12px;
-        }
-        .field-label{
-            font-size:12px;
-            color:var(--text-sub);
-            margin-bottom:4px;
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:8px;
-        }
-        .field-inline{
-            display:flex;
-            align-items:center;
-            gap:8px;
-        }
-        .field-inline .btn-secondary{
-            white-space:nowrap;
-        }
-        .input{
-            width:100%;
-            border-radius:14px;
-            border:1px solid rgba(148,163,184,0.55);
-            padding:7px 10px;
-            font-size:13px;
-            background:var(--input-bg);
-            color:var(--text-main);
-            outline:none;
-        }
-        .input:focus{
-            border-color:var(--accent2);
-            box-shadow:0 0 0 1px rgba(99,102,241,0.4);
-        }
-        .input::placeholder{
-            color:rgba(148,163,184,0.7);
-        }
-        .input-error{
-            border-color:#f97373 !important;
-        }
-        .textarea-wrap{
-            position:relative;
-            border-radius:20px;
-            border:1px solid rgba(148,163,184,0.65);
-            background:var(--input-bg);
-            overflow:hidden;
-        }
-        .textarea-inner{
-            position:relative;
-            display:flex;
-        }
-        .line-counter{
-            width:54px;
-            padding:8px 6px 8px 10px;
-            border-right:1px solid rgba(148,163,184,0.35);
-            font-size:11px;
-            color:var(--text-sub);
-            background:linear-gradient(to bottom,rgba(15,23,42,1),rgba(15,23,42,0.9));
-            text-align:right;
-            user-select:none;
-        }
-        textarea{
-            flex:1;
-            border:none;
-            outline:none;
-            resize:vertical;
-            min-height:220px;
-            max-height:460px;
-            padding:8px 10px;
-            font-size:13px;
-            line-height:1.6;
-            background:transparent;
-            color:var(--text-main);
-            font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-        }
-        textarea::placeholder{
-            color:rgba(148,163,184,0.65);
-        }
-        .textarea-footer{
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            padding:6px 10px;
-            border-top:1px solid rgba(148,163,184,0.4);
-            background:linear-gradient(to right,rgba(15,23,42,0.96),rgba(15,23,42,0.92));
-            font-size:11px;
-        }
-        .status{
-            margin-top:6px;
-            font-size:11px;
-            color:var(--text-sub);
-            min-height:16px;
-        }
-        .status.error{color:#fecaca;}
-        .status.success{color:#86efac;}
-        .result-box{
-            margin-top:10px;
-            border-radius:16px;
-            border:1px dashed rgba(148,163,184,0.6);
-            background:radial-gradient(circle at 0 0,rgba(59,130,246,0.06),transparent 55%),
-                       radial-gradient(circle at 100% 100%,rgba(234,179,8,0.06),transparent 55%),
-                       rgba(15,23,42,0.9);
-            padding:8px 10px;
-            font-size:12px;
-            display:none;
-        }
-        .result-link{
-            margin:4px 0 6px;
-            word-break:break-all;
-            font-family:ui-monospace,monospace;
-            color:var(--accent2);
-        }
-        .result-actions{
-            display:flex;
-            flex-wrap:wrap;
-            gap:8px;
-            justify-content:flex-end;
-        }
-        .link-base{
-            font-size:11px;
-            color:var(--text-sub);
-            margin-bottom:4px;
-        }
-        .switch-row{
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:8px;
-            margin-bottom:6px;
-        }
-        .switch-label{
-            display:flex;
-            align-items:center;
-            gap:6px;
-            font-size:11px;
-            color:var(--text-sub);
-        }
-        .switch{
-            position:relative;
-            width:38px;
-            height:20px;
-        }
-        .switch input{
-            display:none;
-        }
-        .switch-slider{
-            position:absolute;
-            inset:0;
-            border-radius:999px;
-            background:rgba(15,23,42,0.9);
-            border:1px solid rgba(148,163,184,0.7);
-            transition:.15s ease-out;
-        }
-        .switch-slider::before{
-            content:"";
-            position:absolute;
-            width:16px;
-            height:16px;
-            border-radius:999px;
-            background:radial-gradient(circle at 20% 20%,#facc15 0,#f97316 40%,#ea580c 100%);
-            top:1px;
-            left:1px;
-            transition:.15s ease-out;
-            box-shadow:0 4px 10px rgba(15,23,42,0.7);
-        }
-        .switch input:checked + .switch-slider{
-            border-color:rgba(251,191,36,0.9);
-            background:rgba(15,23,42,1);
-        }
-        .switch input:checked + .switch-slider::before{
-            transform:translateX(18px);
-        }
-        .ttl-group{
-            display:flex;
-            flex-wrap:wrap;
-            gap:8px;
-            margin-top:4px;
-        }
-        .ttl-btn{
-            font-size:11px;
-            padding:4px 10px;
-            border-radius:999px;
-            border:1px solid rgba(148,163,184,0.6);
-            background:rgba(15,23,42,0.9);
-            color:var(--text-sub);
+            padding:2px 10px;
             cursor:pointer;
         }
-        .ttl-btn.active{
-            border-color:var(--accent2);
-            background:rgba(37,99,235,0.18);
-            color:var(--accent2);
-        }
-        .ttl-hint{
-            font-size:11px;
-            color:var(--text-sub);
-            margin-top:4px;
-        }
-
-        /* 用户中心 */
-        .uc-backdrop{
-            position:fixed;
-            inset:0;
-            background:rgba(15,23,42,0.8);
-            backdrop-filter:blur(18px);
-            display:none;
-            align-items:center;
-            justify-content:center;
-            z-index:40;
-        }
-        .uc-panel{
-            width:100%;
-            max-width:760px;
-            max-height:80vh;
-            border-radius:24px;
-            background:radial-gradient(circle at 0 0,rgba(59,130,246,0.08),transparent 55%),
-                       radial-gradient(circle at 100% 100%,rgba(234,179,8,0.08),transparent 55%),
-                       var(--layer);
-            border:1px solid rgba(148,163,184,0.8);
-            box-shadow:0 24px 60px rgba(15,23,42,0.95);
-            padding:16px 16px 14px;
-            display:flex;
-            flex-direction:column;
-            gap:10px;
-        }
-        .uc-header{
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:10px;
-        }
-        .uc-title{
-            font-size:15px;
-            text-transform:uppercase;
-            letter-spacing:.18em;
-        }
-        .uc-subtitle{
-            font-size:11px;
-            color:var(--text-sub);
-        }
-        .uc-body{
-            margin-top:2px;
-            border-radius:16px;
-            border:1px solid rgba(148,163,184,0.6);
-            background:rgba(15,23,42,0.94);
-            padding:10px;
-            display:flex;
-            flex-direction:column;
-            gap:8px;
-            min-height:160px;
-        }
-        .uc-empty{
-            font-size:12px;
-            color:var(--text-sub);
-        }
-        .uc-list{
-            display:flex;
-            flex-direction:column;
-            gap:8px;
-            font-size:12px;
-        }
-        .uc-item{
-            border-radius:12px;
-            border:1px solid rgba(55,65,81,0.85);
-            padding:8px 8px 7px;
-            background:radial-gradient(circle at 0 0,rgba(59,130,246,0.04),transparent 55%),
-                       radial-gradient(circle at 100% 100%,rgba(234,179,8,0.04),transparent 55%),
-                       rgba(15,23,42,0.96);
-        }
-        .uc-item-top{
-            display:flex;justify-content:space-between;gap:6px;
-        }
-        .uc-item-title{font-size:12px;font-weight:600;display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
-        .uc-item-meta{font-size:10px;color:var(--text-sub);text-align:right;}
-
-        .uc-sub-wrap{
-            display:inline-flex;
-            align-items:center;
-            position:relative;
-            margin-left:6px;
-        }
-        .uc-sub-btn{
-            padding:2px 8px;
-            border-radius:999px;
-            font-size:10px;
-            border:none;
-            cursor:pointer;
-            background:#22c55e;
-            color:#022c22;
-            font-weight:500;
-            box-shadow:0 4px 10px rgba(34,197,94,0.35);
-        }
-        .uc-sub-btn:hover{
-            filter:brightness(1.06);
-        }
-        .uc-sub-menu{
+        .remark-sub-btn:hover{filter:brightness(1.05);}
+        .remark-sub-menu{
             position:absolute;
             top:120%;
             right:0;
@@ -570,443 +376,820 @@
             padding:6px;
             display:none;
             z-index:20;
+            min-width:120px;
         }
-        .uc-sub-wrap.open .uc-sub-menu{
-            display:block;
-        }
-        .uc-sub-menu button{
+        .remark-sub-wrap.open .remark-sub-menu{display:block;}
+        .remark-sub-menu button{
             display:block;
             width:100%;
             border:none;
             background:transparent;
             color:var(--text-main);
-            font-size:10px;
+            font-size:11px;
             padding:4px 10px;
             text-align:left;
             border-radius:6px;
             cursor:pointer;
             white-space:nowrap;
         }
-        .uc-sub-menu button:hover{
+        .remark-sub-menu button:hover{
             background:var(--layer-soft);
         }
+
+        /* 原本字节 + 小药丸，现在只用作右侧小药丸样式 */
+        .byte-actions{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            margin-top:6px;
+            flex-wrap:wrap;
+        }
+        .upload-row{
+            justify-content:space-between;
+        }
+        .upload-btn{
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            padding:4px 10px;
+            border-radius:999px;
+            border:1px dashed rgba(148,163,184,0.7);
+            background:rgba(15,23,42,0.9);
+            color:var(--text-sub);
+            font-size:11px;
+            cursor:pointer;
+        }
+        body.theme-light .upload-btn{
+            background:#ffffff;
+        }
+        .upload-btn .icon-svg{
+            display:inline-flex;
+        }
+        .upload-btn .icon-svg svg{
+            width:14px;height:14px;
+            stroke:#d1d5db;
+        }
+
+        .btn-secondary{
+            padding:4px 9px;
+            border-radius:999px;
+            border:1px solid rgba(148,163,184,0.7);
+            background:rgba(15,23,42,0.98);
+            color:var(--text-main);
+            font-size:11px;
+            display:inline-flex;
+            align-items:center;
+            gap:4px;
+            cursor:pointer;
+        }
+        body.theme-light .btn-secondary{
+            background:#ffffff;
+        }
+        .btn-xs{
+            padding:3px 8px;
+            font-size:10px;
+        }
+
+        .btn-primary{
+            padding:6px 12px;
+            border-radius:999px;
+            border:none;
+            background:linear-gradient(135deg,#22c55e,#16a34a);
+            color:#022c22;
+            font-size:13px;
+            font-weight:600;
+            cursor:pointer;
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            box-shadow:0 12px 30px rgba(22,163,74,0.6);
+        }
+        .btn-primary .icon-svg{
+            display:inline-flex;
+        }
+        .btn-primary .icon-svg svg{
+            width:14px;height:14px;
+        }
+
+        .btn-link{
+            border-radius:999px;
+            border:1px dashed rgba(148,163,184,0.7);
+            padding:5px 10px;
+            background:transparent;
+            color:var(--text-sub);
+            font-size:11px;
+            cursor:pointer;
+            display:inline-flex;
+            align-items:center;
+            gap:4px;
+        }
+        .btn-link svg{
+            width:14px;height:14px;
+        }
+
+        .btn-icon-only{
+            width:24px;height:24px;
+            border-radius:999px;
+            border:1px solid rgba(148,163,184,0.7);
+            background:rgba(15,23,42,0.95);
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            cursor:pointer;
+        }
+
+        .pill-danger{
+            border-color:rgba(248,113,113,0.9);
+            background:rgba(127,29,29,0.9);
+            color:#fecaca;
+        }
+
+        .ttl-group{
+            display:flex;
+            flex-wrap:wrap;
+            gap:6px;
+        }
+        .ttl-btn{
+            border-radius:999px;
+            border:1px solid rgba(148,163,184,0.7);
+            background:rgba(15,23,42,0.98);
+            color:var(--text-sub);
+            font-size:11px;
+            padding:3px 9px;
+            cursor:pointer;
+        }
+        .ttl-btn.active{
+            border-color:rgba(34,197,94,0.9);
+            background:rgba(34,197,94,0.12);
+            color:#bbf7d0;
+        }
+        body.theme-light .ttl-btn{
+            background:#ffffff;
+        }
+        body.theme-light .ttl-btn.active{
+            background:rgba(34,197,94,0.14);
+            color:#166534;
+        }
+
+        .status{
+            margin-top:6px;
+            font-size:11px;
+            color:var(--text-sub);
+            min-height:16px;
+        }
+        .status-success{color:#4ade80;}
+        .status-error{color:#fca5a5;}
+
+        .result-box{
+            margin-top:10px;
+            padding:9px 10px;
+            border-radius:16px;
+            border:1px dashed rgba(148,163,184,0.7);
+            background:rgba(15,23,42,0.96);
+            font-size:11px;
+            color:var(--text-sub);
+        }
+        body.theme-light .result-box{
+            background:#f9fafb;
+        }
+        .result-link{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            margin-top:4px;
+            word-break:break-all;
+            font-size:12px;
+        }
+
+        .result-actions{
+            margin-top:8px;
+            display:flex;
+            flex-wrap:wrap;
+            gap:6px;
+        }
+
+        .section-footer{
+            font-size:11px;
+            color:var(--text-sub);
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-top:10px;
+        }
+        .section-footer .left{
+            display:flex;
+            align-items:center;
+            gap:4px;
+        }
+
+        .link-main{
+            color:var(--accent2);
+            text-decoration:none;
+        }
+        .link-main:hover{
+            text-decoration:underline;
+        }
+
+        /* ===== 用户中心：悬浮面板 ===== */
+        .uc-backdrop{
+            position:fixed;inset:0;
+            background: rgba(0, 0, 0, 0.47);
+            display:flex;align-items:center;justify-content:center;
+            padding:20px 10px;z-index:30;
+        }
+        .uc-panel{
+            width:100%;max-width:880px;max-height:90vh;
+            background:var(--layer);
+            border-radius:20px;
+            border:1px solid rgba(148,163,184,0.7);
+            box-shadow:0 24px 70px rgba(15,23,42,0.95);
+            padding:14px 14px 12px;
+            display:flex;flex-direction:column;gap:10px;
+        }
+        .uc-header{
+            display:flex;justify-content:space-between;gap:10px;align-items:flex-start;
+        }
+        .uc-title-box{display:flex;align-items:flex-start;gap:8px;}
+        .uc-title-main{font-size:14px;font-weight:600;}
+        .uc-title-sub{font-size:11px;color:var(--text-sub);margin-top:2px;}
+        .uc-actions{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;}
+        .uc-body{
+            border-radius:14px;
+            background:var(--layer-soft);
+            border:1px solid rgba(51,65,85,0.9);
+            padding:8px;overflow:auto;
+        }
+        .uc-empty{font-size:12px;color:var(--text-sub);padding:16px 6px;text-align:center;}
+        .uc-list{display:flex;flex-direction:column;gap:6px;}
+
+        .uc-item{
+            border-radius:12px;
+            border:1px solid rgba(75,85,99,0.9);
+            background:rgba(15,23,42,0.96);
+            padding:8px 8px 6px;
+            display:flex;flex-direction:column;gap:4px;
+            font-size:11px;
+        }
+        body.theme-light .uc-item{background:#ffffff;}
+        .uc-item-top{
+            display:flex;justify-content:space-between;gap:6px;
+        }
+        .uc-item-title{font-size:12px;font-weight:600;display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+        .uc-item-meta{font-size:10px;color:var(--text-sub);text-align:right;}
         .uc-remark-tag{
+            display:inline-flex;
+            align-items:center;
+            padding:2px 7px;
+            border-radius:999px;
+            background:rgba(148,163,184,0.18);
+            color:var(--text-main);
+            font-size:10px;
+            gap:4px;
+        }
+        .uc-remark-tag .dot{
+            width:6px;height:6px;border-radius:999px;
+            background:radial-gradient(circle at 30% 0%,#facc15,#f97316);
+        }
+        .uc-remark-label{
+            text-transform:uppercase;
+            letter-spacing:0.09em;
+            font-size:9px;
+            opacity:0.85;
+        }
+        .uc-remark-text{max-width:220px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
+        .uc-slug-tag{
             display:inline-flex;
             align-items:center;
             padding:2px 8px;
             border-radius:999px;
-            background:rgba(15,23,42,0.96);
-            border:1px solid rgba(148,163,184,0.7);
-            color:var(--text-main);
-        }
-        .uc-slug-tag{
-            font-size:11px;
-            padding:2px 6px;
-            border-radius:999px;
-            border:1px dashed rgba(148,163,184,0.7);
+            background:rgba(148,163,184,0.12);
             color:var(--text-sub);
+            font-size:10px;
         }
-        .uc-link-row{
-            margin-top:4px;
-            font-size:11px;
-            color:var(--accent2);
-        }
+        .uc-link-row{margin-top:4px;}
         .uc-link-tag{
-            font-family:ui-monospace,monospace;
+            display:inline-flex;
+            align-items:center;
+            padding:2px 8px;
+            border-radius:999px;
+            background:rgba(15,23,42,0.9);
+            color:var(--text-main);
+            font-size:10px;
             word-break:break-all;
         }
-        .uc-item-actions{
-            margin-top:6px;
-            display:flex;
-            flex-wrap:wrap;
-            gap:6px;
-            justify-content:flex-end;
+        body.theme-light .uc-link-tag{
+            background:#f3f4f6;
+        }
+        .uc-item-actions{margin-top:4px;display:flex;flex-wrap:wrap;gap:6px;}
+
+        /* 解码按钮交互：点击时变黑 + 替换图标 */
+        .base64-decode-btn.decode-active{
+            background:#000000;
+            color:#f9fafb;
+            border-color:#000000;
+        }
+        .base64-decode-btn.decode-active svg{
+            stroke:#f9fafb;
         }
 
-        .theme-toggle{
-            display:inline-flex;
-            align-items:center;
-            gap:6px;
-            font-size:11px;
-            color:var(--text-sub);
+        @media(max-width:780px){
+            body{padding:22px 10px;}
+            .card{padding:14px 12px 12px;border-radius:18px;}
+            .header{flex-direction:column;align-items:flex-start;gap:10px;}
+            .brand{width:100%;}
+            .header-actions{align-self:flex-end;}
+            .uc-header{flex-direction:column;align-items:flex-start;}
+            .uc-actions{justify-content:flex-start;}
         }
-        .theme-toggle button{
-            border-radius:999px;
-            border:1px solid rgba(148,163,184,0.6);
-            background:rgba(15,23,42,0.9);
-            color:var(--text-main);
-            padding:3px 10px;
-            font-size:11px;
-            cursor:pointer;
-        }
-        .theme-toggle button.active{
-            background:rgba(234,179,8,0.15);
-            color:var(--accent);
-            border-color:rgba(234,179,8,0.7);
-        }
-
-        .status-top-row{
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:10px;
-        }
-        .status-top-row-left{
-            display:flex;
-            align-items:center;
-            gap:8px;
-        }
-
-        .tag-chip{
-            font-size:10px;
-            padding:2px 7px;
-            border-radius:999px;
-            border:1px solid rgba(148,163,184,0.6);
-            color:var(--text-sub);
-        }
-
-        .auth-pill{
-            display:inline-flex;
-            align-items:center;
-            gap:4px;
-            padding:3px 9px;
-            border-radius:999px;
-            border:1px solid rgba(148,163,184,0.7);
-            background:rgba(15,23,42,0.9);
-            font-size:11px;
-            color:var(--text-sub);
-            cursor:pointer;
-        }
-        .auth-pill strong{
-            color:var(--accent);
-            font-weight:600;
-        }
-
-        .auth-modal{
-            position:fixed;
-            inset:0;
-            background:rgba(15,23,42,0.82);
-            backdrop-filter:blur(20px);
-            display:none;
-            align-items:center;
-            justify-content:center;
-            z-index:50;
-        }
-        .auth-panel{
-            width:100%;
-            max-width:360px;
-            border-radius:20px;
-            background:radial-gradient(circle at 0 0,rgba(59,130,246,0.15),transparent 55%),
-                       radial-gradient(circle at 100% 100%,rgba(234,179,8,0.15),transparent 55%),
-                       var(--layer);
-            border:1px solid rgba(148,163,184,0.8);
-            box-shadow:0 24px 60px rgba(15,23,42,0.98);
-            padding:16px 16px 14px;
-        }
-        .auth-title{
-            font-size:16px;
-            margin-bottom:4px;
-        }
-        .auth-desc{
-            font-size:11px;
-            color:var(--text-sub);
-            margin-bottom:10px;
-        }
-        .auth-footer{
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-top:8px;
-            font-size:11px;
-            color:var(--text-sub);
-        }
-        .auth-msg{
-            font-size:11px;
-            min-height:16px;
-            margin-top:4px;
-        }
-        .auth-msg.error{color:#fecaca;}
-        .auth-msg.success{color:#86efac;}
-
-        .decode-active{
-            background:#000;
-            color:#fef3c7;
-        }
-
-        .footer{
-            font-size:11px;
-            color:var(--text-sub);
-            text-align:right;
-            margin-top:6px;
-        }
-        .footer a{
-            color:var(--accent2);
-            text-decoration:none;
-        }
-        .footer a:hover{text-decoration:underline;}
     </style>
 </head>
-<body>
-<div class="page">
-    <div class="card">
-        <div class="card-inner">
-            <div class="card-header">
-                <div class="title-block">
-                    <div class="title">PASTEBOX</div>
-                    <div class="subtitle">silent snippets, quiet storage</div>
-                </div>
-                <div class="status-top-row">
-                    <div class="status-top-row-left">
-                        <span class="tag-chip" id="baseUrlText">https://aura.us.kg/paste/{id}</span>
-                        <button type="button" class="auth-pill" id="btnAuthLabel">
-                            <span class="icon-svg">
-                                <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true">
-                                    <path fill="none" stroke="currentColor" stroke-width="1.6" d="M10 2a4 4 0 0 1 4 4v2h1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1h1V6a4 4 0 0 1 4-4Zm0 2a2 2 0 0 0-2 2v2h4V6a2 2 0 0 0-2-2Z"/>
-                                </svg>
-                            </span>
-                            <span>LogIn</span>
-                        </button>
-                    </div>
-                    <div class="theme-toggle">
-                        <span>主题</span>
-                        <button type="button" data-theme="dark" class="active">Dark</button>
-                        <button type="button" data-theme="light">Light</button>
-                    </div>
-                </div>
+<body class="theme-light">
+<div class="shell">
+    <header class="header">
+        <div class="brand">
+            <div class="brand-logo"><img id="brandIcon" alt="icon"></div>
+            <div class="brand-text">
+                <div class="brand-title">PasteBox</div>
+                <div class="brand-sub">Paste text. Get URL. Move on.</div>
             </div>
+        </div>
+        <div class="header-actions">
+            <div class="pill">
+                <div class="pill-dot"></div>
+                <div class="pill-label">No records. No audience. Only you.</div>
+            </div>
+            <div class="header-buttons">
+                <button type="button" class="btn-theme" id="themeToggle">
+                    <span class="icon">
+                        <svg viewBox="0 0 20 20">
+                            <path d="M10 2a.75.75 0 0 1 .75.75V4a.75.75 0 0 1-1.5 0V2.75A.75.75 0 0 1 10 2Zm0 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" fill="currentColor"/>
+                            <path d="M4.22 4.22a.75.75 0 0 1 1.06 0L6.28 5.22a.75.75 0 1 1-1.06 1.06L4.22 5.28a.75.75 0 0 1 0-1.06Zm9.5 9.5a.75.75 0 0 1 1.06 0l1 1a.75.75 0 0 1-1.06 1.06l-1-1a.75.75 0 0 1 0-1.06Zm2.03-9.5a.75.75 0 0 1 0 1.06l-1 1a.75.75 0 0 1-1.06-1.06l1-1a.75.75 0 0 1 1.06 0Zm-9.5 9.5a.75.75 0 0 1 0 1.06l-1 1a.75.75 0 0 1-1.06-1.06l1-1a.75.75 0 0 1 1.06 0ZM4 10a.75.75 0 0 1-.75.75H2.75a.75.75 0 0 1 0-1.5H3.25A.75.75 0 0 1 4 10Zm13 0a.75.75 0 0 1-.75.75H16.75a.75.75 0 0 1 0-1.5H16.25A.75.75 0 0 1 17 10Zm-6.5 7a.75.75 0 0 1 .75.75V17.25a.75.75 0 0 1-1.5 0V17.75a.75.75 0 0 1 .75-.75Z" fill="currentColor"/>
+                        </svg>
+                    </span>
+                    <span class="label">Light</span>
+                </button>
 
+                <button type="button" class="pill-btn" id="btnHome" style="display:none;">
+                    <span class="icon-svg">
+                        <svg viewBox="0 0 20 20">
+                            <path d="M10.707 2.293a1 1 0 0 0-1.414 0l-7 7A1 1 0 0 0 3 11h1v7a1 1 0 0 0 1 1h3v-4h4v4h3a1 1 0 0 0 1-1v-7h1a1 1 0 0 0 .707-1.707l-7-7z"/>
+                        </svg>
+                    </span>
+                    Home
+                </button>
+
+                <button type="button" class="pill-btn pill-btn-primary" id="btnAuthOpen">
+                <span class="icon-svg">
+                    <svg viewBox="0 0 20 20">
+                        <path d="M10 2a3 3 0 0 1 3 3v1a3 3 0 1 1-6 0V5a3 3 0 0 1 3-3Zm0 8a4 4 0 0 1 4 4v1a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-1c0-2.21 2.686-4 6-4z" />
+                    </svg>
+                </span>
+                <span id="btnAuthLabel">Login</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="card" id="mainCard">
+        <section class="card-section">
+            <div class="section-title">使用说明<span class="tag">GUIDE</span></div>
+            <div class="section-text">
+                在下面粘贴文本或从文件导入，选择有效期后生成一个可分享的访问链接（以 <code>text/plain</code> 打开）。<br>
+                登录可管理已生成的内容。🐹<br>
+                <span class="warning-label">警告：</span>请勿存储敏感信息，本工具仅适用于临时共享内容。<br>
+                <span class="warning-label">警告：</span>你上传的内容文件，可能会在不通知的情况下被删除！
+            </div>
+        </section>
+
+        <div id="editorContainer">
             <form id="pasteForm">
-                <div class="field-block">
-                    <div class="field-label">
-                        <span>内容</span>
-                        <button type="button" class="btn-secondary btn-xs" id="btnResetContent">
+                <section class="card-section">
+                    <div class="section-title">编辑 / 粘贴<span class="tag">BODY</span></div>
+                    <div class="field">
+                        <div class="textarea-wrap">
+                            <textarea id="content" placeholder="在这里粘贴内容（代码、日志、随手记都可以），或下方选择文件导入…" required></textarea>
+                            <div class="line-counter" id="lineCounter">0 行</div>
+                        </div>
+                    </div>
+
+                    <!-- 字节统计：单独一行 -->
+                    <div class="field">
+                        <span class="byte-count">
+                            已输入 <span class="byte-num" id="byteNum">0</span> 字节
+                        </span>
+                        <span class="node-info" id="nodeInfo"></span>
+                    </div>
+                    <!-- 导入文本行 + 右侧 Base64 小药丸 -->
+                    <div class="field">
+                        <div class="field-inline upload-row">
+                            <!-- ✅ 只有一个导入按钮 -->
+                            <label class="upload-btn" id="uploadBtn" for="fileInput">
+    <span class="icon-svg">
+        <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-alarge-small-icon lucide-a-large-small"
+                style="fill:none;"
+        >
+            <path d="m15 16 2.536-7.328a1.02 1.02 0 0 1 1.928 0L22 16" />
+            <path d="M15.697 14h5.606" />
+            <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
+            <path d="M3.304 13h6.392" />
+        </svg>
+    </span>
+                                <span id="uploadBtnText">导入文本</span>
+                            </label>
+
+                            <!-- ✅ 隐藏的文件选择框，只保留这一个 -->
+                            <input
+                                    type="file"
+                                    id="fileInput"
+                                    accept=".txt,.log,.conf,.json,.md,.yaml,.yml,.ini,.cfg,.csv,.html,.js,.ts,.py,.go,.rs,.php,.java,.c,.cpp,.sh,.bat,.ps1,.rb,.lua,.sql,.xml"
+                                    style="display:none;">
+
+                            <!-- ✅ 右侧 Base64 小药丸按钮 -->
+                            <div class="byte-actions">
+                                <!-- Base64 编码：使用你给的上箭头 SVG -->
+                                <button type="button" class="btn-secondary btn-xs" id="btnBase64Encode">
+        <span class="icon-svg">
+            <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="#000000"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-aarrow-up-icon lucide-a-arrow-up"
+                    style="fill:none;"
+            >
+                <path d="M3 20h18" />
+                <path d="m18 13-6-6-6 6" />
+                <path d="M12 7v13" />
+            </svg>
+        </span>
+                                    <span>Base64 编码</span>
+                                </button>
+
+                                <!-- Base64 解码：使用你给的下箭头 SVG -->
+                                <button type="button" class="btn-secondary btn-xs base64-decode-btn" id="btnBase64Decode">
+        <span class="icon-svg">
+            <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="#000000"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-aarrow-down-icon lucide-a-arrow-down"
+                    style="fill:none;"
+            >
+                <path d="M3 4h18" />
+                <path d="m6 11 6 6 6-6" />
+                <path d="M12 5v12" />
+            </svg>
+        </span>
+                                    <span>Base64 解码</span>
+                                </button>
+
+                                <!-- 一键清空 -->
+                                <button type="button" class="btn-secondary btn-xs" id="btnResetContent">
+                                    <span class="icon-svg">
+                                        <svg viewBox="0 0 20 20">
+                                            <path d="M10 3a7 7 0 1 1-6.938 6.063.75.75 0 0 1 1.486-.186A5.5 5.5 0 1 0 10 4.5V7a.75.75 0 0 1-1.5 0V2.75A.75.75 0 0 1 9.25 2H14a.75.75 0 0 1 0 1.5h-2.763A6.98 6.98 0 0 1 10 3Z" />
+                                        </svg>
+                                    </span>
+                                    清空
+                                </button>
+                            </div>
+                        </div>
+                        <div class="hint" id="fileHint">可选择本地文本文件自动载入内容。</div>
+                    </div>
+                </section>
+
+                <section class="card-section">
+                    <div class="section-title">高级选项<span class="tag">META</span></div>
+                    <div class="field-row">
+                        <div class="field-block">
+                            <div class="field-label">有效期</div>
+                            <div class="field-inline ttl-group" id="ttlGroup">
+                                <button type="button" class="ttl-btn" data-ttl="10m">10 分钟</button>
+                                <button type="button" class="ttl-btn" data-ttl="1d">1 天</button>
+                                <button type="button" class="ttl-btn active" data-ttl="7d">7 天</button>
+                                <button type="button" class="ttl-btn" data-ttl="30d">30 天</button>
+                                <button type="button" class="ttl-btn" id="ttlForeverBtn" data-ttl="forever">永不过期</button>
+                            </div>
+                            <div class="hint" id="ttlHint">内容将在 7 天后过期。</div>
+                        </div>
+
+                        <div class="field-block">
+                            <div class="field-label">自定义 URL（可选）</div>
+                            <div class="field-inline">
+                                <span class="hint" id="baseUrlText">https://aura.us.kg/api/paste/{id}</span>
+                            </div>
+                            <div class="field-inline">
+                                <input id="customId" type="text" placeholder="输入自定义 ID，如 lyn-notes-2025">
+                            </div>
+                            <div class="hint" id="customHint">仅支持A-Za-z0-9_- 。留空则自动分配随机 ID。</div>
+                        </div>
+                        <div class="field-block">
+                            <div class="field-label">
+                                <span>备注（可选）</span>
+                                <div class="remark-sub-wrap" id="remarkSubWrap" style="display:none;">
+                                    <button type="button" class="remark-sub-btn" id="remarkSubBtn">订阅</button>
+                                    <div class="remark-sub-menu" id="remarkSubMenu">
+                                        <button type="button" data-client="">通用</button>
+                                        <button type="button" data-client="surge">Surge</button>
+                                        <button type="button" data-client="clash">Clash</button>
+                                        <button type="button" data-client="stash">Stash</button>
+                                        <button type="button" data-client="quantumultx">Quantumult X</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="field-inline">
+                                <input id="remark" type="text" placeholder="输入自定义备注...">
+                            </div>
+                            <div class="hint">仅在用户中心显示。</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card-section" id="advancedSection" style="display:none;">
+                    <div class="section-title">登录 & 用户中心<span class="tag">ACCOUNT</span></div>
+                    <div class="section-text">
+                        登录后可在「用户中心」查看、管理、删除自己生成的内容。<br>
+                        仅记录内容本身与必要的元数据，不记录访问日志。
+                    </div>
+                    <div class="section-footer">
+                        <div class="left">
+                            <span class="hint">登录状态：</span>
+                            <span class="hint" id="authStatusText">未登录</span>
+                        </div>
+                        <div>
+                            <button type="button" class="btn-link" id="btnOpenUserCenter">
+                                <span class="icon-svg">
+                                    <svg viewBox="0 0 20 20">
+                                        <path d="M4 4.75A2.75 2.75 0 0 1 6.75 2h6.5A2.75 2.75 0 0 1 16 4.75v10.5A2.75 2.75 0 0 1 13.25 18h-6.5A2.75 2.75 0 0 1 4 15.25V4.75Zm2.75-1.25a1.25 1.25 0 0 0-1.25 1.25v10.5A1.25 1.25 0 0 0 6.75 16h6.5A1.25 1.25 0 0 0 14 14.25V4.75A1.25 1.25 0 0 0 13.25 3h-6.5Z" />
+                                        <path d="M8 6.75A.75.75 0 0 1 8.75 6h2.5a.75.75 0 0 1 0 1.5h-2.5A.75.75 0 0 1 8 6.75Zm.75 2.25a.75.75 0 0 0 0 1.5h2.5a.75.75 0 0 0 0-1.5h-2.5Z" />
+                                    </svg>
+                                </span>
+                                打开用户中心
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card-section">
+                    <div class="section-title">提交 / 结果<span class="tag">PUBLISH</span></div>
+                    <div class="field-inline">
+                        <button type="submit" class="btn-primary" id="submitBtn">
                             <span class="icon-svg">
-                                <svg viewBox="0 0 20 20" width="14" height="14">
-                                    <path fill="none" stroke="currentColor" stroke-width="1.6" d="M4.5 4.5 2 7m0 0 2.5 2.5M2 7h9a4 4 0 0 1 0 8h-1"/>
+                                <svg viewBox="0 0 20 20">
+                                    <path d="M3.172 4.222a.75.75 0 0 1 .856-.12l12 6.5a.75.75 0 0 1 0 1.296l-12 6.5A.75.75 0 0 1 3 18.75v-4.6a.75.75 0 0 1 .448-.687L11.5 10 3.448 6.537A.75.75 0 0 1 3 5.85v-4.1a.75.75 0 0 1 .172-.528Z"/>
                                 </svg>
                             </span>
-                            清空
+                            <span class="text">上传</span>
+                        </button>
+                        <div class="status" id="statusMsg"></div>
+                    </div>
+
+                    <div class="result-box" id="resultBox" style="display:none;">
+                        <div class="hint">
+                            访问链接：
+                        </div>
+                        <div class="result-link">
+                            <span class="icon-svg">
+                                <svg viewBox="0 0 20 20">
+                                    <path d="M9.172 4.222a4 4 0 0 1 5.657 5.657l-1.414 1.414a.75.75 0 1 1-1.06-1.06l1.414-1.415a2.5 2.5 0 0 0-3.536-3.536L8.11 6.98a.75.75 0 0 1-1.06-1.06l2.121-2.121Z" />
+                                    <path d="M5.172 8.222a.75.75 0 0 1 1.06 1.06L4.818 10.7a2.5 2.5 0 0 0 3.536 3.536l1.414-1.414a.75.75 0 1 1 1.06 1.06l-1.414 1.415a4 4 0 0 1-5.657-5.657l1.414-1.414Z" />
+                                </svg>
+                            </span>
+                            <span id="viewLinkText"></span>
+                        </div>
+                        <div class="result-actions">
+                            <button type="button" class="btn-secondary btn-xs" id="btnCopyView">
+                                <span class="icon-svg">
+                                    <svg viewBox="0 0 20 20">
+                                        <path d="M6 3.75A2.75 2.75 0 0 1 8.75 1h6.5A2.75 2.75 0 0 1 18 3.75v8.5A2.75 2.75 0 0 1 15.25 15h-6.5A2.75 2.75 0 0 1 6 12.25v-8.5ZM8.75 2.5A1.25 1.25 0 0 0 7.5 3.75v8.5A1.25 1.25 0 0 0 8.75 13.5h6.5A1.25 1.25 0 0 0 16.5 12.25v-8.5A1.25 1.25 0 0 0 15.25 2.5h-6.5Z" />
+                                        <path d="M4 6.75A2.75 2.75 0 0 1 6.75 4h1A.75.75 0 0 1 7.75 5.5h-1A1.25 1.25 0 0 0 5.5 6.75v8.5A1.25 1.25 0 0 0 6.75 16.5h6.5a1.25 1.25 0 0 0 1.25-1.25v-1a.75.75 0 0 1 1.5 0v1A2.75 2.75 0 0 1 13.25 18h-6.5A2.75 2.75 0 0 1 4 15.25v-8.5Z" />
+                                    </svg>
+                                </span>
+                                复制访问链接
+                            </button>
+                            <button type="button" class="btn-secondary btn-xs" id="btnOpenView">
+                                <span class="icon-svg">
+                                    <svg viewBox="0 0 20 20">
+                                        <path d="M9.25 4A.75.75 0 0 1 10 3.25h6A.75.75 0 0 1 16.75 4v6a.75.75 0 0 1-1.5 0V5.56l-7.22 7.22a.75.75 0 0 1-1.06-1.06L14.19 4.5H10A.75.75 0 0 1 9.25 4Z"/>
+                                        <path d="M4.75 6A.75.75 0 0 1 5.5 6.75v8.5h8.5a.75.75 0 0 1 0 1.5h-9.25A.75.75 0 0 1 4 16V6.75A.75.75 0 0 1 4.75 6Z"/>
+                                    </svg>
+                                </span>
+                                新窗口打开
+                            </button>
+                            <button type="button" class="btn-secondary btn-xs" id="btnManageFromResult">
+                                <span class="icon-svg">
+                                    <svg viewBox="0 0 20 20">
+                                        <path d="M4 5.75A2.75 2.75 0 0 1 6.75 3h6.5A2.75 2.75 0 0 1 16 5.75v8.5A2.75 2.75 0 0 1 13.25 17h-6.5A2.75 2.75 0 0 1 4 14.25v-8.5Zm2.75-1.25A1.25 1.25 0 0 0 5.5 5.75v8.5A1.25 1.25 0 0 0 6.75 15.5h6.5A1.25 1.25 0 0 0 14.5 14.25v-8.5A1.25 1.25 0 0 0 13.25 4.5h-6.5Z" />
+                                        <path d="M8 7.75A.75.75 0 0 1 8.75 7h2.5a.75.75 0 0 1 0 1.5h-2.5A.75.75 0 0 1 8 7.75Zm.75 2.25a.75.75 0 0 0 0 1.5h2.5a.75.75 0 0 0 0-1.5h-2.5Z" />
+                                    </svg>
+                                </span>
+                                在用户中心查看
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="section-footer">
+                        <div class="left">
+                            <span class="hint">前端：AurraLynn</span>
+                            <span class="hint"> · </span>
+                            <span class="hint">后端：Cloudflare Pages & KV</span>
+                        </div>
+                        <div class="right">
+                            <a class="link-main" href="https://aura.us.kg" target="_blank" rel="noopener">返回主页</a>
+                        </div>
+                    </div>
+                </section>
+            </form>
+        </div>
+    </main>
+</div>
+
+<!-- 登录弹窗 -->
+<div class="uc-backdrop" id="authModal" style="display:none;">
+    <div class="uc-panel" style="max-width:420px;">
+        <div class="uc-header">
+            <div class="uc-title-box">
+                <div>
+                    <div class="uc-title-main">登录 PasteBox</div>
+                    <div class="uc-title-sub">使用账户管理你创建的内容。</div>
+                </div>
+            </div>
+            <div class="uc-actions">
+                <button type="button" class="btn-secondary btn-xs" id="authCloseBtn">
+                    <span class="icon-svg">
+                        <svg viewBox="0 0 20 20">
+                            <path d="M5.293 5.293a1 1 0 0 1 1.414 0L10 8.586l3.293-3.293a1 1 0 0 1 1.414 1.414L11.414 10l3.293 3.293a1 1 0 0 1-1.414 1.414L10 11.414l-3.293 3.293a1 1 0 0 1-1.414-1.414L8.586 10 5.293 6.707a1 1 0 0 1 0-1.414Z"/>
+                        </svg>
+                    </span>
+                    Close
+                </button>
+            </div>
+        </div>
+        <div class="uc-body">
+            <form id="authForm">
+                <div class="field">
+                    <div class="field-label">用户名</div>
+                    <div class="field-inline">
+                        <input id="authUsername" type="text" autocomplete="username" placeholder="输入用户名">
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="field-label">密码</div>
+                    <div class="field-inline">
+                        <input id="authPassword" type="password" autocomplete="current-password" placeholder="输入密码">
+                    </div>
+                </div>
+                <div class="field-inline" style="margin-top:8px;">
+                    <label style="font-size:11px;color:var(--text-sub);display:flex;align-items:center;gap:4px;cursor:pointer;">
+                        <input id="authRemember" type="checkbox" checked style="width:12px;height:12px;">
+                        记住登录状态（本机）
+                    </label>
+                </div>
+                <div class="field" style="margin-top:10px;">
+                    <div class="field-inline">
+                        <button type="button" class="btn-primary" id="btnDoLogin">
+                            <span class="icon-svg">
+                                <svg viewBox="0 0 20 20">
+                                    <path d="M3.5 10a.75.75 0 0 1 .75-.75H11V7.81a.75.75 0 0 1 1.28-.53l3.5 3.5a.75.75 0 0 1 0 1.06l-3.5 3.5A.75.75 0 0 1 11 14.81V12H4.25A.75.75 0 0 1 3.5 11v-1Z"/>
+                                    <path d="M10 4.5a.75.75 0 0 1 0 1.5H6.75A1.25 1.25 0 0 0 5.5 7.25v5.5A1.25 1.25 0 0 0 6.75 14h3.25a.75.75 0 0 1 0 1.5H6.75A2.75 2.75 0 0 1 4 13.75v-6.5A2.75 2.75 0 0 1 6.75 4.5H10Z"/>
+                                </svg>
+                            </span>
+                            登录
+                        </button>
+                        <button type="button" class="btn-secondary btn-xs" id="btnDoRegister">
+                            <span class="icon-svg">
+                                <svg viewBox="0 0 20 20">
+                                    <path d="M10 2a3 3 0 0 1 3 3v1a3 3 0 1 1-6 0V5a3 3 0 0 1 3-3Zm0 8a4 4 0 0 1 4 4v1a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-1c0-2.21 2.686-4 6-4z" />
+                                </svg>
+                            </span>
+                            注册
                         </button>
                     </div>
-                    <div class="textarea-wrap">
-                        <div class="textarea-inner">
-                            <div class="line-counter" id="lineCounter">0 行</div>
-                            <textarea id="content" placeholder="在这里粘贴文本、代码或节点订阅……" spellcheck="false"></textarea>
-                        </div>
-                        <div class="textarea-footer">
-                            <!-- 字节统计 + 节点识别 -->
-                            <div class="field field-inline" style="display:flex;align-items:center;gap:8px;">
-                                <span class="byte-count">
-                                    已输入 <span class="byte-num" id="byteNum">0</span> 字节
-                                </span>
-                                <span class="node-detect" id="nodeDetectInfo">内容类型：普通文本</span>
-                            </div>
-
-                            <div class="byte-actions">
-                                <!-- 导入 / Base64 小药丸区 -->
-                                <button type="button" class="btn-secondary btn-xs" id="uploadBtn">
-                                    <span class="icon-svg">
-                                        <svg viewBox="0 0 20 20" width="13" height="13">
-                                            <path fill="none" stroke="currentColor" stroke-width="1.6" d="M4 15h12M10 3v9m0 0 3-3m-3 3-3-3"/>
-                                        </svg>
-                                    </span>
-                                    导入文本
-                                </button>
-
-                                <!-- Base64 编码 -->
-                                <button type="button" class="btn-secondary btn-xs" id="btnBase64Encode">
-                                    <span class="icon-svg">
-                                        <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 24 24"
-                                                width="20"
-                                                height="20"
-                                                fill="none"
-                                                stroke="#e5e7eb"
-                                                stroke-width="1.8"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                        >
-                                            <path d="M6 9l6-6 6 6"/>
-                                            <path d="M12 3v14"/>
-                                        </svg>
-                                    </span>
-                                    Base64 编码
-                                </button>
-
-                                <!-- Base64 解码 -->
-                                <button type="button" class="btn-secondary btn-xs" id="btnBase64Decode">
-                                    <span class="icon-svg">
-                                        <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 24 24"
-                                                width="20"
-                                                height="20"
-                                                fill="none"
-                                                stroke="#e5e7eb"
-                                                stroke-width="1.8"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                        >
-                                            <path d="M18 15l-6 6-6-6"/>
-                                            <path d="M12 21V7"/>
-                                        </svg>
-                                    </span>
-                                    Base64 解码
-                                </button>
-
-                                <input type="file" id="fileInput" style="display:none" accept=".txt,.log,.conf,.json,.yaml,.yml,.ini,.cfg,.md">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="hint" id="fileHint">支持 TXT / 配置文件导入。</div>
+                    <div class="status" id="authMsg"></div>
                 </div>
-
-                <div class="field-block">
-                    <div class="field-label">
-                        <span>有效期</span>
-                    </div>
-                    <div class="ttl-group" id="ttlGroup">
-                        <button type="button" class="ttl-btn" data-ttl="1d">1 天</button>
-                        <button type="button" class="ttl-btn" data-ttl="7d">7 天</button>
-                        <button type="button" class="ttl-btn" data-ttl="30d">30 天</button>
-                        <button type="button" class="ttl-btn" data-ttl="forever" id="ttlForeverBtn">Never（登录后可选）</button>
-                    </div>
-                    <div class="ttl-hint" id="ttlHint"></div>
-                </div>
-
-                <div class="field-block">
-                    <div class="field-label">
-                        <span>自定义 URL（可选）</span>
-                        <span class="hint">留空则自动生成随机 ID。</span>
-                    </div>
-                    <input id="customId" class="input" placeholder="只允许字母、数字、连字符与下划线">
-                    <div class="hint" id="customHint"></div>
-                </div>
-
-                <div class="field-block">
-                    <div class="field-label">备注（可选）</div>
-                    <div class="field-inline">
-                        <input id="remark" type="text" class="input" placeholder="输入自定义备注...">
-                        <!-- 节点订阅按钮（仅当内容为节点、且可确定 ID 时显示） -->
-                        <div class="node-sub-wrap" id="nodeSubWrap" style="display:none;">
-                            <button type="button" class="node-sub-btn" id="nodeSubBtn">复制订阅</button>
-                            <select id="nodeSubClient" class="node-sub-select">
-                                <option value="">通用</option>
-                                <option value="surge">Surge</option>
-                                <option value="clash">Clash</option>
-                                <option value="stash">Stash</option>
-                                <option value="quantumultx">Quantumult X</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="hint">仅在用户中心显示。</div>
-                </div>
-
-                <div class="field-block">
-                    <button type="submit" class="btn" id="submitBtn">
-                        <span class="icon-svg">
-                            <svg viewBox="0 0 20 20" width="16" height="16">
-                                <path fill="none" stroke="#111827" stroke-width="1.8" d="M3 10h11.5M9.5 4L15 10l-5.5 6"/>
-                            </svg>
-                        </span>
-                        <span class="text">创建</span>
-                    </button>
-                    <button type="button" class="btn-secondary btn-xs btn-icon" id="btnHome" style="display:none;margin-left:6px;">
-                        返回创建
-                    </button>
-                    <button type="button" class="btn-secondary btn-xs btn-icon" id="btnAuthOpen" style="margin-left:6px;">
-                        用户中心
-                    </button>
-                </div>
-
-                <div class="status" id="statusMsg"></div>
-
-                <div class="result-box" id="resultBox">
-                    <div class="link-base">访问入口：</div>
-                    <div class="result-link" id="viewLinkText"></div>
-                    <div class="result-actions">
-                        <button type="button" class="btn-secondary btn-xs" id="btnCopyView">复制链接</button>
-                        <button type="button" class="btn-secondary btn-xs" id="btnOpenView">新窗口打开</button>
-                        <button type="button" class="btn-secondary btn-xs" id="btnManageFromResult">在用户中心查看</button>
-                    </div>
-                </div>
-            </form>
-
-            <div class="footer">
-                Pastebox by AurraLynn · 基于 Cloudflare KV / R2 构建。
-            </div>
-        </div>
-    </div>
-
-    <!-- 用户中心 -->
-    <div class="uc-backdrop" id="userCenter">
-        <div class="uc-panel">
-            <div class="uc-header">
-                <div>
-                    <div class="uc-title">YOUR PASTES</div>
-                    <div class="uc-subtitle">仅显示未过期记录。</div>
-                </div>
-                <div class="field-inline">
-                    <button type="button" class="btn-secondary btn-xs" id="ucRefreshBtn">刷新</button>
-                    <button type="button" class="btn-secondary btn-xs" id="ucLogoutBtn">退出登录</button>
-                    <button type="button" class="btn-secondary btn-xs" id="ucCloseBtn">关闭</button>
-                </div>
-            </div>
-            <div class="uc-body">
-                <div class="uc-empty" id="ucEmpty">正在加载你的记录…</div>
-                <div class="uc-list" id="ucList" style="display:none;"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 登录 / 注册弹窗 -->
-    <div class="auth-modal" id="authModal">
-        <div class="auth-panel">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-                <div>
-                    <div class="auth-title">登录 / 注册</div>
-                    <div class="auth-desc">登录后可以使用「Never(不过期)」、管理自己的链接。</div>
-                </div>
-                <button type="button" class="btn-secondary btn-xs" id="authCloseBtn">关闭</button>
-            </div>
-            <form id="authForm" style="margin-top:10px;">
-                <div class="field-block">
-                    <div class="field-label">用户名</div>
-                    <input id="authUsername" class="input" autocomplete="username">
-                </div>
-                <div class="field-block">
-                    <div class="field-label">密码</div>
-                    <input id="authPassword" class="input" type="password" autocomplete="current-password">
-                </div>
-                <div class="field-inline" style="justify-content:space-between;margin-bottom:6px;">
-                    <label class="switch-label">
-                        <input type="checkbox" id="authRemember" checked>
-                        <span>记住登录状态</span>
-                    </label>
-                    <div>
-                        <button type="button" class="btn-secondary btn-xs" id="btnDoLogin">登录</button>
-                        <button type="button" class="btn-secondary btn-xs" id="btnDoRegister">注册</button>
-                    </div>
-                </div>
-                <div class="auth-msg" id="authMsg"></div>
             </form>
         </div>
     </div>
 </div>
 
+<!-- 用户中心 -->
+<div class="uc-backdrop" id="userCenter" style="display:none;">
+    <div class="uc-panel">
+        <div class="uc-header">
+            <div class="uc-title-box">
+                <div>
+                    <div class="uc-title-main">用户中心</div>
+                    <div class="uc-title-sub">查看并管理你创建的 Paste。</div>
+                </div>
+            </div>
+            <div class="uc-actions">
+                <button type="button" class="btn-secondary btn-xs" id="ucRefreshBtn">
+                    <span class="icon-svg">
+                        <svg viewBox="0 0 20 20">
+                            <path d="M5.5 3A6.5 6.5 0 0 1 17 9.5a.75.75 0 0 1-1.5 0 5 5 0 1 0-1.02 2.99l-.97-.97a.75.75 0 0 1 1.06-1.06l2.25 2.25a.75.75 0 0 1 0 1.06l-2.25 2.25a.75.75 0 1 1-1.06-1.06l.72-.72A6.5 6.5 0 1 1 5.5 3Z"/>
+                        </svg>
+                    </span>
+                    刷新
+                </button>
+                <button type="button" class="btn-secondary btn-xs" id="ucLogoutBtn">
+                    <span class="icon-svg">
+                        <svg viewBox="0 0 20 20">
+                            <path d="M7.75 4a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 7.75 4Zm0 5.5a.75.75 0 0 1 .75.75V14a.75.75 0 0 1-1.5 0v-3.75A.75.75 0 0 1 7.75 9.5Zm2.5-5.5a.75.75 0 0 1 .75.75v2.5a.75.75 0 0 1-1.5 0v-2.5A.75.75 0 0 1 10.25 4Zm0 6a.75.75 0 0 1 .75.75V14a.75.75 0 0 1-1.5 0v-3.25A.75.75 0 0 1 10.25 10Zm2.5-6a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 12.75 4Zm0 7.5a.75.75 0 0 1 .75.75V14a.75.75 0 0 1-1.5 0v-1.75A.75.75 0 0 1 12.75 11.5Z"/>
+                        </svg>
+                    </span>
+                    LOG OUT
+                </button>
+                <button type="button" class="btn-secondary btn-xs" id="ucCloseBtn">
+                    <span class="icon-svg">
+                        <svg viewBox="0 0 20 20">
+                            <path d="M5.293 5.293a1 1 0 0 1 1.414 0L10 8.586l3.293-3.293a1 1 0 0 1 1.414 1.414L11.414 10l3.293 3.293a1 1 0 1 1-1.414 1.414L10 11.414l-3.293 3.293a1 1 0 0 1-1.414-1.414L8.586 10 5.293 6.707a1 1 0 0 1 0-1.414Z"/>
+                        </svg>
+                    </span>
+                    CLOSE
+                </button>
+            </div>
+        </div>
+        <div class="uc-body">
+            <div class="uc-empty" id="ucEmpty">正在加载记录…</div>
+            <div class="uc-list" id="ucList" style="display:none;"></div>
+        </div>
+    </div>
+</div>
+
 <script>
-    const qs=id=>document.getElementById(id);
+    const THEME_KEY="lyn_paste_theme_v3";
+    const themeToggle=document.getElementById("themeToggle");
 
-    const BASE_URL=location.origin+"/Paste";
-    const API_BASE=location.origin+"/api/paste";
-    const VIEW_BASE=location.origin+"/api/paste";
+    function applyTheme(t){
+        document.body.classList.remove("theme-light","theme-dark");
+        document.body.classList.add("theme-"+t);
+        if(themeToggle){
+            const label=themeToggle.querySelector(".label");
+            if(label) label.textContent = (t==="dark" ? "Dark" : "Light");
+        }
+        try{localStorage.setItem(THEME_KEY,t);}catch(_){}
+    }
 
-    const AUTH_BASE=location.origin+"/api/auth";
+    (function(){
+        let t="light";
+        try{
+            const saved=localStorage.getItem(THEME_KEY);
+            if(saved==="dark"||saved==="light")t=saved;
+        }catch(_){}
+        applyTheme(t);
+    })();
+
+    if(themeToggle){
+        themeToggle.addEventListener("click",()=>{
+            const isDark=document.body.classList.contains("theme-dark");
+            applyTheme(isDark?"light":"dark");
+        });
+    }
+
+    (function(){
+        const icon=document.getElementById("brandIcon");
+        if(!icon)return;
+        const now=new Date();
+        const h=now.getHours();
+        const min=now.getMinutes();
+        const seed=(h*60+min)%5;
+        const srcMap=[
+            "https://save.aura.us.kg/Picture/Fm2.png",
+            "https://save.aura.us.kg/Picture/Fm3.png",
+            "https://save.aura.us.kg/Picture/Fm4.png",
+            "https://save.aura.us.kg/Picture/Fm5.png",
+            "https://save.aura.us.kg/Picture/Fm6.png"
+        ];
+        icon.src=srcMap[seed]||srcMap[0];
+    })();
+
+    const API_BASE="/api/paste";
+    const VIEW_BASE="https://aura.us.kg/api/paste";
+
+    function qs(id){return document.getElementById(id);}
 
     const $content=qs("content");
     const $byteNum=qs("byteNum");
-    const $nodeDetectInfo=qs("nodeDetectInfo");
     const $lineCounter=qs("lineCounter");
     const $ttlGroup=qs("ttlGroup");
     const $ttlHint=qs("ttlHint");
@@ -1019,15 +1202,17 @@
     const $btnManageFromResult=qs("btnManageFromResult");
     const $statusMsg=qs("statusMsg");
     const $baseUrlText=qs("baseUrlText");
-    const $advancedSection=null;
+    const $advancedSection=qs("advancedSection");
+
     const $ttlForeverBtn=qs("ttlForeverBtn");
     const $customId=qs("customId");
     const $customHint=qs("customHint");
     const $remark=qs("remark");
-    const $nodeSubWrap=qs("nodeSubWrap");
-    const $nodeSubBtn=qs("nodeSubBtn");
-    const $nodeSubClient=qs("nodeSubClient");
     const $fileInput=qs("fileInput");
+    const $nodeInfo=qs("nodeInfo");
+    const $remarkSubWrap=qs("remarkSubWrap");
+    const $remarkSubBtn=qs("remarkSubBtn");
+    const $remarkSubMenu=qs("remarkSubMenu");
     const $fileHint=qs("fileHint");
     const $uploadBtn=qs("uploadBtn");
     const $btnResetContent=qs("btnResetContent");
@@ -1050,11 +1235,14 @@
     const $authMsg=qs("authMsg");
 
     const $userCenter=qs("userCenter");
+    const $authStatusText=qs("authStatusText");
     const $ucEmpty=qs("ucEmpty");
     const $ucList=qs("ucList");
     const $ucRefreshBtn=qs("ucRefreshBtn");
     const $ucLogoutBtn=qs("ucLogoutBtn");
     const $ucCloseBtn=qs("ucCloseBtn");
+
+    const $btnOpenUserCenter=qs("btnOpenUserCenter");
 
     if($baseUrlText)$baseUrlText.textContent=VIEW_BASE+"/{id}";
 
@@ -1068,24 +1256,40 @@
         originalSlug:null
     };
 
-    function escapeHTML(str){
-        if(!str) return "";
-        return String(str).replace(/[&<>"']/g,c=>({
-            "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
-        }[c]||c));
+    const ttlText={
+        "10m":"内容将在 10 分钟后过期。",
+        "1d":"内容将在 1 天后过期。",
+        "7d":"内容将在 7 天后过期。",
+        "30d":"内容将在 30 天后过期。",
+        "forever":"内容不会自动过期（后台清理除外）。"
+    };
+    function setTtl(key){
+        state.ttlKey=key;
+        if($ttlGroup){
+            $ttlGroup.querySelectorAll(".ttl-btn").forEach(b=>{
+                b.classList.toggle("active",b.dataset.ttl===key);
+            });
+        }
+        if($ttlHint)$ttlHint.textContent=ttlText[key]||ttlText["7d"];
+    }
+    setTtl("7d");
+    if($ttlGroup){
+        $ttlGroup.addEventListener("click",e=>{
+            const btn=e.target.closest(".ttl-btn");
+            if(!btn)return;
+            if(btn.disabled)return;
+            const key=btn.dataset.ttl;
+            if(!key)return;
+            setTtl(key);
+        });
     }
 
     function setStatus(msg,type){
         if(!$statusMsg)return;
         $statusMsg.textContent=msg||"";
-        $statusMsg.classList.remove("error","success");
-        if(type)$statusMsg.classList.add(type);
-    }
-    function setAuthTip(msg,type){
-        if(!$authMsg)return;
-        $authMsg.textContent=msg||"";
-        $authMsg.classList.remove("success","error");
-        if(type)$authMsg.classList.add(type);
+        $statusMsg.classList.remove("status-success","status-error");
+        if(type==="success")$statusMsg.classList.add("status-success");
+        else if(type==="error")$statusMsg.classList.add("status-error");
     }
 
     // ===== Base64 UTF-8 安全编码 / 解码 =====
@@ -1105,100 +1309,94 @@
         }
     }
 
-    // ===== 节点识别（支持 URL / Base64 订阅） =====
-    const NODE_SCHEME_RE = /^(ss|vmess|vless|trojan|hysteria2?|hy2|tuic|snell|http|https|socks5?):\/\//i;
+    // ===== 节点检测与订阅 UI =====
+    const NODE_SCHEME_RE = /^(?:vmess|vless|trojan|ss|ssr|hysteria2?|hy2|tuic|snell|http|socks5):\/\/?/i;
 
-    function countNodesInText(text){
-        if(!text)return 0;
-        let count=0;
-        const lines=text.split(/\r?\n/);
-        for(const line of lines){
-            const s=line.trim();
-            if(!s) continue;
-            if(NODE_SCHEME_RE.test(s)) count++;
-        }
-        return count;
+    function isProbablyBase64(str){
+        if(!str) return false;
+        const s = str.trim();
+        if(s.length < 8) return false;
+        if(/[^A-Za-z0-9+\/=\n\r]/.test(s)) return false;
+        const noNl = s.replace(/\s+/g,"");
+        if(noNl.length % 4 !== 0) return false;
+        return true;
     }
 
-    // 返回 { kind: "none" | "url" | "base64", count:number }
-    function detectNodeInfoFromText(raw){
-        if(!raw) return {kind:"none",count:0};
-        const text=raw.trim();
-        if(!text) return {kind:"none",count:0};
+    function countNodesInText(text){
+        if(!text) return {kind:"none", count:0};
+        const raw = text.trim();
+        if(!raw) return {kind:"none", count:0};
 
-        // 1）直接在原文里找节点
-        const directCount=countNodesInText(text);
-        if(directCount>0){
-            return {kind:"url",count:directCount};
+        // 行内 url
+        const lines = raw.split(/\r\n|\r|\n/);
+        let urlCount = 0;
+        for(const line of lines){
+            const s = line.trim();
+            if(!s) continue;
+            if(NODE_SCHEME_RE.test(s)) urlCount++;
         }
+        if(urlCount>0) return {kind:"url", count:urlCount};
 
-        // 2）尝试把整体当作 Base64 订阅解码，再找节点
-        const compact=text.replace(/\s+/g,"");
-        if(/^[A-Za-z0-9+/=]+$/.test(compact) && compact.length%4===0){
-            const decoded=base64DecodeUtf8(compact);
-            if(decoded!=null){
-                const decodedCount=countNodesInText(decoded);
-                if(decodedCount>0){
-                    return {kind:"base64",count:decodedCount};
+        // base64 订阅
+        if(isProbablyBase64(raw)){
+            const decoded = base64DecodeUtf8(raw);
+            if(decoded){
+                const dLines = decoded.split(/\r\n|\r|\n/);
+                let c = 0;
+                for(const l of dLines){
+                    const s = l.trim();
+                    if(!s) continue;
+                    if(NODE_SCHEME_RE.test(s)) c++;
                 }
+                if(c>0) return {kind:"base64", count:c};
             }
         }
-
-        return {kind:"none",count:0};
+        return {kind:"none", count:0};
     }
 
     function getCurrentSubId(){
-        // 优先使用编辑模式下原始 slug
-        if(state && state.mode==="edit" && state.originalSlug){
+        if(state.mode==="edit" && state.originalSlug){
             return state.originalSlug;
         }
-        // 其次使用自定义 URL
         if($customId){
-            const v=$customId.value.trim();
+            const v = $customId.value.trim();
             if(v) return v;
         }
-        // 创建模式且未填写自定义 URL 时，ID 还未生成，此时返回 null
         return null;
     }
 
     function buildSubUrl(client){
-        const id=getCurrentSubId();
+        const id = getCurrentSubId();
         if(!id) return null;
-        const base=location.origin + "/api/sub";
-        const u=new URL(base);
-        u.searchParams.set("id",id);
-        if(client){
-            u.searchParams.set("client",client);
-        }
+        const u = new URL("/api/sub", window.location.origin);
+        u.searchParams.set("id", id);
+        if(client) u.searchParams.set("client", client);
         return u.toString();
     }
 
-    function updateNodeDetect(){
+    function updateNodeUI(){
         if(!$content) return;
-        const raw=$content.value||"";
-        const info=detectNodeInfoFromText(raw);
+        const raw = $content.value || "";
+        const info = countNodesInText(raw);
 
-        if($nodeDetectInfo){
+        if($nodeInfo){
             if(info.kind==="none"){
-                $nodeDetectInfo.textContent="内容类型：普通文本";
+                $nodeInfo.textContent = "";
             }else if(info.kind==="url"){
-                $nodeDetectInfo.textContent=`识别到 ${info.count} 条代理节点`;
+                $nodeInfo.textContent = `已识别到 ${info.count} 条节点`;
             }else{
-                $nodeDetectInfo.textContent=`识别到 ${info.count} 条代理节点（Base64 订阅）`;
+                $nodeInfo.textContent = `已识别到 ${info.count} 条节点（Base64订阅）`;
             }
         }
 
-        if($nodeSubWrap){
-            const id=getCurrentSubId();
-            if(info.kind==="none" || !id){
-                $nodeSubWrap.style.display="none";
-            }else{
-                $nodeSubWrap.style.display="inline-flex";
-            }
+        if($remarkSubWrap){
+            const id = getCurrentSubId();
+            const shouldShow = info.kind!=="none" && !!id;
+            $remarkSubWrap.style.display = shouldShow ? "inline-block" : "none";
         }
     }
 
-    async function postJSON(url,body){
+    async function apiPostJson(url,body){
         const res=await fetch(url,{
             method:"POST",
             headers:{"Content-Type":"application/json"},
@@ -1221,16 +1419,47 @@
 
         if($lineCounter){
             const v=$content.value||"";
-            const lines=v ? v.split(/\r\n|\r|\\n/).length : 0;
+            const lines=v ? v.split(/\r\n|\r|\n/).length : 0;
             $lineCounter.textContent = lines+" 行";
         }
-
-        // 同步更新节点识别 / 订阅按钮显示
-        updateNodeDetect();
+        updateNodeUI();
     }
     if($content){
         updateByteCount();
         $content.addEventListener("input",updateByteCount);
+    }
+
+    // 备注处订阅按钮：点击展开菜单 + 复制对应订阅链接
+    if($remarkSubBtn && $remarkSubMenu){
+        $remarkSubBtn.addEventListener("click",()=>{
+            if(!$remarkSubWrap)return;
+            const open = $remarkSubWrap.classList.contains("open");
+            $remarkSubWrap.classList.toggle("open", !open);
+        });
+        $remarkSubMenu.querySelectorAll("button[data-client]").forEach(btn=>{
+            btn.addEventListener("click",async ()=>{
+                const client = btn.getAttribute("data-client")||"";
+                const url = buildSubUrl(client);
+                if(!url){
+                    setStatus("当前还没有可用的 ID，请先生成或保存一次内容。","error");
+                    return;
+                }
+                try{
+                    await navigator.clipboard.writeText(url);
+                    const label = btn.textContent.trim()||"订阅";
+                    setStatus(`${label} 订阅链接已复制。`,"success");
+                }catch(_){
+                    window.prompt("复制失败，请手动复制：",url);
+                }
+                if($remarkSubWrap)$remarkSubWrap.classList.remove("open");
+            });
+        });
+        // 点击页面其他区域时关闭菜单
+        document.addEventListener("click",e=>{
+            if(!$remarkSubWrap)return;
+            if($remarkSubWrap.contains(e.target))return;
+            $remarkSubWrap.classList.remove("open");
+        });
     }
 
     if($uploadBtn&&$fileInput){
@@ -1238,7 +1467,6 @@
             e.preventDefault();
             $fileInput.click();
         });
-
         $fileInput.addEventListener("change",()=>{
             const file=$fileInput.files&&$fileInput.files[0];
             if(!file)return;
@@ -1253,19 +1481,30 @@
                     $fileHint.classList.remove("hint-error");
                     $fileHint.classList.add("hint-success");
                 }
+                setStatus(`已从文件「${file.name}」加载内容。`,"success");
             };
             reader.onerror=()=>{
                 if($fileHint){
-                    $fileHint.textContent="文件读取失败。";
+                    $fileHint.textContent="读取文件失败，请确认是文本文件。";
                     $fileHint.classList.remove("hint-success");
                     $fileHint.classList.add("hint-error");
                 }
+                setStatus("读取文件失败，请确认是文本文件。","error");
             };
             reader.readAsText(file);
         });
     }
 
-    // Base64 编码按钮
+    if($btnResetContent){
+        $btnResetContent.addEventListener("click",()=>{
+            if(!$content)return;
+            $content.value="";
+            updateByteCount();
+            setStatus("内容已清空。","success");
+        });
+    }
+
+    // Base64 编码按钮 + 交互高亮
     if ($btnBase64Encode) {
         $btnBase64Encode.addEventListener("click", () => {
             if (!$content) return;
@@ -1275,13 +1514,19 @@
                 return;
             }
             const encoded = base64EncodeUtf8(v);
-            if (encoded == null) {
-                setStatus("Base64 编码失败，内容可能包含不支持的字符。", "error");
+            if (!encoded) {
+                setStatus("Base64 编码失败。", "error");
                 return;
             }
             $content.value = encoded;
             updateByteCount();
             setStatus("已使用 Base64 编码当前内容。", "success");
+
+            // 简单高亮：点击后短暂加粗边框
+            $btnBase64Encode.classList.add("decode-active");
+            setTimeout(() => {
+                $btnBase64Encode.classList.remove("decode-active");
+            }, 300);
         });
     }
 
@@ -1311,72 +1556,31 @@
         });
     }
 
-    // 备注行订阅按钮：根据选择客户端复制对应订阅链接
-    if($nodeSubBtn && $nodeSubClient){
-        $nodeSubBtn.addEventListener("click", async ()=>{
-            const client=$nodeSubClient.value||"";
-            const url=buildSubUrl(client);
-            if(!url){
-                setStatus("当前内容尚未保存或未填写自定义 URL，无法生成订阅链接。","error");
-                return;
-            }
-            try{
-                await navigator.clipboard.writeText(url);
-                setStatus("订阅链接已复制。","success");
-            }catch(_){
-                setStatus("复制失败，请手动复制。","error");
-            }
-        });
-    }
-
-    const ttlText={
-        "1d":"内容将保留 1 天，之后自动清除。",
-        "7d":"内容将保留 7 天，适合临时共享。",
-        "30d":"内容将保留 30 天。",
-        "forever":"内容不会自动过期（后台清理除外）。"
-    };
-    function setTtl(key){
-        state.ttlKey=key;
-        if($ttlGroup){
-            $ttlGroup.querySelectorAll(".ttl-btn").forEach(b=>{
-                b.classList.toggle("active",b.dataset.ttl===key);
-            });
-        }
-        if($ttlHint)$ttlHint.textContent=ttlText[key]||ttlText["7d"];
-    }
-    setTtl("7d");
-    if($ttlGroup){
-        $ttlGroup.addEventListener("click",e=>{
-            const btn=e.target.closest(".ttl-btn");
-            if(!btn)return;
-            const key=btn.dataset.ttl;
-            if(key==="forever" && !state.loggedIn){
-                setStatus("请先登录以使用「Never(不过期)」。","error");
-                return;
-            }
-            setTtl(key);
-        });
-    }
-
     function validateCustomSlug(){
+        state.customSlugError=false;
         if(!$customId)return;
-        const v=$customId.value.trim();
-        if(!v){
-            state.customSlugError=false;
+        const val=$customId.value.trim();
+        if(!state.loggedIn){
+            if($advancedSection)$advancedSection.style.display="none";
+            return;
+        }else{
+            if($advancedSection)$advancedSection.style.display="";
+        }
+        if(!val){
             if($customHint){
-                $customHint.textContent="留空则自动生成随机 ID。";
+                $customHint.textContent="留空则自动分配随机 ID。";
                 $customHint.classList.remove("hint-error","hint-success");
             }
             $customId.classList.remove("input-error");
             return;
         }
-        const ok=/^[a-zA-Z0-9_-]{1,64}$/.test(v);
-        state.customSlugError=!ok;
+        const ok=/^[A-Za-z0-9_-]+$/.test(val);
         if(!ok){
+            state.customSlugError=true;
             if($customHint){
-                $customHint.textContent="只允许字母、数字、连字符与下划线，长度 1~64。";
-                $customHint.classList.remove("hint-success");
+                $customHint.textContent="仅支持A-Za-z0-9_- 。";
                 $customHint.classList.add("hint-error");
+                $customHint.classList.remove("hint-success");
             }
             $customId.classList.add("input-error");
         }else{
@@ -1387,6 +1591,7 @@
             }
             $customId.classList.remove("input-error");
         }
+        updateNodeUI();
     }
     if($customId)$customId.addEventListener("input",validateCustomSlug);
 
@@ -1395,7 +1600,7 @@
         state.originalSlug=null;
         if($submitBtn){
             const span=$submitBtn.querySelector(".text");
-            if(span)span.textContent="创建";
+            if(span)span.textContent="上传";
         }
         if($btnHome)$btnHome.style.display="none";
         if(clear){
@@ -1405,60 +1610,153 @@
             updateByteCount();
             setStatus("");
         }
+        updateNodeUI();
     }
 
     if($btnHome){
         $btnHome.addEventListener("click",()=>{
             enterCreateMode(true);
-            history.replaceState(null,"",BASE_URL);
-            window.scrollTo({top:0,behavior:"smooth"});
+            const url=new URL(location.href);
+            url.searchParams.delete("id");
+            history.replaceState(null,"",url.toString());
         });
     }
 
-    function applyAuthUI(){
-        if($btnAuthLabel){
-            $btnAuthLabel.textContent = state.loggedIn ? (state.username || "用户") : "LogIn";
+    async function submitForm(e){
+        e.preventDefault();
+        if(state.isSubmitting)return;
+        if(state.customSlugError){
+            setStatus("自定义 URL 不合法，请修改后再试。","error");
+            return;
+        }
+        if(!$content){
+            setStatus("没有要上传的内容。","error");
+            return;
+        }
+        const text=($content.value||"").trim();
+        if(!text){
+            setStatus("内容不能为空。","error");
+            return;
         }
 
-        if($advancedSection){
-            $advancedSection.style.display = state.loggedIn ? "" : "none";
+        const payload={
+            content:text,
+            ttlKey:state.ttlKey
+        };
+        const customSlug=$customId&&$customId.value.trim();
+        if(customSlug)payload.slug=customSlug;
+        const remark=$remark&&$remark.value.trim();
+        if(remark)payload.remark=remark;
+
+        let endpoint=API_BASE;
+        if(state.mode==="edit" && state.originalSlug){
+            endpoint=`${API_BASE}/${encodeURIComponent(state.originalSlug)}`;
         }
 
-        if ($ttlForeverBtn) {
-            if (state.loggedIn) {
-                $ttlForeverBtn.disabled = false;
-            } else {
-                $ttlForeverBtn.disabled = true;
+        state.isSubmitting=true;
+        if($submitBtn)$submitBtn.disabled=true;
+        setStatus("正在上传…");
+
+        try{
+            const data=await apiPostJson(endpoint,payload);
+            if(!data||!data.id){
+                throw new Error("返回数据异常。");
             }
+            const slug=data.slug||data.id;
+            state.mode="edit";
+            state.originalSlug=slug;
+            if($customId&&data.slug)$customId.value=data.slug;
+            if($btnHome)$btnHome.style.display="inline-flex";
+            showResultLink(slug);
+            setStatus("上传成功。","success");
+            updateNodeUI();
+        }catch(err){
+            setStatus(err.message||"上传失败。","error");
+        }finally{
+            state.isSubmitting=false;
+            if($submitBtn)$submitBtn.disabled=false;
         }
     }
 
+    if($form){
+        $form.addEventListener("submit",submitForm);
+    }
+
+    function showResultLink(slug){
+        if(!$resultBox||!$viewLinkText)return;
+        const url=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
+        $viewLinkText.textContent=url;
+        $resultBox.style.display="block";
+        if($btnManageFromResult){
+            $btnManageFromResult.style.display = state.loggedIn ? "inline-flex" : "none";
+        }
+    }
+
+    if($btnCopyView){
+        $btnCopyView.addEventListener("click",async ()=>{
+            const text=$viewLinkText&&$viewLinkText.textContent;
+            if(!text)return;
+            try{
+                await navigator.clipboard.writeText(text);
+                setStatus("访问链接已复制。","success");
+            }catch(_){
+                setStatus("复制失败，请手动复制。","error");
+            }
+        });
+    }
+    if($btnOpenView){
+        $btnOpenView.addEventListener("click",()=>{
+            const text=$viewLinkText&&$viewLinkText.textContent;
+            if(!text)return;
+            window.open(text,"_blank","noopener");
+        });
+    }
+    if($btnManageFromResult){
+        $btnManageFromResult.addEventListener("click",()=>{
+            if(!$userCenter)return;
+            $userCenter.style.display="flex";
+            loadUserCenter();
+        });
+    }
+
+    function formatDate(ts){
+        if(!ts)return"-";
+        const d=new Date(ts);
+        const y=d.getFullYear();
+        const m=String(d.getMonth()+1).padStart(2,"0");
+        const day=String(d.getDate()).padStart(2,"0");
+        const hh=String(d.getHours()).padStart(2,"0");
+        const mm=String(d.getMinutes()).padStart(2,"0");
+        return `${y}-${m}-${day} ${hh}:${mm}`;
+    }
+    function calcRemainDays(ts){
+        if(!ts)return null;
+        const now=Date.now();
+        const diff=ts-now;
+        return Math.floor(diff/86400000);
+    }
+
     function setLoggedIn(username){
-        state.loggedIn = true;
-        state.username = username || "用户";
-        try { localStorage.setItem("pbx_username", state.username); } catch(_) {}
-
-        // 登录后默认改为「Never(不过期)」
-        setTtl("forever");
-
-        applyAuthUI();
+        state.loggedIn=true;
+        state.username=username||"用户";
+        if($btnAuthLabel)$btnAuthLabel.textContent=state.username;
+        if($authStatusText)$authStatusText.textContent=`已登录：${state.username}`;
+        if($advancedSection)$advancedSection.style.display="";
     }
     function setLoggedOut(){
         state.loggedIn=false;
         state.username=null;
-        try{localStorage.removeItem("pbx_username");}catch(_){}
-        applyAuthUI();
+        if($btnAuthLabel)$btnAuthLabel.textContent="Login";
+        if($authStatusText)$authStatusText.textContent="未登录";
+        if($advancedSection)$advancedSection.style.display="none";
     }
 
     async function initAuthFromServer(){
-        let saved=null;
-        try{saved=localStorage.getItem("pbx_username")||null;}catch(_){}
         try{
-            const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
-            if(res.status===401){setLoggedOut();return;}
+            const res=await fetch("/api/auth/status",{credentials:"include"});
             const data=await res.json().catch(()=>({}));
             if(data&&data.ok){
-                setLoggedIn(saved||"用户");
+                setLoggedIn(data.username||"用户");
             }else{
                 setLoggedOut();
             }
@@ -1466,30 +1764,6 @@
             setLoggedOut();
         }
     }
-
-    // 主题切换
-    const themeButtons=document.querySelectorAll(".theme-toggle button");
-    themeButtons.forEach(btn=>{
-        btn.addEventListener("click",()=>{
-            const theme=btn.dataset.theme;
-            if(!theme)return;
-            themeButtons.forEach(b=>b.classList.remove("active"));
-            btn.classList.add("active");
-            if(theme==="light"){
-                document.body.classList.add("theme-light");
-            }else{
-                document.body.classList.remove("theme-light");
-            }
-            try{localStorage.setItem("pbx_theme",theme);}catch(_){}
-        });
-    });
-    (function restoreTheme(){
-        let t=null;
-        try{t=localStorage.getItem("pbx_theme");}catch(_){}
-        if(!t)return;
-        const btn=[...themeButtons].find(b=>b.dataset.theme===t);
-        if(btn)btn.click();
-    })();
 
     function openAuthModal(){
         if(!$authModal)return;
@@ -1501,133 +1775,106 @@
         if(!$authModal)return;
         $authModal.style.display="none";
         if($authForm)$authForm.reset();
-        if($authRemember) $authRemember.checked = true;
-        setAuthTip("");
+        if($authMsg)$authMsg.textContent="";
     }
-    if($authCloseBtn)$authCloseBtn.addEventListener("click",closeAuthModal);
-    if($authModal){
-        $authModal.addEventListener("click",e=>{
-            if(e.target===$authModal)closeAuthModal();
-        });
-    }
-
-    function openUserCenter(){
-        if(!$userCenter)return;
-        $userCenter.style.display="flex";
-        loadUserPastes();
-    }
-    function closeUserCenter(){
-        if(!$userCenter)return;
-        $userCenter.style.display="none";
-    }
-    if($ucCloseBtn)$ucCloseBtn.addEventListener("click",closeUserCenter);
-    if($userCenter){
-        document.addEventListener("keydown",e=>{
-            if(e.key==="Escape")closeUserCenter();
-        });
+    function setAuthTip(msg,type){
+        if(!$authMsg)return;
+        $authMsg.textContent=msg||"";
+        $authMsg.classList.remove("status-success","status-error");
+        if(type==="success")$authMsg.classList.add("status-success");
+        else if(type==="error")$authMsg.classList.add("status-error");
     }
 
     if($btnAuthOpen){
-        $btnAuthOpen.addEventListener("click",()=>{
-            if(!state.loggedIn){
-                openAuthModal();
-            }else{
-                openUserCenter();
-            }
+        $btnAuthOpen.addEventListener("click",openAuthModal);
+    }
+    if($authCloseBtn){
+        $authCloseBtn.addEventListener("click",closeAuthModal);
+    }
+
+    if($authForm){
+        $authForm.addEventListener("submit",e=>{
+            e.preventDefault();
         });
     }
-    if($btnAuthLabel){
-        $btnAuthLabel.addEventListener("click",()=>{
-            if(!state.loggedIn){
-                openAuthModal();
-            }else{
-                openUserCenter();
+
+    async function doLoginOrRegister(mode){
+        if(!$authUsername||!$authPassword)return;
+        const username=$authUsername.value.trim();
+        const password=$authPassword.value;
+        if(!username||!password){
+            setAuthTip("用户名和密码不能为空。","error");
+            return;
+        }
+        const remember=$authRemember&&$authRemember.checked;
+        const url=mode==="register"?"/api/auth/register":"/api/auth/login";
+        setAuthTip(mode==="register"?"正在注册…":"正在登录…");
+        try{
+            const res=await fetch(url,{
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                credentials:"include",
+                body:JSON.stringify({username,password,remember})
+            });
+            const data=await res.json().catch(()=>({}));
+            if(!res.ok||data.ok===false){
+                throw new Error(data.error||"操作失败。");
             }
-        });
+            setAuthTip(mode==="register"?"注册成功，请重新登录。":"登录成功。","success");
+            if(mode==="login"){
+                setLoggedIn(username);
+                setTimeout(closeAuthModal,600);
+            }
+        }catch(err){
+            setAuthTip(err.message||"操作失败。","error");
+        }
     }
 
     if($btnDoLogin){
-        $btnDoLogin.addEventListener("click",async ()=>{
-            const u=$authUsername.value.trim();
-            const p=$authPassword.value;
-            if(!u||!p){
-                setAuthTip("请填写用户名和密码。","error");
-                return;
-            }
-            setAuthTip("登录中…");
-            try{
-                const remember = $authRemember && $authRemember.checked;
-                const data = await postJSON(AUTH_BASE+"/login",{
-                    username:u,
-                    password:p,
-                    remember
-                });
-                setLoggedIn(data.username||u);
-                setAuthTip("登录成功。","success");
-                setTimeout(closeAuthModal,300);
-            }catch(err){
-                setAuthTip(err.message||"登录失败。","error");
-            }
-        });
+        $btnDoLogin.addEventListener("click",()=>doLoginOrRegister("login"));
     }
     if($btnDoRegister){
-        $btnDoRegister.addEventListener("click",async ()=>{
-            const u=$authUsername.value.trim();
-            const p=$authPassword.value;
-            if(!u||!p){setAuthTip("请填写用户名和密码。","error");return;}
-            if(p.length<6){setAuthTip("密码至少 6 位。","error");return;}
-            setAuthTip("注册中…");
+        $btnDoRegister.addEventListener("click",()=>doLoginOrRegister("register"));
+    }
+
+    if($ucLogoutBtn){
+        $ucLogoutBtn.addEventListener("click",async ()=>{
             try{
-                await postJSON(AUTH_BASE+"/register",{username:u,password:p});
-                setAuthTip("注册成功，请点击登录。","success");
-            }catch(err){
-                setAuthTip(err.message||"注册失败。","error");
-            }
+                await fetch("/api/auth/logout",{method:"POST",credentials:"include"});
+            }catch(_){}
+            setLoggedOut();
+            if($userCenter)$userCenter.style.display="none";
+        });
+    }
+    if($ucCloseBtn){
+        $ucCloseBtn.addEventListener("click",()=>{
+            if($userCenter)$userCenter.style.display="none";
         });
     }
 
-    function formatDate(d){
-        if(!d)return"-";
-        const dt=new Date(d);
-        if(Number.isNaN(dt.getTime()))return"-";
-        const y=dt.getFullYear();
-        const m=String(dt.getMonth()+1).padStart(2,"0");
-        const day=String(dt.getDate()).padStart(2,"0");
-        const hh=String(dt.getHours()).padStart(2,"0");
-        const mm=String(dt.getMinutes()).padStart(2,"0");
-        return `${y}-${m}-${day} ${hh}:${mm}`;
-    }
-    function calcRemainDays(expiresAt){
-        if(!expiresAt)return null;
-        const t=+new Date(expiresAt);
-        if(Number.isNaN(t))return null;
-        const now=Date.now();
-        const diff=t-now;
-        const d=Math.floor(diff/(24*3600*1000));
-        return d;
+    if($btnOpenUserCenter){
+        $btnOpenUserCenter.addEventListener("click",()=>{
+            if($userCenter)$userCenter.style.display="flex";
+            loadUserCenter();
+        });
     }
 
-    async function loadUserPastes(){
+    async function loadUserCenter(){
         if(!$ucEmpty||!$ucList)return;
         $ucEmpty.style.display="";
-        $ucEmpty.textContent="正在加载你的记录…";
+        $ucEmpty.textContent="正在加载记录…";
         $ucList.style.display="none";
         $ucList.innerHTML="";
         try{
-            const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
-            if(res.status===401){
-                $ucEmpty.textContent="登录状态已失效，请重新登录。";
-                setLoggedOut();
-                return;
-            }
+            const res=await fetch("/api/history",{credentials:"include"});
             const data=await res.json().catch(()=>({}));
-            if(!data.ok){
-                $ucEmpty.textContent=data.error||"加载失败。";
-                return;
+            if(!res.ok||data.ok===false){
+                throw new Error(data.error||"获取历史记录失败。");
             }
-            const items=data.items||[];
+            const items=Array.isArray(data.items)?data.items:[];
             if(!items.length){
-                $ucEmpty.textContent="暂无记录，先去创建一条吧。";
+                $ucEmpty.style.display="";
+                $ucEmpty.textContent="暂无记录。";
                 return;
             }
 
@@ -1661,227 +1908,149 @@
 
             valid.forEach(d=>{
                 const slug=d.slug;
-                if(!slug)return;
-                const remark=d.remark||"(无备注)";
-                const created=d.createdAt||null;
-                const expires=d.expiresAt||null;
-                const ttlKey=d.ttlKey||"";
+                const expires=d.expiresAt;
+                const created=d.createdAt;
+                const remark=d.remark||"";
+                const ttlKey=d.ttlKey||"7d";
 
-                const viewUrl=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
                 const remain=calcRemainDays(expires);
 
                 const row=document.createElement("div");
                 row.className="uc-item";
-                row.innerHTML=`
-                    <div class="uc-item-top">
-                        <div class="uc-item-title">
-                            <span class="uc-remark-tag">${escapeHTML(remark)}</span>
-                            <span class="uc-slug-tag">${escapeHTML(slug)}</span>
-                        </div>
-                        <div class="uc-item-meta"></div>
-                    </div>
-                    <div class="uc-link-row">
-                        <span class="uc-link-tag">${escapeHTML(viewUrl)}</span>
-                    </div>
-                    <div class="uc-item-actions"></div>
-                `;
-                const meta=row.querySelector(".uc-item-meta");
-                const act=row.querySelector(".uc-item-actions");
+
+                const top=document.createElement("div");
+                top.className="uc-item-top";
+
+                const titleBox=document.createElement("div");
+                titleBox.className="uc-item-title";
+
+                const titleSpan=document.createElement("span");
+                titleSpan.textContent=slug||"(无 ID)";
+                titleBox.appendChild(titleSpan);
+
+                if(remark){
+                    const tag=document.createElement("span");
+                    tag.className="uc-remark-tag";
+                    const dot=document.createElement("span");
+                    dot.className="dot";
+                    const label=document.createElement("span");
+                    label.className="uc-remark-label";
+                    label.textContent="REMARK";
+                    const text=document.createElement("span");
+                    text.className="uc-remark-text";
+                    text.textContent=remark;
+                    tag.appendChild(dot);
+                    tag.appendChild(label);
+                    tag.appendChild(text);
+                    titleBox.appendChild(tag);
+                }
+
+                const meta=document.createElement("div");
+                meta.className="uc-item-meta";
 
                 let metaText="";
                 if(!expires || ttlKey==="forever"){
-                    metaText=`到期：Never🙌🏿`;
+                    metaText+=`到期：Never🙌🏿`;
                 }else{
-                    metaText=`到期：${formatDate(expires)}`;
+                    metaText+=`到期：${formatDate(expires)}`;
                     if(remain!=null && remain>=0){
                         metaText+=` · 自动清除还有 ${remain} 天`;
                     }
                 }
                 meta.textContent=metaText;
 
-                // 若该条内容为代理节点，追加绿色订阅按钮
-                const nodeInfo = detectNodeInfoFromText(d.content || "");
-                const isNode = nodeInfo && nodeInfo.kind !== "none";
-                if(isNode){
-                    const subWrap=document.createElement("div");
-                    subWrap.className="uc-sub-wrap";
+                top.appendChild(titleBox);
+                top.appendChild(meta);
 
-                    const subBtn=document.createElement("button");
-                    subBtn.type="button";
-                    subBtn.className="uc-sub-btn";
-                    subBtn.textContent="订阅";
+                const linkRow=document.createElement("div");
+                linkRow.className="uc-link-row";
+                const linkTag=document.createElement("div");
+                linkTag.className="uc-link-tag";
+                const link=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
+                linkTag.textContent=link;
+                linkRow.appendChild(linkTag);
 
-                    const subMenu=document.createElement("div");
-                    subMenu.className="uc-sub-menu";
-
-                    const baseSub=`${location.origin}/api/sub?id=${encodeURIComponent(slug)}`;
-                    const clients = [
-                        {key:"", label:"通用"},
-                        {key:"surge", label:"Surge"},
-                        {key:"clash", label:"Clash"},
-                        {key:"stash", label:"Stash"},
-                        {key:"quantumultx", label:"Quantumult X"},
-                    ];
-
-                    clients.forEach(c=>{
-                        const b=document.createElement("button");
-                        b.type="button";
-                        b.textContent=c.label;
-                        b.addEventListener("click", async ()=>{
-                            const url = c.key ? `${baseSub}&client=${c.key}` : baseSub;
-                            try{
-                                await navigator.clipboard.writeText(url);
-                                setStatus(`已复制订阅链接（${c.label}）`,"success");
-                            }catch(_){
-                                window.prompt("复制失败，请手动复制：", url);
-                            }
-                            subWrap.classList.remove("open");
-                        });
-                        subMenu.appendChild(b);
-                    });
-
-                    subBtn.addEventListener("click", ()=>{
-                        subWrap.classList.toggle("open");
-                    });
-
-                    subWrap.appendChild(subBtn);
-                    subWrap.appendChild(subMenu);
-                    meta.appendChild(subWrap);
-                }
-
-                const btnEdit=document.createElement("button");
-                btnEdit.type="button";
-                btnEdit.className="btn-secondary btn-xs";
-                btnEdit.innerHTML = `
-    <span class="icon-svg">
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-user-pen-icon lucide-user-pen"
-            style="fill:none;"
-        >
-            <path d="M11.5 15H7a4 4 0 0 0-4 4v2" />
-            <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.01a2 2 0 0 0-.505.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />
-            <circle cx="10" cy="7" r="4" />
-        </svg>
-    </span>
-    编辑
-`;
-                btnEdit.addEventListener("click",()=>{
-                    closeUserCenter();
-                    enterEditMode(slug);
-                });
-
-                const btnCopy=document.createElement("button");
-                btnCopy.type="button";
-                btnCopy.className="btn-secondary btn-xs";
-                btnCopy.innerHTML=`<span class="icon-svg">
-                    <svg viewBox="0 0 20 20"><path d="M7 3a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-4a3 3 0 0 1-3-3V3Zm-4 4a2 2 0 0 1 2-2v9a2 2 0 0 0 2 2h6a2 2 0 0 1-2 2H7a4 4 0 0 1-4-4V7Z" fill="currentColor"/></svg>
-                </span>复制`;
-                btnCopy.addEventListener("click",async ()=>{
-                    try{
-                        await navigator.clipboard.writeText(viewUrl);
-                        setStatus("已复制链接。","success");
-                    }catch(_){
-                        window.prompt("复制失败，请手动复制：",viewUrl);
-                    }
-                });
+                const act=document.createElement("div");
+                act.className="uc-item-actions";
 
                 const btnOpen=document.createElement("button");
                 btnOpen.type="button";
                 btnOpen.className="btn-secondary btn-xs";
-                btnOpen.innerHTML = `
-    <span class="icon-svg">
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-eye-icon lucide-eye"
-            style="fill:none;"
-        >
-            <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
-            <circle cx="12" cy="12" r="3" />
-        </svg>
-    </span>
-    打开
-`;
-                btnOpen.addEventListener("click",()=>{window.open(viewUrl,"_blank","noopener");});
+                btnOpen.textContent="打开";
+                btnOpen.addEventListener("click",()=>window.open(link,"_blank","noopener"));
 
-                const btnDel=document.createElement("button");
-                btnDel.type="button";
-                btnDel.className="btn-danger btn-xs";
-                btnDel.innerHTML = `
-    <span class="icon-svg">
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="18"
-            height="18"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.6"
-        >
-            <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.3-.14.772-.218 1.072.122 0 0 .43.618.43 1.588v.5a1 1 0 0 1-1 1H5.27a1 1 0 0 1-1-1v-.162c0-1.07.43-1.588.43-1.588.3-.34.772-.262 1.072-.122 0 0 .675.263 2.228.263 1.553 0 2.228-.263 2.228-.263.3-.14.772-.218 1.072.122 0 0 .675.263 2.228.263 1.553 0 2.228-.263 2.228-.263Z"
-            />
-            <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M9.879 4.5c.314-.934 1.2-1.5 2.121-1.5 0 0 1.5 0 2.121 1.5M4.5 7h15"
-            />
-        </svg>
-    </span>
-    删除
-`;
-                btnDel.addEventListener("click",async ()=>{
-                    if(!confirm("确认删除该链接？"))return;
+                const btnCopy=document.createElement("button");
+                btnCopy.type="button";
+                btnCopy.className="btn-secondary btn-xs";
+                btnCopy.textContent="复制链接";
+                btnCopy.addEventListener("click",async ()=>{
                     try{
-                        await postJSON(API_BASE,{action:"delete",slug});
-                        loadUserPastes();
-                        setStatus("已删除一条记录。","success");
+                        await navigator.clipboard.writeText(link);
+                        setStatus("链接已复制。","success");
+                    }catch(_){
+                        setStatus("复制失败，请手动复制。","error");
+                    }
+                });
+
+                const btnEdit=document.createElement("button");
+                btnEdit.type="button";
+                btnEdit.className="btn-secondary btn-xs";
+                btnEdit.textContent="编辑";
+                btnEdit.addEventListener("click",async ()=>{
+                    if($userCenter)$userCenter.style.display="none";
+                    await enterEditMode(slug);
+                });
+
+                const btnDelete=document.createElement("button");
+                btnDelete.type="button";
+                btnDelete.className="btn-secondary btn-xs pill-danger";
+                btnDelete.textContent="删除";
+                btnDelete.addEventListener("click",async ()=>{
+                    if(!confirm("确定要删除这条记录吗？"))return;
+                    try{
+                        const res=await fetch(`${API_BASE}/${encodeURIComponent(slug)}`,{
+                            method:"DELETE",
+                            credentials:"include"
+                        });
+                        const data=await res.json().catch(()=>({}));
+                        if(!res.ok||data.ok===false){
+                            throw new Error(data.error||"删除失败。");
+                        }
+                        setStatus("删除成功。","success");
+                        loadUserCenter();
                     }catch(err){
                         setStatus(err.message||"删除失败。","error");
                     }
                 });
 
-                act.appendChild(btnEdit);
-                act.appendChild(btnCopy);
                 act.appendChild(btnOpen);
-                act.appendChild(btnDel);
+                act.appendChild(btnCopy);
+                act.appendChild(btnEdit);
+                act.appendChild(btnDelete);
+
+                row.appendChild(top);
+                row.appendChild(linkRow);
+                row.appendChild(act);
 
                 $ucList.appendChild(row);
             });
-
         }catch(err){
             $ucEmpty.style.display="";
             $ucEmpty.textContent=err.message||"加载失败。";
         }
     }
 
-    if($ucRefreshBtn)$ucRefreshBtn.addEventListener("click",loadUserPastes);
-    if($ucLogoutBtn)$ucLogoutBtn.addEventListener("click",async ()=>{
-        try{
-            await fetch(AUTH_BASE+"/logout",{method:"POST",credentials:"include"});
-        }catch(_){}
-        setLoggedOut();
-        setStatus("已退出登录。","success");
-        closeUserCenter();
-    });
+    if($ucRefreshBtn){
+        $ucRefreshBtn.addEventListener("click",loadUserCenter);
+    }
+
+    const urlParams=new URLSearchParams(location.search);
+    const initialId=urlParams.get("id");
+    if(initialId){
+        enterEditMode(initialId).catch(()=>{});
+    }else{
+        enterCreateMode(false);
+    }
 
     async function enterEditMode(slug){
         state.mode="edit";
@@ -1907,6 +2076,7 @@
                 $customId.readOnly=false;
             }
             updateByteCount();
+            updateNodeUI();
             if(data.ttlKey)setTtl(data.ttlKey);
             const urlClean=new URL(location.href);
             urlClean.searchParams.set("id",slug);
@@ -1918,115 +2088,31 @@
         }
     }
 
-    function showResultLink(slug){
-        if(!$resultBox||!$viewLinkText)return;
-        const url=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
-        $viewLinkText.textContent=url;
-        $resultBox.style.display="block";
-        if($btnManageFromResult){
-            $btnManageFromResult.style.display = state.loggedIn ? "inline-flex" : "none";
+    document.addEventListener("keydown",e=>{
+        if(e.key==="Escape"){
+            if($userCenter&&$userCenter.style.display==="flex")closeUserCenter();
+            else if($authModal&&$authModal.style.display==="flex")closeAuthModal();
         }
+    });
+
+    function closeUserCenter(){
+        if($userCenter)$userCenter.style.display="none";
     }
 
-    if($btnCopyView){
-        $btnCopyView.addEventListener("click",async ()=>{
-            const text=$viewLinkText&&$viewLinkText.textContent;
-            if(!text)return;
-            try{
-                await navigator.clipboard.writeText(text);
-                setStatus("已复制访问链接。","success");
-            }catch(_){
-                window.prompt("复制失败，请手动复制：",text);
-            }
-        });
-    }
-    if($btnOpenView){
-        $btnOpenView.addEventListener("click",()=>{
-            const text=$viewLinkText&&$viewLinkText.textContent;
-            if(!text)return;
-            window.open(text,"_blank","noopener");
-        });
-    }
-    if($btnManageFromResult){
-        $btnManageFromResult.addEventListener("click",()=>{
-            openUserCenter();
-        });
-    }
-
-    if($btnResetContent){
-        $btnResetContent.addEventListener("click",()=>{
-            if($content)$content.value="";
-            updateByteCount();
-            setStatus("内容已清空。","success");
-        });
-    }
-
-    if($form){
-        $form.addEventListener("submit",async e=>{
-            e.preventDefault();
-            if(state.isSubmitting)return;
-            if(!$content){
-                setStatus("页面初始化异常，缺少内容区域。","error");
-                return;
-            }
-            const text=$content.value||"";
-            if(!text.trim()){
-                setStatus("内容不能为空。","error");
-                return;
-            }
-
-            validateCustomSlug();
-            if(state.customSlugError){
-                setStatus("自定义 URL 不符合规则。","error");
-                return;
-            }
-
-            const ttlKey=state.ttlKey||"7d";
-            const payload={
-                content:text,
-                ttl:ttlKey,
-                remark:$remark?$remark.value.trim():"",
-                customId:$customId?$customId.value.trim():""
-            };
-            if(state.mode==="edit" && state.originalSlug){
-                payload.slug=state.originalSlug;
-            }
-
-            state.isSubmitting=true;
-            setStatus(state.mode==="edit"?"正在更新…":"正在创建…");
-            if($submitBtn)$submitBtn.disabled=true;
-            try{
-                const data=await postJSON(API_BASE,payload);
-                const slug=data.slug;
-                state.mode="edit";
-                state.originalSlug=slug;
-                showResultLink(slug);
-                setStatus(state.mode==="edit"?"已更新。":"已创建。","success");
-                if($btnHome)$btnHome.style.display="inline-flex";
-                if($customId && !payload.customId){
-                    $customId.value=slug;
-                }
-                updateNodeDetect();
-            }catch(err){
-                setStatus(err.message||"提交失败。","error");
-            }finally{
-                state.isSubmitting=false;
-                if($submitBtn)$submitBtn.disabled=false;
-            }
-        });
-    }
-
-    (async function initFromQuery(){
-        const url=new URL(location.href);
-        const id=url.searchParams.get("id");
-        if(id){
-            try{
-                await enterEditMode(id);
-            }catch(_){}
-        }
+    (async function init(){
+        await initAuthFromServer();
+        applyAuthUI();
     })();
 
-    initAuthFromServer();
+    function applyAuthUI(){
+        if(state.loggedIn){
+            if($btnAuthLabel)$btnAuthLabel.textContent=state.username||"用户";
+            if($advancedSection)$advancedSection.style.display="";
+        }else{
+            if($btnAuthLabel)$btnAuthLabel.textContent="Login";
+            if($advancedSection)$advancedSection.style.display="none";
+        }
+    }
 </script>
 </body>
 </html>
