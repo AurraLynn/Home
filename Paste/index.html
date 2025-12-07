@@ -303,13 +303,11 @@
         .btn-primary.btn-disabled{opacity:.5;cursor:not-allowed;box-shadow:none;}
         /* 只改登录弹窗里的 LOG IN 按钮，不影响上传按钮 */
         .auth-panel #btnDoLogin{
-            background: rgb(41, 195, 30);              /* 登录按钮底色：纯黑 */
+            background: rgb(41, 195, 30);
             border-color: rgba(0, 0, 0, 0.42);
-            color:#f9fafb;                   /* 字体颜色保持浅色 */
+            color:#f9fafb;
             box-shadow:0 8px 20px rgba(255, 255, 255, 0);
         }
-
-        /* 可选：悬停时稍微亮一点 */
         .auth-panel #btnDoLogin:hover{
             background: rgba(255, 0, 207, 0.29);
         }
@@ -550,6 +548,34 @@
             display:inline-flex;
         }
 
+        /* >>> 节点检测区域样式（备注右侧的小区域） */
+        .node-detect-info{
+            margin-left:auto;
+            display:flex;
+            align-items:center;
+            gap:6px;
+            font-size:10px;
+            color:var(--text-sub);
+        }
+        .node-detect-pill{
+            padding:2px 8px;
+            border-radius:999px;
+            border:1px solid var(--border-soft);
+            background:rgba(15,23,42,0.85);
+        }
+        body.theme-light .node-detect-pill{
+            background:#f9fafb;
+        }
+        .node-detect-select{
+            border-radius:999px;
+            border:1px solid var(--border-soft);
+            background:var(--layer-soft);
+            color:var(--text-sub);
+            font-size:10px;
+            padding:2px 6px;
+            outline:none;
+        }
+
         @media(max-width:780px){
             body{padding:22px 10px;}
             .card{padding:14px 12px 12px;border-radius:18px;}
@@ -721,7 +747,7 @@
             </svg>
         </span>
 
-                                    <!-- 激活状态图标（点击后高亮，这里先用同一套，需要的话再单独设计一套高亮版） -->
+                                    <!-- 激活状态图标 -->
                                     <span class="icon-svg decode-icon-active">
             <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -780,6 +806,20 @@
                             <div class="field-label">备注（可选）</div>
                             <div class="field-inline">
                                 <input id="remark" type="text" placeholder="输入自定义备注...">
+                                <!-- >>> 节点检测 + 订阅按钮区域 -->
+                                <div class="node-detect-info" id="nodeDetectInfo" style="display:none;">
+                                    <span class="node-detect-pill" id="nodeDetectText">检测到 0 条节点</span>
+                                    <select id="nodeClientSelect" class="node-detect-select">
+                                        <option value="">通用</option>
+                                        <option value="surge">Surge</option>
+                                        <option value="clash">Clash</option>
+                                        <option value="stash">Stash</option>
+                                        <option value="qx">Quantumult X</option>
+                                    </select>
+                                    <button type="button" class="btn-secondary btn-xs" id="nodeCopySubBtn">
+                                        复制订阅
+                                    </button>
+                                </div>
                             </div>
                             <div class="hint">仅在用户中心显示。</div>
                         </div>
@@ -1067,6 +1107,12 @@
     const $btnBase64Encode = qs("btnBase64Encode");
     const $btnBase64Decode = qs("btnBase64Decode");
 
+    // >>> 节点检测相关 DOM
+    const $nodeDetectInfo = qs("nodeDetectInfo");
+    const $nodeDetectText = qs("nodeDetectText");
+    const $nodeClientSelect = qs("nodeClientSelect");
+    const $nodeCopySubBtn = qs("nodeCopySubBtn");
+
     const $btnHome=qs("btnHome");
     const $btnAuthOpen=qs("btnAuthOpen");
     const $btnAuthLabel=qs("btnAuthLabel");
@@ -1150,6 +1196,44 @@
         return data;
     }
 
+    // >>> 节点检测逻辑
+    function updateNodeDetectUI(){
+        if(!$content || !$nodeDetectInfo || !$nodeDetectText) return;
+
+        let text = $content.value || "";
+        text = text.trim();
+        if(!text){
+            $nodeDetectInfo.style.display = "none";
+            return;
+        }
+
+        let scan = text;
+
+        // 尝试把整体当成 Base64 解一层，如果里面有节点协议，就用解码后的内容来统计
+        const compact = text.replace(/\s+/g,"");
+        const decodedWhole = base64DecodeUtf8(compact);
+        if(decodedWhole && (
+                decodedWhole.includes("ss://") ||
+                decodedWhole.includes("vmess://") ||
+                decodedWhole.includes("vless://") ||
+                decodedWhole.includes("trojan://") ||
+                decodedWhole.includes("hysteria2://") ||
+                decodedWhole.includes("hy2://")
+        )){
+            scan = decodedWhole;
+        }
+
+        const m = scan.match(/(ss|vmess|vless|trojan|hysteria2|hy2):\/\//gi);
+        const count = m ? m.length : 0;
+
+        if(count > 0){
+            $nodeDetectText.textContent = `检测到 ${count} 条节点`;
+            $nodeDetectInfo.style.display = "flex";
+        }else{
+            $nodeDetectInfo.style.display = "none";
+        }
+    }
+
     function updateByteCount(){
         if(!$content||!$byteNum)return;
         let len=0;
@@ -1162,6 +1246,9 @@
             const lines=v ? v.split(/\r\n|\r|\n/).length : 0;
             $lineCounter.textContent = lines+" 行";
         }
+
+        // 同步做一次节点检测
+        updateNodeDetectUI();
     }
     if($content){
         updateByteCount();
@@ -1320,7 +1407,10 @@
             $customId.classList.remove("input-error");
         }
     }
-    if($customId)$customId.addEventListener("input",validateCustomSlug);
+    if($customId)$customId.addEventListener("input",()=>{
+        validateCustomSlug();
+        // 自定义 ID 变化时，订阅链接的 id 也会变；复制时实时读取即可
+    });
 
     function enterCreateMode(clear){
         state.mode="create";
@@ -1805,6 +1895,50 @@
         });
     }
 
+    // >>> 订阅链接生成：根据当前模式 + 自定义 ID / 原始 slug
+    function getCurrentSubId(){
+        let slug = null;
+        if(state.mode === "edit" && state.originalSlug){
+            slug = state.originalSlug;
+        }else if($customId){
+            const v = $customId.value.trim();
+            if(v) slug = v;
+        }
+        if(!slug) slug = "{id}";
+        return slug;
+    }
+
+    function buildSubUrl(client){
+        const base = location.origin + "/api/sub";
+        const id = getCurrentSubId();
+        const u = new URL(base);
+        u.searchParams.set("id", id);
+        if(client){
+            u.searchParams.set("client", client);
+        }
+        return u.toString();
+    }
+
+    if($nodeCopySubBtn){
+        $nodeCopySubBtn.addEventListener("click", async ()=>{
+            // 如果当前没检测到节点，整个区域本来就是隐藏的，这里再稳一手
+            if(!$nodeDetectInfo || $nodeDetectInfo.style.display === "none"){
+                setStatus("当前内容不是节点，未生成订阅链接。","error");
+                return;
+            }
+            const client = $nodeClientSelect ? ($nodeClientSelect.value || "") : "";
+            const url = buildSubUrl(client);
+            try{
+                await navigator.clipboard.writeText(url);
+                setStatus("订阅链接已复制。","success");
+            }catch(_){
+                setStatus("复制失败，请手动复制。","error");
+            }
+        });
+    }
+
+    if($baseUrlText)$baseUrlText.textContent=VIEW_BASE+"/{id}";
+
     if($form){
         $form.addEventListener("submit",async e=>{
             e.preventDefault();
@@ -1869,8 +2003,6 @@
             }
         });
     }
-
-    if($baseUrlText)$baseUrlText.textContent=VIEW_BASE+"/{id}";
 
     document.addEventListener("keydown",e=>{
         if(e.key==="Escape"){
