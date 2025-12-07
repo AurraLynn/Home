@@ -7,14 +7,15 @@
 // 支持输出：
 // - Quantumult X 订阅（由 /api/sub/QuantumultX 生成）
 // - Surge 订阅（由 /api/sub/Surge 生成）
-// - Clash / Stash 订阅（由 /api/sub/Clash 生成）
+// - Clash 订阅（由 /api/sub/Clash 生成，通常为完整配置前的 proxies 段）
+// - Stash 订阅（由 /api/sub/Stash 生成，只返回 proxies 段）
 // - Base64 订阅（整段原文按 UTF-8 → Base64 编码）
 //
 // client 行为：
 // - client=quantumultx → 调用 /api/sub/QuantumultX
 // - client=surge      → 调用 /api/sub/Surge
 // - client=clash      → 调用 /api/sub/Clash
-// - client=stash      → 调用 /api/sub/Clash（同 Clash）
+// - client=stash      → 调用 /api/sub/Stash
 // - 其他 / 未指定    → 直接返回 Base64（V2Ray 常规订阅）
 
 export async function onRequestPost(context) {
@@ -34,8 +35,12 @@ export async function onRequestPost(context) {
     return proxyToSubHandler(origin + "/api/sub/Surge", bodyText);
   }
 
-  if (client === "clash" || client === "stash") {
+  if (client === "clash") {
     return proxyToSubHandler(origin + "/api/sub/Clash", bodyText);
+  }
+
+  if (client === "stash") {
+    return proxyToSubHandler(origin + "/api/sub/Stash", bodyText);
   }
 
   // === 2. 其他一律按 Base64 订阅返回 ===
@@ -46,7 +51,7 @@ export async function onRequestPost(context) {
   });
 }
 
-// 把 body 转发给指定子接口（QuantumultX / Surge / Clash）
+// 把 body 转发给指定子接口（QuantumultX / Surge / Clash / Stash）
 async function proxyToSubHandler(targetUrl, bodyText) {
   let resp;
   try {
