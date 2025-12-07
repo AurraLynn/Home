@@ -11,6 +11,14 @@
 // - Hysteria2 / UDP
 // - VMess / UDP、HTTP+UDP、WS+UDP
 // - VLESS / UDP、XTLS-RPRX-VISION+UDP、WS+UDP
+//
+// 统一输出格式：
+// proxies:
+//   - {"type":"ss", ...}
+//   - {"type":"trojan", ...}
+//   - {"type":"vmess", ...}
+//   - {"type":"hysteria2", ...}
+//   - {"type":"vless", ...}
 
 export async function onRequestPost(context) {
   const { request } = context;
@@ -53,6 +61,7 @@ export async function onRequestPost(context) {
 
   for (const n of nodes) {
     if (n.type === "ss") {
+      // Shadowsocks
       const obj = {
         type: "ss",
         server: n.server,
@@ -73,6 +82,7 @@ export async function onRequestPost(context) {
 
       lines.push("  - " + JSON.stringify(obj));
     } else if (n.type === "trojan") {
+      // Trojan
       const obj = {
         type: "trojan",
         server: n.server,
@@ -84,7 +94,7 @@ export async function onRequestPost(context) {
       };
       lines.push("  - " + JSON.stringify(obj));
     } else if (n.type === "hysteria2") {
-      // 按你给的格式：password + tfo
+      // Hysteria2（按你给的 password + tfo 格式）
       const obj = {
         type: "hysteria2",
         name: n.name,
@@ -99,6 +109,7 @@ export async function onRequestPost(context) {
 
       lines.push("  - " + JSON.stringify(obj));
     } else if (n.type === "vmess") {
+      // VMess
       const obj = {
         name: n.name,
         type: "vmess",
@@ -130,6 +141,7 @@ export async function onRequestPost(context) {
 
       lines.push("  - " + JSON.stringify(obj));
     } else if (n.type === "vless") {
+      // VLESS（Reality / XTLS / WS）
       const obj = {
         type: "vless",
         name: n.name,
@@ -732,7 +744,7 @@ function parseVless(uri) {
 
     const params = url.searchParams;
 
-    // 备注：优先 ?remarks=，其次 #fragment
+    // ========== 备注：优先 ?remarks=，其次 #fragment ==========
     let name = params.get("remarks") || "";
     if (!name && url.hash && url.hash.length > 1) {
       name = url.hash.slice(1);
@@ -741,12 +753,18 @@ function parseVless(uri) {
       name = decodeNameMaybeTwice(name);
     }
 
-    // username 通常是 Base64("auto:uuid@ip:port")
+    // ========== 先给 host / port 一个默认值 ==========
+    let host = url.hostname || "0.0.0.0";
+    let port = url.port ? parseInt(url.port, 10) || 443 : 443;
+
+    // ========== 解析 UUID ==========
     let uuid = "";
+
     if (url.username) {
+      // 常见写法：username 是 Base64("auto:uuid@ip:port") 或 Base64("auto:uuid")
       const decoded = safeBase64Decode(url.username);
       if (decoded && decoded.includes(":")) {
-        // auto:UUID@ip:port  =>  截取 UUID
+        // auto:UUID 或 auto:UUID@ip:port
         const colon = decoded.indexOf(":");
         let afterColon = decoded.substring(colon + 1);
         const atPos = afterColon.indexOf("@");
@@ -759,12 +777,37 @@ function parseVless(uri) {
       } else {
         uuid = url.username;
       }
+    } else {
+      // 兼容“整块 Base64 放在 host 里”的写法：
+      // vless://BASE64(auto:uuid@host:port)?...
+      const decodedHost = safeBase64Decode(url.hostname);
+      if (decodedHost && decodedHost.includes("@")) {
+        const atIdx = decodedHost.lastIndexOf("@");
+        const userinfo = decodedHost.substring(0, atIdx);   // auto:uuid
+        const hostPort = decodedHost.substring(atIdx + 1);  // host:port
+
+        const colonIdx = userinfo.indexOf(":");
+        if (colonIdx !== -1) {
+          uuid = userinfo.substring(colonIdx + 1);
+        } else {
+          uuid = userinfo;
+        }
+
+        // 从 hostPort 里拆 host / port
+        let realHost = hostPort;
+        let realPort = port;
+        const m = hostPort.match(/:(\d+)$/);
+        if (m) {
+          realPort = parseInt(m[1], 10) || port;
+          realHost = hostPort.substring(0, m.index);
+        }
+
+        host = realHost;
+        port = realPort;
+      }
     }
 
-    const host = url.hostname || "0.0.0.0";
-    const port = url.port ? parseInt(url.port, 10) || 443 : 443;
-
-    // tls / security
+    // ========== TLS / Reality / XTLS / WS 等参数 ==========
     const tlsParam =
       (params.get("tls") || "").toLowerCase() ||
       (params.get("security") || "").toLowerCase();
