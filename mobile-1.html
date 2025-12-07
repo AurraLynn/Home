@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 适配移动端 -->
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- 初始页面标题（加载完一言后会被 JS 覆盖） -->
+    <title>Lyn · Main Page</title>
+
+    <!-- 🌍 国外网站 / 通用 Open Graph 预览（Telegram、X 等） -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Lyn · Main Page">
+    <meta property="og:description" content="Just someone who loves to mess around on the internet.">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/bg.jpg">
+    <meta property="og:url" content="https://aura.us.kg">
+
+    <!-- 🇨🇳 国内网站 / 微信 / QQ / 微博 使用的描述和图片 -->
+    <meta name="description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
+    <meta itemprop="name" content="Lyn · Main Page">
+    <meta itemprop="image" content="https://save.aura.us.kg/Picture/Fm2.png">
+
+    <!-- 网站图标 -->
+    <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
+
+    <!-- 字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-main: #050509;
+            --accent-gold: #e9b765;
+            --accent-gold-soft: rgba(233, 183, 101, 0.32);
+            --text-main: #f5f5f5;
+            --text-muted: #9ca3af;
+            --text-soft: #6b7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 10% 0%, #111827 0%, #02010a 55%, #000 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+            overflow: hidden;
+        }
+
+        /* 9:16 高度的“手机屏幕” */
+        .phone-frame {
+            position: relative;
+            width: min(100vw, 420px);
+            aspect-ratio: 9 / 16;
+            border-radius: 34px;
+            overflow: hidden;
+            background: #02010a;
+            box-shadow:
+                    0 30px 80px rgba(0, 0, 0, 0.95),
+                    0 0 0 1px rgba(255, 255, 255, 0.06);
+            touch-action: none;
+        }
+
+        /* 背景视频层 */
+        .video-layer {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+        }
+
+        .video-layer video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: saturate(1.05) contrast(1.02) brightness(0.9);
+            transition: filter 0.5s ease;
+        }
+
+        .video-overlay {
+            position: absolute;
+            inset: 0;
+            background:
+                    linear-gradient(to bottom, rgba(0,0,0,0.68), rgba(0,0,0,0.35) 30%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.9) 100%);
+            pointer-events: none;
+        }
+
+        .noise-layer {
+            position: absolute;
+            inset: -20px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='3' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.13'/%3E%3C/svg%3E");
+            mix-blend-mode: soft-light;
+            pointer-events: none;
+        }
+
+        /* 顶部：ONLY HERE + 静音按钮 + 滑动提示 */
+        .top-bar {
+            position: absolute;
+            top: 28px; /* ⬇️ 整体下移，避免被浏览器顶部挡住（原 12px） */
+            left: 14px;
+            right: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 5;
+        }
+
+        .brand-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 999px;
+            border: 1px solid rgba(156, 163, 175, 0.55);
+            backdrop-filter: blur(12px);
+            background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(15,23,42,0.4));
+            font-size: 9px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #e5e7eb;
+            transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease, border-color 0.25s ease;
+        }
+
+        .brand-pill:hover {
+            transform: translateY(-0.5px);
+            border-color: rgba(209, 213, 219, 0.9);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.7);
+        }
+
+        /* 静音按钮：小号 pill + 互动效果 */
+        .mute-btn {
+            position: relative;
+            padding: 3px 9px;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.8);
+            background: radial-gradient(circle at 20% 0%, rgba(249,250,251,0.16), rgba(15,23,42,0.96));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(14px);
+            box-shadow:
+                    0 3px 12px rgba(0,0,0,0.8),
+                    0 0 0 1px rgba(15,23,42,0.8);
+            gap: 4px;
+            transition: background 0.25s ease, box-shadow 0.25s ease,
+            transform 0.15s ease, border-color 0.25s ease, opacity 0.2s ease;
+        }
+
+        .mute-btn:hover {
+            transform: translateY(-0.5px);
+            box-shadow:
+                    0 5px 18px rgba(0,0,0,0.9),
+                    0 0 0 1px rgba(31,41,55,1);
+        }
+
+        .mute-btn:active {
+            transform: translateY(0) scale(0.97);
+            box-shadow:
+                    0 2px 8px rgba(0,0,0,0.7),
+                    0 0 0 1px rgba(15,23,42,0.9);
+        }
+
+        .mute-btn[data-muted="false"] {
+            border-color: var(--accent-gold);
+            background: radial-gradient(circle at 10% 0%, rgba(250,250,250,0.25), rgba(15,23,42,0.96));
+            box-shadow:
+                    0 4px 18px rgba(0,0,0,0.95),
+                    0 0 0 1px rgba(55,65,81,1);
+        }
+
+        .mute-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 999px;
+            background: var(--accent-gold);
+            box-shadow: 0 0 6px rgba(233, 183, 101, 0.9);
+            opacity: 0.7;
+            transition: opacity 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .mute-btn[data-muted="false"] .mute-dot {
+            opacity: 1;
+            box-shadow: 0 0 10px rgba(233,183,101,1);
+        }
+
+        .mute-label {
+            font-size: 8px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: rgba(229,231,235,0.78);
+            transition: color 0.25s ease;
+        }
+
+        .mute-btn[data-muted="false"] .mute-label {
+            color: var(--accent-gold);
+        }
+
+        .mute-icon {
+            position: relative;
+            width: 10px;
+            height: 10px;
+        }
+
+        .mute-icon svg {
+            width: 10px;
+            height: 10px;
+            fill: none;
+            stroke-width: 1.6;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            position: absolute;
+            inset: 0;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        .icon-sound {
+            stroke: #e5e7eb;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .icon-mute {
+            stroke: #e5e7eb;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .mute-btn[data-muted="false"] .icon-sound {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .mute-btn[data-muted="false"] .icon-mute {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .swipe-hint {
+            position: absolute;
+            top: 70px; /* 跟着一起稍微下移一点（原 54px） */
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 10px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            backdrop-filter: blur(12px);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 4;
+            animation: hintFloat 3s ease-in-out infinite;
+        }
+
+        .swipe-hint-dot {
+            width: 4px;
+            height: 12px;
+            border-radius: 999px;
+            background: var(--accent-gold-soft);
+        }
+
+        .swipe-hint.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        /* 中间文案 */
+        .center-copy {
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            top: 24%;
+            transform: translateY(-30%);
+            z-index: 3;
+            color: var(--text-main);
+        }
+
+        .tagline {
+            font-family: 'Barlow Condensed', system-ui, sans-serif;
+            font-size: 12px;
+            letter-spacing: 0.30em;
+            text-transform: uppercase;
+            color: var(--text-soft);
+        }
+
+        .main-title {
+            margin-top: 12px;
+            font-family: 'Barlow Condensed', system-ui, sans-serif;
+            font-size: 28px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            line-height: 1.3;
+        }
+
+        .main-title span.dim {
+            color: rgba(249,250,251,0.35);
+        }
+
+        /* 底部信息条 —— 往上抬，避免被底部工具栏挡住 */
+        .bottom-panel {
+            position: absolute;
+            left: 18px;
+            right: 18px;
+            bottom: 40px;
+            z-index: 3;
+            padding: 10px 12px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(15,23,42,0.8));
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .bottom-title {
+            font-size: 10px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+        }
+
+        .bottom-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            min-height: 1.4em;
+        }
+
+        .clip-row {
+            margin-top: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: rgba(209,213,219,0.9);
+        }
+
+        .clip-title {
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+        }
+
+        .clip-index {
+            font-family: 'Barlow Condensed', system-ui, sans-serif;
+            letter-spacing: 0.22em;
+        }
+
+        .clip-index span {
+            opacity: 0.65;
+        }
+
+        .flash-layer {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 40%, rgba(249,250,251,0.32), transparent 60%);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .flash-layer.show {
+            animation: flash 0.35s ease-out;
+        }
+
+        @keyframes hintFloat {
+            0% {
+                transform: translate(-50%, 0);
+            }
+            50% {
+                transform: translate(-50%, -4px);
+            }
+            100% {
+                transform: translate(-50%, 0);
+            }
+        }
+
+        @keyframes flash {
+            0% {
+                opacity: 0;
+            }
+            25% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .main-title {
+                font-size: 24px;
+            }
+            .bottom-panel {
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="phone-frame" id="phoneFrame">
+    <div class="video-layer">
+        <video id="bgVideo"
+               playsinline
+               webkit-playsinline
+               muted
+               loop
+               autoplay
+               preload="metadata"></video>
+    </div>
+
+    <div class="video-overlay"></div>
+    <div class="noise-layer"></div>
+    <div class="flash-layer" id="flashLayer"></div>
+
+    <!-- 顶部条 -->
+    <div class="top-bar">
+        <div class="brand-pill">
+            <span>ONLY HERE</span>
+        </div>
+
+        <!-- 静音按钮 -->
+        <button class="mute-btn" id="muteToggle" data-muted="true" aria-label="Toggle mute">
+            <span class="mute-dot"></span>
+            <span class="mute-label" id="muteLabel">MUTED</span>
+            <span class="mute-icon">
+                <!-- 有声音：speaker with waves -->
+                <svg class="icon-sound" viewBox="0 0 24 24">
+                    <path d="M4 9v6h3l4 3.5V5.5L7 9H4z"></path>
+                    <path d="M17 9a4 4 0 010 6"></path>
+                    <path d="M19 7a7 7 0 010 10"></path>
+                </svg>
+                <!-- 静音：speaker + cross -->
+                <svg class="icon-mute" viewBox="0 0 24 24">
+                    <path d="M4 9v6h3l4 3.5V5.5L7 9H4z"></path>
+                    <path d="M16 9l4 4m0-4l-4 4"></path>
+                </svg>
+            </span>
+        </button>
+    </div>
+
+    <!-- 滑动提示 -->
+    <div class="swipe-hint" id="swipeHint">
+        <div class="swipe-hint-dot"></div>
+        <span>SWIPE UP / DOWN TO SWITCH</span>
+    </div>
+
+    <!-- 中间文案 -->
+    <div class="center-copy">
+        <div class="tagline">A PRIVATE CHAMBER FOR QUIET NIGHTS</div>
+        <div class="main-title">
+            LONG NIGHTS,<br>
+            <span class="dim">UNSENT</span> MESSAGES
+        </div>
+    </div>
+
+    <!-- 底部信息条 -->
+    <div class="bottom-panel">
+        <div class="bottom-title">NO RECORDS, NO AUDIENCE, ONLY YOU</div>
+        <div class="bottom-sub" id="quoteText">
+            Just someone who loves to mess around on the internet, and gets quietly sad sometimes.
+        </div>
+        <div class="clip-row">
+            <div class="clip-title" id="clipTitle">LOST FRAGMENTS 01</div>
+            <div class="clip-index" id="clipIndex">
+                <span id="clipCurrent">01</span> / <span id="clipTotal">55</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ======= 视频列表: bg1.MP4 ~ bg55.MP4 =======
+    const baseUrl = "https://save.aura.us.kg/Mobile/bg";
+    const totalVideos = 55;
+    const videoSources = [];
+    for (let i = 1; i <= totalVideos; i++) {
+        videoSources.push({
+            src: baseUrl + i + ".MP4",
+            label: "LOST FRAGMENTS " + String(i).padStart(2, "0")
+        });
+    }
+
+    const videoEl = document.getElementById('bgVideo');
+    const muteBtn = document.getElementById('muteToggle');
+    const muteLabelEl = document.getElementById('muteLabel');
+    const flashLayer = document.getElementById('flashLayer');
+    const swipeHint = document.getElementById('swipeHint');
+    const clipTitleEl = document.getElementById('clipTitle');
+    const clipCurrentEl = document.getElementById('clipCurrent');
+    const clipTotalEl = document.getElementById('clipTotal');
+    const phoneFrame = document.getElementById('phoneFrame');
+    const quoteTextEl = document.getElementById('quoteText');
+
+    clipTotalEl.textContent = String(totalVideos).padStart(2, '0');
+
+    let currentIndex = -1;
+    let hintHidden = false;
+    let lastScrollTime = 0;
+
+    // ======= 一言 API（随视频切换更新文案 + 更新浏览器标题） =======
+    const quoteApis = [
+        "https://v1.hitokoto.cn/?encode=text",
+        "https://api.btstu.cn/yan/api.php?charset=utf-8&encode=text"
+    ];
+
+    async function fetchQuote() {
+        // 默认文案
+        let finalText = "Just someone who loves to mess around on the internet, and gets quietly sad sometimes.";
+
+        try {
+            const api = quoteApis[Math.floor(Math.random() * quoteApis.length)];
+            const res = await fetch(api, { cache: "no-store" });
+            const text = await res.text();
+            const clean = text.trim().replace(/^[“\"]|[”\"]$/g, "");
+            if (clean) {
+                finalText = clean;
+            }
+        } catch (e) {
+            // 出错就用默认文案
+        }
+
+        // 更新底部文字
+        quoteTextEl.textContent = finalText;
+
+        // 更新浏览器标题：Lyn · Main Page · 一言（截断一下避免太长）
+        const maxLen = 28;
+        const short = finalText.length > maxLen
+            ? finalText.slice(0, maxLen) + "…"
+            : finalText;
+        document.title = "Lyn · Main Page · " + short;
+    }
+
+    function setVideo(index, withFlash = true) {
+        if (!videoSources.length) return;
+
+        const safeIndex = ((index % videoSources.length) + videoSources.length) % videoSources.length;
+        currentIndex = safeIndex;
+        const info = videoSources[safeIndex];
+
+        videoEl.pause();
+        videoEl.src = info.src;
+        videoEl.load();
+
+        const onCanPlay = () => {
+            videoEl.play().catch(() => {});
+            videoEl.removeEventListener('canplay', onCanPlay);
+        };
+        videoEl.addEventListener('canplay', onCanPlay);
+
+        clipTitleEl.textContent = info.label;
+        clipCurrentEl.textContent = String(safeIndex + 1).padStart(2, '0');
+
+        if (withFlash) {
+            flashLayer.classList.remove('show');
+            void flashLayer.offsetWidth;
+            flashLayer.classList.add('show');
+        }
+
+        if (!hintHidden) {
+            hintHidden = true;
+            swipeHint.classList.add('hidden');
+        }
+
+        // 每次切换视频刷新一言 & 标题
+        fetchQuote();
+    }
+
+    function setRandomVideo(withFlash = true) {
+        if (videoSources.length === 0) return;
+        if (videoSources.length === 1) {
+            setVideo(0, withFlash);
+            return;
+        }
+
+        let idx;
+        do {
+            idx = Math.floor(Math.random() * videoSources.length);
+        } while (idx === currentIndex);
+
+        setVideo(idx, withFlash);
+    }
+
+    // 更新静音状态 + 按钮文案
+    function updateMuteState(muted) {
+        videoEl.muted = muted;
+        muteBtn.dataset.muted = muted ? "true" : "false";
+        muteLabelEl.textContent = muted ? "MUTED" : "MUTE";
+    }
+
+    muteBtn.addEventListener('click', () => {
+        const isMuted = videoEl.muted;
+        updateMuteState(!isMuted);
+        videoEl.play().catch(() => {});
+    });
+
+    // 滚轮切换（PC 调试）+节流
+    phoneFrame.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const now = Date.now();
+        if (now - lastScrollTime < 800) return;
+        lastScrollTime = now;
+        setRandomVideo(true);
+    }, { passive: false });
+
+    // 触摸滑动切换（手机）
+    let touchStartY = 0;
+    phoneFrame.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length === 0) return;
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    phoneFrame.addEventListener('touchend', (e) => {
+        if (!e.changedTouches || e.changedTouches.length === 0) return;
+        const endY = e.changedTouches[0].clientY;
+        const deltaY = endY - touchStartY;
+        const threshold = 40;
+
+        if (Math.abs(deltaY) < threshold) return;
+
+        const now = Date.now();
+        if (now - lastScrollTime < 800) return;
+        lastScrollTime = now;
+
+        setRandomVideo(true);
+    }, { passive: true });
+
+    // 初始化：随机视频 + 默认静音 + 初始一言（会顺便更新标题）
+    setRandomVideo(false);
+    updateMuteState(true);
+    fetchQuote();
+</script>
+</body>
+</html>
