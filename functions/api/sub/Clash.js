@@ -3,17 +3,12 @@
 // 支持输入：
 // - URL 格式
 // - URL / Base64 混合格式
-// - Base64 单条 / 多条（整条订阅）
+// - Base64（单条、多条）
 //
-// 支持协议输出（仅支持白名单列表）：
-// - Clash / Clash Meta / Mihomo：
-//      - Shadowsocks / UDP
-//      - Shadowsocks / HTTP / UDP
-//
-// 输出格式：
-// proxies:
-//   - {"type":"ss","server":"...","port":xxxx,"cipher":"...","password":"...","name":"..."}
-//   - {"type":"ss","server":"...","port":xxxx,"cipher":"...","password":"...","plugin":"obfs","plugin-opts":{"mode":"http","host":"xxx"},"name":"..."}
+// 支持输出（仅支持白名单列表）：
+// - Clash：
+//       Shadowsocks / UDP
+//       Shadowsocks / HTTP / UDP
 
 export async function onRequestPost(context) {
   const { request } = context;
@@ -27,14 +22,14 @@ export async function onRequestPost(context) {
     });
   }
 
-  // 1) 尝试把整段当订阅 Base64 解一次
+  // 1) 如果整段是 Base64 订阅，且解出来确实包含 ss://，才当订阅解码
   const compact = text.replace(/\s+/g, "");
   const decoded = safeBase64Decode(compact);
   if (decoded && decoded.includes("ss://")) {
     text = decoded;
   }
 
-  // 2) 从混合文本中提取所有 SS 节点
+  // 2) 从混合文本中提取 ss:// 节点
   const nodes = parseMixedSsNodes(text);
 
   if (!nodes.length) {
@@ -47,7 +42,7 @@ export async function onRequestPost(context) {
   // 3) 白名单：只保留 SS / UDP 和 SS / HTTP / UDP
   const lines = [];
   for (const n of nodes) {
-    const shape = getClashShape(n);
+    const shape = getSsShape(n);
     if (shape !== "ss-udp" && shape !== "ss-http-udp") continue;
 
     if (!n.cipher || !n.password) continue;
@@ -91,7 +86,7 @@ export async function onRequestPost(context) {
 
 /* ================= 白名单：仅 SS / UDP + SS / HTTP / UDP ================= */
 
-function getClashShape(node) {
+function getSsShape(node) {
   const t = (node.type || "").toLowerCase();
   if (t !== "ss") return "";
 
@@ -103,7 +98,7 @@ function getClashShape(node) {
     return "ss-http-udp";
   }
 
-  // 其它情况统一当成 SS / UDP（不区分是否有 TLS 混淆）
+  // 其它情况统一当成 SS / UDP
   return "ss-udp";
 }
 
@@ -113,12 +108,15 @@ function parseMixedSsNodes(text) {
   const nodes = [];
   const seen = new Set();
 
-  const re = /(ss:\/\/[^\s#]+(?:#[^\s]*)?)/gi;
+  // 只匹配 ss:// 开头的片段，避免误伤 vmess://、vless:// 等
+  const re = /(ss:\/\/[^\s]+)/gi;
   let m;
   while ((m = re.exec(text))) {
     const uri = m[0].trim();
     if (!uri || seen.has(uri)) continue;
     seen.add(uri);
+
+    if (!uri.toLowerCase().startsWith("ss://")) continue;
 
     const parsed = parseShadowsocks(uri);
     if (parsed && parsed.type === "ss") {
@@ -139,6 +137,8 @@ function parseMixedSsNodes(text) {
 
 function parseShadowsocks(uri) {
   try {
+    if (!uri.toLowerCase().startsWith("ss://")) return null;
+
     let u = uri.replace(/^ss:\/\//i, "");
 
     // 备注（节点名）
@@ -181,7 +181,7 @@ function parseShadowsocks(uri) {
     const hostPortRaw = main.slice(atIndex + 1);
     const hostPortNoPath = hostPortRaw.split("/")[0];
 
-    // userinfo → method:password（userinfo 本身可能是 Base64）
+    // userinfo → method:password（userinfo 也可能是 Base64）
     const decodedUserinfo = safeBase64Decode(userinfo);
     if (decodedUserinfo && decodedUserinfo.includes(":")) {
       userinfo = decodedUserinfo;
