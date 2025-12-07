@@ -6,18 +6,14 @@
 // - Base64 单条 / 多条（整条订阅）
 //
 // 支持协议输出（仅支持白名单列表）：
-// - Clash / Stash：
+// - Clash / Clash Meta / Mihomo：
 //      - Shadowsocks / UDP
+//      - Shadowsocks / HTTP / UDP
 //
-// 已支持的客户端：
-// - Clash / Clash Meta / Stash（通过 /api/sub?client=clash 或 client=stash 使用）
-//
-// 说明：
-// - 本文件只处理 Clash / Stash 订阅：POST /api/sub/Clash，body 为原始节点文本。
-// - 解析 + 白名单过滤都在本文件完成，Converter 只负责转发。
-// - 输出格式：
-//      proxies:
-//        - {"type":"ss","server":"...","port":xxxx,"cipher":"...","password":"...","name":"..."}
+// 输出格式：
+// proxies:
+//   - {"type":"ss","server":"...","port":xxxx,"cipher":"...","password":"...","name":"..."}
+//   - {"type":"ss","server":"...","port":xxxx,"cipher":"...","password":"...","plugin":"obfs","plugin-opts":{"mode":"http","host":"xxx"},"name":"..."}
 
 export async function onRequestPost(context) {
   const { request } = context;
@@ -31,14 +27,14 @@ export async function onRequestPost(context) {
     });
   }
 
-  // 1) 尝试当成 Base64 订阅整段解码
+  // 1) 尝试把整段当订阅 Base64 解一次
   const compact = text.replace(/\s+/g, "");
   const decoded = safeBase64Decode(compact);
   if (decoded && decoded.includes("ss://")) {
     text = decoded;
   }
 
-  // 2) 从混合文本中提取 SS 节点
+  // 2) 从混合文本中提取所有 SS 节点
   const nodes = parseMixedSsNodes(text);
 
   if (!nodes.length) {
@@ -48,11 +44,11 @@ export async function onRequestPost(context) {
     });
   }
 
-  // 3) 白名单：只保留 Shadowsocks / UDP
+  // 3) 白名单：只保留 SS / UDP 和 SS / HTTP / UDP
   const lines = [];
   for (const n of nodes) {
     const shape = getClashShape(n);
-    if (shape !== "ss-udp") continue;
+    if (shape !== "ss-udp" && shape !== "ss-http-udp") continue;
 
     if (!n.cipher || !n.password) continue;
     if (!n.server || !n.port) continue;
@@ -65,6 +61,15 @@ export async function onRequestPost(context) {
       password: n.password,
       name: n.name || `${n.server}:${n.port}`,
     };
+
+    if (n.plugin === "obfs") {
+      entry.plugin = "obfs";
+      const opts = { mode: n.pluginMode || "" };
+      if (n.pluginHost) {
+        opts.host = n.pluginHost;
+      }
+      entry["plugin-opts"] = opts;
+    }
 
     lines.push("  - " + JSON.stringify(entry));
   }
@@ -84,25 +89,25 @@ export async function onRequestPost(context) {
   });
 }
 
-// =============== 白名单：仅 SS / UDP ===============
+/* ================= 白名单：仅 SS / UDP + SS / HTTP / UDP ================= */
 
 function getClashShape(node) {
   const t = (node.type || "").toLowerCase();
-  if (t === "ss") {
-    // 无 HTTP 混淆 → 纯 SS / UDP
-    if (
-      node.plugin === "obfs" &&
-      (node.pluginMode || "").toLowerCase() === "http"
-    ) {
-      // ss/http/udp 不在 Clash 当前白名单中
-      return "";
-    }
-    return "ss-udp";
+  if (t !== "ss") return "";
+
+  const plugin = (node.plugin || "").toLowerCase();
+  const mode = (node.pluginMode || "").toLowerCase();
+
+  // SS / HTTP / UDP（obfs=http）
+  if (plugin === "obfs" && mode === "http") {
+    return "ss-http-udp";
   }
-  return "";
+
+  // 其它情况统一当成 SS / UDP（不区分是否有 TLS 混淆）
+  return "ss-udp";
 }
 
-// =============== 提取并解析 SS 节点 ===============
+/* ================= 提取并解析 SS 节点 ================= */
 
 function parseMixedSsNodes(text) {
   const nodes = [];
@@ -124,12 +129,13 @@ function parseMixedSsNodes(text) {
   return nodes;
 }
 
-// =================== Shadowsocks 解析 ===================
+/* ================= Shadowsocks 解析 =================
 //
 // 支持：
 // - ss://BASE64(method:password@host:port)#name
 // - ss://method:password@host:port#name
-// - 带 plugin=obfs-local;obfs=http;obfs-host=xxx 的 HTTP 混淆（当前 Clash 白名单不下发）
+// - 带 plugin=obfs-local;obfs=http;obfs-host=xxx 的 HTTP 混淆
+*/
 
 function parseShadowsocks(uri) {
   try {
@@ -157,8 +163,7 @@ function parseShadowsocks(uri) {
       queryStr = u.slice(qIndex + 1);
     }
 
-    // 支持整段 Base64：
-    // ss://BASE64(method:password@host:port)#name
+    // 整段 Base64：ss://BASE64(method:password@host:port)
     const decodedMain = safeBase64Decode(main);
     if (
       decodedMain &&
@@ -201,7 +206,7 @@ function parseShadowsocks(uri) {
       host = hostPortNoPath.slice(0, pm.index);
     }
 
-    // 插件参数（当前只用来判断是否 HTTP 混淆）
+    // 插件参数：HTTP 混淆等
     let plugin = "";
     let pluginMode = "";
     let pluginHost = "";
@@ -268,7 +273,7 @@ function parseShadowsocks(uri) {
   }
 }
 
-// =================== 工具函数 ===================
+/* ================= 工具函数 ================= */
 
 function safeBase64Decode(str) {
   if (!str) return "";
