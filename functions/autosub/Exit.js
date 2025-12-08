@@ -1,4 +1,4 @@
-1import { parseAnythingToNodes } from "./Parser.js";
+import { parseAnythingToNodes } from "./Parser.js";
 import { normalizeNodes } from "./Normalizer.js";
 import { routeAndRender } from "./Router.js";
 
