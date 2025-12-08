@@ -1,0 +1,71 @@
+YOUR-PROJECT-ROOT/
+└─ functions/                                  # ✅ Pages Functions 根目录（必须有）
+   └─ autosub/                                 # ✅ 新通用订阅引擎路由：/autosub
+      ├─ index.js                              # 【入口 Entry】路由锚点
+      │                                         - 读取请求/参数/UA
+      │                                         - 获取原始文本 rawText
+      │                                         - 调用 Exit 输出最终内容
+      │
+      ├─ Exit.js                               # 【统一出口 Exit】
+      │                                         - 串起 Parser → Normalizer → Router
+      │                                         - 统一返回 body + content-type
+      │
+      ├─ Parser.js                             # 【解析器 Parser】
+      │                                         - 识别“各种奇怪输入形态”
+      │                                         - 单条/多条/整串base64/多层base64/混合行
+      │                                         - 解析多协议 → 输出 Node[]
+      │
+      ├─ Normalizer.js                         # 【归一器 Normalizer】
+      │                                         - 去重
+      │                                         - 默认值补齐（name/udp/network）
+      │                                         - 字段别名统一（peer→sni）
+      │                                         - 推断 Reality/flow（pbk/xtls=2）
+      │
+      ├─ Router.js                             # 【路由器 Router】
+      │                                         - 根据 client 选择对应渲染器
+      │                                         - 可做客户端能力过滤/降级
+      │
+      ├─ renderers/                            # ✅ 各客户端渲染器（只负责“填表输出”）
+      │  ├─ clash.js                           # 【渲染器】Node[] → Clash/Mihomo YAML
+      │  ├─ surge.js                           # 【渲染器】Node[] → Surge 节点格式
+      │  ├─ qx.js                              # 【渲染器】Node[] → Quantumult X 节点格式
+      │  ├─ stash.js                           # 【渲染器】Node[] → Stash（多数可复用 clash）
+      │  └─ v2ray.js                           # 【默认渲染器】
+      │                                         - UA/参数都识别不到时的兜底
+      │                                         - 输出“通用 Base64 订阅”
+      │
+      └─ shared/                               # ✅ 共享工具/规范（主要服务 Parser/Entry）
+         ├─ schema.js                          # 【字段规范】
+         │                                         - 定义 Node 超集字段名字/含义
+         │                                         - 保证 Parser 与渲染器字段一致
+         │
+         ├─ clientDetect.js                    # 【客户端识别】
+         │                                         - query 优先
+         │                                         - 其次 UA 自动识别 Surge/Clash/Stash/QX
+         │                                         - 识别不到默认 v2ray(Base64)
+         │
+         └─ utils/                             # ✅ Parser 工具箱
+            ├─ base64.js                       # 【解包工具】
+            │                                     - base64/base64url 解码
+            │                                     - 处理多层 base64 的基础能力
+            │
+            ├─ text.js                         # 【文本清洗】
+            │                                     - 拆行、去空、识别是否整串订阅
+            │                                     - 处理混合输入的“前置净化”
+            │
+            └─ validate.js                     # 【最小校验】
+                                                  - 必需字段检查
+                                                  - 避免输出半残节点
+
+
+
+
+
+	•	index.js：读请求 + 调出口
+	•	Exit.js：总控流水线
+	•	Parser.js：抓全解析
+	•	Normalizer.js：洗干净/统一
+	•	Router.js：选谁输出
+	•	renderers/：只做客户端格式
+	•	shared/：解析/入口的工具和规范
+	•	v2ray.js：默认 Base64 
