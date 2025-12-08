@@ -54,17 +54,21 @@ function parseSSRaw(raw) {
 function nodeToClashProxy(node) {
     if (!node) return null;
 
-    if (node.type === "ss" && node.raw) {
-        const p = parseSSRaw(node.raw);
-        if (!p) return null;
-        return {
+    // ✅ 只用 Parser 产出的结构化 SS（含 plugin）
+    if (node.type === "ss" && node.server && node.port && node.cipher && node.password) {
+        const proxy = {
             type: "ss",
-            server: p.server,
-            port: p.port,
-            cipher: p.cipher,
-            password: p.password,
-            name: p.name,
+            server: node.server,
+            port: Number(node.port),
+            cipher: node.cipher,
+            password: node.password,
+            name: node.name || `${node.server}:${node.port}`,
         };
+
+        if (node.plugin) proxy.plugin = node.plugin;
+        if (node.pluginOpts) proxy["plugin-opts"] = node.pluginOpts;
+
+        return proxy;
     }
 
     return null;
