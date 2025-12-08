@@ -1,1 +1,5 @@
-文字
+export default {
+  async fetch() {
+    return new Response("sub ok");
+  },
+};
