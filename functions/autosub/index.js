@@ -1,24 +1,91 @@
 /**
  * /autosub 统一订阅入口（根路径）
- * - 使用 onRequest 形态（你已验证这是你项目里最稳定的写法）
- * - 保留 query
- * - client 优先 query 指定；识别不到默认 v2ray(base64)
- * - 源数据支持：
- *    1) ?text= 直接传原文
- *    2) POST body 原文
- *    3) ?id= 从站内 Paste 读取
+ *
+ * ✅ 你项目里已验证：onRequest 形态稳定命中
+ * ✅ KV 变量名：Paste_Sub
+ *
+ * 输入源优先级：
+ *  1) ?text= 直接传原文
+ *  2) POST body 传原文
+ *  3) ?id= 从 KV(Paste_Sub) 读取原文（默认 key = id）
+ *
+ * 客户端识别：
+ *  - ?client=xxx 优先（保留 query）
+ *  - UA 次之
+ *  - 识别不到默认 v2ray（Base64 通用订阅）
+ *
+ * 你只要保证同目录存在：
+ *  - Exit.js（负责串 Parser/Normalizer/Router/Renderers）
  */
 
+// 你的统一出口（你后续的 Parser/Router/Renderers 都从这里串）
 import { renderSubscription } from "./Exit.js";
 
+/** 直接使用你确认的 KV 绑定名 */
+function getPasteKV(env) {
+  return env?.Paste_Sub || null;
+}
+
+/**
+ * 从 KV 读取 paste 原文
+ * 默认假设：key = id, value = 原文
+ *
+ * 如果你真实 key 规则不是纯 id：
+ *  - 把 kv.get(id) 改成 kv.get(`paste:${id}`) 等
+ *
+ * 如果你 value 是 JSON：
+ *  - 改用 kv.get(id, "json")
+ */
+async function loadFromKVById(env, id) {
+  if (!id) return "";
+
+  const kv = getPasteKV(env);
+  if (!kv) return "";
+
+  const text = await kv.get(id);
+  return text && text.trim() ? text : "";
+}
+
+/**
+ * 读取用户源文本
+ * 1) ?text=
+ * 2) POST body
+ * 3) ?id= -> KV
+ */
+async function loadRawText(request, env) {
+  const url = new URL(request.url);
+
+  // 1) query text
+  const qText = url.searchParams.get("text");
+  if (qText && qText.trim()) return qText;
+
+  // 2) POST body
+  if (request.method === "POST") {
+    const body = await request.text();
+    if (body && body.trim()) return body;
+  }
+
+  // 3) id -> KV
+  const id = url.searchParams.get("id");
+  const fromKV = await loadFromKVById(env, id);
+  if (fromKV) return fromKV;
+
+  return "";
+}
+
+/**
+ * 客户端识别：
+ * - query 优先
+ * - UA 其次
+ * - 默认 v2ray
+ */
 function detectClient(request) {
   const url = new URL(request.url);
 
-  // ✅ 你要求“保留 query”，所以 query 优先
+  // ✅ 保留 query：优先使用用户显式指定
   const q = (url.searchParams.get("client") || "").trim().toLowerCase();
   if (q) return q;
 
-  // 你之前的规则：识别不到默认 v2ray(Base64)
   const ua = (request.headers.get("user-agent") || "").toLowerCase();
 
   if (ua.includes("stash")) return "stash";
@@ -29,67 +96,39 @@ function detectClient(request) {
   if (ua.includes("clash") || ua.includes("mihomo") || ua.includes("meta")) return "clash";
   if (ua.includes("sing-box") || ua.includes("singbox")) return "singbox";
 
+  // 你要求：识别不到默认返回 V2Ray(Base64)
   return "v2ray";
 }
 
-async function loadRawText(request) {
-  const url = new URL(request.url);
-
-  // 1) ?text=
-  const text = url.searchParams.get("text");
-  if (text && text.trim()) return text;
-
-  // 2) POST body
-  if (request.method === "POST") {
-    const body = await request.text();
-    if (body && body.trim()) return body;
-  }
-
-  // 3) ?id= 走你站内 Paste
-  const id = url.searchParams.get("id");
-  if (id && id.trim()) {
-    const u = new URL(request.url);
-    // 用相对路径，避免环境差异
-    u.pathname = `/api/paste/${id}`;
-    // 保留原 query 也没问题，但这里避免干扰 paste 接口
-    u.search = "";
-    const r = await fetch(u.toString(), {
-      headers: { "accept": "text/plain" },
-    });
-    if (r.ok) {
-      const t = await r.text();
-      if (t && t.trim()) return t;
-    }
-  }
-
-  return "";
+/** 简单的 help 文本 */
+function buildHelp(client) {
+  return [
+    "AUTOSUB: no source content",
+    "",
+    "Usage:",
+    "  1) GET  /autosub?text=RAW_TEXT",
+    "  2) POST /autosub  (body = RAW_TEXT)",
+    "  3) GET  /autosub?id=PASTE_ID  (read from KV: Paste_Sub)",
+    "",
+    "Client:",
+    "  /autosub?client=clash|surge|qx|stash|singbox|v2ray",
+    "",
+    `Current client = ${client}`,
+  ].join("\n");
 }
 
+/**
+ * ✅ Pages Functions 推荐稳定入口形态
+ */
 export async function onRequest(context) {
-  const { request } = context;
+  const { request, env } = context;
   const url = new URL(request.url);
 
   const client = detectClient(request);
+  const rawText = await loadRawText(request, env);
 
-  const rawText = await loadRawText(request);
-
-  // 没有任何源内容时给明确提示
   if (!rawText.trim()) {
-    const help = [
-      "AUTOSUB: no source content",
-      "",
-      "Usage:",
-      "  1) /autosub?text=...",
-      "  2) POST /autosub  (raw text body)",
-      "  3) /autosub?id=PASTE_ID",
-      "",
-      "Client:",
-      "  /autosub?client=clash|surge|qx|stash|singbox|v2ray",
-      "",
-      `Current client = ${client}`,
-    ].join("\n");
-
-    return new Response(help, {
+    return new Response(buildHelp(client), {
       status: 400,
       headers: {
         "content-type": "text/plain; charset=utf-8",
@@ -98,10 +137,11 @@ export async function onRequest(context) {
     });
   }
 
-  // 交给你的统一流水线
+  // 交给你的统一出口
+  // Exit.js 里建议实现：Parser -> Normalizer -> Router -> Renderer
   const { body, contentType } = renderSubscription(rawText, {
     client,
-    // 你如果后面想把原 query 透传给 Router/Renderers
+    // 如果你后面希望 Router/Renderer 也能看到 query
     query: Object.fromEntries(url.searchParams.entries()),
   });
 
