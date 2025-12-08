@@ -1,19 +1,18 @@
-import { isValidNode } from "./shared/utils/validate.js";
-
 export function normalizeNodes(nodes = []) {
-    const out = [];
+  const seen = new Set();
+  const out = [];
 
-    for (const n of nodes) {
-        const node = { ...n };
+  for (const n of nodes) {
+    if (!n || !n.raw) continue;
+    const key = `${n.type}:${n.raw}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
 
-        // 先给占位节点一个名字，方便你 debug 看链路
-        if (!node.name) node.name = `${(node.type || "node").toUpperCase()}-AUTO`;
+    out.push({
+      ...n,
+      name: n.name || "", // 后面再补更强的备注解析
+    });
+  }
 
-        // 这里只做最轻量校验（当前占位节点会大多不通过）
-        if (isValidNode(node) || node.extra?.raw) {
-            out.push(node);
-        }
-    }
-
-    return out;
+  return out;
 }
