@@ -1,24 +1,44 @@
-import { parseAnythingToNodes } from "./Parser.js";
-import { normalizeNodes } from "./Normalizer.js";
-import { routeAndRender } from "./Router.js";
+/**
+ * Exit.js - 统一出口（当前阶段最终占位版）
+ *
+ * 目标：
+ *  - 让 /autosub 的“读源 + client 分流”稳定跑通
+ *  - 避免你还没接完整 Parser/Renderers 就卡住入口
+ *
+ * 当前策略：
+ *  - client = v2ray -> 返回 Base64
+ *  - 其他 client -> 先明文回显（带注释）
+ *
+ * 你后续替换为：
+ *   Parser -> Normalizer -> Router -> Renderer
+ */
 
-export function renderSubscription(rawText, options = {}) {
-    const client = (options.client || "v2ray").toLowerCase();
-    const renderOptions = options.renderOptions || {};
+function toBase64Utf8(str) {
+  // 兼容 CF runtime
+  return btoa(unescape(encodeURIComponent(str)));
+}
 
-    const nodes = parseAnythingToNodes(rawText);
-    const normalized = normalizeNodes(nodes);
+export function renderSubscription(rawText, { client } = {}) {
+  const text = String(rawText || "").trim();
 
-    const body = routeAndRender(normalized, client, renderOptions);
+  if (!text) {
+    return { body: "", contentType: "text/plain; charset=utf-8" };
+  }
 
-    const contentType =
-        client === "clash" || client === "meta" || client === "mihomo" || client === "stash"
-            ? "text/yaml; charset=utf-8"
-            : "text/plain; charset=utf-8";
+  const c = (client || "v2ray").toLowerCase();
 
+  // 你要求：识别不到默认 v2ray(Base64)
+  if (c === "v2ray") {
     return {
-        body,
-        contentType,
-        nodesCount: normalized.length,
+      body: toBase64Utf8(text),
+      contentType: "text/plain; charset=utf-8",
     };
+  }
+
+  // 临时明文占位，方便你确认链路正确
+  const banner = `# autosub passthrough (client=${c})`;
+  return {
+    body: [banner, text].join("\n"),
+    contentType: "text/plain; charset=utf-8",
+  };
 }
