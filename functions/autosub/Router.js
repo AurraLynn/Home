@@ -1,28 +1,23 @@
-import * as Clash from "./renderers/clash.js";
-import * as Surge from "./renderers/surge.js";
-import * as QX from "./renderers/qx.js";
-import * as Stash from "./renderers/stash.js";
-import * as V2Ray from "./renderers/v2ray.js";
+import { renderClash } from "./renderers/clash.js";
+import { renderSurge } from "./renderers/surge.js";
+import { renderQX } from "./renderers/qx.js";
+import { renderStash } from "./renderers/stash.js";
 
-const MAP = {
-    clash: Clash,
-    meta: Clash,
-    mihomo: Clash,
+export function routeAndRender(nodes, { client = "v2ray", rawText = "" } = {}) {
+  const c = String(client || "v2ray").toLowerCase();
 
-    surge: Surge,
+  // v2ray 默认还是 base64 原文（保你原规则）
+  if (c === "v2ray") {
+    const b64 = btoa(unescape(encodeURIComponent(String(rawText || "").trim())));
+    return { body: b64, contentType: "text/plain; charset=utf-8" };
+  }
 
-    qx: QX,
-    quantumultx: QX,
-    "quantumult-x": QX,
+  if (c === "clash") return renderClash(nodes);
+  if (c === "surge") return renderSurge(nodes);
+  if (c === "qx") return renderQX(nodes);
+  if (c === "stash") return renderStash(nodes);
 
-    stash: Stash,
-
-    v2ray: V2Ray,
-    base64: V2Ray,
-};
-
-export function routeAndRender(nodes, client, options = {}) {
-    const key = (client || "v2ray").toLowerCase();
-    const renderer = MAP[key] || V2Ray;
-    return renderer.render(nodes, options);
+  // 未知 client：回退 v2ray base64
+  const b64 = btoa(unescape(encodeURIComponent(String(rawText || "").trim())));
+  return { body: b64, contentType: "text/plain; charset=utf-8" };
 }
