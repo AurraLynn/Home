@@ -1,5 +1,3 @@
-export default {
-  async fetch() {
-    return new Response("autosub ok");
-  },
-};
+export async function onRequest() {
+  return new Response("API_AUTOSUB_OK");
+}
