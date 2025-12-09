@@ -9,7 +9,7 @@
 
   - 输出：
       Clash / Mihomo / Meta / Stash 通用 YAML
-      搭配示例：/autosub?id=你的id&client=clash
+      用法示例：/autosub?id=你的id&client=clash
 */
 
 function b64DecodeUrlSafe(input) {
@@ -152,13 +152,13 @@ function nodeToClashProxy(node) {
 
     let password = node.password || node.auth || "";
 
-    // 1) 如果 Node 里有 uuid/user，一般也是同一个 token，可以兜底
+    // 1) Node 里有 uuid/user 的情况（有些客户端是用 uuid 存的 token）
     if (!password) {
       if (node.uuid) password = String(node.uuid);
       else if (node.user) password = String(node.user);
     }
 
-    // 2) 再从 raw 里尝试抠密码
+    // 2) 从 raw 再兜底
     if (!password && node.raw) {
       const raw = String(node.raw);
 
@@ -187,7 +187,6 @@ function nodeToClashProxy(node) {
       }
     }
 
-    // 3) 依旧拿不到密码 → 放弃这条节点，避免生成 auth:""
     if (!server || !port || !password) return null;
 
     const proxy = {
@@ -195,7 +194,7 @@ function nodeToClashProxy(node) {
       type: "hysteria2",
       server,
       port,
-      auth: password,
+      password,          // ★ 这里已经改成 password
       udp: true,
       "fast-open": true,
     };
