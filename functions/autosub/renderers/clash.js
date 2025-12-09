@@ -8,13 +8,14 @@
       hysteria2(hy2)
 
   - 输出：
-      通用 Clash YAML，proxies 统一为 JSON 一行写法：
+      通用 Clash YAML，proxies 统一为 JSON 一行写法，例如：
         proxies:
-          - {"type":"hysteria2","name":"🇨🇦 加拿大2-2","server":"155.248.223.117","port":30102,"sni":"du.wish.ml","skip-cert-verify":true,"fast-open":true,"auth":"cf6bf978-3fe0-45aa-9f17-fe02bd99a7a6"}
+          - {"name":"🇺🇸美国01","server":"pq.us1.xxx.com","port":35000,"ports":"35000-39000","mport":"35000-39000","udp":true,"skip-cert-verify":true,"sni":"www.apple.com","type":"hysteria2","auth":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"}
 
-    说明：
-      - SS / Trojan：也用 JSON 一行，字段尽量精简。
-      - Hysteria2：严格按上面字段顺序和键名输出。
+      各协议字段：
+        ss:     name / type / server / port / cipher / password
+        trojan: name / type / server / port / password / sni / skip-cert-verify
+        hy2:    name / server / port / (可选 ports/mport) / udp / skip-cert-verify / sni / type / auth
 */
 
 function b64DecodeUrlSafe(input) {
@@ -49,6 +50,7 @@ function parseSSRaw(raw) {
   const qIndex = rest.indexOf("?");
   if (qIndex >= 0) rest = rest.slice(0, qIndex);
 
+  // 形如 ss://BASE64(method:pass)@host:port#name
   if (rest.includes("@")) {
     const [b64Part, hostPart] = rest.split("@");
     const decoded = b64DecodeUrlSafe(b64Part);
@@ -66,6 +68,7 @@ function parseSSRaw(raw) {
     };
   }
 
+  // 形如 ss://BASE64(method:pass@host:port)#name
   const decoded = b64DecodeUrlSafe(rest);
   if (decoded && decoded.includes("@")) {
     const [left, right] = decoded.split("@");
@@ -89,7 +92,7 @@ function parseSSRaw(raw) {
 /**
  * Node -> 简化后的 proxy 对象（只保留兼容字段）
  * 最终统一 JSON.stringify 输出，形如：
- *   {"type":"hysteria2","name":"...","server":"...","port":30102,"sni":"...","skip-cert-verify":true,"fast-open":true,"auth":"..."}
+ *   {"name":"...","server":"...","port":35000,"udp":true,"skip-cert-verify":true,"sni":"www.apple.com","type":"hysteria2","auth":"xxxx"}
  */
 function nodeToClashProxy(node) {
   if (!node) return null;
@@ -106,6 +109,7 @@ function nodeToClashProxy(node) {
   if (type === "ss") {
     const cipher = node.cipher || node.method;
     const password = node.password;
+
     if (!cipher || !password) return null;
 
     // 键顺序：name -> type -> server -> port -> cipher -> password
@@ -148,12 +152,13 @@ function nodeToClashProxy(node) {
   if (type === "hysteria2" || type === "hy2") {
     let secret = node.auth || node.password || "";
 
-    // 兜底从 uuid / user / raw 里抠
+    // 兜底从 uuid / user 拿
     if (!secret) {
       if (node.uuid) secret = String(node.uuid);
       else if (node.user) secret = String(node.user);
     }
 
+    // 再兜底从 raw 里抠
     if (!secret && node.raw) {
       const raw = String(node.raw);
 
@@ -184,28 +189,32 @@ function nodeToClashProxy(node) {
 
     if (!secret) return null;
 
-    // 同步回 Node，方便其他渲染器使用
+    // 同步回 Node，方便其它渲染器使用
     node.password = node.password || secret;
     if (!node.auth) node.auth = secret;
 
-    // ★ 键顺序严格按你给的例子：
-    //   type -> name -> server -> port -> sni -> skip-cert-verify -> fast-open -> auth
+    // ★ 按机场写法：
+    //   { name, server, port, ports, mport, udp, skip-cert-verify, sni, type: "hysteria2", auth }
     const proxy = {
-      type: "hysteria2",
       name,
       server,
       port,
     };
 
-    if (node.sni) {
-      proxy.sni = node.sni;
-    }
+    // 如果 Node 有端口段就带上（字符串形式如 "35000-39000"）
+    if (node.ports) proxy.ports = String(node.ports);
+    if (node.mport) proxy.mport = String(node.mport);
+
+    proxy.udp = true;
 
     proxy["skip-cert-verify"] =
       typeof node.skipCertVerify === "boolean" ? node.skipCertVerify : true;
 
-    proxy["fast-open"] = true;
+    if (node.sni) {
+      proxy.sni = node.sni;
+    }
 
+    proxy.type = "hysteria2";
     proxy.auth = secret;
 
     return proxy;
@@ -245,6 +254,7 @@ export function renderClash(nodes = []) {
     lines.push("  # no supported proxies parsed yet");
   } else {
     for (const p of proxies) {
+      // 统一 JSON 一行写法
       lines.push("  - " + JSON.stringify(p));
     }
   }
