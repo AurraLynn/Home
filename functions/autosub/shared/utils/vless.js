@@ -1,35 +1,36 @@
 /*
- * shared/utils/vless.js
- *
- * VLESS 解析器
- *
- * 支持形态：
- *   vless://uuid@host:port?encryption=none&security=tls&type=ws&host=xxx&path=/xxx&flow=xtls-rprx-vision&fp=chrome&sni=xxx#name
- *
- * 标准化输出 Node 字段：
- *   {
- *     type: "vless",
- *     name,
- *     server,
- *     port,
- *     uuid,
- *     encryption,        // none / auto ...
- *     security,          // tls / reality / none ...
- *     tls,               // true / false
- *     sni,               // sni / peer / host
- *     network,           // tcp / ws / grpc / http ...
- *     host,              // ws/http Host
- *     path,              // ws path / grpc service-name / http path
- *     flow,              // xtls-rprx-vision 等
- *     udp,               // true / false
- *     alpn,              // 字符串，渲染时转数组
- *     clientFingerprint, // chrome / safari ...
- *     realityPublicKey,  // pbk
- *     realityShortId,    // sid
- *     realitySpiderX,    // spx
- *     raw
- *   }
- */
+  shared/utils/vless.js
+
+  - 输入支持：
+      • 单条 VLESS URL：
+        vless://uuid@host:port?encryption=none&security=tls&type=ws&host=xxx&path=/xxx&flow=xtls-rprx-vision&fp=chrome&sni=xxx#name
+
+  - 输出：
+      • 标准化 Node 对象，用于后续渲染 Clash / Surge / QX 等：
+
+        {
+          type: "vless",
+          name,
+          server,
+          port,
+          uuid,
+          encryption,        // none / auto ...
+          security,          // tls / reality / none ...
+          tls,               // true / false
+          sni,               // sni / peer / host
+          network,           // tcp / ws / grpc / http ...
+          host,              // ws/http Host
+          path,              // ws path / grpc service-name / http path
+          flow,              // xtls-rprx-vision 等
+          udp,               // true / false
+          alpn,              // 字符串，渲染时转数组
+          clientFingerprint, // chrome / safari ...
+          realityPublicKey,  // pbk
+          realityShortId,    // sid
+          realitySpiderX,    // spx
+          raw
+        }
+*/
 
 function safeDecode(str) {
   try {
