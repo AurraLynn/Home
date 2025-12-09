@@ -34,7 +34,7 @@ function formatInlineMap(obj, indent = "  ") {
   for (const [key, value] of Object.entries(obj)) {
     if (value === undefined || value === null || value === "") continue;
 
-    // 特殊处理 plugin-opts：必须是 map，而不是字符串
+    // plugin-opts 必须是 map，而不是字符串
     if (
       key === "plugin-opts" &&
       typeof value === "object" &&
@@ -104,17 +104,28 @@ function nodeToClashProxy(node) {
       password,
     };
 
-    // plugin + plugin-opts（obfs-local 等）
-    if (node.plugin) proxy.plugin = node.plugin;
-    if (node.pluginOpts && typeof node.pluginOpts === "object") {
-      // 清洗一下 plugin-opts
-      const opts = {};
-      const src = node.pluginOpts;
+    // plugin + plugin-opts（obfs-local/simple-obfs → obfs）
+    if (node.plugin) {
+      let pluginName = String(node.plugin).trim().toLowerCase();
+      if (
+        pluginName === "obfs-local" ||
+        pluginName === "simple-obfs" ||
+        pluginName === "simple-obfs-local"
+      ) {
+        proxy.plugin = "obfs"; // Clash 要求的名字
+      } else {
+        proxy.plugin = node.plugin;
+      }
+    }
 
-      if (src.mode) opts.mode = src.mode;
+    if (node.pluginOpts && typeof node.pluginOpts === "object") {
+      const src = node.pluginOpts;
+      const opts = {};
+
+      if (src.mode) opts.mode = src.mode; // obfs=http / tls
       if (src.host) opts.host = src.host;
       if (src.uri) opts.uri = src.uri;
-      // 其它字段直接透传
+
       for (const [k, v] of Object.entries(src)) {
         if (["mode", "host", "uri", "raw"].includes(k)) continue;
         if (v === undefined || v === null || v === "") continue;
