@@ -81,13 +81,20 @@ function parseSSRaw(raw) {
   return null;
 }
 
+/** 简单的 YAML 字符串转义（只用在我们手控的 config 字段上） */
+function yamlQuote(value) {
+  if (value === undefined || value === null) return '""';
+  const s = String(value);
+  return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+}
+
 function nodeToClashProxy(node) {
   if (!node) return null;
 
-  // SS
+  // ===== SS =====
   if (node.type === "ss") {
     if (node.server && node.port && (node.cipher || node.method) && node.password) {
-      const proxy = {
+      return {
         name: node.name || `${node.server}:${node.port}`,
         type: "ss",
         server: node.server,
@@ -95,12 +102,9 @@ function nodeToClashProxy(node) {
         cipher: node.cipher || node.method,
         password: node.password,
         udp: true,
+        plugin: node.plugin,
+        pluginOpts: node.pluginOpts,
       };
-
-      if (node.plugin) proxy.plugin = node.plugin;
-      if (node.pluginOpts) proxy["plugin-opts"] = node.pluginOpts;
-
-      return proxy;
     }
 
     if (node.raw) {
@@ -119,7 +123,7 @@ function nodeToClashProxy(node) {
     }
   }
 
-  // Trojan
+  // ===== Trojan =====
   if (node.type === "trojan") {
     const server = node.server;
     const port = Number(node.port || 0);
@@ -139,13 +143,13 @@ function nodeToClashProxy(node) {
 
     if (node.sni) proxy.sni = node.sni;
     if (typeof node.skipCertVerify === "boolean") {
-      proxy["skip-cert-verify"] = node.skipCertVerify ? true : false;
+      proxy.skipCertVerify = node.skipCertVerify ? true : false;
     }
 
     return proxy;
   }
 
-  // Hysteria2 / hy2
+  // ===== Hysteria2 / hy2 =====
   if (node.type === "hysteria2" || node.type === "hy2") {
     const server = node.server;
     const port = Number(node.port || 0);
@@ -197,40 +201,81 @@ function nodeToClashProxy(node) {
       port,
       password,
       udp: true,
-      "fast-open": true,
+      fastOpen: true,
+      skipCertVerify:
+        typeof node.skipCertVerify === "boolean" ? !!node.skipCertVerify : undefined,
+      sni: node.sni,
+      obfs: node.obfs,
+      obfsPassword: node.obfsPassword,
+      alpn: node.alpn,
+      up: node.up,
+      down: node.down,
+      ports: node.ports,
     };
-
-    if (typeof node.skipCertVerify === "boolean") {
-      proxy["skip-cert-verify"] = node.skipCertVerify ? true : false;
-    }
-
-    if (node.sni) {
-      proxy.sni = node.sni;
-    }
-
-    if (node.obfs) {
-      proxy.obfs = node.obfs;
-    }
-    if (node.obfsPassword) {
-      proxy["obfs-password"] = node.obfsPassword;
-    }
-
-    if (node.alpn) {
-      const arr = String(node.alpn)
-        .split(",")
-        .map((x) => x.trim())
-        .filter(Boolean);
-      if (arr.length) proxy.alpn = arr;
-    }
-
-    if (node.up) proxy.up = node.up;
-    if (node.down) proxy.down = node.down;
-    if (node.ports) proxy.ports = node.ports;
 
     return proxy;
   }
 
   return null;
+}
+
+/** 把单个 proxy 对象转成 YAML（块状写法），缩进两个空格起步 */
+function dumpProxyYaml(p) {
+  const lines = [];
+  lines.push(`  - name: ${yamlQuote(p.name)}`);
+  lines.push(`    type: ${p.type}`);
+  lines.push(`    server: ${yamlQuote(p.server)}`);
+  lines.push(`    port: ${Number(p.port)}`);
+
+  if (p.type === "ss") {
+    if (p.cipher) lines.push(`    cipher: ${yamlQuote(p.cipher)}`);
+    if (p.password) lines.push(`    password: ${yamlQuote(p.password)}`);
+    if (typeof p.udp === "boolean") lines.push(`    udp: ${p.udp ? "true" : "false"}`);
+    if (p.plugin) lines.push(`    plugin: ${yamlQuote(p.plugin)}`);
+    if (p.pluginOpts) {
+      // 简单一点：用字符串承载，复杂 plugin-opts 就不在这里展开了
+      lines.push(`    plugin-opts: ${yamlQuote(JSON.stringify(p.pluginOpts))}`);
+    }
+  } else if (p.type === "trojan") {
+    if (p.password) lines.push(`    password: ${yamlQuote(p.password)}`);
+    lines.push(`    tls: true`);
+    if (typeof p.udp === "boolean") lines.push(`    udp: ${p.udp ? "true" : "false"}`);
+    if (p.sni) lines.push(`    sni: ${yamlQuote(p.sni)}`);
+    if (typeof p.skipCertVerify === "boolean") {
+      lines.push(`    skip-cert-verify: ${p.skipCertVerify ? "true" : "false"}`);
+    }
+  } else if (p.type === "hysteria2") {
+    if (p.password) lines.push(`    password: ${yamlQuote(p.password)}`);
+    if (typeof p.udp === "boolean") lines.push(`    udp: ${p.udp ? "true" : "false"}`);
+    if (typeof p.fastOpen === "boolean") {
+      lines.push(`    fast-open: ${p.fastOpen ? "true" : "false"}`);
+    }
+    if (typeof p.skipCertVerify === "boolean") {
+      lines.push(`    skip-cert-verify: ${p.skipCertVerify ? "true" : "false"}`);
+    }
+    if (p.sni) lines.push(`    sni: ${yamlQuote(p.sni)}`);
+    if (p.obfs) lines.push(`    obfs: ${yamlQuote(p.obfs)}`);
+    if (p.obfsPassword) {
+      lines.push(`    obfs-password: ${yamlQuote(p.obfsPassword)}`);
+    }
+    if (p.alpn) {
+      const arr = String(p.alpn)
+        .split(",")
+        .map((x) => x.trim())
+        .filter(Boolean);
+      if (arr.length) {
+        lines.push(`    alpn:`);
+        for (const a of arr) {
+          lines.push(`      - ${yamlQuote(a)}`);
+        }
+      }
+    }
+    if (p.up) lines.push(`    up: ${yamlQuote(p.up)}`);
+    if (p.down) lines.push(`    down: ${yamlQuote(p.down)}`);
+    if (p.ports) lines.push(`    ports: ${yamlQuote(p.ports)}`);
+  }
+
+  return lines.join("\n");
 }
 
 export function renderClash(nodes = []) {
@@ -264,7 +309,7 @@ export function renderClash(nodes = []) {
     lines.push("  # no supported proxies parsed yet");
   } else {
     for (const p of proxies) {
-      lines.push("  - " + JSON.stringify(p));
+      lines.push(dumpProxyYaml(p));
     }
   }
 
@@ -278,7 +323,7 @@ export function renderClash(nodes = []) {
     lines.push("      - DIRECT");
   } else {
     for (const name of names) {
-      lines.push(`      - "${name}"`);
+      lines.push(`      - ${yamlQuote(name)}`);
     }
   }
 
