@@ -12,10 +12,10 @@
  *      v, ps, add, port, id, aid, scy/security, net, type, host, path,
  *      tls, sni, alpn, udp, ...
  *
- * 2) 老式 URL 型（你发的这几条）：
+ * 2) 老式 URL 型（你发的那几条）：
  *    vmess://BASE64(auto:uuid@host:port)?path=/&remarks=...&obfsParam=...&obfs=http/websocket&tfo=1&alterId=0
  *
- * 标准化输出 Node 字段（交给 Parser 用）：
+ * 标准化输出 Node 字段：
  *   {
  *     type: "vmess",
  *     name,
@@ -24,13 +24,14 @@
  *     uuid,
  *     alterId,
  *     cipher,     // auto / aes-128-gcm / chacha20-ietf-poly1305 ...
- *     network,    // tcp / ws / grpc ...
- *     host,       // ws Host / http host
- *     path,       // ws path / grpc service-name
+ *     network,    // tcp / ws / http / grpc ...
+ *     host,       // ws / http Host
+ *     path,       // ws path / http path / grpc service-name
  *     tls,        // true / false
  *     sni,
  *     tfo,        // true / false
- *     raw         // 原始整串
+ *     obfs,       // http / websocket / ...
+ *     raw
  *   }
  */
 
@@ -41,10 +42,15 @@ function b64DecodeUrlSafe(input) {
   const pad = s.length % 4;
   if (pad) s += "=".repeat(4 - pad);
 
+  // 尝试 UTF-8 解码，避免 JSON 里有中文时解析失败
   try {
-    return atob(s);
+    return decodeURIComponent(escape(atob(s)));
   } catch {
-    return "";
+    try {
+      return atob(s);
+    } catch {
+      return "";
+    }
   }
 }
 
@@ -60,7 +66,7 @@ export function parseVmess(line) {
   const raw = String(line || "").trim();
   if (!raw.startsWith("vmess://")) return null;
 
-  // 先拆 # 备注
+  // 1. 拆 # 备注
   let nameFromHash = "";
   let main = raw;
   const hashIndex = raw.indexOf("#");
@@ -70,10 +76,10 @@ export function parseVmess(line) {
     main = raw.slice(0, hashIndex);
   }
 
-  // 去掉 vmess:// 前缀
+  // 2. 去掉 vmess:// 前缀
   main = main.replace(/^vmess:\/\//i, "");
 
-  // 拆 query：basePart?query
+  // 3. basePart?query
   let basePart = main;
   let query = "";
   const qIndex = main.indexOf("?");
@@ -82,7 +88,7 @@ export function parseVmess(line) {
     query = main.slice(qIndex + 1);
   }
 
-  // basePart 通常是 BASE64(JSON) 或 BASE64(auto:uuid@host:port)
+  // 4. base64 解码：JSON or "auto:uuid@host:port"
   const decoded = b64DecodeUrlSafe(basePart);
   if (!decoded) {
     return {
@@ -94,7 +100,7 @@ export function parseVmess(line) {
 
   const dTrim = decoded.trim();
 
-  // ===== 1) JSON 型：vmess://BASE64(JSON) =====
+  // ===== 4.1 JSON 型：vmess://BASE64(JSON) =====
   if (dTrim.startsWith("{") && dTrim.endsWith("}")) {
     try {
       const obj = JSON.parse(dTrim);
@@ -136,18 +142,20 @@ export function parseVmess(line) {
         uuid,
         alterId,
         cipher,
-        network: net,
+        network: net, // tcp / ws / http / grpc / ...
         host,
         path,
         tls,
         sni,
+        tfo: false,
+        obfs: "", // JSON 型通常没有单独 obfs
       };
     } catch {
       // JSON 失败就继续走老式 auto:uuid@host:port 逻辑
     }
   }
 
-  // ===== 2) 非 JSON：期待 auto:uuid@host:port =====
+  // ===== 4.2 非 JSON：期待 auto:uuid@host:port =====
   const atIndex = decoded.lastIndexOf("@");
   if (atIndex < 0) {
     return {
@@ -189,20 +197,23 @@ export function parseVmess(line) {
 
   const alterId = params.alterId ? Number(params.alterId) || 0 : 0;
 
-  // 传输方式：obfs=http/websocket，配合 obfsParam（Host）+ path
   const obfs = String(params.obfs || "").toLowerCase();
   const obfsParam = params.obfsParam || "";
   const path = params.path || "";
 
   let network = "";
   let host = "";
+
   if (obfs === "websocket" || obfs === "ws") {
+    // vmess + ws
     network = "ws";
     host = obfsParam;
   } else if (obfs === "http") {
-    // 一般是 tcp + http 混淆
-    network = "tcp";
+    // vmess + tcp + http 伪装
+    network = "http";
     host = obfsParam;
+  } else {
+    network = ""; // 让渲染器默认走 tcp
   }
 
   const tfo =
@@ -228,9 +239,10 @@ export function parseVmess(line) {
     uuid,
     alterId,
     cipher,
-    network,
+    network, // "" / ws / http
     host,
     path,
     tfo,
+    obfs,
   };
 }
