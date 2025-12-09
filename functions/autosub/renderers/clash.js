@@ -14,8 +14,9 @@
   - 典型调用方式：
       /autosub?id=你的id&client=clash
 
-  - 说明：
-      • hy2 只输出 password 字段，不再带 auth，避免部分客户端解析异常
+  - 主要适配的客户端（是否真正支持某种协议由客户端决定）：
+      Clash Meta / Mihomo / Clash Verge / Clash for Windows /
+      FIClash / 溜溜 / NekoBox / FlyClash 等
 */
 
 function pickString(v, fallback = "") {
@@ -127,7 +128,7 @@ function nodeToClashProxy(node) {
 
   // ---------- Hysteria2 / hy2 ----------
   if (type === "hysteria2" || type === "hy2") {
-    // 收敛到 password 字段；从 node.password / node.auth 任意一方取
+    // 收敛到 password 字段；auth 只用于输出兼容
     const pwd = pickString(node.password || node.auth);
     if (!pwd) return null;
 
@@ -155,8 +156,8 @@ function nodeToClashProxy(node) {
     };
 
     if (portsStr) {
-      proxy.ports = portsStr; // Clash 本身会识别 ports
-      proxy.mport = portsStr; // 对齐部分机场写法（有的魔改用 mport）
+      proxy.ports = portsStr;    // Clash 本身会识别 ports
+      proxy.mport = portsStr;    // 对齐机场写法（有的魔改用 mport）
     }
 
     const sni = pickString(node.sni || node.peer || node.serverName);
@@ -231,8 +232,9 @@ function dumpProxyBlock(lines, proxy) {
 
   // ---------- Hysteria2 ----------
   if (proxy._type === "hysteria2") {
-    // ★ 只输出 password，不再带 auth，避免客户端纠结
+    // 同时输出 password + auth，客户端按自己支持的字段选
     pushLine(lines, 2, `password: ${proxy.password}`);
+    pushLine(lines, 2, `auth: ${proxy.password}`);
 
     if (proxy.ports) pushLine(lines, 2, `ports: ${proxy.ports}`);
     if (proxy.mport) pushLine(lines, 2, `mport: ${proxy.mport}`);
