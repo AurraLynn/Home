@@ -1,225 +1,46 @@
 /*
   - 输入：
-      解析后的 Node[]（至少包含 type / server / port）
-
-  - 已支持协议：
-      ss
-      trojan
-      hysteria2(hy2)
-
+      Node[] + client 名（如 clash / stash / ficlash / nekobox / flyclash）
   - 输出：
-      Clash / Mihomo / Meta / Stash 通用 YAML
-      用法示例：/autosub?id=你的id&client=clash
+      针对不同 client 的 YAML:
+        Clash / Meta: 块状 YAML
+        FIClash / NekoBox / FlyClash: JSON 一行写法（最大兼容）
+  - 自动丢弃不支持的参数:
+        fast-open, udp, alpn, down, up, ports ...
 */
 
-function b64DecodeUrlSafe(input) {
-  if (!input) return "";
-  let s = String(input).replace(/-/g, "+").replace(/_/g, "/");
-  const pad = s.length % 4;
-  if (pad) s += "=".repeat(4 - pad);
-  try {
-    return decodeURIComponent(escape(atob(s)));
-  } catch {
-    try {
-      return atob(s);
-    } catch {
-      return "";
-    }
-  }
-}
-
-function parseSSRaw(raw) {
-  const s = String(raw || "").trim();
-  if (!s.startsWith("ss://")) return null;
-
-  let rest = s.slice(5);
-
-  let name = "";
-  const hashIndex = rest.indexOf("#");
-  if (hashIndex >= 0) {
-    name = decodeURIComponent(rest.slice(hashIndex + 1));
-    rest = rest.slice(0, hashIndex);
-  }
-
-  const qIndex = rest.indexOf("?");
-  if (qIndex >= 0) rest = rest.slice(0, qIndex);
-
-  if (rest.includes("@")) {
-    const [b64Part, hostPart] = rest.split("@");
-    const decoded = b64DecodeUrlSafe(b64Part);
-    const [cipher, password] = decoded.split(":");
-    const [server, portStr] = hostPart.split(":");
-    const port = Number(portStr);
-    if (!cipher || !password || !server || !port) return null;
-    return {
-      type: "ss",
-      server,
-      port,
-      cipher,
-      password,
-      name: name || `${server}:${port}`,
-    };
-  }
-
-  const decoded = b64DecodeUrlSafe(rest);
-  if (decoded && decoded.includes("@")) {
-    const [left, right] = decoded.split("@");
-    const [cipher, password] = left.split(":");
-    const [server, portStr] = right.split(":");
-    const port = Number(portStr);
-    if (!cipher || !password || !server || !port) return null;
-    return {
-      type: "ss",
-      server,
-      port,
-      cipher,
-      password,
-      name: name || `${server}:${port}`,
-    };
-  }
-
-  return null;
-}
-
-/** 简单的 YAML 字符串转义（只用在我们手控的 config 字段上） */
-function yamlQuote(value) {
-  if (value === undefined || value === null) return '""';
-  const s = String(value);
+function yamlQuote(v) {
+  if (v === undefined || v === null) return '""';
+  const s = String(v);
   return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
 }
 
-function nodeToClashProxy(node) {
-  if (!node) return null;
+/** 将 proxy 对象中不兼容字段剔除 */
+function safeProxyForClient(proxy, client) {
+  const badKeys = [
+    "fast-open",
+    "udp",
+    "up",
+    "down",
+    "alpn",
+    "ports",
+    "plugin",
+    "plugin-opts",
+  ];
 
-  // ===== SS =====
-  if (node.type === "ss") {
-    if (node.server && node.port && (node.cipher || node.method) && node.password) {
-      return {
-        name: node.name || `${node.server}:${node.port}`,
-        type: "ss",
-        server: node.server,
-        port: Number(node.port),
-        cipher: node.cipher || node.method,
-        password: node.password,
-        udp: true,
-        plugin: node.plugin,
-        pluginOpts: node.pluginOpts,
-      };
+  if (["ficlash", "flyclash", "nekobox", "nekoray"].includes(client)) {
+    const safe = {};
+    for (const [k, v] of Object.entries(proxy)) {
+      if (badKeys.includes(k)) continue;
+      safe[k] = v;
     }
-
-    if (node.raw) {
-      const p = parseSSRaw(node.raw);
-      if (p) {
-        return {
-          name: p.name,
-          type: "ss",
-          server: p.server,
-          port: p.port,
-          cipher: p.cipher,
-          password: p.password,
-          udp: true,
-        };
-      }
-    }
+    return safe;
   }
 
-  // ===== Trojan =====
-  if (node.type === "trojan") {
-    const server = node.server;
-    const port = Number(node.port || 0);
-    const password = node.password;
-
-    if (!server || !port || !password) return null;
-
-    const proxy = {
-      name: node.name || `${server}:${port}`,
-      type: "trojan",
-      server,
-      port,
-      password,
-      tls: true,
-      udp: true,
-    };
-
-    if (node.sni) proxy.sni = node.sni;
-    if (typeof node.skipCertVerify === "boolean") {
-      proxy.skipCertVerify = node.skipCertVerify ? true : false;
-    }
-
-    return proxy;
-  }
-
-  // ===== Hysteria2 / hy2 =====
-  if (node.type === "hysteria2" || node.type === "hy2") {
-    const server = node.server;
-    const port = Number(node.port || 0);
-
-    let password = node.password || node.auth || "";
-
-    if (!password) {
-      if (node.uuid) password = String(node.uuid);
-      else if (node.user) password = String(node.user);
-    }
-
-    if (!password && node.raw) {
-      const raw = String(node.raw);
-
-      let m =
-        raw.match(/^hysteria2:\/\/([^@?#]+)@/i) ||
-        raw.match(/^hy2:\/\/([^@?#]+)@/i);
-      if (m && m[1]) {
-        try {
-          password = decodeURIComponent(m[1]);
-        } catch {
-          password = m[1];
-        }
-      }
-
-      if (!password) {
-        const m2 = raw.match(
-          /[?&](?:password|passwd|auth|auth_str|psk)=([^&#]+)/i
-        );
-        if (m2 && m2[1]) {
-          try {
-            password = decodeURIComponent(m2[1]);
-          } catch {
-            password = m2[1];
-          }
-        }
-      }
-    }
-
-    if (!server || !port || !password) return null;
-
-    node.password = node.password || password;
-    if (!node.auth) node.auth = password;
-
-    const proxy = {
-      name: node.name || `${server}:${port}`,
-      type: "hysteria2",
-      server,
-      port,
-      password,
-      udp: true,
-      fastOpen: true,
-      skipCertVerify:
-        typeof node.skipCertVerify === "boolean" ? !!node.skipCertVerify : undefined,
-      sni: node.sni,
-      obfs: node.obfs,
-      obfsPassword: node.obfsPassword,
-      alpn: node.alpn,
-      up: node.up,
-      down: node.down,
-      ports: node.ports,
-    };
-
-    return proxy;
-  }
-
-  return null;
+  return proxy;
 }
 
-/** 把单个 proxy 对象转成 YAML（块状写法），缩进两个空格起步 */
+/** 单个 proxy 块状 YAML 输出 */
 function dumpProxyYaml(p) {
   const lines = [];
   lines.push(`  - name: ${yamlQuote(p.name)}`);
@@ -230,78 +51,50 @@ function dumpProxyYaml(p) {
   if (p.type === "ss") {
     if (p.cipher) lines.push(`    cipher: ${yamlQuote(p.cipher)}`);
     if (p.password) lines.push(`    password: ${yamlQuote(p.password)}`);
-    if (typeof p.udp === "boolean") lines.push(`    udp: ${p.udp ? "true" : "false"}`);
-    if (p.plugin) lines.push(`    plugin: ${yamlQuote(p.plugin)}`);
-    if (p.pluginOpts) {
-      // 简单一点：用字符串承载，复杂 plugin-opts 就不在这里展开了
-      lines.push(`    plugin-opts: ${yamlQuote(JSON.stringify(p.pluginOpts))}`);
-    }
   } else if (p.type === "trojan") {
     if (p.password) lines.push(`    password: ${yamlQuote(p.password)}`);
     lines.push(`    tls: true`);
-    if (typeof p.udp === "boolean") lines.push(`    udp: ${p.udp ? "true" : "false"}`);
     if (p.sni) lines.push(`    sni: ${yamlQuote(p.sni)}`);
-    if (typeof p.skipCertVerify === "boolean") {
-      lines.push(`    skip-cert-verify: ${p.skipCertVerify ? "true" : "false"}`);
-    }
   } else if (p.type === "hysteria2") {
     if (p.password) lines.push(`    password: ${yamlQuote(p.password)}`);
-    if (typeof p.udp === "boolean") lines.push(`    udp: ${p.udp ? "true" : "false"}`);
-    if (typeof p.fastOpen === "boolean") {
-      lines.push(`    fast-open: ${p.fastOpen ? "true" : "false"}`);
-    }
-    if (typeof p.skipCertVerify === "boolean") {
-      lines.push(`    skip-cert-verify: ${p.skipCertVerify ? "true" : "false"}`);
-    }
     if (p.sni) lines.push(`    sni: ${yamlQuote(p.sni)}`);
-    if (p.obfs) lines.push(`    obfs: ${yamlQuote(p.obfs)}`);
-    if (p.obfsPassword) {
-      lines.push(`    obfs-password: ${yamlQuote(p.obfsPassword)}`);
-    }
-    if (p.alpn) {
-      const arr = String(p.alpn)
-        .split(",")
-        .map((x) => x.trim())
-        .filter(Boolean);
-      if (arr.length) {
-        lines.push(`    alpn:`);
-        for (const a of arr) {
-          lines.push(`      - ${yamlQuote(a)}`);
-        }
-      }
-    }
-    if (p.up) lines.push(`    up: ${yamlQuote(p.up)}`);
-    if (p.down) lines.push(`    down: ${yamlQuote(p.down)}`);
-    if (p.ports) lines.push(`    ports: ${yamlQuote(p.ports)}`);
+    if (typeof p["skip-cert-verify"] !== "undefined")
+      lines.push(`    skip-cert-verify: ${p["skip-cert-verify"] ? "true" : "false"}`);
   }
 
   return lines.join("\n");
 }
 
-export function renderClash(nodes = []) {
+export function renderClash(nodes = [], client = "clash") {
   const proxies = [];
-
   for (const n of nodes) {
-    const p = nodeToClashProxy(n);
-    if (p) proxies.push(p);
+    if (!n || !n.server || !n.port) continue;
+    const type = n.type?.toLowerCase() || "unknown";
+
+    if (!["ss", "trojan", "hysteria2", "hy2"].includes(type)) continue;
+
+    const p = {
+      name: n.name || `${n.server}:${n.port}`,
+      type: type === "hy2" ? "hysteria2" : type,
+      server: n.server,
+      port: Number(n.port),
+      password: n.password || n.auth || "",
+      sni: n.sni,
+      "skip-cert-verify": n.skipCertVerify ?? true,
+      "tfo": true,
+    };
+
+    proxies.push(safeProxyForClient(p, client));
   }
 
   const names = proxies.map((p) => p.name);
-
   const lines = [];
+
   lines.push("port: 7890");
   lines.push("socks-port: 7891");
   lines.push("mode: Rule");
   lines.push("allow-lan: true");
   lines.push("log-level: info");
-  lines.push("");
-  lines.push("dns:");
-  lines.push("  enable: true");
-  lines.push("  listen: 0.0.0.0:53");
-  lines.push("  ipv6: false");
-  lines.push("  nameserver:");
-  lines.push("    - 223.5.5.5");
-  lines.push("    - 223.6.6.6");
   lines.push("");
   lines.push("proxies:");
 
@@ -309,7 +102,13 @@ export function renderClash(nodes = []) {
     lines.push("  # no supported proxies parsed yet");
   } else {
     for (const p of proxies) {
-      lines.push(dumpProxyYaml(p));
+      if (["ficlash", "flyclash", "nekobox", "nekoray"].includes(client)) {
+        // 输出 JSON 一行模式
+        lines.push("  - " + JSON.stringify(p));
+      } else {
+        // 输出块状 YAML
+        lines.push(dumpProxyYaml(p));
+      }
     }
   }
 
@@ -318,13 +117,10 @@ export function renderClash(nodes = []) {
   lines.push('  - name: "🐹Lyn · Node"');
   lines.push("    type: select");
   lines.push("    proxies:");
-
   if (names.length === 0) {
     lines.push("      - DIRECT");
   } else {
-    for (const name of names) {
-      lines.push(`      - ${yamlQuote(name)}`);
-    }
+    for (const n of names) lines.push(`      - ${yamlQuote(n)}`);
   }
 
   lines.push("");
