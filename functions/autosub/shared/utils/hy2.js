@@ -1,29 +1,41 @@
 /*
-  - 支持输入格式（任意一种即可）：
-
+  - 输入支持：
       hysteria2://password@host:port?...#name
       hy2://password@host:port?...#name
       hysteria2://host:port?password=xxx&...#name
       hy2://host:port?auth=xxx&...#name
 
-  - 解析输出字段（Node）示例：
+  - 输出 Node 字段（本文件只负责“尽可能解析”，不用管具体 client 怎么用）：
+      type: "hysteria2"
+      name               备注（# 后面）
+      server             IP / 域名
+      port               端口
+      password           认证密码 / token（同时也挂一份到 auth）
+      sni                TLS SNI / peer
+      skipCertVerify     是否跳过证书校验（insecure / allowInsecure / allow_insecure）
 
-      {
-        type: "hysteria2",
-        name,              // 备注
-        server,            // IP / 域名
-        port,              // 端口
-        password,          // 认证密码 / token
-        sni,               // TLS SNI / peer
-        skipCertVerify,    // 跳过证书校验
-        obfs,              // 混淆类型
-        obfsPassword,      // 混淆密码
-        alpn,              // "h3,h2" 形式的字符串
-        up,                // 上行限速，如 "40 Mbps"
-        down,              // 下行限速，如 "200 Mbps"
-        ports,             // 端口范围，如 "35000-39000"
-        raw                // 原始链接
-      }
+      obfs               混淆类型（none / salamander 等）
+      obfsPassword       混淆密码
+
+      alpn               原始 ALPN 字符串，如 "h3,h2"
+      up                 上行限速（字符串，例如 "40 Mbps"）
+      down               下行限速（字符串，例如 "200 Mbps"）
+      ports              端口范围（例如 "35000-39000"）
+
+      flag               可选，国旗/地区代号（如 CA）
+      title              可选，完整标题（如 "🇨🇦 加拿大2"）
+      ping               可选，延迟（毫秒）
+      created            可选，创建时间（时间戳）
+      updated            可选，更新时间（时间戳）
+      tfo                可选，TCP Fast Open 标记
+      udp                可选，UDP 支持标记
+      proto              可选，额外协议参数
+      protoParam         可选，协议参数字符串
+      obfsParam          可选，额外混淆参数
+      data               可选，原订阅来源地址
+      user               可选，用户名/UUID 之类（如果有就挂上）
+
+      raw                原始完整链接字符串
 */
 
 export function parseHy2(url) {
@@ -42,13 +54,13 @@ export function parseHy2(url) {
     const port = parseInt(u.port || "0", 10) || 0;
 
     let password = "";
+    let user = "";
 
-    // 1. 优先用 username（hysteria2://password@host:port 形式）
     if (u.username) {
-      password = decodeURIComponent(u.username);
+      user = decodeURIComponent(u.username);
+      password = user;
     }
 
-    // 2. 其次从 query 里拿（兼容多种写法）
     if (!password) {
       password =
         sp.get("auth") ||
@@ -59,7 +71,6 @@ export function parseHy2(url) {
         "";
     }
 
-    // 即使拿不到 password，也先生成节点，后续渲染器里会再兜底尝试 raw 解析
     const insecureVal =
       (sp.get("insecure") ||
         sp.get("allowInsecure") ||
@@ -81,24 +92,63 @@ export function parseHy2(url) {
 
     const alpn = sp.get("alpn") || "";
 
-    const up = sp.get("up") || sp.get("upload") || "";
-    const down = sp.get("down") || sp.get("download") || "";
+    const up =
+      sp.get("up") ||
+      sp.get("upload") ||
+      sp.get("upmbps") ||
+      sp.get("up_mbps") ||
+      "";
+    const down =
+      sp.get("down") ||
+      sp.get("download") ||
+      sp.get("downmbps") ||
+      sp.get("down_mbps") ||
+      "";
     const ports = sp.get("ports") || "";
+
+    const flag = sp.get("flag") || "";
+    const title = sp.get("title") || name || "";
+    const ping = sp.get("ping") || "";
+    const created = sp.get("created") || "";
+    const updated = sp.get("updated") || "";
+    const tfo = sp.get("tfo") || "";
+    const udp = sp.get("udp") || "";
+    const proto = sp.get("proto") || "";
+    const protoParam = sp.get("protoParam") || "";
+    const obfsParam = sp.get("obfsParam") || "";
+    const data = sp.get("data") || "";
 
     return {
       type: "hysteria2",
-      name,
+      name: title || name,
       server,
       port,
       password,
+      auth: password, // 多挂一份，方便转换器直接用
       sni,
       skipCertVerify,
+
       obfs,
       obfsPassword,
+
       alpn,
       up,
       down,
       ports,
+
+      flag,
+      title: title || name,
+      ping,
+      created,
+      updated,
+      tfo,
+      udp,
+      proto,
+      protoParam,
+      obfsParam,
+      data,
+      user,
+
       raw: full,
     };
   } catch (_e) {
