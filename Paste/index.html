@@ -1706,7 +1706,7 @@
 
     // 订阅链接拼接
     function buildSubLink(slug, clientKey) {
-        const base = `${location.origin}/api/sub?id=${encodeURIComponent(slug)}`;
+        const base = `${location.origin}/autosub?id=${encodeURIComponent(slug)}`;
         if (!clientKey || clientKey === "general") return base;
         return `${base}&client=${encodeURIComponent(clientKey)}`;
     }
