@@ -6,13 +6,14 @@
       • Shadowsocks      → type: "ss"
       • Trojan           → type: "trojan"
       • Hysteria2 / hy2  → type: "hysteria2" / "hy2"
+      • VMess            → type: "vmess"
 
   - 输出：
       Clash / Mihomo 通用 YAML（块状写法）：
 
         proxies:
           - name: "xxx"
-            type: ss
+            type: ss / trojan / hysteria2 / vmess
             ...
 
       默认带一个通用策略组：🐹Lyn · Node
@@ -22,7 +23,12 @@
 
   - 说明：
       • SS 支持 obfs 混淆（obfs-local/simple-obfs → plugin: obfs + plugin-opts）
-      • hy2 同时输出 password + auth，兼容不同内核写法
+      • hy2 同时输出 password + auth（如需可再调整）
+      • VMess 支持：
+          - 算法 cipher（scy/security/cipher），默认 auto
+          - 传输方式 network：tcp / ws / grpc / kcp / http
+          - TLS / servername(SNI)
+          - ws-opts / grpc-opts
 */
 
 function pickString(v, fallback = "") {
@@ -79,7 +85,7 @@ function nodeToClashProxy(node) {
         pluginName === "simple-obfs" ||
         pluginName === "simple-obfs-local"
       ) {
-        proxy.plugin = "obfs"; // Clash 认识的是 obfs
+        proxy.plugin = "obfs";
       } else {
         proxy.plugin = node.plugin;
       }
@@ -93,7 +99,6 @@ function nodeToClashProxy(node) {
       if (src.host) opts.host = src.host;
       if (src.uri) opts.uri = src.uri;
 
-      // 其它不常用字段照传
       for (const [k, v] of Object.entries(src)) {
         if (["mode", "host", "uri", "raw"].includes(k)) continue;
         if (v === undefined || v === null || v === "") continue;
@@ -108,7 +113,80 @@ function nodeToClashProxy(node) {
     return proxy;
   }
 
-  // ---------- Trojan（极简版） ----------
+  // ---------- VMess ----------
+  if (type === "vmess") {
+    const uuid = pickString(node.uuid || node.id);
+    if (!rawPort || !uuid) return null;
+
+    const proxy = {
+      _type: "vmess",
+      name,
+      server,
+      port: rawPort,
+      uuid,
+    };
+
+    const aid = pickNumber(node.alterId, 0);
+    proxy.alterId = Number.isFinite(aid) ? aid : 0;
+
+    // cipher / 加密算法
+    const cipher =
+      pickString(node.cipher) ||
+      pickString(node.security) ||
+      pickString(node.scy) ||
+      "auto";
+    proxy.cipher = cipher || "auto";
+
+    // network
+    const netRaw =
+      pickString(node.network) ||
+      pickString(node.net) ||
+      pickString(node.headerType);
+    const net = netRaw.toLowerCase();
+    if (net) proxy.network = net;
+
+    // TLS
+    let tls = false;
+    const tlsField =
+      pickString(node.tls) || pickString(node.security).toLowerCase();
+    if (["tls", "xtls", "reality"].includes(tlsField)) tls = true;
+    if (["1", "true", "yes"].includes(tlsField)) tls = true;
+    if (tls) proxy.tls = true;
+
+    const sni =
+      pickString(node.sni) ||
+      pickString(node.servername) ||
+      pickString(node["server-name"]);
+    if (sni) proxy.servername = sni;
+
+    // UDP
+    if (typeof node.udp === "boolean") proxy.udp = node.udp;
+    else proxy.udp = true;
+
+    // ws / grpc 细节
+    const host = pickString(node.host);
+    const path = pickString(node.path);
+
+    if (net === "ws" || net === "websocket") {
+      proxy.network = "ws";
+      const wsOpts = {};
+      if (path) wsOpts.path = path;
+      if (host) wsOpts.headers = { Host: host };
+      if (Object.keys(wsOpts).length) proxy["ws-opts"] = wsOpts;
+    } else if (net === "grpc") {
+      proxy.network = "grpc";
+      const grpcOpts = {};
+      if (path) grpcOpts["grpc-service-name"] = path;
+      if (Object.keys(grpcOpts).length) proxy["grpc-opts"] = grpcOpts;
+    } else if (net === "tcp" || !net) {
+      proxy.network = "tcp";
+      // tcp + http header 之类的这里先不展开，后续有需要再加
+    }
+
+    return proxy;
+  }
+
+  // ---------- Trojan ----------
   if (type === "trojan") {
     const password = pickString(node.password);
     if (!rawPort || !password) return null;
@@ -128,21 +206,17 @@ function nodeToClashProxy(node) {
       proxy.skipCertVerify = node.skipCertVerify;
     }
 
-    // 不输出 network / ws-opts / headers，避免兼容性问题
     return proxy;
   }
 
   // ---------- Hysteria2 / hy2 ----------
   if (type === "hysteria2" || type === "hy2") {
-    // 收敛到 password 字段；从 node.password / node.auth 任意一方取
     const pwd = pickString(node.password || node.auth);
     if (!pwd) return null;
 
-    // 端口段字符串，如 "35000-39000"
     const portsStr = pickString(node.ports || node.portRange);
     let mainPort = rawPort;
 
-    // 如果有 ports，优先用区间起始值作为主 port（对齐机场）
     if (portsStr) {
       const m = portsStr.match(/^(\d+)/);
       if (m && m[1]) {
@@ -162,14 +236,13 @@ function nodeToClashProxy(node) {
     };
 
     if (portsStr) {
-      proxy.ports = portsStr; // Clash 本身会识别 ports
-      proxy.mport = portsStr; // 对齐部分机场写法（有的魔改用 mport）
+      proxy.ports = portsStr;
+      proxy.mport = portsStr;
     }
 
     const sni = pickString(node.sni || node.peer || node.serverName);
     if (sni) proxy.sni = sni;
 
-    // udp：默认 true，只在明确为 false 时才关
     if (typeof node.udp === "boolean") {
       proxy.udp = node.udp;
     } else {
@@ -186,7 +259,6 @@ function nodeToClashProxy(node) {
     return proxy;
   }
 
-  // 其它协议暂不渲染进 Clash
   return null;
 }
 
@@ -218,6 +290,51 @@ function dumpProxyBlock(lines, proxy) {
       if (proxy.pluginOpts.uri)
         pushLine(lines, 3, `uri: ${proxy.pluginOpts.uri}`);
     }
+    return;
+  }
+
+  // ---------- VMess ----------
+  if (proxy._type === "vmess") {
+    pushLine(lines, 2, `uuid: ${proxy.uuid}`);
+    pushLine(lines, 2, `alterId: ${proxy.alterId}`);
+    if (proxy.cipher) pushLine(lines, 2, `cipher: ${proxy.cipher}`);
+    if (proxy.udp !== undefined)
+      pushLine(lines, 2, `udp: ${proxy.udp ? "true" : "false"}`);
+    if (proxy.tls) pushLine(lines, 2, `tls: true`);
+    if (proxy.servername)
+      pushLine(
+        lines,
+        2,
+        `servername: "${proxy.servername.replace(/"/g, '\\"')}"`
+      );
+    if (proxy.network) pushLine(lines, 2, `network: ${proxy.network}`);
+
+    if (proxy["ws-opts"]) {
+      pushLine(lines, 2, `ws-opts:`);
+      if (proxy["ws-opts"].path)
+        pushLine(lines, 3, `path: ${proxy["ws-opts"].path}`);
+      if (
+        proxy["ws-opts"].headers &&
+        proxy["ws-opts"].headers.Host
+      ) {
+        pushLine(lines, 3, `headers:`);
+        pushLine(
+          lines,
+          4,
+          `Host: "${proxy["ws-opts"].headers.Host.replace(/"/g, '\\"')}"`
+        );
+      }
+    }
+
+    if (proxy["grpc-opts"]) {
+      pushLine(lines, 2, `grpc-opts:`);
+      if (proxy["grpc-opts"]["grpc-service-name"])
+        pushLine(
+          lines,
+          3,
+          `grpc-service-name: ${proxy["grpc-opts"]["grpc-service-name"]}`
+        );
+    }
 
     return;
   }
@@ -238,17 +355,12 @@ function dumpProxyBlock(lines, proxy) {
 
   // ---------- Hysteria2 ----------
   if (proxy._type === "hysteria2") {
-    // 同时输出 password + auth，客户端按自己支持的字段选
     pushLine(lines, 2, `password: ${proxy.password}`);
-    pushLine(lines, 2, `auth: ${proxy.password}`);
-
     if (proxy.ports) pushLine(lines, 2, `ports: ${proxy.ports}`);
     if (proxy.mport) pushLine(lines, 2, `mport: ${proxy.mport}`);
-
     if (typeof proxy.udp === "boolean") {
       pushLine(lines, 2, `udp: ${proxy.udp ? "true" : "false"}`);
     }
-
     if (proxy.sni) pushLine(lines, 2, `sni: ${proxy.sni}`);
     if (typeof proxy.skipCertVerify === "boolean") {
       pushLine(
@@ -288,7 +400,7 @@ export function renderClash(nodes = []) {
   pushLine(lines, 2, `- 223.6.6.6`);
   lines.push(``);
 
-  // ===== proxies（块状）=====
+  // ===== proxies =====
   lines.push(`proxies:`);
   if (proxies.length === 0) {
     pushLine(lines, 1, `# 没有解析出任何可用节点`);
