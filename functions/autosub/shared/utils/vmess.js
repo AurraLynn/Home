@@ -1,19 +1,21 @@
 /*
+ * shared/utils/vmess.js
+ *
  * VMess 解析器
  *
  * 支持两种形态：
  *
- * 1) JSON 型（主流）：
+ * 1) JSON 型（主流机场写法）：
  *    vmess://BASE64(JSON)
  *
  *    JSON 常见字段：
  *      v, ps, add, port, id, aid, scy/security, net, type, host, path,
  *      tls, sni, alpn, udp, ...
  *
- * 2) URL 型：
- *    vmess://uuid@host:port?encryption=auto&security=tls&type=ws&host=xxx&path=/xxx#备注
+ * 2) 老式 URL 型（你发的这几条）：
+ *    vmess://BASE64(auto:uuid@host:port)?path=/&remarks=...&obfsParam=...&obfs=http/websocket&tfo=1&alterId=0
  *
- * 标准化输出 Node 字段：
+ * 标准化输出 Node 字段（交给 Parser 用）：
  *   {
  *     type: "vmess",
  *     name,
@@ -21,16 +23,14 @@
  *     port,
  *     uuid,
  *     alterId,
- *     cipher,        // 加密算法：auto / aes-128-gcm / chacha20-ietf-poly1305 ...
- *     network,       // tcp / ws / grpc / kcp / http ...
- *     headerType,    // type 字段，通常为 "none"
- *     tls,           // true / false
+ *     cipher,     // auto / aes-128-gcm / chacha20-ietf-poly1305 ...
+ *     network,    // tcp / ws / grpc ...
+ *     host,       // ws Host / http host
+ *     path,       // ws path / grpc service-name
+ *     tls,        // true / false
  *     sni,
- *     alpn,          // 字符串 or 数组串联
- *     host,          // Host 头（ws/ tcp http）
- *     path,          // ws 路径 / http path / grpc service-name
- *     udp,           // true / false
- *     raw            // 原始整串
+ *     tfo,        // true / false
+ *     raw         // 原始整串
  *   }
  */
 
@@ -38,86 +38,190 @@ function b64DecodeUrlSafe(input) {
   if (!input) return "";
   let s = String(input).trim().replace(/-/g, "+").replace(/_/g, "/");
 
-  // padding
   const pad = s.length % 4;
   if (pad) s += "=".repeat(4 - pad);
 
   try {
-    // 兼容 UTF-8
-    return decodeURIComponent(escape(atob(s)));
+    return atob(s);
   } catch {
+    return "";
+  }
+}
+
+function safeDecode(str) {
+  try {
+    return decodeURIComponent(str);
+  } catch {
+    return str;
+  }
+}
+
+export function parseVmess(line) {
+  const raw = String(line || "").trim();
+  if (!raw.startsWith("vmess://")) return null;
+
+  // 先拆 # 备注
+  let nameFromHash = "";
+  let main = raw;
+  const hashIndex = raw.indexOf("#");
+  if (hashIndex >= 0) {
+    const hashPart = raw.slice(hashIndex + 1);
+    nameFromHash = safeDecode(hashPart);
+    main = raw.slice(0, hashIndex);
+  }
+
+  // 去掉 vmess:// 前缀
+  main = main.replace(/^vmess:\/\//i, "");
+
+  // 拆 query：basePart?query
+  let basePart = main;
+  let query = "";
+  const qIndex = main.indexOf("?");
+  if (qIndex >= 0) {
+    basePart = main.slice(0, qIndex);
+    query = main.slice(qIndex + 1);
+  }
+
+  // basePart 通常是 BASE64(JSON) 或 BASE64(auto:uuid@host:port)
+  const decoded = b64DecodeUrlSafe(basePart);
+  if (!decoded) {
+    return {
+      type: "vmess",
+      raw,
+      name: nameFromHash || raw,
+    };
+  }
+
+  const dTrim = decoded.trim();
+
+  // ===== 1) JSON 型：vmess://BASE64(JSON) =====
+  if (dTrim.startsWith("{") && dTrim.endsWith("}")) {
     try {
-      return atob(s);
+      const obj = JSON.parse(dTrim);
+
+      const server = String(obj.add || "").trim();
+      const port = Number(obj.port || 0);
+      const uuid = String(obj.id || "").trim();
+      const alterId = Number(obj.aid || 0);
+
+      const cipher =
+        String(obj.scy || obj.security || obj.cipher || "auto").trim() ||
+        "auto";
+
+      const net = String(obj.net || "").trim().toLowerCase();
+      const host = String(obj.host || "").trim();
+      const path = String(obj.path || "").trim();
+
+      let tls = false;
+      const tlsField =
+        String(obj.tls || obj.security || "").trim().toLowerCase();
+      if (tlsField === "tls" || tlsField === "1" || tlsField === "true") {
+        tls = true;
+      }
+      const sni = String(obj.sni || obj.servername || "").trim();
+
+      let name = nameFromHash || String(obj.ps || "").trim();
+      if (!name && server && port) name = `${server}:${port}`;
+
+      if (!server || !port || !uuid) {
+        return { type: "vmess", raw, name: name || raw };
+      }
+
+      return {
+        type: "vmess",
+        raw,
+        name,
+        server,
+        port,
+        uuid,
+        alterId,
+        cipher,
+        network: net,
+        host,
+        path,
+        tls,
+        sni,
+      };
     } catch {
-      return "";
+      // JSON 失败就继续走老式 auto:uuid@host:port 逻辑
     }
   }
-}
 
-function safeDecode(s) {
-  try {
-    return decodeURIComponent(s);
-  } catch {
-    return s;
+  // ===== 2) 非 JSON：期待 auto:uuid@host:port =====
+  const atIndex = decoded.lastIndexOf("@");
+  if (atIndex < 0) {
+    return {
+      type: "vmess",
+      raw,
+      name: nameFromHash || raw,
+    };
   }
-}
 
-function parseJsonStyle(body, remark, raw) {
-  const decoded = b64DecodeUrlSafe(body);
-  if (!decoded || decoded[0] !== "{") return null;
+  const left = decoded.slice(0, atIndex); // auto:uuid
+  const right = decoded.slice(atIndex + 1); // host:port
 
-  let obj;
-  try {
-    obj = JSON.parse(decoded);
-  } catch {
-    return null;
+  const [methodRaw, uuidRaw] = left.split(":", 2);
+  const [serverRaw, portStr] = right.split(":", 2);
+
+  const uuid = (uuidRaw || "").trim();
+  const server = (serverRaw || "").trim();
+  const port = Number((portStr || "").trim());
+  const cipher = (methodRaw || "auto").trim() || "auto";
+
+  // 解析 query 参数：path / remarks / obfs / obfsParam / tfo / alterId
+  const params = {};
+  if (query) {
+    const pairs = query.split("&");
+    for (const seg of pairs) {
+      if (!seg) continue;
+      const [kRaw, vRaw = ""] = seg.split("=", 2);
+      const k = (kRaw || "").trim();
+      if (!k) continue;
+
+      const key = safeDecode(k);
+      const val = safeDecode(vRaw);
+      params[key] = val;
+    }
   }
-  if (!obj || typeof obj !== "object") return null;
 
-  const name = (remark || obj.ps || "").trim();
-  const server = (obj.add || "").trim();
-  const port = Number(obj.port || 0);
-  const uuid = (obj.id || "").trim();
+  let name = nameFromHash;
+  if (!name && params.remarks) name = params.remarks;
+
+  const alterId = params.alterId ? Number(params.alterId) || 0 : 0;
+
+  // 传输方式：obfs=http/websocket，配合 obfsParam（Host）+ path
+  const obfs = String(params.obfs || "").toLowerCase();
+  const obfsParam = params.obfsParam || "";
+  const path = params.path || "";
+
+  let network = "";
+  let host = "";
+  if (obfs === "websocket" || obfs === "ws") {
+    network = "ws";
+    host = obfsParam;
+  } else if (obfs === "http") {
+    // 一般是 tcp + http 混淆
+    network = "tcp";
+    host = obfsParam;
+  }
+
+  const tfo =
+    params.tfo === "1" ||
+    params.tfo === "true" ||
+    params.tfo === "yes" ||
+    params.tfo === "on";
 
   if (!server || !port || !uuid) {
     return {
       type: "vmess",
-      name: name || raw,
       raw,
+      name: name || raw,
     };
   }
 
-  const alterId = Number(obj.aid || 0);
-  const cipher =
-    (obj.scy || obj.security || obj.cipher || "auto").toString().trim() ||
-    "auto";
-  const network = (obj.net || "").toString().trim().toLowerCase();
-  const headerType = (obj.type || "").toString().trim().toLowerCase();
-  const host = (obj.host || "").toString().trim();
-  const path = (obj.path || "").toString().trim();
-
-  let tls = false;
-  const tlsField = (obj.tls || obj.security || "").toString().toLowerCase();
-  if (tlsField === "tls" || tlsField === "1" || tlsField === "true") {
-    tls = true;
-  }
-
-  const sni = (obj.sni || obj.servername || "").toString().trim();
-  let alpn = "";
-  if (Array.isArray(obj.alpn)) {
-    alpn = obj.alpn.join(",");
-  } else if (obj.alpn) {
-    alpn = String(obj.alpn);
-  }
-
-  const udp =
-    obj.udp === true ||
-    obj.udp === 1 ||
-    (typeof obj.udp === "string" &&
-      ["1", "true", "yes"].includes(obj.udp.toLowerCase()));
-
   return {
     type: "vmess",
+    raw,
     name: name || `${server}:${port}`,
     server,
     port,
@@ -125,181 +229,8 @@ function parseJsonStyle(body, remark, raw) {
     alterId,
     cipher,
     network,
-    headerType,
-    tls,
-    sni,
-    alpn,
     host,
     path,
-    udp,
-    raw,
-  };
-}
-
-function parseUrlStyle(body, remark, raw) {
-  // 先剥掉 vmess://
-  let main = body;
-  main = main.replace(/^vmess:\/\//i, "");
-
-  // 拆 # 备注
-  let name = remark;
-  let withoutHash = main;
-  const hashIdx = main.indexOf("#");
-  if (hashIdx >= 0) {
-    const r = main.slice(hashIdx + 1);
-    withoutHash = main.slice(0, hashIdx);
-    if (!name) name = safeDecode(r.trim());
-  }
-
-  // 拆 query
-  let beforeQuery = withoutHash;
-  let search = "";
-  const qIdx = withoutHash.indexOf("?");
-  if (qIdx >= 0) {
-    beforeQuery = withoutHash.slice(0, qIdx);
-    search = withoutHash.slice(qIdx + 1);
-  }
-
-  // uuid@host:port
-  let uuid = "";
-  let hostPort = beforeQuery;
-  const atIdx = beforeQuery.lastIndexOf("@");
-  if (atIdx >= 0) {
-    uuid = beforeQuery.slice(0, atIdx).trim();
-    hostPort = beforeQuery.slice(atIdx + 1).trim();
-  }
-
-  // host:port
-  const hpParts = hostPort.split(":");
-  const server = (hpParts[0] || "").trim();
-  const port = Number((hpParts[1] || "").trim());
-
-  const params = {};
-  if (search) {
-    for (const seg of search.split("&")) {
-      if (!seg) continue;
-      const [kRaw, vRaw = ""] = seg.split("=", 2);
-      const k = (kRaw || "").trim();
-      if (!k) continue;
-      const key = safeDecode(k);
-      const val = safeDecode(vRaw);
-      params[key] = val;
-    }
-  }
-
-  // uuid 最终来源：前缀 / query.id / query.uuid
-  const uuidFinal =
-    uuid ||
-    (params.id ? params.id.trim() : "") ||
-    (params.uuid ? params.uuid.trim() : "");
-
-  if (!server || !port || !uuidFinal) {
-    return {
-      type: "vmess",
-      name: name || raw,
-      raw,
-    };
-  }
-
-  const cipher =
-    (params.encryption ||
-      params.scy ||
-      params.cipher ||
-      params.security ||
-      "auto") || "auto";
-
-  const network = (
-    params.type ||
-    params.net ||
-    params.network ||
-    ""
-  ).toString().toLowerCase();
-
-  let tls = false;
-  const sec = (params.security || params.tls || "").toString().toLowerCase();
-  if (["tls", "xtls", "reality"].includes(sec)) {
-    tls = true;
-  }
-  if (["1", "true", "yes"].includes(sec)) {
-    tls = true;
-  }
-
-  const sni =
-    (params.sni ||
-      params.servername ||
-      params["server-name"] ||
-      params.peer ||
-      "") + "";
-
-  const host =
-    (params.host ||
-      params["ws-headers-host"] ||
-      params["wsHost"] ||
-      params["ws-host"] ||
-      "") + "";
-
-  const path =
-    (params.path ||
-      params["ws-path"] ||
-      params["wsPath"] ||
-      params["grpc-service-name"] ||
-      "") + "";
-
-  const udp =
-    params.udp === "1" ||
-    params.udp === "true" ||
-    params.udp === "yes" ||
-    params.udp === "on";
-
-  const alterId = params.aid ? Number(params.aid) : 0;
-
-  return {
-    type: "vmess",
-    name: name || `${server}:${port}`,
-    server,
-    port,
-    uuid: uuidFinal,
-    alterId,
-    cipher: cipher || "auto",
-    network,
-    headerType: "",
-    tls,
-    sni: sni.trim(),
-    alpn: "",
-    host: host.trim(),
-    path: path.trim(),
-    udp,
-    raw,
-  };
-}
-
-export function parseVmess(url) {
-  if (!url || typeof url !== "string") return null;
-  const raw = url.trim();
-  if (!raw) return null;
-
-  let main = raw;
-  let remark = "";
-  const hashIdx = raw.indexOf("#");
-  if (hashIdx >= 0) {
-    remark = safeDecode(raw.slice(hashIdx + 1).trim());
-    main = raw.slice(0, hashIdx);
-  }
-
-  // 去前缀 vmess://
-  let body = main.replace(/^vmess:\/\//i, "");
-
-  // 先尝试 JSON 型 base64
-  const asJson = parseJsonStyle(body, remark, raw);
-  if (asJson) return asJson;
-
-  // 再尝试 URL 型
-  const asUrl = parseUrlStyle(main, remark, raw);
-  if (asUrl) return asUrl;
-
-  return {
-    type: "vmess",
-    name: remark || raw,
-    raw,
+    tfo,
   };
 }
