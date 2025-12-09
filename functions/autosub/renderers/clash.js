@@ -9,7 +9,7 @@
 
   - 输出：
       Clash / Mihomo / Meta / Stash 通用 YAML
-      搭配：/autosub?id=你的id&client=clash 使用
+      搭配示例：/autosub?id=你的id&client=clash
 */
 
 function b64DecodeUrlSafe(input) {
@@ -149,8 +149,45 @@ function nodeToClashProxy(node) {
   if (node.type === "hysteria2" || node.type === "hy2") {
     const server = node.server;
     const port = Number(node.port || 0);
-    const password = node.password;
 
+    let password = node.password || "";
+
+    // 1) JSON 里如果有 uuid / user，也可以兜底成密码
+    if (!password) {
+      if (node.uuid) password = String(node.uuid);
+      else if (node.user) password = String(node.user);
+    }
+
+    // 2) 再次从 raw 里尝试解析 password
+    if (!password && node.raw) {
+      const raw = String(node.raw);
+
+      // 形态一：hysteria2://password@host:port
+      let m = raw.match(/^hysteria2:\/\/([^@?#]+)@/i) || raw.match(/^hy2:\/\/([^@?#]+)@/i);
+      if (m && m[1]) {
+        try {
+          password = decodeURIComponent(m[1]);
+        } catch {
+          password = m[1];
+        }
+      }
+
+      // 形态二：query 里的 password/auth/auth_str
+      if (!password) {
+        const m2 = raw.match(
+          /[?&](?:password|passwd|auth|auth_str|psk)=([^&#]+)/i
+        );
+        if (m2 && m2[1]) {
+          try {
+            password = decodeURIComponent(m2[1]);
+          } catch {
+            password = m2[1];
+          }
+        }
+      }
+    }
+
+    // 如果到最后还是拿不到密码，就放弃该节点，避免生成不能用的配置
     if (!server || !port || !password) return null;
 
     const proxy = {
