@@ -1,118 +1,75 @@
-/*
-  - 输入：
-      解析后的 Node[]（至少包含 type / server / port）
+/**
+ * Clash / Mihomo 渲染器
+ *
+ * - 输入：Parser.js 产出的标准化 Node[]
+ *
+ * - 当前支持的节点类型：
+ *   • Shadowsocks ：type = "ss"
+ *   • Trojan      ：type = "trojan"
+ *   • Hysteria2   ：type = "hysteria2" 或 "hy2"
+ *
+ * - 典型使用方式：
+ *   /autosub?id=你的id&client=clash
+ *
+ * - 适配客户端（只负责生成 YAML，是否支持协议看客户端本身）：
+ *   Clash Meta / Mihomo / Clash Verge / Clash for Windows /
+ *   FIClash / Nekobox / FlyClash 等
+ */
 
-  - 已支持协议：
-      ss
-      trojan
-      hysteria2(hy2)
-
-  - 输出：
-      通用 Clash YAML，proxies 统一为 JSON 一行写法，例如：
-        proxies:
-          - {"name":"🇺🇸美国01","server":"pq.us1.xxx.com","port":35000,"ports":"35000-39000","mport":"35000-39000","udp":true,"skip-cert-verify":true,"sni":"www.apple.com","type":"hysteria2","auth":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"}
-
-      各协议字段：
-        ss:     name / type / server / port / cipher / password
-        trojan: name / type / server / port / password / sni / skip-cert-verify
-        hy2:    name / server / port / (可选 ports/mport) / udp / skip-cert-verify / sni / type / auth
-*/
-
-function b64DecodeUrlSafe(input) {
-  if (!input) return "";
-  let s = String(input).replace(/-/g, "+").replace(/_/g, "/");
-  const pad = s.length % 4;
-  if (pad) s += "=".repeat(4 - pad);
-  try {
-    return decodeURIComponent(escape(atob(s)));
-  } catch {
-    try {
-      return atob(s);
-    } catch {
-      return "";
-    }
-  }
+/** 安全取字符串 */
+function pickString(v, fallback = "") {
+  if (v === null || v === undefined) return fallback;
+  const s = String(v).trim();
+  return s || fallback;
 }
 
-function parseSSRaw(raw) {
-  const s = String(raw || "").trim();
-  if (!s.startsWith("ss://")) return null;
+/** 安全取数字 */
+function pickNumber(v, fallback) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
 
-  let rest = s.slice(5);
+/** YAML 内联 map 字符串化：- { key: "val", port: 443, udp: true } */
+function formatInlineMap(obj, indent = "  ") {
+  const parts = [];
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === undefined || value === null || value === "") continue;
 
-  let name = "";
-  const hashIndex = rest.indexOf("#");
-  if (hashIndex >= 0) {
-    name = decodeURIComponent(rest.slice(hashIndex + 1));
-    rest = rest.slice(0, hashIndex);
+    let rendered;
+    if (typeof value === "number" || typeof value === "boolean") {
+      rendered = String(value);
+    } else {
+      const s = String(value)
+        .replace(/\\/g, "\\\\")
+        .replace(/"/g, '\\"');
+      rendered = `"${s}"`;
+    }
+    parts.push(`${key}: ${rendered}`);
   }
 
-  const qIndex = rest.indexOf("?");
-  if (qIndex >= 0) rest = rest.slice(0, qIndex);
-
-  // 形如 ss://BASE64(method:pass)@host:port#name
-  if (rest.includes("@")) {
-    const [b64Part, hostPart] = rest.split("@");
-    const decoded = b64DecodeUrlSafe(b64Part);
-    const [cipher, password] = decoded.split(":");
-    const [server, portStr] = hostPart.split(":");
-    const port = Number(portStr);
-    if (!cipher || !password || !server || !port) return null;
-    return {
-      type: "ss",
-      server,
-      port,
-      cipher,
-      password,
-      name: name || `${server}:${port}`,
-    };
-  }
-
-  // 形如 ss://BASE64(method:pass@host:port)#name
-  const decoded = b64DecodeUrlSafe(rest);
-  if (decoded && decoded.includes("@")) {
-    const [left, right] = decoded.split("@");
-    const [cipher, password] = left.split(":");
-    const [server, portStr] = right.split(":");
-    const port = Number(portStr);
-    if (!cipher || !password || !server || !port) return null;
-    return {
-      type: "ss",
-      server,
-      port,
-      cipher,
-      password,
-      name: name || `${server}:${port}`,
-    };
-  }
-
-  return null;
+  if (!parts.length) return null;
+  return `${indent}- { ${parts.join(", ")} }`;
 }
 
 /**
- * Node -> 简化后的 proxy 对象（只保留兼容字段）
- * 最终统一 JSON.stringify 输出，形如：
- *   {"name":"...","server":"...","port":35000,"udp":true,"skip-cert-verify":true,"sni":"www.apple.com","type":"hysteria2","auth":"xxxx"}
+ * Node -> Clash proxy 对象（纯 JS 对象，后面再拼成 YAML）
  */
 function nodeToClashProxy(node) {
-  if (!node) return null;
+  if (!node || !node.type) return null;
 
-  const typeRaw = node.type || "";
-  const type = typeRaw.toLowerCase();
-  const server = node.server;
-  const port = Number(node.port || 0);
-  if (!server || !port) return null;
+  const server = pickString(node.server);
+  const port = pickNumber(node.port);
+  const nameBase =
+    pickString(node.name) || (server && port ? `${server}:${port}` : "");
+  const name = nameBase || "Unnamed";
 
-  const name = node.name || `${server}:${port}`;
+  // ---------- SS ----------
+  if (node.type === "ss") {
+    const cipher = pickString(node.cipher);
+    const password = pickString(node.password);
 
-  // ===== SS =====
-  if (type === "ss") {
-    const cipher = node.cipher || node.method;
-    const password = node.password;
+    if (!server || !port || !cipher || !password) return null;
 
-    if (!cipher || !password) return null;
-
-    // 键顺序：name -> type -> server -> port -> cipher -> password
     const proxy = {
       name,
       type: "ss",
@@ -121,15 +78,18 @@ function nodeToClashProxy(node) {
       cipher,
       password,
     };
+
+    if (node.plugin) proxy.plugin = node.plugin;
+    if (node.pluginOpts) proxy["plugin-opts"] = node.pluginOpts;
+
     return proxy;
   }
 
-  // ===== Trojan =====
-  if (type === "trojan") {
-    const password = node.password;
-    if (!password) return null;
+  // ---------- Trojan ----------
+  if (node.type === "trojan") {
+    const password = pickString(node.password);
+    if (!server || !port || !password) return null;
 
-    // 键顺序：name -> type -> server -> port -> password -> sni -> skip-cert-verify
     const proxy = {
       name,
       type: "trojan",
@@ -138,91 +98,89 @@ function nodeToClashProxy(node) {
       password,
     };
 
-    if (node.sni) {
-      proxy.sni = node.sni;
-    }
+    // 典型 Clash trojan 字段
+    const sni = pickString(node.sni || node.host);
+    if (sni) proxy.sni = sni;
+
     if (typeof node.skipCertVerify === "boolean") {
       proxy["skip-cert-verify"] = node.skipCertVerify;
     }
 
+    // 是否 WS
+    const net = pickString(node.network || node.net || "").toLowerCase();
+    if (net === "ws" || net === "websocket") {
+      proxy.network = "ws";
+
+      const path = pickString(node.path || node.wsPath || "/");
+      const hostHeader = pickString(
+        node.host ||
+          (node.wsHeaders && node.wsHeaders.Host) ||
+          (node.wsHeaders && node.wsHeaders.host)
+      );
+
+      const wsOpts = {};
+      if (path) wsOpts.path = path;
+      if (hostHeader) {
+        wsOpts.headers = { Host: hostHeader };
+      }
+
+      if (Object.keys(wsOpts).length) {
+        proxy["ws-opts"] = wsOpts;
+      }
+    }
+
     return proxy;
   }
 
-  // ===== Hysteria2 / hy2 =====
-  if (type === "hysteria2" || type === "hy2") {
-    let secret = node.auth || node.password || "";
+  // ---------- Hysteria2 / hy2 ----------
+  if (node.type === "hysteria2" || node.type === "hy2") {
+    const password = pickString(node.password || node.auth);
+    if (!server || !port || !password) return null;
 
-    // 兜底从 uuid / user 拿
-    if (!secret) {
-      if (node.uuid) secret = String(node.uuid);
-      else if (node.user) secret = String(node.user);
-    }
-
-    // 再兜底从 raw 里抠
-    if (!secret && node.raw) {
-      const raw = String(node.raw);
-
-      let m =
-        raw.match(/^hysteria2:\/\/([^@?#]+)@/i) ||
-        raw.match(/^hy2:\/\/([^@?#]+)@/i);
-      if (m && m[1]) {
-        try {
-          secret = decodeURIComponent(m[1]);
-        } catch {
-          secret = m[1];
-        }
-      }
-
-      if (!secret) {
-        const m2 = raw.match(
-          /[?&](?:password|passwd|auth|auth_str|psk)=([^&#]+)/i
-        );
-        if (m2 && m2[1]) {
-          try {
-            secret = decodeURIComponent(m2[1]);
-          } catch {
-            secret = m2[1];
-          }
-        }
-      }
-    }
-
-    if (!secret) return null;
-
-    // 同步回 Node，方便其它渲染器使用
-    node.password = node.password || secret;
-    if (!node.auth) node.auth = secret;
-
-    // ★ 按机场写法：
-    //   { name, server, port, ports, mport, udp, skip-cert-verify, sni, type: "hysteria2", auth }
     const proxy = {
       name,
+      type: "hysteria2",
       server,
       port,
+      // 兼容：有的机场/客户端使用 auth，有的使用 password
+      auth: password,
+      password: password,
     };
 
-    // 如果 Node 有端口段就带上（字符串形式如 "35000-39000"）
-    if (node.ports) proxy.ports = String(node.ports);
-    if (node.mport) proxy.mport = String(node.mport);
+    const sni = pickString(node.sni || node.peer || node.serverName);
+    if (sni) proxy.sni = sni;
 
-    proxy.udp = true;
-
-    proxy["skip-cert-verify"] =
-      typeof node.skipCertVerify === "boolean" ? node.skipCertVerify : true;
-
-    if (node.sni) {
-      proxy.sni = node.sni;
+    if (typeof node.skipCertVerify === "boolean") {
+      proxy["skip-cert-verify"] = node.skipCertVerify;
     }
 
-    proxy.type = "hysteria2";
-    proxy.auth = secret;
+    // 端口跳跃区间（如 35000-39000）
+    const ports = pickString(node.ports || node.portRange);
+    if (ports) proxy.ports = ports;
+
+    // UDP / fast-open
+    if (typeof node.udp === "boolean") proxy.udp = node.udp;
+    if (typeof node.fastOpen === "boolean") {
+      proxy["fast-open"] = node.fastOpen;
+    }
+
+    // obfs / protocol 之类字段（有就带，客户端不认识会自动忽略）
+    const obfs = pickString(node.obfs);
+    if (obfs) proxy.obfs = obfs;
 
     return proxy;
   }
 
+  // 其它协议暂时不渲染到 Clash
   return null;
 }
 
+/**
+ * 渲染入口
+ *
+ * @param {Array} nodes - Parser.js 解析后的 Node[]
+ * @returns {{body: string, contentType: string}}
+ */
 export function renderClash(nodes = []) {
   const proxies = [];
 
@@ -234,49 +192,55 @@ export function renderClash(nodes = []) {
   const names = proxies.map((p) => p.name);
 
   const lines = [];
-  lines.push("port: 7890");
-  lines.push("socks-port: 7891");
-  lines.push("mode: Rule");
-  lines.push("allow-lan: true");
-  lines.push("log-level: info");
-  lines.push("");
-  lines.push("dns:");
-  lines.push("  enable: true");
-  lines.push("  listen: 0.0.0.0:53");
-  lines.push("  ipv6: false");
-  lines.push("  nameserver:");
-  lines.push("    - 223.5.5.5");
-  lines.push("    - 223.6.6.6");
-  lines.push("");
-  lines.push("proxies:");
+
+  // ===== 头部：参考“赔钱机场.yaml”风格，保持兼容性 =====
+  lines.push(`# Generated by Lyn autosub`);
+  lines.push(`mixed-port: 7890`);
+  lines.push(`allow-lan: true`);
+  lines.push(`mode: rule`);
+  lines.push(`log-level: info`);
+  lines.push(`external-controller: '127.0.0.1:9090'`);
+  lines.push(``);
+  lines.push(`dns:`);
+  lines.push(`  enable: true`);
+  lines.push(`  ipv6: false`);
+  lines.push(`  nameserver: [223.5.5.5, 223.6.6.6]`);
+  lines.push(``);
+
+  // ===== proxies =====
+  lines.push(`proxies:`);
 
   if (proxies.length === 0) {
-    lines.push("  # no supported proxies parsed yet");
+    lines.push(`  # 没有解析出任何可用节点`);
   } else {
     for (const p of proxies) {
-      // 统一 JSON 一行写法
-      lines.push("  - " + JSON.stringify(p));
+      const line = formatInlineMap(p, "  ");
+      if (line) lines.push(line);
     }
   }
 
-  lines.push("");
-  lines.push("proxy-groups:");
-  lines.push('  - name: "🐹Lyn · Node"');
-  lines.push("    type: select");
-  lines.push("    proxies:");
+  // ===== proxy-groups =====
+  lines.push(``);
+  lines.push(`proxy-groups:`);
+  lines.push(`  - name: "🐹Lyn · Node"`);
+  lines.push(`    type: select`);
+  lines.push(`    proxies:`);
+
   if (names.length === 0) {
-    lines.push("      - DIRECT");
+    lines.push(`      - DIRECT`);
   } else {
+    lines.push(`      - DIRECT`);
     for (const name of names) {
-      lines.push("      - " + JSON.stringify(name));
+      lines.push(`      - "${name}"`);
     }
   }
 
-  lines.push("");
-  lines.push("rules:");
-  lines.push("  - GEOIP,LAN,DIRECT");
-  lines.push("  - GEOIP,CN,DIRECT");
-  lines.push("  - MATCH,🐹Lyn · Node");
+  // ===== rules =====
+  lines.push(``);
+  lines.push(`rules:`);
+  lines.push(`  - GEOIP,LAN,DIRECT`);
+  lines.push(`  - GEOIP,CN,DIRECT`);
+  lines.push(`  - MATCH,🐹Lyn · Node`);
 
   return {
     body: lines.join("\n"),
