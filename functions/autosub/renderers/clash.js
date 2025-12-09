@@ -118,16 +118,17 @@ function nodeToClashProxy(node) {
 
   // ---------- Hysteria2 / hy2 ----------
   if (type === "hysteria2" || type === "hy2") {
-    const password = pickString(node.password || node.auth);
-    if (!password) return null;
+    // 统一把密码收敛到 password 字段
+    const pwd = pickString(node.password || node.auth);
+    if (!pwd) return null;
 
     const proxy = {
       _type: "hysteria2",
       name,
       server,
       port,
-      auth: password,
-      password: password,
+      // ★ 只输出 password，不再输出 auth，避免有客户端不认 auth
+      password: pwd,
     };
 
     const sni = pickString(node.sni || node.peer || node.serverName);
@@ -192,7 +193,8 @@ function dumpProxyBlock(lines, proxy) {
       );
     }
   } else if (proxy._type === "hysteria2") {
-    pushLine(lines, 2, `auth: ${proxy.auth}`);
+    // ★ 这里只写 password
+    pushLine(lines, 2, `password: ${proxy.password}`);
     if (proxy.sni) pushLine(lines, 2, `sni: ${proxy.sni}`);
     if (typeof proxy.skipCertVerify === "boolean") {
       pushLine(
