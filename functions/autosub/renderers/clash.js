@@ -8,17 +8,15 @@
       hysteria2(hy2)
 
   - 输出：
-      通用 Clash YAML，proxies 部分统一为 JSON 一行写法：
+      通用 Clash YAML，proxies 统一为 JSON 一行写法：
         proxies:
-          - {"type":"hysteria2","name":"...","server":"...","port":30102,"password":"...","sni":"...","skip-cert-verify":true,"tfo":true}
+          - {"name":"🇨🇦 加拿大2-2","type":"hysteria2","server":"155.248.223.117","port":30102,"password":"cf6bf978-3fe0-45aa-9f17-fe02bd99a7a6","sni":"du.wish.ml","skip-cert-verify":true}
 
-  - 兼容性策略：
-      只保留各协议最基本、绝大部分客户端都支持的字段：
-        ss:       type / name / server / port / cipher / password
-        trojan:   type / name / server / port / password / sni / skip-cert-verify
-        hy2:      type / name / server / port / password / sni / skip-cert-verify / tfo
-      自动丢弃：
-        udp / fast-open / alpn / up / down / ports / plugin / plugin-opts 等
+  - 兼容策略：
+      只保留最基础字段：
+        ss:     name / type / server / port / cipher / password
+        trojan: name / type / server / port / password / sni / skip-cert-verify
+        hy2:    name / type / server / port / password / sni / skip-cert-verify
 */
 
 function b64DecodeUrlSafe(input) {
@@ -91,20 +89,21 @@ function parseSSRaw(raw) {
 }
 
 /**
- * Node -> 简化后的 proxy 对象，只包含各协议兼容性最高的字段。
- * 返回的对象会直接 JSON.stringify 输出到 YAML：
- *   proxies:
- *     - {"type":"...","name":"...","server":"...","port":1234,...}
+ * Node -> 简化后的 proxy 对象（只保留兼容字段）
+ * 输出时直接 JSON.stringify，得到：
+ *   {"name":"...","type":"...","server":"...","port":1234,"password":"...","sni":"...","skip-cert-verify":true}
  */
 function nodeToClashProxy(node) {
   if (!node) return null;
 
-  const type = (node.type || "").toLowerCase();
+  const typeRaw = node.type || "";
+  const type = typeRaw.toLowerCase();
   const server = node.server;
   const port = Number(node.port || 0);
-  const name = node.name || (server && port ? `${server}:${port}` : "");
 
   if (!server || !port) return null;
+
+  const name = node.name || `${server}:${port}`;
 
   // ===== SS =====
   if (type === "ss") {
@@ -113,14 +112,17 @@ function nodeToClashProxy(node) {
 
     if (!cipher || !password) return null;
 
-    return {
-      type: "ss",
+    // 保证键顺序：name -> type -> server -> port -> cipher -> password
+    const proxy = {
       name,
+      type: "ss",
       server,
       port,
       cipher,
       password,
     };
+
+    return proxy;
   }
 
   // ===== Trojan =====
@@ -128,24 +130,22 @@ function nodeToClashProxy(node) {
     const password = node.password;
     if (!password) return null;
 
-    const out = {
-      type: "trojan",
+    const proxy = {
       name,
+      type: "trojan",
       server,
       port,
       password,
     };
 
     if (node.sni) {
-      out.sni = node.sni;
+      proxy.sni = node.sni;
     }
-
-    // 绝大多数客户端都支持 skip-cert-verify
     if (typeof node.skipCertVerify === "boolean") {
-      out["skip-cert-verify"] = node.skipCertVerify;
+      proxy["skip-cert-verify"] = node.skipCertVerify;
     }
 
-    return out;
+    return proxy;
   }
 
   // ===== Hysteria2 / hy2 =====
@@ -187,40 +187,32 @@ function nodeToClashProxy(node) {
 
     if (!password) return null;
 
-    // 同步回 Node，方便其他渲染器也用到
+    // 同步回 Node，方便其他渲染器使用
     node.password = node.password || password;
     if (!node.auth) node.auth = password;
 
-    const out = {
-      type: "hysteria2",
+    // ★ 保证键顺序：name -> type -> server -> port -> password -> sni -> skip-cert-verify
+    const proxy = {
       name,
+      type: "hysteria2",
       server,
       port,
       password,
-      // 这两个是你验证过「可以用」的字段：
-      // {"skip-cert-verify":true,"tfo":true}
-      "skip-cert-verify":
-        typeof node.skipCertVerify === "boolean" ? node.skipCertVerify : true,
-      tfo: true,
     };
 
     if (node.sni) {
-      out.sni = node.sni;
+      proxy.sni = node.sni;
     }
 
-    // 其它：udp / fast-open / alpn / up / down / ports / obfs ...
-    // 为了兼容 FIClash / NekoBox / FlyClash，全部省略
+    proxy["skip-cert-verify"] =
+      typeof node.skipCertVerify === "boolean" ? node.skipCertVerify : true;
 
-    return out;
+    return proxy;
   }
 
   return null;
 }
 
-/**
- * 统一渲染成 Clash YAML，proxies 使用 JSON 一行写法，
- * 适配 Clash Meta / Meya / FIClash / NekoBox / FlyClash 等。
- */
 export function renderClash(nodes = []) {
   const proxies = [];
 
@@ -266,7 +258,6 @@ export function renderClash(nodes = []) {
     lines.push("      - DIRECT");
   } else {
     for (const name of names) {
-      // 这里用 JSON.stringify 简单包一层引号
       lines.push("      - " + JSON.stringify(name));
     }
   }
