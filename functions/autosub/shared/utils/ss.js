@@ -1,21 +1,52 @@
-/**
- * SS 解析器（尽量完整）
- *
- * 支持形态：
- * 1) ss://BASE64(method:password)@host:port?plugin=...#name
- * 2) ss://BASE64(method:password@host:port)?plugin=...#name
- * 3) ss://method:password@host:port?plugin=...#name
- *
- * 输出字段：
- * { type, server, port, cipher, password, name, plugin, pluginOpts, raw }
- */
+/*
+  Shadowsocks 解析工具
+
+  - 支持的输入格式（SIP002 常见写法）：
+
+      1) 完整 base64：
+         ss://BASE64(method:password@host:port)#name
+         例如：
+         ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo0MzIxNzgzYkB1c2EuZXhhbXBsZS5jb206MTIzNA==#US-1
+
+      2) 只 base64 用户信息：
+         ss://BASE64(method:password)@host:port#name
+         例如（你现在遇到的这种）：
+         ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpsRTl1TDVmUjN5Ujk@cncgzbgp01.224837439.xyz:14151#TW - 台湾-2
+
+      3) 纯明文：
+         ss://method:password@host:port#name
+
+      均可附带 plugin 参数，例如：
+         ?plugin=obfs-local;obfs=http;obfs-host=4aaef245bd.iqiyi.com;obfs-uri=/
+
+  - 输出 Node 字段：
+
+      {
+        type: "ss",
+        name: string,
+        server: string,
+        port: number,
+        cipher: string,
+        password: string,
+        plugin?: string,        // 如 "obfs-local"
+        pluginOpts?: {          // 可选
+          mode?: string,        // obfs=http
+          host?: string,        // obfs-host=...
+          uri?: string,         // obfs-uri=...
+          raw?: string          // 原始 plugin 字符串
+        },
+        raw: string             // 原始 url
+      }
+
+  - 设计原则：
+      解析失败只返回 null，不抛异常，避免整条订阅崩溃。
+*/
 
 function b64DecodeUrlSafe(input) {
   if (!input) return "";
-  let s = String(input).replace(/-/g, "+").replace(/_/g, "/");
+  let s = String(input).trim().replace(/-/g, "+").replace(/_/g, "/");
   const pad = s.length % 4;
   if (pad) s += "=".repeat(4 - pad);
-
   try {
     return decodeURIComponent(escape(atob(s)));
   } catch {
@@ -27,175 +58,159 @@ function b64DecodeUrlSafe(input) {
   }
 }
 
-function safeDecode(s) {
-  try { return decodeURIComponent(s); } catch { return s; }
-}
+function parsePlugin(search) {
+  if (!search) return null;
 
-/**
- * 解析 plugin 参数
- * 形如：
- *  obfs-local;obfs=http;obfs-host=example.com;obfs-uri=/
- *  v2ray-plugin;mode=websocket;host=xx;path=/;tls=true
- */
-function parsePluginParam(pluginParam) {
-  if (!pluginParam) return { plugin: "", pluginOpts: null };
+  // search 可能是 "plugin=obfs-local;obfs=http;obfs-host=...;obfs-uri=/"
+  // 也可能带其它参数，我们只关心 plugin= 这部分
+  const q = String(search).replace(/^\?+/, "");
+  const match = q.match(/(?:^|&)plugin=([^&]+)/i);
+  if (!match || !match[1]) return null;
 
-  const raw = safeDecode(pluginParam);
-  const segs = raw.split(";").filter(Boolean);
-  const main = segs[0] || "";
-
-  const kv = {};
-  for (const seg of segs.slice(1)) {
-    const [k, v] = seg.split("=");
-    if (k) kv[k] = v ?? "";
-  }
-
-  // 映射到 Clash 常见写法
-  if (main.includes("obfs")) {
-    return {
-      plugin: "obfs",
-      pluginOpts: {
-        mode: kv["obfs"] || kv["mode"] || "http",
-        host: kv["obfs-host"] || kv["host"] || "",
-        path: kv["obfs-uri"] || kv["path"] || "",
-      },
-    };
-  }
-
-  if (main.includes("v2ray-plugin")) {
-    const tlsVal = (kv["tls"] || "").toLowerCase();
-    const tls =
-      tlsVal === "1" || tlsVal === "true" || tlsVal === "tls";
-
-    return {
-      plugin: "v2ray-plugin",
-      pluginOpts: {
-        mode: kv["mode"] || "websocket",
-        host: kv["host"] || "",
-        path: kv["path"] || "",
-        tls,
-      },
-    };
-  }
-
-  // 其它未知 plugin：保留原始参数（不丢）
-  return {
-    plugin: main || "plugin",
-    pluginOpts: Object.keys(kv).length ? kv : null,
-  };
-}
-
-/**
- * 解析 ss:// 原始链接
- */
-export function parseSS(raw) {
-  const s = String(raw || "").trim();
-  if (!s.startsWith("ss://")) return null;
-
-  // 尝试 URL 解析（对 1/3 形态很友好）
+  let pluginRaw = match[1];
   try {
-    const u = new URL(s);
+    pluginRaw = decodeURIComponent(pluginRaw);
+  } catch {
+    // ignore
+  }
 
-    const name = safeDecode((u.hash || "").replace(/^#/, "")) || "";
+  const parts = pluginRaw.split(";").filter(Boolean);
+  if (!parts.length) return null;
 
-    const server = u.hostname || "";
-    const port = Number(u.port || 0);
+  const plugin = parts[0]; // 第一个是插件名，如 obfs-local
 
-    // plugin
-    const pluginParam = u.searchParams.get("plugin") || "";
-    const { plugin, pluginOpts } = parsePluginParam(pluginParam);
+  const opts = { raw: pluginRaw };
+  for (let i = 1; i < parts.length; i++) {
+    const seg = parts[i];
+    const [k, v] = seg.split("=", 2);
+    if (!k) continue;
+    const key = k.trim();
+    const value = (v || "").trim();
 
-    // 形态 3：ss://method:password@host:port
-    if (u.username && u.password) {
-      const cipher = safeDecode(u.username);
-      const password = safeDecode(u.password);
-
-      if (!server || !port || !cipher || !password) return null;
-
-      return {
-        type: "ss",
-        server,
-        port,
-        cipher,
-        password,
-        name: name || `${server}:${port}`,
-        plugin,
-        pluginOpts,
-        raw: s,
-      };
+    if (key === "obfs") {
+      // obfs=http
+      opts.mode = value;
+    } else if (key === "obfs-host") {
+      opts.host = value;
+    } else if (key === "obfs-uri") {
+      opts.uri = value || "/";
+    } else {
+      // 其它参数直接挂上
+      opts[key] = value;
     }
+  }
 
-    // 形态 1：ss://BASE64(method:password)@host:port
-    if (u.username && !u.password) {
-      const decoded = b64DecodeUrlSafe(u.username);
-      const [cipher, password] = decoded.split(":");
+  return { plugin, pluginOpts: opts };
+}
 
-      if (!server || !port || !cipher || !password) {
-        // 继续走 fallback
-      } else {
-        return {
-          type: "ss",
-          server,
-          port,
-          cipher,
-          password,
-          name: name || `${server}:${port}`,
-          plugin,
-          pluginOpts,
-          raw: s,
-        };
+export function parseSS(url) {
+  if (!url || typeof url !== "string") return null;
+
+  const raw = url.trim();
+  if (!raw.toLowerCase().startsWith("ss://")) return null;
+
+  try {
+    // 去掉 ss:// 前缀
+    let rest = raw.slice(5);
+
+    // 先切 name（# 后面的部分）
+    let name = "";
+    const hashIndex = rest.indexOf("#");
+    if (hashIndex >= 0) {
+      const namePart = rest.slice(hashIndex + 1);
+      rest = rest.slice(0, hashIndex);
+      try {
+        name = decodeURIComponent(namePart);
+      } catch {
+        name = namePart;
       }
     }
-  } catch {
-    // URL 解析失败就走 fallback
+
+    // 再切查询参数（?plugin=...）
+    let search = "";
+    const qIndex = rest.indexOf("?");
+    if (qIndex >= 0) {
+      search = rest.slice(qIndex);       // 含 '?'
+      rest = rest.slice(0, qIndex);      // 去掉 ? 后面
+    }
+
+    // 现在 rest 只剩下：
+    // 1) BASE64(method:pass@host:port)
+    // 2) BASE64(method:pass)@host:port
+    // 3) method:pass@host:port
+
+    let userInfo = "";
+    let hostPort = "";
+
+    if (rest.includes("@")) {
+      const atIndex = rest.lastIndexOf("@");
+      userInfo = rest.slice(0, atIndex);
+      hostPort = rest.slice(atIndex + 1);
+    } else {
+      // 没有 @，当成 base64(method:pass@host:port)
+      const decoded = b64DecodeUrlSafe(rest);
+      if (!decoded || !decoded.includes("@")) return null;
+      const atIndex2 = decoded.lastIndexOf("@");
+      userInfo = decoded.slice(0, atIndex2);
+      hostPort = decoded.slice(atIndex2 + 1);
+    }
+
+    // 解析 host:port
+    const hpParts = hostPort.split(":");
+    if (hpParts.length < 2) return null;
+    const server = hpParts[0].trim();
+    const port = Number(hpParts[1].trim());
+    if (!server || !Number.isFinite(port)) return null;
+
+    // 解析 userInfo：
+    // 可能是：
+    //   method:password           （明文）
+    //   BASE64(method:password)   （无冒号，整体是 base64）
+    let method = "";
+    let password = "";
+
+    if (userInfo.includes(":")) {
+      // 明文 method:password
+      const idx = userInfo.indexOf(":");
+      method = userInfo.slice(0, idx);
+      password = userInfo.slice(idx + 1);
+    } else {
+      // base64(method:password)
+      const decodedUser = b64DecodeUrlSafe(userInfo);
+      if (!decodedUser || !decodedUser.includes(":")) return null;
+      const idx2 = decodedUser.indexOf(":");
+      method = decodedUser.slice(0, idx2);
+      password = decodedUser.slice(idx2 + 1);
+    }
+
+    method = method.trim();
+    password = password.trim();
+    if (!method || !password) return null;
+
+    // 解析 plugin
+    let plugin;
+    let pluginOpts;
+    if (search) {
+      const pluginParsed = parsePlugin(search);
+      if (pluginParsed) {
+        plugin = pluginParsed.plugin;
+        pluginOpts = pluginParsed.pluginOpts;
+      }
+    }
+
+    return {
+      type: "ss",
+      name: name || `${server}:${port}`,
+      server,
+      port,
+      cipher: method,
+      password,
+      ...(plugin ? { plugin } : {}),
+      ...(pluginOpts ? { pluginOpts } : {}),
+      raw,
+    };
+  } catch (_e) {
+    // 任何异常直接返回 null，不让整个订阅崩掉
+    return null;
   }
-
-  // ===== fallback：处理形态 2（整段 base64） =====
-  let rest = s.slice(5);
-
-  // 提取 name
-  let name = "";
-  const hashIndex = rest.indexOf("#");
-  if (hashIndex >= 0) {
-    name = safeDecode(rest.slice(hashIndex + 1));
-    rest = rest.slice(0, hashIndex);
-  }
-
-  // 提取 query（拿 plugin）
-  let query = "";
-  const qIndex = rest.indexOf("?");
-  if (qIndex >= 0) {
-    query = rest.slice(qIndex + 1);
-    rest = rest.slice(0, qIndex);
-  }
-
-  const pluginParam = (() => {
-    if (!query) return "";
-    const sp = new URLSearchParams(query);
-    return sp.get("plugin") || "";
-  })();
-
-  const { plugin, pluginOpts } = parsePluginParam(pluginParam);
-
-  const decoded = b64DecodeUrlSafe(rest);
-  if (!decoded || !decoded.includes("@")) return null;
-
-  const [left, right] = decoded.split("@");
-  const [cipher, password] = left.split(":");
-  const [server, portStr] = right.split(":");
-  const port = Number(portStr);
-
-  if (!server || !port || !cipher || !password) return null;
-
-  return {
-    type: "ss",
-    server,
-    port,
-    cipher,
-    password,
-    name: name || `${server}:${port}`,
-    plugin,
-    pluginOpts,
-    raw: s,
-  };
 }
