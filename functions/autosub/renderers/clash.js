@@ -1,14 +1,23 @@
-/**
- * Clash / Mihomo 渲染器（块状 YAML 版本）
- *
- * - 支持节点类型：
- *   • Shadowsocks ：type = "ss"
- *   • Trojan      ：type = "trojan"
- *   • Hysteria2   ：type = "hysteria2" 或 "hy2"
- *
- * - 输出为最兼容的块状 YAML，避免 { ... } 内联写法
- * - SS 支持 obfs 混淆（plugin=obfs / simple-obfs / obfs-local）
- */
+/*
+  - 输入支持：
+      Parser.js 标准化后的 Node 数组（Node[]）
+
+  - 当前渲染支持协议：
+      • Shadowsocks    → type: "ss"
+      • Trojan         → type: "trojan"
+      • Hysteria2 / hy2 → type: "hysteria2" / "hy2"
+
+  - 输出：
+      Clash / Mihomo 通用 YAML（块状写法）
+      带一个通用策略组：🐹Lyn · Node
+
+  - 典型调用方式：
+      /autosub?id=你的id&client=clash
+
+  - 主要适配的客户端（是否真正支持某种协议由客户端决定）：
+      Clash Meta / Mihomo / Clash Verge / Clash for Windows /
+      FIClash / 溜溜 / NekoBox / FlyClash 等
+*/
 
 function pickString(v, fallback = "") {
   if (v === null || v === undefined) return fallback;
@@ -27,7 +36,7 @@ function pushLine(lines, indentLevel, text) {
   lines.push(indent + text);
 }
 
-/** Node -> JS proxy 对象（内部结构） */
+/** Node -> 内部 proxy 对象（_type 区分协议） */
 function nodeToClashProxy(node) {
   if (!node || !node.type) return null;
 
@@ -40,7 +49,7 @@ function nodeToClashProxy(node) {
 
   if (!server || !port) return null;
 
-  // ---------- SS ----------
+  // ---------- Shadowsocks ----------
   if (type === "ss") {
     const cipher = pickString(node.cipher || node.method);
     const password = pickString(node.password);
@@ -56,7 +65,7 @@ function nodeToClashProxy(node) {
       password,
     };
 
-    // 插件：obfs / simple-obfs / obfs-local
+    // 插件：obfs / simple-obfs / obfs-local → 统一渲染成 obfs
     if (node.plugin) {
       let pluginName = String(node.plugin).trim().toLowerCase();
       if (
@@ -78,6 +87,7 @@ function nodeToClashProxy(node) {
       if (src.host) opts.host = src.host;
       if (src.uri) opts.uri = src.uri;
 
+      // 其它不常用字段照传
       for (const [k, v] of Object.entries(src)) {
         if (["mode", "host", "uri", "raw"].includes(k)) continue;
         if (v === undefined || v === null || v === "") continue;
@@ -92,7 +102,7 @@ function nodeToClashProxy(node) {
     return proxy;
   }
 
-  // ---------- 极简 Trojan ----------
+  // ---------- Trojan（极简版） ----------
   if (type === "trojan") {
     const password = pickString(node.password);
     if (!password) return null;
@@ -112,13 +122,13 @@ function nodeToClashProxy(node) {
       proxy.skipCertVerify = node.skipCertVerify;
     }
 
-    // 不再输出 network / ws-opts / headers，防止兼容性问题
+    // 不输出 network / ws-opts / headers，避免兼容性问题
     return proxy;
   }
 
   // ---------- Hysteria2 / hy2 ----------
   if (type === "hysteria2" || type === "hy2") {
-    // 统一把密码收敛到 password 字段
+    // 收敛到 password 字段；auth 只用于输出兼容
     const pwd = pickString(node.password || node.auth);
     if (!pwd) return null;
 
@@ -127,7 +137,6 @@ function nodeToClashProxy(node) {
       name,
       server,
       port,
-      // ★ 只输出 password，不再输出 auth，避免有客户端不认 auth
       password: pwd,
     };
 
@@ -152,10 +161,11 @@ function nodeToClashProxy(node) {
     return proxy;
   }
 
+  // 其它协议暂不渲染进 Clash
   return null;
 }
 
-/** 把 proxy 对象输出为块状 YAML */
+/** 输出单个 proxy 的块状 YAML */
 function dumpProxyBlock(lines, proxy) {
   // 通用字段
   pushLine(
@@ -167,6 +177,7 @@ function dumpProxyBlock(lines, proxy) {
   pushLine(lines, 2, `server: ${proxy.server}`);
   pushLine(lines, 2, `port: ${proxy.port}`);
 
+  // ---------- SS ----------
   if (proxy._type === "ss") {
     pushLine(lines, 2, `cipher: ${proxy.cipher}`);
     pushLine(lines, 2, `password: ${proxy.password}`);
@@ -182,7 +193,12 @@ function dumpProxyBlock(lines, proxy) {
       if (proxy.pluginOpts.uri)
         pushLine(lines, 3, `uri: ${proxy.pluginOpts.uri}`);
     }
-  } else if (proxy._type === "trojan") {
+
+    return;
+  }
+
+  // ---------- Trojan ----------
+  if (proxy._type === "trojan") {
     pushLine(lines, 2, `password: ${proxy.password}`);
     if (proxy.sni) pushLine(lines, 2, `sni: ${proxy.sni}`);
     if (typeof proxy.skipCertVerify === "boolean") {
@@ -192,9 +208,15 @@ function dumpProxyBlock(lines, proxy) {
         `skip-cert-verify: ${proxy.skipCertVerify ? "true" : "false"}`
       );
     }
-  } else if (proxy._type === "hysteria2") {
-    // ★ 这里只写 password
+    return;
+  }
+
+  // ---------- Hysteria2 ----------
+  if (proxy._type === "hysteria2") {
+    // 同时输出 password + auth，客户端按自己支持的字段选
     pushLine(lines, 2, `password: ${proxy.password}`);
+    pushLine(lines, 2, `auth: ${proxy.password}`);
+
     if (proxy.sni) pushLine(lines, 2, `sni: ${proxy.sni}`);
     if (typeof proxy.skipCertVerify === "boolean") {
       pushLine(
