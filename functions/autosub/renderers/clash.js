@@ -1,5 +1,5 @@
 /*
-  functions/autosub/renderers/clash.js
+  renderers/clash.js
 
   - 输入：
       Parser.js 标准化后的 Node 数组（Node[]）
