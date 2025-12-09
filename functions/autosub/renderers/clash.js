@@ -3,9 +3,9 @@
       Parser.js 标准化后的 Node 数组（Node[]）
 
   - 当前渲染支持协议：
-      • Shadowsocks    → type: "ss"
-      • Trojan         → type: "trojan"
-      • Hysteria2 / hy2 → type: "hysteria2" / "hy2"
+      • Shadowsocks      → type: "ss"
+      • Trojan           → type: "trojan"
+      • Hysteria2 / hy2  → type: "hysteria2" / "hy2"
 
   - 输出：
       Clash / Mihomo 通用 YAML（块状写法）
@@ -42,25 +42,25 @@ function nodeToClashProxy(node) {
 
   const type = String(node.type).toLowerCase();
   const server = pickString(node.server);
-  const port = pickNumber(node.port);
+  const rawPort = pickNumber(node.port);
   const nameBase =
-    pickString(node.name) || (server && port ? `${server}:${port}` : "");
+    pickString(node.name) || (server && rawPort ? `${server}:${rawPort}` : "");
   const name = nameBase || "Unnamed";
 
-  if (!server || !port) return null;
+  if (!server) return null;
 
   // ---------- Shadowsocks ----------
   if (type === "ss") {
     const cipher = pickString(node.cipher || node.method);
     const password = pickString(node.password);
 
-    if (!cipher || !password) return null;
+    if (!rawPort || !cipher || !password) return null;
 
     const proxy = {
       _type: "ss",
       name,
       server,
-      port,
+      port: rawPort,
       cipher,
       password,
     };
@@ -105,13 +105,13 @@ function nodeToClashProxy(node) {
   // ---------- Trojan（极简版） ----------
   if (type === "trojan") {
     const password = pickString(node.password);
-    if (!password) return null;
+    if (!rawPort || !password) return null;
 
     const proxy = {
       _type: "trojan",
       name,
       server,
-      port,
+      port: rawPort,
       password,
     };
 
@@ -132,27 +132,46 @@ function nodeToClashProxy(node) {
     const pwd = pickString(node.password || node.auth);
     if (!pwd) return null;
 
+    // 端口段字符串，如 "35000-39000"
+    const portsStr = pickString(node.ports || node.portRange);
+    let mainPort = rawPort;
+
+    // 如果有 ports，优先用区间起始值作为主 port（对齐机场）
+    if (portsStr) {
+      const m = portsStr.match(/^(\d+)-/);
+      if (m && m[1]) {
+        const p2 = Number(m[1]);
+        if (Number.isFinite(p2) && p2 > 0) mainPort = p2;
+      }
+    }
+
+    if (!mainPort) return null;
+
     const proxy = {
       _type: "hysteria2",
       name,
       server,
-      port,
+      port: mainPort,
       password: pwd,
     };
+
+    if (portsStr) {
+      proxy.ports = portsStr;    // Clash 本身会识别 ports
+      proxy.mport = portsStr;    // 对齐机场写法（有的魔改用 mport）
+    }
 
     const sni = pickString(node.sni || node.peer || node.serverName);
     if (sni) proxy.sni = sni;
 
-    if (typeof node.skipCertVerify === "boolean") {
-      proxy.skipCertVerify = node.skipCertVerify;
+    // udp：默认 true，只在明确为 false 时才关
+    if (typeof node.udp === "boolean") {
+      proxy.udp = node.udp;
+    } else {
+      proxy.udp = true;
     }
 
-    const ports = pickString(node.ports || node.portRange);
-    if (ports) proxy.ports = ports;
-
-    if (typeof node.udp === "boolean") proxy.udp = node.udp;
-    if (typeof node.fastOpen === "boolean") {
-      proxy.fastOpen = node.fastOpen;
+    if (typeof node.skipCertVerify === "boolean") {
+      proxy.skipCertVerify = node.skipCertVerify;
     }
 
     const obfs = pickString(node.obfs);
@@ -217,22 +236,19 @@ function dumpProxyBlock(lines, proxy) {
     pushLine(lines, 2, `password: ${proxy.password}`);
     pushLine(lines, 2, `auth: ${proxy.password}`);
 
+    if (proxy.ports) pushLine(lines, 2, `ports: ${proxy.ports}`);
+    if (proxy.mport) pushLine(lines, 2, `mport: ${proxy.mport}`);
+
+    if (typeof proxy.udp === "boolean") {
+      pushLine(lines, 2, `udp: ${proxy.udp ? "true" : "false"}`);
+    }
+
     if (proxy.sni) pushLine(lines, 2, `sni: ${proxy.sni}`);
     if (typeof proxy.skipCertVerify === "boolean") {
       pushLine(
         lines,
         2,
         `skip-cert-verify: ${proxy.skipCertVerify ? "true" : "false"}`
-      );
-    }
-    if (proxy.ports) pushLine(lines, 2, `ports: "${proxy.ports}"`);
-    if (typeof proxy.udp === "boolean")
-      pushLine(lines, 2, `udp: ${proxy.udp ? "true" : "false"}`);
-    if (typeof proxy.fastOpen === "boolean") {
-      pushLine(
-        lines,
-        2,
-        `fast-open: ${proxy.fastOpen ? "true" : "false"}`
       );
     }
     if (proxy.obfs) pushLine(lines, 2, `obfs: ${proxy.obfs}`);
