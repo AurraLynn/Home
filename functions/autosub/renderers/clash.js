@@ -152,13 +152,11 @@ function nodeToClashProxy(node) {
 
     let password = node.password || node.auth || "";
 
-    // 1) Node 里有 uuid/user 的情况（有些客户端是用 uuid 存的 token）
     if (!password) {
       if (node.uuid) password = String(node.uuid);
       else if (node.user) password = String(node.user);
     }
 
-    // 2) 从 raw 再兜底
     if (!password && node.raw) {
       const raw = String(node.raw);
 
@@ -189,12 +187,15 @@ function nodeToClashProxy(node) {
 
     if (!server || !port || !password) return null;
 
+    node.password = node.password || password;
+    if (!node.auth) node.auth = password;
+
     const proxy = {
       name: node.name || `${server}:${port}`,
       type: "hysteria2",
       server,
       port,
-      password,          // ★ 这里已经改成 password
+      password,
       udp: true,
       "fast-open": true,
     };
