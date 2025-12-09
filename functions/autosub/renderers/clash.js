@@ -1,84 +1,32 @@
 /**
- * Clash / Mihomo 渲染器
+ * Clash / Mihomo 渲染器（块状 YAML 版本）
  *
- * - 输入：Parser.js 产出的标准化 Node[]
- *
- * - 当前支持的节点类型：
+ * - 支持节点类型：
  *   • Shadowsocks ：type = "ss"
  *   • Trojan      ：type = "trojan"
  *   • Hysteria2   ：type = "hysteria2" 或 "hy2"
  *
- * - 典型使用方式：
- *   /autosub?id=你的id&client=clash
+ * - 输出为最兼容的块状 YAML，避免 { ... } 内联写法
  */
 
-/** 安全取字符串 */
 function pickString(v, fallback = "") {
   if (v === null || v === undefined) return fallback;
   const s = String(v).trim();
   return s || fallback;
 }
 
-/** 安全取数字 */
 function pickNumber(v, fallback) {
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
 }
 
-/**
- * YAML 内联 map 字符串化：
- *   - { key: "val", port: 443, udp: true, plugin-opts: { mode: "http", host: "xxx" } }
- */
-function formatInlineMap(obj, indent = "  ") {
-  const parts = [];
-  for (const [key, value] of Object.entries(obj)) {
-    if (value === undefined || value === null || value === "") continue;
-
-    // plugin-opts 必须是 map，而不是字符串
-    if (
-      key === "plugin-opts" &&
-      typeof value === "object" &&
-      !Array.isArray(value)
-    ) {
-      const innerParts = [];
-      for (const [k2, v2] of Object.entries(value)) {
-        if (v2 === undefined || v2 === null || v2 === "") continue;
-
-        let innerRendered;
-        if (typeof v2 === "number" || typeof v2 === "boolean") {
-          innerRendered = String(v2);
-        } else {
-          const s2 = String(v2)
-            .replace(/\\/g, "\\\\")
-            .replace(/"/g, '\\"');
-          innerRendered = `"${s2}"`;
-        }
-        innerParts.push(`${k2}: ${innerRendered}`);
-      }
-      const inner = innerParts.join(", ");
-      parts.push(`${key}: { ${inner} }`);
-      continue;
-    }
-
-    let rendered;
-    if (typeof value === "number" || typeof value === "boolean") {
-      rendered = String(value);
-    } else {
-      const s = String(value)
-        .replace(/\\/g, "\\\\")
-        .replace(/"/g, '\\"');
-      rendered = `"${s}"`;
-    }
-    parts.push(`${key}: ${rendered}`);
-  }
-
-  if (!parts.length) return null;
-  return `${indent}- { ${parts.join(", ")} }`;
+/** 缩进 + 一行文本 */
+function pushLine(lines, indentLevel, text) {
+  const indent = "  ".repeat(indentLevel);
+  lines.push(indent + text);
 }
 
-/**
- * Node -> Clash proxy 对象
- */
+/** Node -> JS proxy 对象 */
 function nodeToClashProxy(node) {
   if (!node || !node.type) return null;
 
@@ -96,15 +44,15 @@ function nodeToClashProxy(node) {
     if (!server || !port || !cipher || !password) return null;
 
     const proxy = {
+      _type: "ss",
       name,
-      type: "ss",
       server,
       port,
       cipher,
       password,
     };
 
-    // plugin + plugin-opts（obfs-local/simple-obfs → obfs）
+    // 插件：obfs / simple-obfs / obfs-local
     if (node.plugin) {
       let pluginName = String(node.plugin).trim().toLowerCase();
       if (
@@ -112,7 +60,7 @@ function nodeToClashProxy(node) {
         pluginName === "simple-obfs" ||
         pluginName === "simple-obfs-local"
       ) {
-        proxy.plugin = "obfs"; // Clash 要求的名字
+        proxy.plugin = "obfs";
       } else {
         proxy.plugin = node.plugin;
       }
@@ -122,7 +70,7 @@ function nodeToClashProxy(node) {
       const src = node.pluginOpts;
       const opts = {};
 
-      if (src.mode) opts.mode = src.mode; // obfs=http / tls
+      if (src.mode) opts.mode = src.mode; // http / tls
       if (src.host) opts.host = src.host;
       if (src.uri) opts.uri = src.uri;
 
@@ -133,7 +81,7 @@ function nodeToClashProxy(node) {
       }
 
       if (Object.keys(opts).length > 0) {
-        proxy["plugin-opts"] = opts;
+        proxy.pluginOpts = opts;
       }
     }
 
@@ -146,8 +94,8 @@ function nodeToClashProxy(node) {
     if (!server || !port || !password) return null;
 
     const proxy = {
+      _type: "trojan",
       name,
-      type: "trojan",
       server,
       port,
       password,
@@ -157,7 +105,7 @@ function nodeToClashProxy(node) {
     if (sni) proxy.sni = sni;
 
     if (typeof node.skipCertVerify === "boolean") {
-      proxy["skip-cert-verify"] = node.skipCertVerify;
+      proxy.skipCertVerify = node.skipCertVerify;
     }
 
     const net = pickString(node.network || node.net || "").toLowerCase();
@@ -178,7 +126,7 @@ function nodeToClashProxy(node) {
       }
 
       if (Object.keys(wsOpts).length) {
-        proxy["ws-opts"] = wsOpts;
+        proxy.wsOpts = wsOpts;
       }
     }
 
@@ -191,8 +139,8 @@ function nodeToClashProxy(node) {
     if (!server || !port || !password) return null;
 
     const proxy = {
+      _type: "hysteria2",
       name,
-      type: "hysteria2",
       server,
       port,
       auth: password,
@@ -203,7 +151,7 @@ function nodeToClashProxy(node) {
     if (sni) proxy.sni = sni;
 
     if (typeof node.skipCertVerify === "boolean") {
-      proxy["skip-cert-verify"] = node.skipCertVerify;
+      proxy.skipCertVerify = node.skipCertVerify;
     }
 
     const ports = pickString(node.ports || node.portRange);
@@ -211,7 +159,7 @@ function nodeToClashProxy(node) {
 
     if (typeof node.udp === "boolean") proxy.udp = node.udp;
     if (typeof node.fastOpen === "boolean") {
-      proxy["fast-open"] = node.fastOpen;
+      proxy.fastOpen = node.fastOpen;
     }
 
     const obfs = pickString(node.obfs);
@@ -223,12 +171,76 @@ function nodeToClashProxy(node) {
   return null;
 }
 
-/**
- * 渲染入口
- */
+/** 把 proxy 对象输出为块状 YAML */
+function dumpProxyBlock(lines, proxy) {
+  pushLine(lines, 1, `- name: "${proxy.name.replace(/"/g, '\\"')}"`);
+  pushLine(lines, 2, `type: ${proxy._type}`);
+  pushLine(lines, 2, `server: ${proxy.server}`);
+  pushLine(lines, 2, `port: ${proxy.port}`);
+
+  if (proxy._type === "ss") {
+    pushLine(lines, 2, `cipher: ${proxy.cipher}`);
+    pushLine(lines, 2, `password: ${proxy.password}`);
+    if (proxy.plugin) pushLine(lines, 2, `plugin: ${proxy.plugin}`);
+    if (proxy.pluginOpts) {
+      pushLine(lines, 2, `plugin-opts:`);
+      if (proxy.pluginOpts.mode)
+        pushLine(lines, 3, `mode: ${proxy.pluginOpts.mode}`);
+      if (proxy.pluginOpts.host)
+        pushLine(lines, 3, `host: ${proxy.pluginOpts.host}`);
+      if (proxy.pluginOpts.uri)
+        pushLine(lines, 3, `uri: ${proxy.pluginOpts.uri}`);
+    }
+  } else if (proxy._type === "trojan") {
+    pushLine(lines, 2, `password: ${proxy.password}`);
+    if (proxy.sni) pushLine(lines, 2, `sni: ${proxy.sni}`);
+    if (typeof proxy.skipCertVerify === "boolean") {
+      pushLine(
+        lines,
+        2,
+        `skip-cert-verify: ${proxy.skipCertVerify ? "true" : "false"}`
+      );
+    }
+    if (proxy.network === "ws" && proxy.wsOpts) {
+      pushLine(lines, 2, `network: ws`);
+      pushLine(lines, 2, `ws-opts:`);
+      if (proxy.wsOpts.path)
+        pushLine(lines, 3, `path: ${proxy.wsOpts.path}`);
+      if (proxy.wsOpts.headers && proxy.wsOpts.headers.Host) {
+        pushLine(lines, 3, `headers:`);
+        pushLine(
+          lines,
+          4,
+          `Host: "${proxy.wsOpts.headers.Host.replace(/"/g, '\\"')}"`
+        );
+      }
+    }
+  } else if (proxy._type === "hysteria2") {
+    pushLine(lines, 2, `auth: ${proxy.auth}`);
+    if (proxy.sni) pushLine(lines, 2, `sni: ${proxy.sni}`);
+    if (typeof proxy.skipCertVerify === "boolean") {
+      pushLine(
+        lines,
+        2,
+        `skip-cert-verify: ${proxy.skipCertVerify ? "true" : "false"}`
+      );
+    }
+    if (proxy.ports) pushLine(lines, 2, `ports: "${proxy.ports}"`);
+    if (typeof proxy.udp === "boolean")
+      pushLine(lines, 2, `udp: ${proxy.udp ? "true" : "false"}`);
+    if (typeof proxy.fastOpen === "boolean") {
+      pushLine(
+        lines,
+        2,
+        `fast-open: ${proxy.fastOpen ? "true" : "false"}`
+      );
+    }
+    if (proxy.obfs) pushLine(lines, 2, `obfs: ${proxy.obfs}`);
+  }
+}
+
 export function renderClash(nodes = []) {
   const proxies = [];
-
   for (const n of nodes) {
     const p = nodeToClashProxy(n);
     if (p) proxies.push(p);
@@ -238,7 +250,7 @@ export function renderClash(nodes = []) {
 
   const lines = [];
 
-  // ===== 头部：参考机场风格 =====
+  // 头部
   lines.push(`# Generated by Lyn autosub`);
   lines.push(`mixed-port: 7890`);
   lines.push(`allow-lan: true`);
@@ -247,46 +259,48 @@ export function renderClash(nodes = []) {
   lines.push(`external-controller: '127.0.0.1:9090'`);
   lines.push(``);
   lines.push(`dns:`);
-  lines.push(`  enable: true`);
-  lines.push(`  ipv6: false`);
-  lines.push(`  nameserver: [223.5.5.5, 223.6.6.6]`);
+  pushLine(lines, 1, `enable: true`);
+  pushLine(lines, 1, `ipv6: false`);
+  pushLine(lines, 1, `nameserver:`);
+  pushLine(lines, 2, `- 223.5.5.5`);
+  pushLine(lines, 2, `- 223.6.6.6`);
   lines.push(``);
 
-  // ===== proxies =====
+  // proxies
   lines.push(`proxies:`);
-
   if (proxies.length === 0) {
-    lines.push(`  # 没有解析出任何可用节点`);
+    pushLine(lines, 1, `# 没有解析出任何可用节点`);
   } else {
     for (const p of proxies) {
-      const line = formatInlineMap(p, "  ");
-      if (line) lines.push(line);
+      dumpProxyBlock(lines, p);
     }
   }
 
-  // ===== proxy-groups =====
+  // proxy-groups
   lines.push(``);
   lines.push(`proxy-groups:`);
-  lines.push(`  - name: "🐹Lyn · Node"`);
-  lines.push(`    type: select`);
-  lines.push(`    proxies:`);
-
+  pushLine(lines, 1, `- name: "🐹Lyn · Node"`);
+  pushLine(lines, 2, `type: select`);
+  pushLine(lines, 2, `proxies:`);
   if (names.length === 0) {
-    lines.push(`      - DIRECT`);
+    pushLine(lines, 3, `- DIRECT`);
   } else {
-    lines.push(`      - DIRECT`);
+    pushLine(lines, 3, `- DIRECT`);
     for (const name of names) {
-      const s = String(name).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-      lines.push(`      - "${s}"`);
+      pushLine(
+        lines,
+        3,
+        `- "${String(name).replace(/"/g, '\\"')}"`
+      );
     }
   }
 
-  // ===== rules =====
+  // rules
   lines.push(``);
   lines.push(`rules:`);
-  lines.push(`  - GEOIP,LAN,DIRECT`);
-  lines.push(`  - GEOIP,CN,DIRECT`);
-  lines.push(`  - MATCH,🐹Lyn · Node`);
+  pushLine(lines, 1, `- GEOIP,LAN,DIRECT`);
+  pushLine(lines, 1, `- GEOIP,CN,DIRECT`);
+  pushLine(lines, 1, `- MATCH,🐹Lyn · Node`);
 
   return {
     body: lines.join("\n"),
