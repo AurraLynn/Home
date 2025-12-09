@@ -1,5 +1,5 @@
 /*
-  renderers/clash.js
+  functions/autosub/renderers/clash.js
 
   - 输入：
       Parser.js 标准化后的 Node 数组（Node[]）
@@ -7,7 +7,7 @@
   - 当前渲染支持协议：
       • Shadowsocks      → type: "ss"
       • VMess            → type: "vmess"
-      • Trojan           → type: "trojan"
+      • Trojan           → type: "trojan"（含 grpc / ws）
       • Hysteria2 / hy2  → type: "hysteria2" / "hy2"
 
   - 输出：
@@ -20,13 +20,11 @@
 
       默认带一个通用策略组：🐹Lyn · Node
 
-  - VMess 特别说明：
-      • cipher: auto / aes-128-gcm / chacha20-ietf-poly1305 ...
-      • network:
-          - tcp        → 普通 vmess/tcp
-          - ws         → vmess + websocket（ws-opts）
-          - http       → vmess + tcp + http 伪装（http-opts）
-          - grpc       → vmess + grpc（grpc-opts）
+  - 说明：
+      • SS 支持 obfs 混淆（obfs-local/simple-obfs → plugin: obfs + plugin-opts）
+      • VMess 支持 tcp / ws / http / grpc（ws-opts / http-opts / grpc-opts）
+      • Trojan 支持 grpc / ws（network + grpc-opts / ws-opts）
+      • Hysteria2 输出 password + auth + ports/mport
 */
 
 function pickString(v, fallback = "") {
@@ -172,7 +170,7 @@ function nodeToClashProxy(node) {
       if (path) grpcOpts["grpc-service-name"] = path;
       if (Object.keys(grpcOpts).length) proxy["grpc-opts"] = grpcOpts;
     } else if (net === "http" || obfs === "http") {
-      // ★ vmess + tcp + http 混淆：network: http + http-opts
+      // vmess + tcp + http 混淆：network: http + http-opts
       proxy.network = "http";
 
       const httpOpts = {};
@@ -189,7 +187,6 @@ function nodeToClashProxy(node) {
     } else {
       // 默认 vmess/tcp
       proxy.network = "tcp";
-      // 如果以后需要 tcp-opts（http header），可以在这里扩展
     }
 
     return proxy;
@@ -214,6 +211,25 @@ function nodeToClashProxy(node) {
     if (typeof node.skipCertVerify === "boolean") {
       proxy.skipCertVerify = node.skipCertVerify;
     }
+
+    // ★ 传输方式（grpc / ws）
+    const net = pickString(node.network).toLowerCase();
+    const path = pickString(node.path);
+
+    if (net === "grpc") {
+      proxy.network = "grpc";
+      if (path) {
+        proxy["grpc-opts"] = {
+          "grpc-service-name": path,
+        };
+      }
+    } else if (net === "ws") {
+      proxy.network = "ws";
+      const wsOpts = {};
+      if (path) wsOpts.path = path;
+      if (Object.keys(wsOpts).length) proxy["ws-opts"] = wsOpts;
+    }
+    // 其它情况保持默认 trojan/tcp，不强行加 network
 
     return proxy;
   }
@@ -387,12 +403,35 @@ function dumpProxyBlock(lines, proxy) {
         `skip-cert-verify: ${proxy.skipCertVerify ? "true" : "false"}`
       );
     }
+
+    if (proxy.network) {
+      pushLine(lines, 2, `network: ${proxy.network}`);
+    }
+
+    if (proxy["ws-opts"]) {
+      pushLine(lines, 2, `ws-opts:`);
+      if (proxy["ws-opts"].path)
+        pushLine(lines, 3, `path: ${proxy["ws-opts"].path}`);
+    }
+
+    if (proxy["grpc-opts"]) {
+      pushLine(lines, 2, `grpc-opts:`);
+      if (proxy["grpc-opts"]["grpc-service-name"])
+        pushLine(
+          lines,
+          3,
+          `grpc-service-name: ${proxy["grpc-opts"]["grpc-service-name"]}`
+        );
+    }
+
     return;
   }
 
   // ---------- Hysteria2 ----------
   if (proxy._type === "hysteria2") {
+    // 同时输出 password + auth，让不同内核自己选用
     pushLine(lines, 2, `password: ${proxy.password}`);
+    pushLine(lines, 2, `auth: ${proxy.password}`);
     if (proxy.ports) pushLine(lines, 2, `ports: ${proxy.ports}`);
     if (proxy.mport) pushLine(lines, 2, `mport: ${proxy.mport}`);
     if (typeof proxy.udp === "boolean") {
