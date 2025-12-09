@@ -1,34 +1,32 @@
 /*
+  renderers/clash.js
+
   - 输入：
       Parser.js 标准化后的 Node 数组（Node[]）
 
   - 当前渲染支持协议：
       • Shadowsocks      → type: "ss"
+      • VMess            → type: "vmess"
       • Trojan           → type: "trojan"
       • Hysteria2 / hy2  → type: "hysteria2" / "hy2"
-      • VMess            → type: "vmess"
- 
+
   - 输出：
       Clash / Mihomo 通用 YAML（块状写法）：
 
         proxies:
           - name: "xxx"
-            type: ss / trojan / hysteria2 / vmess
+            type: ss / vmess / trojan / hysteria2
             ...
 
       默认带一个通用策略组：🐹Lyn · Node
 
-  - 示例调用：
-      /autosub?id=你的id&client=clash
-
-  - 说明：
-      • SS 支持 obfs 混淆（obfs-local/simple-obfs → plugin: obfs + plugin-opts）
-      • hy2 同时输出 password + auth（如需可再调整）
-      • VMess 支持：
-          - 算法 cipher（scy/security/cipher），默认 auto
-          - 传输方式 network：tcp / ws / grpc / kcp / http
-          - TLS / servername(SNI)
-          - ws-opts / grpc-opts
+  - VMess 特别说明：
+      • cipher: auto / aes-128-gcm / chacha20-ietf-poly1305 ...
+      • network:
+          - tcp        → 普通 vmess/tcp
+          - ws         → vmess + websocket（ws-opts）
+          - http       → vmess + tcp + http 伪装（http-opts）
+          - grpc       → vmess + grpc（grpc-opts）
 */
 
 function pickString(v, fallback = "") {
@@ -129,7 +127,6 @@ function nodeToClashProxy(node) {
     const aid = pickNumber(node.alterId, 0);
     proxy.alterId = Number.isFinite(aid) ? aid : 0;
 
-    // cipher / 加密算法
     const cipher =
       pickString(node.cipher) ||
       pickString(node.security) ||
@@ -137,13 +134,9 @@ function nodeToClashProxy(node) {
       "auto";
     proxy.cipher = cipher || "auto";
 
-    // network
-    const netRaw =
-      pickString(node.network) ||
-      pickString(node.net) ||
-      pickString(node.headerType);
-    const net = netRaw.toLowerCase();
-    if (net) proxy.network = net;
+    // UDP：默认 true
+    if (typeof node.udp === "boolean") proxy.udp = node.udp;
+    else proxy.udp = true;
 
     // TLS
     let tls = false;
@@ -159,15 +152,15 @@ function nodeToClashProxy(node) {
       pickString(node["server-name"]);
     if (sni) proxy.servername = sni;
 
-    // UDP
-    if (typeof node.udp === "boolean") proxy.udp = node.udp;
-    else proxy.udp = true;
-
-    // ws / grpc 细节
     const host = pickString(node.host);
     const path = pickString(node.path);
+    const obfs = pickString(node.obfs).toLowerCase();
+    const netRaw = pickString(node.network || node.net || "");
 
-    if (net === "ws" || net === "websocket") {
+    const net = netRaw.toLowerCase();
+
+    // === 按 network + obfs 拆分 ===
+    if (net === "ws" || obfs === "websocket" || obfs === "ws") {
       proxy.network = "ws";
       const wsOpts = {};
       if (path) wsOpts.path = path;
@@ -178,9 +171,25 @@ function nodeToClashProxy(node) {
       const grpcOpts = {};
       if (path) grpcOpts["grpc-service-name"] = path;
       if (Object.keys(grpcOpts).length) proxy["grpc-opts"] = grpcOpts;
-    } else if (net === "tcp" || !net) {
+    } else if (net === "http" || obfs === "http") {
+      // ★ vmess + tcp + http 混淆：network: http + http-opts
+      proxy.network = "http";
+
+      const httpOpts = {};
+      const finalPath = path || "/";
+      httpOpts.path = [finalPath];
+
+      if (host) {
+        httpOpts.headers = {
+          Host: [host],
+        };
+      }
+
+      proxy["http-opts"] = httpOpts;
+    } else {
+      // 默认 vmess/tcp
       proxy.network = "tcp";
-      // tcp + http header 之类的这里先不展开，后续有需要再加
+      // 如果以后需要 tcp-opts（http header），可以在这里扩展
     }
 
     return proxy;
@@ -253,8 +262,8 @@ function nodeToClashProxy(node) {
       proxy.skipCertVerify = node.skipCertVerify;
     }
 
-    const obfs = pickString(node.obfs);
-    if (obfs) proxy.obfs = obfs;
+    const obfsHy = pickString(node.obfs);
+    if (obfsHy) proxy.obfs = obfsHy;
 
     return proxy;
   }
@@ -323,6 +332,34 @@ function dumpProxyBlock(lines, proxy) {
           4,
           `Host: "${proxy["ws-opts"].headers.Host.replace(/"/g, '\\"')}"`
         );
+      }
+    }
+
+    if (proxy["http-opts"]) {
+      pushLine(lines, 2, `http-opts:`);
+      if (proxy["http-opts"].method)
+        pushLine(lines, 3, `method: ${proxy["http-opts"].method}`);
+      if (proxy["http-opts"].path) {
+        pushLine(lines, 3, `path:`);
+        for (const p of proxy["http-opts"].path) {
+          pushLine(lines, 4, `- ${p}`);
+        }
+      }
+      if (proxy["http-opts"].headers) {
+        pushLine(lines, 3, `headers:`);
+        const hdrs = proxy["http-opts"].headers;
+        for (const key of Object.keys(hdrs)) {
+          const arr = hdrs[key] || [];
+          if (!arr.length) continue;
+          pushLine(lines, 4, `${key}:`);
+          for (const v of arr) {
+            pushLine(
+              lines,
+              5,
+              `- "${String(v).replace(/"/g, '\\"')}"`
+            );
+          }
+        }
       }
     }
 
