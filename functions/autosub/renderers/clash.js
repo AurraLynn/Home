@@ -150,20 +150,21 @@ function nodeToClashProxy(node) {
     const server = node.server;
     const port = Number(node.port || 0);
 
-    let password = node.password || "";
+    let password = node.password || node.auth || "";
 
-    // 1) JSON 里如果有 uuid / user，也可以兜底成密码
+    // 1) 如果 Node 里有 uuid/user，一般也是同一个 token，可以兜底
     if (!password) {
       if (node.uuid) password = String(node.uuid);
       else if (node.user) password = String(node.user);
     }
 
-    // 2) 再次从 raw 里尝试解析 password
+    // 2) 再从 raw 里尝试抠密码
     if (!password && node.raw) {
       const raw = String(node.raw);
 
-      // 形态一：hysteria2://password@host:port
-      let m = raw.match(/^hysteria2:\/\/([^@?#]+)@/i) || raw.match(/^hy2:\/\/([^@?#]+)@/i);
+      let m =
+        raw.match(/^hysteria2:\/\/([^@?#]+)@/i) ||
+        raw.match(/^hy2:\/\/([^@?#]+)@/i);
       if (m && m[1]) {
         try {
           password = decodeURIComponent(m[1]);
@@ -172,7 +173,6 @@ function nodeToClashProxy(node) {
         }
       }
 
-      // 形态二：query 里的 password/auth/auth_str
       if (!password) {
         const m2 = raw.match(
           /[?&](?:password|passwd|auth|auth_str|psk)=([^&#]+)/i
@@ -187,7 +187,7 @@ function nodeToClashProxy(node) {
       }
     }
 
-    // 如果到最后还是拿不到密码，就放弃该节点，避免生成不能用的配置
+    // 3) 依旧拿不到密码 → 放弃这条节点，避免生成 auth:""
     if (!server || !port || !password) return null;
 
     const proxy = {
