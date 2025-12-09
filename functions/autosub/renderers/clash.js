@@ -7,6 +7,7 @@
   - 当前渲染支持协议：
       • Shadowsocks      → type: "ss"
       • VMess            → type: "vmess"
+      • VLESS            → type: "vless"
       • Trojan           → type: "trojan"（含 grpc / ws）
       • Hysteria2 / hy2  → type: "hysteria2" / "hy2"
 
@@ -15,16 +16,10 @@
 
         proxies:
           - name: "xxx"
-            type: ss / vmess / trojan / hysteria2
+            type: ss / vmess / vless / trojan / hysteria2
             ...
 
       默认带一个通用策略组：🐹Lyn · Node
-
-  - 说明：
-      • SS 支持 obfs 混淆（obfs-local/simple-obfs → plugin: obfs + plugin-opts）
-      • VMess 支持 tcp / ws / http / grpc（ws-opts / http-opts / grpc-opts）
-      • Trojan 支持 grpc / ws（network + grpc-opts / ws-opts）
-      • Hysteria2 输出 password + auth + ports/mport
 */
 
 function pickString(v, fallback = "") {
@@ -192,6 +187,104 @@ function nodeToClashProxy(node) {
     return proxy;
   }
 
+  // ---------- VLESS ----------
+  if (type === "vless") {
+    const uuid = pickString(node.uuid || node.id);
+    if (!rawPort || !uuid) return null;
+
+    const proxy = {
+      _type: "vless",
+      name,
+      server,
+      port: rawPort,
+      uuid,
+    };
+
+    // udp
+    if (typeof node.udp === "boolean") proxy.udp = node.udp;
+    else proxy.udp = true;
+
+    // flow
+    const flow = pickString(node.flow);
+    if (flow) proxy.flow = flow;
+
+    // tls / security
+    let tls = false;
+    const security = pickString(node.security).toLowerCase();
+    if (["tls", "xtls", "reality"].includes(security)) tls = true;
+    if (tls || node.tls === true) proxy.tls = true;
+
+    const sni =
+      pickString(node.sni) ||
+      pickString(node.servername) ||
+      pickString(node.host);
+    if (sni) proxy.servername = sni;
+
+    const alpn = pickString(node.alpn);
+    if (alpn) proxy.alpn = [alpn];
+
+    const fp =
+      pickString(node.clientFingerprint) ||
+      pickString(node.fp) ||
+      pickString(node.fingerprint);
+    if (fp) proxy["client-fingerprint"] = fp;
+
+    const host = pickString(node.host);
+    const path = pickString(node.path);
+    const netRaw = pickString(node.network || node.type || "");
+    const net = netRaw.toLowerCase();
+
+    if (net === "ws" || net === "websocket") {
+      proxy.network = "ws";
+      const wsOpts = {};
+      if (path) wsOpts.path = path;
+      if (host) wsOpts.headers = { Host: host };
+      if (Object.keys(wsOpts).length) proxy["ws-opts"] = wsOpts;
+    } else if (net === "grpc") {
+      proxy.network = "grpc";
+      const grpcOpts = {};
+      if (path) grpcOpts["grpc-service-name"] = path;
+      if (Object.keys(grpcOpts).length) proxy["grpc-opts"] = grpcOpts;
+    } else if (net === "http" || net === "h2" || net === "httpupgrade") {
+      proxy.network = "http";
+      const httpOpts = {};
+      const finalPath = path || "/";
+      httpOpts.path = [finalPath];
+      if (host) {
+        httpOpts.headers = {
+          Host: [host],
+        };
+      }
+      proxy["http-opts"] = httpOpts;
+    } else {
+      proxy.network = "tcp";
+    }
+
+    // Reality
+    const pbk =
+      pickString(node.realityPublicKey) ||
+      pickString(node.publicKey) ||
+      pickString(node.pbk);
+    const sid =
+      pickString(node.realityShortId) ||
+      pickString(node.shortId) ||
+      pickString(node.sid);
+    const spx =
+      pickString(node.realitySpiderX) ||
+      pickString(node.spiderX) ||
+      pickString(node.spx);
+
+    if (pbk || sid || spx) {
+      const reality = {};
+      if (pbk) reality["public-key"] = pbk;
+      if (sid) reality["short-id"] = sid;
+      if (spx) reality["spider-x"] = spx;
+      proxy["reality-opts"] = reality;
+    }
+
+    return proxy;
+  }
+
   // ---------- Trojan ----------
   if (type === "trojan") {
     const password = pickString(node.password);
@@ -212,7 +305,7 @@ function nodeToClashProxy(node) {
       proxy.skipCertVerify = node.skipCertVerify;
     }
 
-    // ★ 传输方式（grpc / ws）
+    // 传输方式（grpc / ws）
     const net = pickString(node.network).toLowerCase();
     const path = pickString(node.path);
 
@@ -229,7 +322,28 @@ function nodeToClashProxy(node) {
       if (path) wsOpts.path = path;
       if (Object.keys(wsOpts).length) proxy["ws-opts"] = wsOpts;
     }
-    // 其它情况保持默认 trojan/tcp，不强行加 network
+
+    // Reality（和 vless 同样逻辑）
+    const pbk =
+      pickString(node.realityPublicKey) ||
+      pickString(node.publicKey) ||
+      pickString(node.pbk);
+    const sid =
+      pickString(node.realityShortId) ||
+      pickString(node.shortId) ||
+      pickString(node.sid);
+    const spx =
+      pickString(node.realitySpiderX) ||
+      pickString(node.spiderX) ||
+      pickString(node.spx);
+
+    if (pbk || sid || spx) {
+      const reality = {};
+      if (pbk) reality["public-key"] = pbk;
+      if (sid) reality["short-id"] = sid;
+      if (spx) reality["spider-x"] = spx;
+      proxy["reality-opts"] = reality;
+    }
 
     return proxy;
   }
@@ -392,6 +506,119 @@ function dumpProxyBlock(lines, proxy) {
     return;
   }
 
+  // ---------- VLESS ----------
+  if (proxy._type === "vless") {
+    pushLine(lines, 2, `uuid: ${proxy.uuid}`);
+    if (proxy.udp !== undefined)
+      pushLine(lines, 2, `udp: ${proxy.udp ? "true" : "false"}`);
+    if (proxy.flow) pushLine(lines, 2, `flow: ${proxy.flow}`);
+    if (proxy.tls) pushLine(lines, 2, `tls: true`);
+    if (proxy.servername)
+      pushLine(
+        lines,
+        2,
+        `servername: "${proxy.servername.replace(/"/g, '\\"')}"`
+      );
+
+    if (proxy.alpn && Array.isArray(proxy.alpn) && proxy.alpn.length) {
+      pushLine(lines, 2, `alpn:`);
+      for (const a of proxy.alpn) {
+        pushLine(lines, 3, `- ${a}`);
+      }
+    }
+
+    if (proxy["client-fingerprint"]) {
+      pushLine(
+        lines,
+        2,
+        `client-fingerprint: ${proxy["client-fingerprint"]}`
+      );
+    }
+
+    if (proxy.network) pushLine(lines, 2, `network: ${proxy.network}`);
+
+    if (proxy["ws-opts"]) {
+      pushLine(lines, 2, `ws-opts:`);
+      if (proxy["ws-opts"].path)
+        pushLine(lines, 3, `path: ${proxy["ws-opts"].path}`);
+      if (
+        proxy["ws-opts"].headers &&
+        proxy["ws-opts"].headers.Host
+      ) {
+        pushLine(lines, 3, `headers:`);
+        pushLine(
+          lines,
+          4,
+          `Host: "${proxy["ws-opts"].headers.Host.replace(/"/g, '\\"')}"`
+        );
+      }
+    }
+
+    if (proxy["http-opts"]) {
+      pushLine(lines, 2, `http-opts:`);
+      if (proxy["http-opts"].path) {
+        pushLine(lines, 3, `path:`);
+        for (const p of proxy["http-opts"].path) {
+          pushLine(lines, 4, `- ${p}`);
+        }
+      }
+      if (proxy["http-opts"].headers) {
+        pushLine(lines, 3, `headers:`);
+        const hdrs = proxy["http-opts"].headers;
+        for (const key of Object.keys(hdrs)) {
+          const arr = hdrs[key] || [];
+          if (!arr.length) continue;
+          pushLine(lines, 4, `${key}:`);
+          for (const v of arr) {
+            pushLine(
+              lines,
+              5,
+              `- "${String(v).replace(/"/g, '\\"')}"`
+            );
+          }
+        }
+      }
+    }
+
+    if (proxy["grpc-opts"]) {
+      pushLine(lines, 2, `grpc-opts:`);
+      if (proxy["grpc-opts"]["grpc-service-name"])
+        pushLine(
+          lines,
+          3,
+          `grpc-service-name: ${proxy["grpc-opts"]["grpc-service-name"]}`
+        );
+    }
+
+    if (proxy["reality-opts"]) {
+      pushLine(lines, 2, `reality-opts:`);
+      if (proxy["reality-opts"]["public-key"])
+        pushLine(
+          lines,
+          3,
+          `public-key: ${proxy["reality-opts"]["public-key"]}`
+        );
+      if (proxy["reality-opts"]["short-id"])
+        pushLine(
+          lines,
+          3,
+          `short-id: "${String(
+            proxy["reality-opts"]["short-id"]
+          ).replace(/"/g, '\\"')}"`
+        );
+      if (proxy["reality-opts"]["spider-x"])
+        pushLine(
+          lines,
+          3,
+          `spider-x: "${String(
+            proxy["reality-opts"]["spider-x"]
+          ).replace(/"/g, '\\"')}"`
+        );
+    }
+
+    return;
+  }
+
   // ---------- Trojan ----------
   if (proxy._type === "trojan") {
     pushLine(lines, 2, `password: ${proxy.password}`);
@@ -421,6 +648,32 @@ function dumpProxyBlock(lines, proxy) {
           lines,
           3,
           `grpc-service-name: ${proxy["grpc-opts"]["grpc-service-name"]}`
+        );
+    }
+
+    if (proxy["reality-opts"]) {
+      pushLine(lines, 2, `reality-opts:`);
+      if (proxy["reality-opts"]["public-key"])
+        pushLine(
+          lines,
+          3,
+          `public-key: ${proxy["reality-opts"]["public-key"]}`
+        );
+      if (proxy["reality-opts"]["short-id"])
+        pushLine(
+          lines,
+          3,
+          `short-id: "${String(
+            proxy["reality-opts"]["short-id"]
+          ).replace(/"/g, '\\"')}"`
+        );
+      if (proxy["reality-opts"]["spider-x"])
+        pushLine(
+          lines,
+          3,
+          `spider-x: "${String(
+            proxy["reality-opts"]["spider-x"]
+          ).replace(/"/g, '\\"')}"`
         );
     }
 
