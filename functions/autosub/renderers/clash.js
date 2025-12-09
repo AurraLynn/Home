@@ -7,7 +7,7 @@
       • Trojan           → type: "trojan"
       • Hysteria2 / hy2  → type: "hysteria2" / "hy2"
       • VMess            → type: "vmess"
-
+ 
   - 输出：
       Clash / Mihomo 通用 YAML（块状写法）：
 
