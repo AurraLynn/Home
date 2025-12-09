@@ -1,100 +1,250 @@
 /*
   - 输入：
-      Node[] + client 名（如 clash / stash / ficlash / nekobox / flyclash）
+      解析后的 Node[]（至少包含 type / server / port）
+
+  - 已支持协议：
+      ss
+      trojan
+      hysteria2(hy2)
+
   - 输出：
-      针对不同 client 的 YAML:
-        Clash / Meta: 块状 YAML
-        FIClash / NekoBox / FlyClash: JSON 一行写法（最大兼容）
-  - 自动丢弃不支持的参数:
-        fast-open, udp, alpn, down, up, ports ...
+      通用 Clash YAML，proxies 部分统一为 JSON 一行写法：
+        proxies:
+          - {"type":"hysteria2","name":"...","server":"...","port":30102,"password":"...","sni":"...","skip-cert-verify":true,"tfo":true}
+
+  - 兼容性策略：
+      只保留各协议最基本、绝大部分客户端都支持的字段：
+        ss:       type / name / server / port / cipher / password
+        trojan:   type / name / server / port / password / sni / skip-cert-verify
+        hy2:      type / name / server / port / password / sni / skip-cert-verify / tfo
+      自动丢弃：
+        udp / fast-open / alpn / up / down / ports / plugin / plugin-opts 等
 */
 
-function yamlQuote(v) {
-  if (v === undefined || v === null) return '""';
-  const s = String(v);
-  return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
-}
-
-/** 将 proxy 对象中不兼容字段剔除 */
-function safeProxyForClient(proxy, client) {
-  const badKeys = [
-    "fast-open",
-    "udp",
-    "up",
-    "down",
-    "alpn",
-    "ports",
-    "plugin",
-    "plugin-opts",
-  ];
-
-  if (["ficlash", "flyclash", "nekobox", "nekoray"].includes(client)) {
-    const safe = {};
-    for (const [k, v] of Object.entries(proxy)) {
-      if (badKeys.includes(k)) continue;
-      safe[k] = v;
+function b64DecodeUrlSafe(input) {
+  if (!input) return "";
+  let s = String(input).replace(/-/g, "+").replace(/_/g, "/");
+  const pad = s.length % 4;
+  if (pad) s += "=".repeat(4 - pad);
+  try {
+    return decodeURIComponent(escape(atob(s)));
+  } catch {
+    try {
+      return atob(s);
+    } catch {
+      return "";
     }
-    return safe;
   }
-
-  return proxy;
 }
 
-/** 单个 proxy 块状 YAML 输出 */
-function dumpProxyYaml(p) {
-  const lines = [];
-  lines.push(`  - name: ${yamlQuote(p.name)}`);
-  lines.push(`    type: ${p.type}`);
-  lines.push(`    server: ${yamlQuote(p.server)}`);
-  lines.push(`    port: ${Number(p.port)}`);
+function parseSSRaw(raw) {
+  const s = String(raw || "").trim();
+  if (!s.startsWith("ss://")) return null;
 
-  if (p.type === "ss") {
-    if (p.cipher) lines.push(`    cipher: ${yamlQuote(p.cipher)}`);
-    if (p.password) lines.push(`    password: ${yamlQuote(p.password)}`);
-  } else if (p.type === "trojan") {
-    if (p.password) lines.push(`    password: ${yamlQuote(p.password)}`);
-    lines.push(`    tls: true`);
-    if (p.sni) lines.push(`    sni: ${yamlQuote(p.sni)}`);
-  } else if (p.type === "hysteria2") {
-    if (p.password) lines.push(`    password: ${yamlQuote(p.password)}`);
-    if (p.sni) lines.push(`    sni: ${yamlQuote(p.sni)}`);
-    if (typeof p["skip-cert-verify"] !== "undefined")
-      lines.push(`    skip-cert-verify: ${p["skip-cert-verify"] ? "true" : "false"}`);
+  let rest = s.slice(5);
+
+  let name = "";
+  const hashIndex = rest.indexOf("#");
+  if (hashIndex >= 0) {
+    name = decodeURIComponent(rest.slice(hashIndex + 1));
+    rest = rest.slice(0, hashIndex);
   }
 
-  return lines.join("\n");
+  const qIndex = rest.indexOf("?");
+  if (qIndex >= 0) rest = rest.slice(0, qIndex);
+
+  if (rest.includes("@")) {
+    const [b64Part, hostPart] = rest.split("@");
+    const decoded = b64DecodeUrlSafe(b64Part);
+    const [cipher, password] = decoded.split(":");
+    const [server, portStr] = hostPart.split(":");
+    const port = Number(portStr);
+    if (!cipher || !password || !server || !port) return null;
+    return {
+      type: "ss",
+      server,
+      port,
+      cipher,
+      password,
+      name: name || `${server}:${port}`,
+    };
+  }
+
+  const decoded = b64DecodeUrlSafe(rest);
+  if (decoded && decoded.includes("@")) {
+    const [left, right] = decoded.split("@");
+    const [cipher, password] = left.split(":");
+    const [server, portStr] = right.split(":");
+    const port = Number(portStr);
+    if (!cipher || !password || !server || !port) return null;
+    return {
+      type: "ss",
+      server,
+      port,
+      cipher,
+      password,
+      name: name || `${server}:${port}`,
+    };
+  }
+
+  return null;
 }
 
-export function renderClash(nodes = [], client = "clash") {
-  const proxies = [];
-  for (const n of nodes) {
-    if (!n || !n.server || !n.port) continue;
-    const type = n.type?.toLowerCase() || "unknown";
+/**
+ * Node -> 简化后的 proxy 对象，只包含各协议兼容性最高的字段。
+ * 返回的对象会直接 JSON.stringify 输出到 YAML：
+ *   proxies:
+ *     - {"type":"...","name":"...","server":"...","port":1234,...}
+ */
+function nodeToClashProxy(node) {
+  if (!node) return null;
 
-    if (!["ss", "trojan", "hysteria2", "hy2"].includes(type)) continue;
+  const type = (node.type || "").toLowerCase();
+  const server = node.server;
+  const port = Number(node.port || 0);
+  const name = node.name || (server && port ? `${server}:${port}` : "");
 
-    const p = {
-      name: n.name || `${n.server}:${n.port}`,
-      type: type === "hy2" ? "hysteria2" : type,
-      server: n.server,
-      port: Number(n.port),
-      password: n.password || n.auth || "",
-      sni: n.sni,
-      "skip-cert-verify": n.skipCertVerify ?? true,
-      "tfo": true,
+  if (!server || !port) return null;
+
+  // ===== SS =====
+  if (type === "ss") {
+    const cipher = node.cipher || node.method;
+    const password = node.password;
+
+    if (!cipher || !password) return null;
+
+    return {
+      type: "ss",
+      name,
+      server,
+      port,
+      cipher,
+      password,
+    };
+  }
+
+  // ===== Trojan =====
+  if (type === "trojan") {
+    const password = node.password;
+    if (!password) return null;
+
+    const out = {
+      type: "trojan",
+      name,
+      server,
+      port,
+      password,
     };
 
-    proxies.push(safeProxyForClient(p, client));
+    if (node.sni) {
+      out.sni = node.sni;
+    }
+
+    // 绝大多数客户端都支持 skip-cert-verify
+    if (typeof node.skipCertVerify === "boolean") {
+      out["skip-cert-verify"] = node.skipCertVerify;
+    }
+
+    return out;
+  }
+
+  // ===== Hysteria2 / hy2 =====
+  if (type === "hysteria2" || type === "hy2") {
+    let password = node.password || node.auth || "";
+
+    if (!password) {
+      if (node.uuid) password = String(node.uuid);
+      else if (node.user) password = String(node.user);
+    }
+
+    if (!password && node.raw) {
+      const raw = String(node.raw);
+
+      let m =
+        raw.match(/^hysteria2:\/\/([^@?#]+)@/i) ||
+        raw.match(/^hy2:\/\/([^@?#]+)@/i);
+      if (m && m[1]) {
+        try {
+          password = decodeURIComponent(m[1]);
+        } catch {
+          password = m[1];
+        }
+      }
+
+      if (!password) {
+        const m2 = raw.match(
+          /[?&](?:password|passwd|auth|auth_str|psk)=([^&#]+)/i
+        );
+        if (m2 && m2[1]) {
+          try {
+            password = decodeURIComponent(m2[1]);
+          } catch {
+            password = m2[1];
+          }
+        }
+      }
+    }
+
+    if (!password) return null;
+
+    // 同步回 Node，方便其他渲染器也用到
+    node.password = node.password || password;
+    if (!node.auth) node.auth = password;
+
+    const out = {
+      type: "hysteria2",
+      name,
+      server,
+      port,
+      password,
+      // 这两个是你验证过「可以用」的字段：
+      // {"skip-cert-verify":true,"tfo":true}
+      "skip-cert-verify":
+        typeof node.skipCertVerify === "boolean" ? node.skipCertVerify : true,
+      tfo: true,
+    };
+
+    if (node.sni) {
+      out.sni = node.sni;
+    }
+
+    // 其它：udp / fast-open / alpn / up / down / ports / obfs ...
+    // 为了兼容 FIClash / NekoBox / FlyClash，全部省略
+
+    return out;
+  }
+
+  return null;
+}
+
+/**
+ * 统一渲染成 Clash YAML，proxies 使用 JSON 一行写法，
+ * 适配 Clash Meta / Meya / FIClash / NekoBox / FlyClash 等。
+ */
+export function renderClash(nodes = []) {
+  const proxies = [];
+
+  for (const n of nodes) {
+    const p = nodeToClashProxy(n);
+    if (p) proxies.push(p);
   }
 
   const names = proxies.map((p) => p.name);
-  const lines = [];
 
+  const lines = [];
   lines.push("port: 7890");
   lines.push("socks-port: 7891");
   lines.push("mode: Rule");
   lines.push("allow-lan: true");
   lines.push("log-level: info");
+  lines.push("");
+  lines.push("dns:");
+  lines.push("  enable: true");
+  lines.push("  listen: 0.0.0.0:53");
+  lines.push("  ipv6: false");
+  lines.push("  nameserver:");
+  lines.push("    - 223.5.5.5");
+  lines.push("    - 223.6.6.6");
   lines.push("");
   lines.push("proxies:");
 
@@ -102,13 +252,8 @@ export function renderClash(nodes = [], client = "clash") {
     lines.push("  # no supported proxies parsed yet");
   } else {
     for (const p of proxies) {
-      if (["ficlash", "flyclash", "nekobox", "nekoray"].includes(client)) {
-        // 输出 JSON 一行模式
-        lines.push("  - " + JSON.stringify(p));
-      } else {
-        // 输出块状 YAML
-        lines.push(dumpProxyYaml(p));
-      }
+      // 统一 JSON 一行写法
+      lines.push("  - " + JSON.stringify(p));
     }
   }
 
@@ -120,7 +265,10 @@ export function renderClash(nodes = [], client = "clash") {
   if (names.length === 0) {
     lines.push("      - DIRECT");
   } else {
-    for (const n of names) lines.push(`      - ${yamlQuote(n)}`);
+    for (const name of names) {
+      // 这里用 JSON.stringify 简单包一层引号
+      lines.push("      - " + JSON.stringify(name));
+    }
   }
 
   lines.push("");
