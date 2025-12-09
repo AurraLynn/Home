@@ -9,7 +9,7 @@ import { parseVmess } from "./shared/utils/vmess.js";
 
       • 混合文本（节点 + 说明文字）
       • 订阅整段 base64（可多层）
-      • URL  形式的单条节点
+      • URL 形式的单条节点
 
   - 输出：
 
