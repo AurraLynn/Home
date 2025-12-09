@@ -22,7 +22,7 @@
  *     path,              // ws path / grpc service-name / http path
  *     flow,              // xtls-rprx-vision 等
  *     udp,               // true / false
- *     alpn,              // 字符串，后面渲染时转数组
+ *     alpn,              // 字符串，渲染时转数组
  *     clientFingerprint, // chrome / safari ...
  *     realityPublicKey,  // pbk
  *     realityShortId,    // sid
@@ -166,6 +166,7 @@ export function parseVless(input) {
     (params.spx || params["spiderX"] || params["spider-x"] || "").toString().trim();
 
   if (!server || !port || !uuid) {
+    // 不完整也先返回，至少能看见 raw，方便调试
     return {
       type: "vless",
       raw,
