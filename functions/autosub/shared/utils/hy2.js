@@ -1,154 +1,166 @@
 /*
-  - 输入支持：
-      hysteria2://password@host:port?...#name
-      hy2://password@host:port?...#name
-      hysteria2://host:port?password=xxx&...#name
-      hy2://host:port?auth=xxx&...#name
+ * Hysteria2 / hy2 解析器
+ *
+ * 支持形态（URL 型）：
+ *   1) hysteria2://password@host:port?peer=xxx&sni=yyy&insecure=1#备注
+ *   2) hy2://password@host:port?peer=xxx&sni=yyy&alpn=h3#备注
+ *   3) hysteria://password@host:port?...#备注   （当作 hysteria2 处理）
+ *
+ * 常见参数：
+ *   - sni / peer            ：SNI / 证书域名
+ *   - auth / password       ：密码（也可以放在前面的 password@ 里）
+ *   - ports / mport         ：端口段（如 35000-39000）
+ *   - up / down / upmbps    ：上下行带宽
+ *   - udp                   ："1"/"true" → true
+ *   - insecure / allowInsecure / skip-cert-verify：
+ *                            ："1"/"true"/"yes" → skipCertVerify = true
+ *
+ * 输出 Node 字段（给 Normalizer / Renderer 用）：
+ *   {
+ *     type: "hysteria2",
+ *     name,
+ *     server,
+ *     port,
+ *     password,    // 作为通用密码字段
+ *     auth,        // 等于 password，方便渲染器直接用 auth
+ *     sni,
+ *     peer,
+ *     obfs,
+ *     alpn,
+ *     upmbps,
+ *     downmbps,
+ *     ports,
+ *     udp,
+ *     skipCertVerify,
+ *     raw
+ *   }
+ */
 
-  - 输出 Node 字段（解析尽量挂全，转换器各取所需）：
-      type: "hysteria2"
-      name               备注（# 后面）
-      server             IP / 域名
-      port               端口
-      password           认证密码 / token
-      auth               同 password（方便部分 client 使用）
-      sni                TLS SNI / peer
-      skipCertVerify     跳过证书校验（insecure / allowInsecure / allow_insecure）
-
-      obfs               混淆类型（none / salamander 等）
-      obfsPassword       混淆密码
-
-      alpn               原始 ALPN 字符串，如 "h3,h2"
-      up                 上行限速（"40 Mbps"）
-      down               下行限速（"200 Mbps"）
-      ports              端口范围（"35000-39000"）
-
-      flag/title/ping/created/updated/tfo/udp/proto/protoParam/obfsParam/data/user
-      raw                原始完整链接
-*/
+function safeDecode(s) {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
+}
 
 export function parseHy2(url) {
   if (!url || typeof url !== "string") return null;
 
   const full = url.trim();
-  const [beforeHash, hashPart = ""] = full.split("#");
-  const name = decodeURIComponent(hashPart.trim());
-  const body = beforeHash.replace(/^(hysteria2|hy2):\/\//i, "");
+  if (!full) return null;
 
-  try {
-    const u = new URL("http://" + body);
-    const sp = u.searchParams;
+  // # 后面是备注
+  let main = full;
+  let name = "";
+  const hashIndex = full.indexOf("#");
+  if (hashIndex >= 0) {
+    const remarkPart = full.slice(hashIndex + 1);
+    main = full.slice(0, hashIndex);
+    name = safeDecode(remarkPart.trim());
+  }
 
-    const server = u.hostname;
-    const port = parseInt(u.port || "0", 10) || 0;
+  // 去掉协议前缀
+  main = main
+    .replace(/^hysteria2:\/\//i, "")
+    .replace(/^hy2:\/\//i, "")
+    .replace(/^hysteria:\/\//i, "");
 
-    let password = "";
-    let user = "";
+  // 拆出 ? 参数
+  let authHostPort = main;
+  let search = "";
+  const qIndex = main.indexOf("?");
+  if (qIndex >= 0) {
+    authHostPort = main.slice(0, qIndex);
+    search = main.slice(qIndex + 1);
+  }
 
-    if (u.username) {
-      user = decodeURIComponent(u.username);
-      password = user;
+  // password@host:port
+  let auth = "";
+  let hostPort = authHostPort;
+  const atIndex = authHostPort.lastIndexOf("@");
+  if (atIndex >= 0) {
+    auth = authHostPort.slice(0, atIndex);
+    hostPort = authHostPort.slice(atIndex + 1);
+  }
+
+  auth = auth ? safeDecode(auth) : "";
+
+  // host:port
+  let server = "";
+  let port = 0;
+  const hpParts = hostPort.split(":");
+  if (hpParts.length >= 2) {
+    server = hpParts[0].trim();
+    port = Number(hpParts[1].trim());
+  }
+
+  // 解析 query 参数
+  const params = {};
+  if (search) {
+    for (const seg of search.split("&")) {
+      if (!seg) continue;
+      const [kRaw, vRaw = ""] = seg.split("=", 2);
+      const k = (kRaw || "").trim();
+      if (!k) continue;
+      const key = safeDecode(k);
+      const value = safeDecode(vRaw);
+      params[key] = value;
     }
+  }
 
-    if (!password) {
-      password =
-        sp.get("auth") ||
-        sp.get("password") ||
-        sp.get("passwd") ||
-        sp.get("auth_str") ||
-        sp.get("psk") ||
-        "";
-    }
+  // 密码优先级：前缀 auth > query.auth > query.password
+  const pwd = auth || params.auth || params.password || "";
 
-    const insecureVal =
-      (sp.get("insecure") ||
-        sp.get("allowInsecure") ||
-        sp.get("allow_insecure") ||
-        "").toLowerCase();
-    const skipCertVerify =
-      insecureVal === "1" || insecureVal === "true" || insecureVal === "yes";
+  // TLS / 证书
+  const sni = params.sni || params.peer || "";
+  const peer = params.peer || "";
 
-    const sni =
-      sp.get("sni") || sp.get("server_name") || sp.get("peer") || "";
+  // 其它常见参数
+  const obfs = params.obfs || "";
+  const alpn = params.alpn || "";
+  const up = params.up || params.upmbps || "";
+  const down = params.down || params.downmbps || "";
+  const ports = params.ports || params.mport || "";
+  const udp = params.udp === "1" || params.udp === "true";
 
-    const obfs =
-      sp.get("obfs") || sp.get("obfs-name") || sp.get("obfs_mode") || "";
-    const obfsPassword =
-      sp.get("obfs-password") ||
-      sp.get("obfs_pwd") ||
-      sp.get("obfs-passwd") ||
-      "";
+  const insecureFlag =
+    params.insecure ||
+    params.allowInsecure ||
+    params["skip-cert-verify"];
 
-    const alpn = sp.get("alpn") || "";
+  const skipCertVerify =
+    insecureFlag === "1" ||
+    insecureFlag === "true" ||
+    insecureFlag === "yes";
 
-    const up =
-      sp.get("up") ||
-      sp.get("upload") ||
-      sp.get("upmbps") ||
-      sp.get("up_mbps") ||
-      "";
-    const down =
-      sp.get("down") ||
-      sp.get("download") ||
-      sp.get("downmbps") ||
-      sp.get("down_mbps") ||
-      "";
-    const ports = sp.get("ports") || "";
-
-    const flag = sp.get("flag") || "";
-    const title = sp.get("title") || name || "";
-    const ping = sp.get("ping") || "";
-    const created = sp.get("created") || "";
-    const updated = sp.get("updated") || "";
-    const tfo = sp.get("tfo") || "";
-    const udp = sp.get("udp") || "";
-    const proto = sp.get("proto") || "";
-    const protoParam = sp.get("protoParam") || "";
-    const obfsParam = sp.get("obfsParam") || "";
-    const data = sp.get("data") || "";
-
-    const realName = title || name;
-
+  // 关键字段缺失时，退一个最小结构，避免整条崩掉
+  if (!server || !port || !pwd) {
     return {
       type: "hysteria2",
-      name: realName,
-      server,
-      port,
-
-      password,
-      auth: password,
-
-      sni,
-      skipCertVerify,
-
-      obfs,
-      obfsPassword,
-
-      alpn,
-      up,
-      down,
-      ports,
-
-      flag,
-      title: realName,
-      ping,
-      created,
-      updated,
-      tfo,
-      udp,
-      proto,
-      protoParam,
-      obfsParam,
-      data,
-      user,
-
-      raw: full,
-    };
-  } catch (_e) {
-    return {
-      type: "hysteria2",
-      name,
+      name: name || full,
       raw: full,
     };
   }
+
+  const node = {
+    type: "hysteria2",
+    name: name || `${server}:${port}`,
+    server,
+    port,
+    password: pwd,
+    auth: pwd, // 渲染器直接用 auth 即可
+    sni,
+    peer,
+    obfs,
+    alpn,
+    upmbps: up,
+    downmbps: down,
+    ports,
+    udp,
+    skipCertVerify,
+    raw: full,
+  };
+
+  return node;
 }
