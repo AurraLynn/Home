@@ -1,3 +1,17 @@
+/*
+  - 输入：
+      解析后的 Node[]（至少包含 type / server / port）
+
+  - 已支持协议：
+      ss
+      trojan
+      hysteria2(hy2)
+
+  - 输出：
+      Clash / Mihomo / Meta / Stash 通用 YAML
+      搭配：/autosub?id=你的id&client=clash 使用
+*/
+
 function b64DecodeUrlSafe(input) {
   if (!input) return "";
   let s = String(input).replace(/-/g, "+").replace(/_/g, "/");
@@ -14,12 +28,6 @@ function b64DecodeUrlSafe(input) {
   }
 }
 
-/**
- * 旧的 SS 原串解析（用于兜底）
- * 支持：
- *   ss://BASE64(method:pass)@host:port#name
- *   ss://BASE64(method:pass@host:port)#name
- */
 function parseSSRaw(raw) {
   const s = String(raw || "").trim();
   if (!s.startsWith("ss://")) return null;
@@ -36,7 +44,6 @@ function parseSSRaw(raw) {
   const qIndex = rest.indexOf("?");
   if (qIndex >= 0) rest = rest.slice(0, qIndex);
 
-  // 形态 1：BASE64(method:pass)@host:port
   if (rest.includes("@")) {
     const [b64Part, hostPart] = rest.split("@");
     const decoded = b64DecodeUrlSafe(b64Part);
@@ -54,7 +61,6 @@ function parseSSRaw(raw) {
     };
   }
 
-  // 形态 2：BASE64(method:pass@host:port)
   const decoded = b64DecodeUrlSafe(rest);
   if (decoded && decoded.includes("@")) {
     const [left, right] = decoded.split("@");
@@ -75,25 +81,18 @@ function parseSSRaw(raw) {
   return null;
 }
 
-/**
- * Node -> Clash proxy 对象
- * 目前支持：
- *   - SS  （Parser 结构化 + 原串兜底）
- *   - Trojan（Parser 结构化）
- */
 function nodeToClashProxy(node) {
   if (!node) return null;
 
-  // ---------- SS ----------
+  // SS
   if (node.type === "ss") {
-    // 优先用结构化字段
-    if (node.server && node.port && node.cipher && node.password) {
+    if (node.server && node.port && (node.cipher || node.method) && node.password) {
       const proxy = {
         name: node.name || `${node.server}:${node.port}`,
         type: "ss",
         server: node.server,
         port: Number(node.port),
-        cipher: node.cipher,
+        cipher: node.cipher || node.method,
         password: node.password,
         udp: true,
       };
@@ -104,7 +103,6 @@ function nodeToClashProxy(node) {
       return proxy;
     }
 
-    // 如果结构化字段不全，兜底解析 raw
     if (node.raw) {
       const p = parseSSRaw(node.raw);
       if (p) {
@@ -121,7 +119,7 @@ function nodeToClashProxy(node) {
     }
   }
 
-  // ---------- TROJAN ----------
+  // Trojan
   if (node.type === "trojan") {
     const server = node.server;
     const port = Number(node.port || 0);
@@ -147,7 +145,54 @@ function nodeToClashProxy(node) {
     return proxy;
   }
 
-  // 其它协议暂时不处理
+  // Hysteria2 / hy2
+  if (node.type === "hysteria2" || node.type === "hy2") {
+    const server = node.server;
+    const port = Number(node.port || 0);
+    const password = node.password;
+
+    if (!server || !port || !password) return null;
+
+    const proxy = {
+      name: node.name || `${server}:${port}`,
+      type: "hysteria2",
+      server,
+      port,
+      auth: password,
+      udp: true,
+      "fast-open": true,
+    };
+
+    if (typeof node.skipCertVerify === "boolean") {
+      proxy["skip-cert-verify"] = node.skipCertVerify ? true : false;
+    }
+
+    if (node.sni) {
+      proxy.sni = node.sni;
+    }
+
+    if (node.obfs) {
+      proxy.obfs = node.obfs;
+    }
+    if (node.obfsPassword) {
+      proxy["obfs-password"] = node.obfsPassword;
+    }
+
+    if (node.alpn) {
+      const arr = String(node.alpn)
+        .split(",")
+        .map((x) => x.trim())
+        .filter(Boolean);
+      if (arr.length) proxy.alpn = arr;
+    }
+
+    if (node.up) proxy.up = node.up;
+    if (node.down) proxy.down = node.down;
+    if (node.ports) proxy.ports = node.ports;
+
+    return proxy;
+  }
+
   return null;
 }
 
@@ -162,50 +207,49 @@ export function renderClash(nodes = []) {
   const names = proxies.map((p) => p.name);
 
   const lines = [];
-  lines.push(`port: 7890`);
-  lines.push(`socks-port: 7891`);
-  lines.push(`mode: Rule`);
-  lines.push(`allow-lan: true`);
-  lines.push(`log-level: info`);
-  lines.push(``);
-  lines.push(`dns:`);
-  lines.push(`  enable: true`);
-  lines.push(`  listen: 0.0.0.0:53`);
-  lines.push(`  ipv6: false`);
-  lines.push(`  nameserver:`);
-  lines.push(`    - 223.5.5.5`);
-  lines.push(`    - 223.6.6.6`);
-  lines.push(``);
-  lines.push(`proxies:`);
+  lines.push("port: 7890");
+  lines.push("socks-port: 7891");
+  lines.push("mode: Rule");
+  lines.push("allow-lan: true");
+  lines.push("log-level: info");
+  lines.push("");
+  lines.push("dns:");
+  lines.push("  enable: true");
+  lines.push("  listen: 0.0.0.0:53");
+  lines.push("  ipv6: false");
+  lines.push("  nameserver:");
+  lines.push("    - 223.5.5.5");
+  lines.push("    - 223.6.6.6");
+  lines.push("");
+  lines.push("proxies:");
 
   if (proxies.length === 0) {
-    lines.push(`  # no supported proxies parsed yet`);
+    lines.push("  # no supported proxies parsed yet");
   } else {
     for (const p of proxies) {
-      // 用 JSON 一行输出，Clash 会正常识别
-      lines.push(`  - ${JSON.stringify(p)}`);
+      lines.push("  - " + JSON.stringify(p));
     }
   }
 
-  lines.push(``);
-  lines.push(`proxy-groups:`);
-  lines.push(`  - name: "🐹Lyn · Node"`);
-  lines.push(`    type: select`);
-  lines.push(`    proxies:`);
+  lines.push("");
+  lines.push("proxy-groups:");
+  lines.push('  - name: "🐹Lyn · Node"');
+  lines.push("    type: select");
+  lines.push("    proxies:");
 
   if (names.length === 0) {
-    lines.push(`      - DIRECT`);
+    lines.push("      - DIRECT");
   } else {
     for (const name of names) {
       lines.push(`      - "${name}"`);
     }
   }
 
-  lines.push(``);
-  lines.push(`rules:`);
-  lines.push(`  - GEOIP,LAN,DIRECT`);
-  lines.push(`  - GEOIP,CN,DIRECT`);
-  lines.push(`  - MATCH,🐹Lyn · Node`);
+  lines.push("");
+  lines.push("rules:");
+  lines.push("  - GEOIP,LAN,DIRECT");
+  lines.push("  - GEOIP,CN,DIRECT");
+  lines.push("  - MATCH,🐹Lyn · Node");
 
   return {
     body: lines.join("\n"),
