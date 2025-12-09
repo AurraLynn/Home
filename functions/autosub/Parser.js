@@ -1,32 +1,31 @@
+/*
+  Parser.js
+
+  - 输入支持：
+      • 混合文本（节点 + 说明文字）
+      • 整段 base64 订阅（可多层解包）
+      • 单条 URL 节点
+
+  - 当前协议解析支持：
+      • ss          → parseSS
+      • trojan      → parseTrojan
+      • hysteria2   → parseHy2
+      • vmess       → parseVmess
+      • vless       → parseVless
+
+  - 输出：
+      • 标准化 Node[] 数组
+*/
+
 import { splitMixedTextToLines } from "./shared/utils/text.js";
 import { parseSS } from "./shared/utils/ss.js";
 import { parseTrojan } from "./shared/utils/trojan.js";
 import { parseHy2 } from "./shared/utils/hy2.js";
 import { parseVmess } from "./shared/utils/vmess.js";
-
-/*
-  - 输入支持：
-
-      • 混合文本（节点 + 说明文字）
-      • 订阅整段 base64（可多层）
-      • URL 形式的单条节点
-
-  - 输出：
-
-      • 标准化 Node[] 数组
-      • 目前 Clash 渲染器已支持：
-          - Shadowsocks（ss）
-          - Trojan
-          - Hysteria2 / hy2
-          - VMess
-
-  - 使用方式（示例）：
-
-      /autosub?id=你的id&client=clash
- */
+import { parseVless } from "./shared/utils/vless.js";
 
 /**
- * 识别我们关心的 scheme
+ * 用于 base64 解包时检测是否已经出现我们关心的协议 scheme
  */
 const SCHEME_RE =
   /\b(?:ss|ssr|vmess|vless|trojan|hysteria2|hy2|hysteria|tuic|snell|socks5|http|https):\/\//i;
@@ -56,13 +55,9 @@ function b64DecodeUrlSafe(input) {
   if (pad) s += "=".repeat(4 - pad);
 
   try {
-    return decodeURIComponent(escape(atob(s)));
+    return atob(s);
   } catch {
-    try {
-      return atob(s);
-    } catch {
-      return "";
-    }
+    return "";
   }
 }
 
@@ -105,29 +100,35 @@ export function parseAnythingToNodes(rawText) {
 
     // ===== 1) 明确的 scheme 行 =====
 
+    // ss://
     if (line.startsWith("ss://")) {
       const n = parseSS(line);
       nodes.push(n || { type: "ss", raw: line });
       continue;
     }
 
-        if (line.startsWith("vmess://")) {
+    // vmess://
+    if (line.startsWith("vmess://")) {
       const n = parseVmess(line);
       nodes.push(n || { type: "vmess", raw: line });
       continue;
     }
 
-    if (line.startsWith("vless://")) {
-      nodes.push({ type: "vless", raw: line });
+    // vless://
+    if (line.toLowerCase().startsWith("vless://")) {
+      const n = parseVless(line);
+      nodes.push(n || { type: "vless", raw: line });
       continue;
     }
 
+    // trojan://
     if (line.toLowerCase().startsWith("trojan://")) {
       const n = parseTrojan(line);
       nodes.push(n || { type: "trojan", raw: line });
       continue;
     }
 
+    // hysteria2 / hy2 / hysteria
     if (
       line.toLowerCase().startsWith("hysteria2://") ||
       line.toLowerCase().startsWith("hy2://") ||
