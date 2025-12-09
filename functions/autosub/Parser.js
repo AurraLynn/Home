@@ -1,6 +1,6 @@
 import { splitMixedTextToLines } from "./shared/utils/text.js";
 import { parseSS } from "./shared/utils/ss.js";
-import { parseSS } from "./shared/utils/trojan.js";
+import { parseTrojan } from "./shared/utils/trojan.js";
 
 /**
  * 识别我们关心的 scheme
