@@ -111,7 +111,7 @@ export function parseAnythingToNodes(rawText) {
       continue;
     }
 
-    if (line.startsWith("vmess://")) {
+        if (line.startsWith("vmess://")) {
       const n = parseVmess(line);
       nodes.push(n || { type: "vmess", raw: line });
       continue;
