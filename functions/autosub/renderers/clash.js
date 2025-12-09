@@ -8,12 +8,21 @@
       • Hysteria2 / hy2  → type: "hysteria2" / "hy2"
 
   - 输出：
-      Clash / Mihomo / Clash Verge 通用 YAML
-      proxies 使用「内联写法」：
-        - { name: "xxx", type: "ss", server: "...", ... }
+      Clash / Mihomo 通用 YAML（块状写法）：
+
+        proxies:
+          - name: "xxx"
+            type: ss
+            ...
+
+      默认带一个通用策略组：🐹Lyn · Node
 
   - 示例调用：
       /autosub?id=你的id&client=clash
+
+  - 说明：
+      • SS 支持 obfs 混淆（obfs-local/simple-obfs → plugin: obfs + plugin-opts）
+      • hy2 同时输出 password + auth，兼容不同内核写法
 */
 
 function pickString(v, fallback = "") {
@@ -27,57 +36,10 @@ function pickNumber(v, fallback) {
   return Number.isFinite(n) ? n : fallback;
 }
 
-/**
- * 内联 map 格式化：
- *  - obj: { name: "...", port: 443, plugin-opts: { mode: "http", host: "xx" } }
- *  → '  - { name: "xxx", port: 443, plugin-opts: { mode: "http", host: "xx" } }'
- */
-function formatInlineMap(obj, indent = "  ") {
-  const parts = [];
-
-  for (const [key, value] of Object.entries(obj)) {
-    if (value === undefined || value === null || value === "") continue;
-
-    // 特殊处理 plugin-opts：必须是 map，而不是字符串
-    if (
-      key === "plugin-opts" &&
-      typeof value === "object" &&
-      !Array.isArray(value)
-    ) {
-      const innerParts = [];
-      for (const [k2, v2] of Object.entries(value)) {
-        if (v2 === undefined || v2 === null || v2 === "") continue;
-
-        let innerRendered;
-        if (typeof v2 === "number" || typeof v2 === "boolean") {
-          innerRendered = String(v2);
-        } else {
-          const s2 = String(v2)
-            .replace(/\\/g, "\\\\")
-            .replace(/"/g, '\\"');
-          innerRendered = `"${s2}"`;
-        }
-        innerParts.push(`${k2}: ${innerRendered}`);
-      }
-      const inner = innerParts.join(", ");
-      parts.push(`${key}: { ${inner} }`);
-      continue;
-    }
-
-    let rendered;
-    if (typeof value === "number" || typeof value === "boolean") {
-      rendered = String(value);
-    } else {
-      const s = String(value)
-        .replace(/\\/g, "\\\\")
-        .replace(/"/g, '\\"');
-      rendered = `"${s}"`;
-    }
-    parts.push(`${key}: ${rendered}`);
-  }
-
-  if (!parts.length) return null;
-  return `${indent}- { ${parts.join(", ")} }`;
+/** 缩进 + 一行文本 */
+function pushLine(lines, indentLevel, text) {
+  const indent = "  ".repeat(indentLevel);
+  lines.push(indent + text);
 }
 
 /** Node -> 内部 proxy 对象（_type 区分协议） */
@@ -101,8 +63,8 @@ function nodeToClashProxy(node) {
     if (!rawPort || !cipher || !password) return null;
 
     const proxy = {
+      _type: "ss",
       name,
-      type: "ss",
       server,
       port: rawPort,
       cipher,
@@ -139,7 +101,7 @@ function nodeToClashProxy(node) {
       }
 
       if (Object.keys(opts).length > 0) {
-        proxy["plugin-opts"] = opts;
+        proxy.pluginOpts = opts;
       }
     }
 
@@ -152,8 +114,8 @@ function nodeToClashProxy(node) {
     if (!rawPort || !password) return null;
 
     const proxy = {
+      _type: "trojan",
       name,
-      type: "trojan",
       server,
       port: rawPort,
       password,
@@ -163,9 +125,10 @@ function nodeToClashProxy(node) {
     if (sni) proxy.sni = sni;
 
     if (typeof node.skipCertVerify === "boolean") {
-      proxy["skip-cert-verify"] = node.skipCertVerify;
+      proxy.skipCertVerify = node.skipCertVerify;
     }
 
+    // 不输出 network / ws-opts / headers，避免兼容性问题
     return proxy;
   }
 
@@ -191,8 +154,8 @@ function nodeToClashProxy(node) {
     if (!mainPort) return null;
 
     const proxy = {
+      _type: "hysteria2",
       name,
-      type: "hysteria2",
       server,
       port: mainPort,
       password: pwd,
@@ -200,7 +163,7 @@ function nodeToClashProxy(node) {
 
     if (portsStr) {
       proxy.ports = portsStr; // Clash 本身会识别 ports
-      proxy.mport = portsStr; // 对齐部分机场写法
+      proxy.mport = portsStr; // 对齐部分机场写法（有的魔改用 mport）
     }
 
     const sni = pickString(node.sni || node.peer || node.serverName);
@@ -214,7 +177,7 @@ function nodeToClashProxy(node) {
     }
 
     if (typeof node.skipCertVerify === "boolean") {
-      proxy["skip-cert-verify"] = node.skipCertVerify;
+      proxy.skipCertVerify = node.skipCertVerify;
     }
 
     const obfs = pickString(node.obfs);
@@ -225,6 +188,77 @@ function nodeToClashProxy(node) {
 
   // 其它协议暂不渲染进 Clash
   return null;
+}
+
+/** 输出单个 proxy 的块状 YAML */
+function dumpProxyBlock(lines, proxy) {
+  // 通用字段
+  pushLine(
+    lines,
+    1,
+    `- name: "${String(proxy.name).replace(/"/g, '\\"')}"`
+  );
+  pushLine(lines, 2, `type: ${proxy._type}`);
+  pushLine(lines, 2, `server: ${proxy.server}`);
+  pushLine(lines, 2, `port: ${proxy.port}`);
+
+  // ---------- SS ----------
+  if (proxy._type === "ss") {
+    pushLine(lines, 2, `cipher: ${proxy.cipher}`);
+    pushLine(lines, 2, `password: ${proxy.password}`);
+
+    if (proxy.plugin) pushLine(lines, 2, `plugin: ${proxy.plugin}`);
+
+    if (proxy.pluginOpts) {
+      pushLine(lines, 2, `plugin-opts:`);
+      if (proxy.pluginOpts.mode)
+        pushLine(lines, 3, `mode: ${proxy.pluginOpts.mode}`);
+      if (proxy.pluginOpts.host)
+        pushLine(lines, 3, `host: ${proxy.pluginOpts.host}`);
+      if (proxy.pluginOpts.uri)
+        pushLine(lines, 3, `uri: ${proxy.pluginOpts.uri}`);
+    }
+
+    return;
+  }
+
+  // ---------- Trojan ----------
+  if (proxy._type === "trojan") {
+    pushLine(lines, 2, `password: ${proxy.password}`);
+    if (proxy.sni) pushLine(lines, 2, `sni: ${proxy.sni}`);
+    if (typeof proxy.skipCertVerify === "boolean") {
+      pushLine(
+        lines,
+        2,
+        `skip-cert-verify: ${proxy.skipCertVerify ? "true" : "false"}`
+      );
+    }
+    return;
+  }
+
+  // ---------- Hysteria2 ----------
+  if (proxy._type === "hysteria2") {
+    // 同时输出 password + auth，客户端按自己支持的字段选
+    pushLine(lines, 2, `password: ${proxy.password}`);
+    pushLine(lines, 2, `auth: ${proxy.password}`);
+
+    if (proxy.ports) pushLine(lines, 2, `ports: ${proxy.ports}`);
+    if (proxy.mport) pushLine(lines, 2, `mport: ${proxy.mport}`);
+
+    if (typeof proxy.udp === "boolean") {
+      pushLine(lines, 2, `udp: ${proxy.udp ? "true" : "false"}`);
+    }
+
+    if (proxy.sni) pushLine(lines, 2, `sni: ${proxy.sni}`);
+    if (typeof proxy.skipCertVerify === "boolean") {
+      pushLine(
+        lines,
+        2,
+        `skip-cert-verify: ${proxy.skipCertVerify ? "true" : "false"}`
+      );
+    }
+    if (proxy.obfs) pushLine(lines, 2, `obfs: ${proxy.obfs}`);
+  }
 }
 
 export function renderClash(nodes = []) {
@@ -244,47 +278,51 @@ export function renderClash(nodes = []) {
   lines.push(`allow-lan: true`);
   lines.push(`mode: rule`);
   lines.push(`log-level: info`);
-  lines.push(`external-controller: "127.0.0.1:9090"`);
+  lines.push(`external-controller: '127.0.0.1:9090'`);
   lines.push(``);
   lines.push(`dns:`);
-  lines.push(`  enable: true`);
-  lines.push(`  ipv6: false`);
-  lines.push(`  nameserver: [223.5.5.5, 223.6.6.6]`);
+  pushLine(lines, 1, `enable: true`);
+  pushLine(lines, 1, `ipv6: false`);
+  pushLine(lines, 1, `nameserver:`);
+  pushLine(lines, 2, `- 223.5.5.5`);
+  pushLine(lines, 2, `- 223.6.6.6`);
   lines.push(``);
 
-  // ===== proxies：内联写法 =====
+  // ===== proxies（块状）=====
   lines.push(`proxies:`);
   if (proxies.length === 0) {
-    lines.push(`  # 没有解析出任何可用节点`);
+    pushLine(lines, 1, `# 没有解析出任何可用节点`);
   } else {
     for (const p of proxies) {
-      const line = formatInlineMap(p, "  ");
-      if (line) lines.push(line);
+      dumpProxyBlock(lines, p);
     }
   }
 
   // ===== proxy-groups =====
   lines.push(``);
   lines.push(`proxy-groups:`);
-  lines.push(`  - name: "🐹Lyn · Node"`);
-  lines.push(`    type: select`);
-  lines.push(`    proxies:`);
+  pushLine(lines, 1, `- name: "🐹Lyn · Node"`);
+  pushLine(lines, 2, `type: select`);
+  pushLine(lines, 2, `proxies:`);
   if (names.length === 0) {
-    lines.push(`      - DIRECT`);
+    pushLine(lines, 3, `- DIRECT`);
   } else {
-    lines.push(`      - DIRECT`);
+    pushLine(lines, 3, `- DIRECT`);
     for (const name of names) {
-      const s = String(name).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-      lines.push(`      - "${s}"`);
+      pushLine(
+        lines,
+        3,
+        `- "${String(name).replace(/"/g, '\\"')}"`
+      );
     }
   }
 
   // ===== rules =====
   lines.push(``);
   lines.push(`rules:`);
-  lines.push(`  - GEOIP,LAN,DIRECT`);
-  lines.push(`  - GEOIP,CN,DIRECT`);
-  lines.push(`  - MATCH,🐹Lyn · Node`);
+  pushLine(lines, 1, `- GEOIP,LAN,DIRECT`);
+  pushLine(lines, 1, `- GEOIP,CN,DIRECT`);
+  pushLine(lines, 1, `- MATCH,🐹Lyn · Node`);
 
   return {
     body: lines.join("\n"),
