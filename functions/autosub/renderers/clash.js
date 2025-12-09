@@ -10,13 +10,11 @@
   - 输出：
       通用 Clash YAML，proxies 统一为 JSON 一行写法：
         proxies:
-          - {"name":"🇨🇦 加拿大2-2","type":"hysteria2","server":"155.248.223.117","port":30102,"password":"cf6bf978-3fe0-45aa-9f17-fe02bd99a7a6","sni":"du.wish.ml","skip-cert-verify":true}
+          - {"type":"hysteria2","name":"🇨🇦 加拿大2-2","server":"155.248.223.117","port":30102,"sni":"du.wish.ml","skip-cert-verify":true,"fast-open":true,"auth":"cf6bf978-3fe0-45aa-9f17-fe02bd99a7a6"}
 
-  - 兼容策略：
-      只保留最基础字段：
-        ss:     name / type / server / port / cipher / password
-        trojan: name / type / server / port / password / sni / skip-cert-verify
-        hy2:    name / type / server / port / password / sni / skip-cert-verify
+    说明：
+      - SS / Trojan：也用 JSON 一行，字段尽量精简。
+      - Hysteria2：严格按上面字段顺序和键名输出。
 */
 
 function b64DecodeUrlSafe(input) {
@@ -90,8 +88,8 @@ function parseSSRaw(raw) {
 
 /**
  * Node -> 简化后的 proxy 对象（只保留兼容字段）
- * 输出时直接 JSON.stringify，得到：
- *   {"name":"...","type":"...","server":"...","port":1234,"password":"...","sni":"...","skip-cert-verify":true}
+ * 最终统一 JSON.stringify 输出，形如：
+ *   {"type":"hysteria2","name":"...","server":"...","port":30102,"sni":"...","skip-cert-verify":true,"fast-open":true,"auth":"..."}
  */
 function nodeToClashProxy(node) {
   if (!node) return null;
@@ -100,7 +98,6 @@ function nodeToClashProxy(node) {
   const type = typeRaw.toLowerCase();
   const server = node.server;
   const port = Number(node.port || 0);
-
   if (!server || !port) return null;
 
   const name = node.name || `${server}:${port}`;
@@ -109,10 +106,9 @@ function nodeToClashProxy(node) {
   if (type === "ss") {
     const cipher = node.cipher || node.method;
     const password = node.password;
-
     if (!cipher || !password) return null;
 
-    // 保证键顺序：name -> type -> server -> port -> cipher -> password
+    // 键顺序：name -> type -> server -> port -> cipher -> password
     const proxy = {
       name,
       type: "ss",
@@ -121,7 +117,6 @@ function nodeToClashProxy(node) {
       cipher,
       password,
     };
-
     return proxy;
   }
 
@@ -130,6 +125,7 @@ function nodeToClashProxy(node) {
     const password = node.password;
     if (!password) return null;
 
+    // 键顺序：name -> type -> server -> port -> password -> sni -> skip-cert-verify
     const proxy = {
       name,
       type: "trojan",
@@ -150,14 +146,15 @@ function nodeToClashProxy(node) {
 
   // ===== Hysteria2 / hy2 =====
   if (type === "hysteria2" || type === "hy2") {
-    let password = node.password || node.auth || "";
+    let secret = node.auth || node.password || "";
 
-    if (!password) {
-      if (node.uuid) password = String(node.uuid);
-      else if (node.user) password = String(node.user);
+    // 兜底从 uuid / user / raw 里抠
+    if (!secret) {
+      if (node.uuid) secret = String(node.uuid);
+      else if (node.user) secret = String(node.user);
     }
 
-    if (!password && node.raw) {
+    if (!secret && node.raw) {
       const raw = String(node.raw);
 
       let m =
@@ -165,39 +162,39 @@ function nodeToClashProxy(node) {
         raw.match(/^hy2:\/\/([^@?#]+)@/i);
       if (m && m[1]) {
         try {
-          password = decodeURIComponent(m[1]);
+          secret = decodeURIComponent(m[1]);
         } catch {
-          password = m[1];
+          secret = m[1];
         }
       }
 
-      if (!password) {
+      if (!secret) {
         const m2 = raw.match(
           /[?&](?:password|passwd|auth|auth_str|psk)=([^&#]+)/i
         );
         if (m2 && m2[1]) {
           try {
-            password = decodeURIComponent(m2[1]);
+            secret = decodeURIComponent(m2[1]);
           } catch {
-            password = m2[1];
+            secret = m2[1];
           }
         }
       }
     }
 
-    if (!password) return null;
+    if (!secret) return null;
 
     // 同步回 Node，方便其他渲染器使用
-    node.password = node.password || password;
-    if (!node.auth) node.auth = password;
+    node.password = node.password || secret;
+    if (!node.auth) node.auth = secret;
 
-    // ★ 保证键顺序：name -> type -> server -> port -> password -> sni -> skip-cert-verify
+    // ★ 键顺序严格按你给的例子：
+    //   type -> name -> server -> port -> sni -> skip-cert-verify -> fast-open -> auth
     const proxy = {
-      name,
       type: "hysteria2",
+      name,
       server,
       port,
-      password,
     };
 
     if (node.sni) {
@@ -206,6 +203,10 @@ function nodeToClashProxy(node) {
 
     proxy["skip-cert-verify"] =
       typeof node.skipCertVerify === "boolean" ? node.skipCertVerify : true;
+
+    proxy["fast-open"] = true;
+
+    proxy.auth = secret;
 
     return proxy;
   }
@@ -244,7 +245,6 @@ export function renderClash(nodes = []) {
     lines.push("  # no supported proxies parsed yet");
   } else {
     for (const p of proxies) {
-      // 统一 JSON 一行写法
       lines.push("  - " + JSON.stringify(p));
     }
   }
