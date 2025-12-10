@@ -1,30 +1,27 @@
 /* Router.js
- * ===============================
- * 作用：
- *   1. 根据 UA 推测 client 类型：clash / surge / v2ray
- *   2. 根据 client 选择渲染器：Clash / Surge / v2ray(Base64)
+ * 文件作用：
+ *   - 根据 UA 判断使用哪个客户端类型（clash / surge / v2ray）
+ *   - 根据客户端类型选择对应的渲染方式
  */
 
 import { renderClash } from "./renderers/clash.js";
 import { renderSurge } from "./renderers/surge.js";
 
-/* 根据 UA 推测 client 类型
- *  - 含 surge        → "surge"
- *  - 含 clash/meta/... → "clash"
- *  - 其他            → "v2ray"
+/* 根据 UA 判断使用哪个客户端类型
+ * 返回值："clash" / "surge" / "v2ray"
  */
 export function pickClientFromUA(uaRaw) {
   const ua = (uaRaw || "").toLowerCase();
 
-  /* UA 为空：兜底 v2ray */
+  // UA 为空时，默认按 v2ray 处理
   if (!ua) return "v2ray";
 
-  /* Surge 客户端 */
+  // Surge 客户端
   if (ua.includes("surge")) {
     return "surge";
   }
 
-  /* Clash 系客户端：clash / meta / mihomo / cfw / clash for windows */
+  // Clash 系客户端：clash / meta / mihomo / cfw / clash for windows
   if (
     ua.includes("clash") ||
     ua.includes("mihomo") ||
@@ -35,22 +32,22 @@ export function pickClientFromUA(uaRaw) {
     return "clash";
   }
 
-  /* 其他 UA：全部走 v2ray(Base64) */
+  // 其他全部按 v2ray(Base64) 处理
   return "v2ray";
 }
 
-/* 文本转 Base64（UTF-8 安全处理） */
+/* 把原始文本转成 Base64（兼容中文） */
 function toB64(text) {
   const t = String(text || "").trim();
   if (!t) return "";
-  /* Workers 环境内置 btoa，这里用 encodeURIComponent 兼容中文 */
   return btoa(unescape(encodeURIComponent(t)));
 }
 
-/* 统一路由出口：nodes → 对应客户端格式内容
- *  - client = "clash" → Clash 简易配置
- *  - client = "surge" → Surge 仅 [Proxy]
- *  - 其它             → v2ray(Base64) 兜底
+/* 根据客户端类型，选择渲染输出格式
+ * 参数：
+ *   - nodes: 解析后的节点列表
+ *   - client: "clash" / "surge" / "v2ray"
+ *   - rawText: 原始文本（给 v2ray Base64 用）
  */
 export function routeAndRender(
   nodes,
@@ -63,17 +60,17 @@ export function routeAndRender(
 ) {
   const c = String(client || "v2ray").toLowerCase();
 
-  /* Clash 输出：简易完整配置（含 DNS / 规则 / 代理组） */
+  // Clash：输出简易完整配置
   if (c === "clash") {
     return renderClash(nodes, { client, query, source });
   }
 
-  /* Surge 输出：仅 [Proxy] 节点列表 */
+  // Surge：只输出 [Proxy] 节
   if (c === "surge") {
     return renderSurge(nodes, { client, query, source });
   }
 
-  /* 兜底：v2ray 样式订阅（原文 base64 一层） */
+  // 兜底：v2ray 样式订阅（原文 Base64 一层）
   return {
     body: toB64(rawText),
     contentType: "text/plain; charset=utf-8",
