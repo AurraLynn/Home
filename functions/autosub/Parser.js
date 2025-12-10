@@ -5,6 +5,8 @@
       • 混合文本（节点 + 说明文字）
       • 整段 base64 订阅（可多层解包）
       • 单条 URL 节点
+      • Clash 内联 proxies 对象行：
+          - { name: 'xxx', type: vless, server: example.com, port: 443, uuid: xxxx, ... }
 
   - 当前协议解析支持：
       • ss          → parseSS
@@ -87,8 +89,195 @@ function decodeMaybeToScheme(s, maxDepth = 2) {
 }
 
 /**
+ * 解析 Clash 内联 proxies 行：
+ *   - { name: 'xxx', type: vless, server: example.com, port: 443, uuid: xxxx, ... }
+ *
+ * 返回一个普通对象 { name, type, server, port, uuid, ... }，解析失败返回 null
+ */
+function parseClashInlineObject(line) {
+  const start = line.indexOf("{");
+  const end = line.lastIndexOf("}");
+  if (start === -1 || end === -1 || end <= start) return null;
+
+  const body = line.slice(start + 1, end);
+  const segs = [];
+  let cur = "";
+  let inSingle = false;
+  let inDouble = false;
+
+  for (let i = 0; i < body.length; i++) {
+    const ch = body[i];
+    if (ch === "'" && !inDouble) {
+      inSingle = !inSingle;
+      cur += ch;
+      continue;
+    }
+    if (ch === '"' && !inSingle) {
+      inDouble = !inDouble;
+      cur += ch;
+      continue;
+    }
+    if (ch === "," && !inSingle && !inDouble) {
+      if (cur.trim()) segs.push(cur.trim());
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  if (cur.trim()) segs.push(cur.trim());
+
+  const obj = {};
+  for (const seg of segs) {
+    const idx = seg.indexOf(":");
+    if (idx === -1) continue;
+    const rawKey = seg.slice(0, idx).trim();
+    let key = rawKey;
+    // 去掉可能的引号
+    if (
+      (key.startsWith("'") && key.endsWith("'")) ||
+      (key.startsWith('"') && key.endsWith('"'))
+    ) {
+      key = key.slice(1, -1);
+    }
+    let val = seg.slice(idx + 1).trim();
+
+    // 去掉尾部多余逗号（正常不会有）
+    if (val.endsWith(",")) val = val.slice(0, -1).trim();
+
+    // 去掉引号
+    if (
+      (val.startsWith("'") && val.endsWith("'")) ||
+      (val.startsWith('"') && val.endsWith('"'))
+    ) {
+      val = val.slice(1, -1);
+      obj[key] = val;
+      continue;
+    }
+
+    const lower = val.toLowerCase();
+    if (lower === "true" || lower === "false") {
+      obj[key] = lower === "true";
+      continue;
+    }
+
+    if (/^-?\d+(?:\.\d+)?$/.test(val)) {
+      obj[key] = Number(val);
+      continue;
+    }
+
+    obj[key] = val;
+  }
+
+  if (!obj.type) return null;
+  return obj;
+}
+
+/**
+ * Clash 内联对象 → 标准 Node
+ */
+function nodeFromClashInline(obj, rawLine) {
+  const typeRaw = String(obj.type || "").toLowerCase();
+  let t = typeRaw;
+  if (t === "hy2" || t === "hysteria") t = "hysteria2";
+
+  const server = obj.server || obj.add || "";
+  const port = obj.port || obj.server_port || 0;
+  const name = obj.name || obj.ps || "";
+
+  const base = {
+    type: t,
+    raw: rawLine,
+    name,
+    server,
+    port,
+  };
+
+  if (!server || !port) {
+    return base;
+  }
+
+  if (t === "ss") {
+    return {
+      ...base,
+      cipher: obj.cipher || obj.method || "",
+      password: obj.password || "",
+      plugin: obj.plugin,
+      pluginOpts: obj["plugin-opts"],
+    };
+  }
+
+  if (t === "trojan") {
+    return {
+      ...base,
+      password: obj.password || obj.pwd || "",
+      sni: obj.sni || obj.servername,
+      network: obj.network,
+      path: obj.path,
+      skipCertVerify:
+        typeof obj["skip-cert-verify"] === "boolean"
+          ? obj["skip-cert-verify"]
+          : undefined,
+      realityPublicKey: obj["public-key"],
+      realityShortId: obj["short-id"],
+      realitySpiderX: obj["spider-x"],
+    };
+  }
+
+  if (t === "vmess") {
+    return {
+      ...base,
+      uuid: obj.uuid || obj.id || "",
+      alterId: obj.aid || obj.alterId || 0,
+      cipher: obj.cipher || obj.scy || obj.security,
+      network: obj.network || obj.net,
+      host: obj.host,
+      path: obj.path,
+      tls: obj.tls === true,
+      sni: obj.sni || obj.servername,
+    };
+  }
+
+  if (t === "vless") {
+    return {
+      ...base,
+      uuid: obj.uuid || obj.id || "",
+      flow: obj.flow,
+      udp: typeof obj.udp === "boolean" ? obj.udp : undefined,
+      tls: obj.tls === true,
+      security: obj.tls ? "tls" : "",
+      sni: obj.sni || obj.servername,
+      alpn: obj.alpn,
+      clientFingerprint: obj["client-fingerprint"],
+      realityPublicKey: obj["public-key"],
+      realityShortId: obj["short-id"],
+      realitySpiderX: obj["spider-x"],
+      network: obj.network,
+      host: obj.host,
+      path: obj.path,
+    };
+  }
+
+  if (t === "hysteria2") {
+    return {
+      ...base,
+      password: obj.auth || obj.password || "",
+      ports: obj.ports,
+      sni: obj.sni,
+      udp: typeof obj.udp === "boolean" ? obj.udp : undefined,
+      skipCertVerify:
+        typeof obj["skip-cert-verify"] === "boolean"
+          ? obj["skip-cert-verify"]
+          : undefined,
+      obfs: obj.obfs,
+    };
+  }
+
+  return base;
+}
+
+/**
  * 核心解析器：
- *   原始文本（可以是多行 / 混合内容 / 纯 base64）
+ *   原始文本（可以是多行 / 混合内容 / 纯 base64 / Clash YAML）
  *   → Node[]（统一结构，把能识别的协议尽量解析出来）
  */
 export function parseAnythingToNodes(rawText) {
@@ -105,7 +294,7 @@ export function parseAnythingToNodes(rawText) {
     if (seenLine.has(line)) continue;
     seenLine.add(line);
 
-    // ===== 1) 明确的 scheme 行 =====
+    // ===== 1) 明确的 scheme 行（URL 节点） =====
 
     // ss://
     if (line.startsWith("ss://")) {
@@ -169,7 +358,28 @@ export function parseAnythingToNodes(rawText) {
       }
     }
 
-    // ===== 2) 没有明显 scheme：尝试当 base64 订阅解包 =====
+    // ===== 2) Clash YAML 内联 proxies 行 =====
+    if (line.includes("{") && line.includes("type:")) {
+      const obj = parseClashInlineObject(line);
+      if (obj && obj.type) {
+        const t = String(obj.type || "").toLowerCase();
+        if (
+          t === "ss" ||
+          t === "vmess" ||
+          t === "vless" ||
+          t === "trojan" ||
+          t === "hysteria2" ||
+          t === "hysteria" ||
+          t === "hy2"
+        ) {
+          const node = nodeFromClashInline(obj, line);
+          nodes.push(node);
+          continue;
+        }
+      }
+    }
+
+    // ===== 3) 没有明显 scheme：尝试当 base64 订阅解包 =====
 
     if (!line.includes("://") && isLikelyBase64(line)) {
       const decoded = decodeMaybeToScheme(line, 3);
@@ -184,7 +394,7 @@ export function parseAnythingToNodes(rawText) {
       }
     }
 
-    // ===== 3) 兜底未知：保留 raw，方便后续调试/扩展 =====
+    // ===== 4) 兜底未知：保留 raw，方便后续调试/扩展 =====
     nodes.push({ type: "unknown", raw: line });
   }
 
