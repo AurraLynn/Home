@@ -1,14 +1,29 @@
-/* Parser.js
- *
- * 职责：
- *   - 统一解析入口：任意奇怪文本 → 标准 Node[]
- *   - 支持：
- *       • 整串 base64 订阅（可多层解包）
- *       • 单条 base64 节点
- *       • 混合文本 / 说明文字
- *       • URL 节点：ss / trojan / vmess / vless / hy2(hysteria2/hysteria)
- *       • 简单 JSON 行：{"type":"vless","server":"...","port":...}
- */
+/*
+  Parser.js
+
+  - 输入支持：
+      • 混合文本（节点 + 说明文字）
+      • 整段 base64 订阅（可多层解包）
+      • 单条 URL 节点
+
+  - 当前协议解析支持（全部调用 shared/utils 下的工具）：
+      • ss          → parseSS
+      • trojan      → parseTrojan
+      • hysteria2   → parseHy2
+      • vmess       → parseVmess
+      • vless       → parseVless
+
+  - 输出：
+      • 标准化 Node[] 数组，供各客户端渲染器使用：
+        {
+          type: "vless" | "vmess" | "trojan" | "ss" | "hysteria2" | "unknown",
+          name,
+          server,
+          port,
+          ...各种协议字段,
+          raw,    // 原始行（或生成的 raw），后面 normalize / 排重会用到
+        }
+*/
 
 import { splitMixedTextToLines } from "./shared/utils/text.js";
 import { parseSS } from "./shared/utils/ss.js";
@@ -17,163 +32,206 @@ import { parseHy2 } from "./shared/utils/hy2.js";
 import { parseVmess } from "./shared/utils/vmess.js";
 import { parseVless } from "./shared/utils/vless.js";
 
-/* 安全 Base64 解码（支持 URL-Safe） */
-function safeBase64Decode(str) {
+/* 检测文本中是否已经包含任意一种节点协议 */
+function containsNodeProtocol(text) {
+  const t = String(text || "").toLowerCase();
+  return (
+    t.includes("ss://") ||
+    t.includes("vmess://") ||
+    t.includes("vless://") ||
+    t.includes("trojan://") ||
+    t.includes("hysteria2://") ||
+    t.includes("hy2://") ||
+    t.includes("hysteria://")
+  );
+}
+
+/* 安全 base64 解码（兼容 UTF-8） */
+function safeAtob(b64) {
+  if (!b64) return "";
+  const s = String(b64).trim();
+  try {
+    // Workers 环境内置 atob；escape / decodeURIComponent 解决 UTF-8 问题
+    return decodeURIComponent(escape(atob(s)));
+  } catch {
     try {
-        const s = String(str || "").replace(/\s+/g, "");
-        if (!s) return "";
-        let norm = s.replace(/-/g, "+").replace(/_/g, "/");
-        const pad = norm.length % 4;
-        if (pad === 2) norm += "==";
-        else if (pad === 3) norm += "=";
-        else if (pad === 1) norm += "===";
-
-        // Workers 环境有 atob
-        return decodeURIComponent(
-            escape(atob(norm)),
-        );
+      return atob(s);
     } catch {
-        return "";
+      return "";
     }
+  }
 }
 
-/* 粗略判断一行看起来像 base64 */
-function looksLikeBase64(str) {
-    const s = String(str || "").replace(/\s+/g, "");
-    if (!s || s.length < 8) return false;
-    if (/[^A-Za-z0-9+/=_-]/.test(s)) return false;
-    return true;
+/*
+  尝试对整段文本做「多层 base64 解包」
+
+  逻辑：
+    1) 如果原文已经包含 ss:// / vmess:// / vless:// ... → 直接返回原文
+    2) 否则，如果看起来是 base64（只有 A-Za-z0-9+/=）：
+        最多解 3 层，每解一层检查一次是否出现协议串
+*/
+function tryDecodeSubscriptionText(raw, maxDepth = 3) {
+  let text = String(raw || "").trim();
+  if (!text) return text;
+
+  if (containsNodeProtocol(text)) return text;
+
+  let cur = text;
+  for (let i = 0; i < maxDepth; i++) {
+    const base64ish = /^[A-Za-z0-9+/=]+$/.test(cur.replace(/\s+/g, ""));
+    if (!base64ish) break;
+
+    const decoded = safeAtob(cur);
+    if (!decoded) break;
+
+    if (containsNodeProtocol(decoded)) {
+      return decoded;
+    }
+
+    cur = decoded;
+  }
+
+  return text;
 }
 
-/* 解析可能的 JSON 节点（Clash proxies 行） */
+/* 尝试解析「整行 JSON 节点」：{"type":"vless","server":"...","port":...,...} */
 function tryParseJsonNode(line) {
-    const text = String(line || "").trim();
-    if (!text.startsWith("{") || !text.endsWith("}")) return null;
+  const text = String(line || "").trim();
+  if (!text.startsWith("{") || !text.endsWith("}")) return null;
 
-    let obj = null;
+  let obj = null;
+  try {
+    obj = JSON.parse(text);
+  } catch {
+    // 粗暴兼容：把单引号替成双引号再试一次（简单 clash 对象形式）
     try {
-        obj = JSON.parse(text);
+      obj = JSON.parse(text.replace(/'/g, '"'));
     } catch {
-        // 粗暴把单引号替成双引号再试一次（兼容少量行内 JSON）
-        try {
-            obj = JSON.parse(
-                text.replace(/'/g, '"'),
-            );
-        } catch {
-            return null;
-        }
+      return null;
     }
+  }
 
-    if (!obj || typeof obj !== "object") return null;
+  if (!obj || typeof obj !== "object") return null;
 
-    const type = String(obj.type || obj.protocol || "").toLowerCase();
-    if (!type) return null;
+  const type =
+    (obj.type || obj.protocol || obj.proto || "").toString().toLowerCase();
+  if (!type) return null;
 
-    const server =
-        obj.server || obj.add || obj.address || obj.host || "";
-    const port = Number(obj.port || obj.server_port || 0);
+  const server =
+    obj.server || obj.add || obj.address || obj.host || obj.servername || "";
+  const port = Number(obj.port || obj.server_port || obj.serverPort || 0) || 0;
 
-    let name =
-        obj.name ||
-        obj.ps ||
-        obj.remarks ||
-        (server && port ? `${server}:${port}` : "");
+  let name =
+    obj.name ||
+    obj.ps ||
+    obj.remarks ||
+    (server && port ? `${server}:${port}` : "");
 
-    const node = {
-        ...obj,
-        type,
-        server,
-        port,
-        name: name || "",
-        raw: obj.raw || text,
-    };
-
-    return node;
+  return {
+    ...obj,
+    type,
+    server,
+    port,
+    name: name || "",
+    raw: obj.raw || text,
+  };
 }
 
-/* 统一解析入口：原始文本 → Node[] */
-export function parseAnythingToNodes(rawText = "") {
-    const nodes = [];
-    const queue = [];
-    const seenText = new Set();
+/* 主入口：把任意原始文本转成 Node[] */
+export function parseAnythingToNodes(rawText) {
+  const result = [];
 
-    const first = String(rawText || "").trim();
-    if (!first) return [];
+  if (!rawText || !String(rawText).trim()) {
+    return result;
+  }
 
-    queue.push(first);
+  // 1) 对整段文本做一次「订阅解包」
+  const decodedText = tryDecodeSubscriptionText(rawText);
 
-    while (queue.length) {
-        const curText = queue.shift();
-        if (!curText) continue;
+  // 2) 按行拆分（支持 \r\n / \n 等）
+  const lines = splitMixedTextToLines(decodedText);
 
-        const key = curText.length > 2048 ? curText.slice(0, 2048) : curText;
-        if (seenText.has(key)) continue;
-        seenText.add(key);
+  for (let rawLine of lines) {
+    const line = String(rawLine || "").trim();
+    if (!line) continue;
 
-        const items = splitMixedTextToLines(curText);
+    // 跳过明显注释行
+    if (line.startsWith("#") || line.startsWith("//")) continue;
 
-        for (const item of items) {
-            const line = String(item || "").trim();
-            if (!line) continue;
-
-            const lower = line.toLowerCase();
-
-            // ===== 1) 纯 base64 行：尝试解一层，看里面是不是节点/订阅 =====
-            if (!lower.includes("://") && looksLikeBase64(line)) {
-                const decoded = safeBase64Decode(line);
-                if (decoded && decoded !== line) {
-                    // 如果解出来包含协议/JSON/Clash 就再进队列递归解析
-                    if (
-                        /ss:\/\//i.test(decoded) ||
-                        /vmess:\/\//i.test(decoded) ||
-                        /vless:\/\//i.test(decoded) ||
-                        /trojan:\/\//i.test(decoded) ||
-                        /hysteria2?:\/\//i.test(decoded) ||
-                        /"type"\s*:\s*"/i.test(decoded) ||
-                        /\bproxies\b/i.test(decoded)
-                    ) {
-                        queue.push(decoded);
-                        continue;
-                    }
-                }
-            }
-
-            // ===== 2) JSON 行：Clash 内联 proxy 对象 =====
-            if (line[0] === "{" && line.endsWith("}")) {
-                const jsonNode = tryParseJsonNode(line);
-                if (jsonNode) {
-                    nodes.push(jsonNode);
-                    continue;
-                }
-            }
-
-            // ===== 3) URL 协议：ss / trojan / vmess / vless / hy2 =====
-            let n = null;
-            if (lower.startsWith("ss://")) {
-                n = parseSS(line);
-            } else if (lower.startsWith("vmess://")) {
-                n = parseVmess(line);
-            } else if (lower.startsWith("vless://")) {
-                n = parseVless(line);
-            } else if (lower.startsWith("trojan://")) {
-                n = parseTrojan(line);
-            } else if (
-                lower.startsWith("hysteria2://") ||
-                lower.startsWith("hy2://") ||
-                lower.startsWith("hysteria://")
-            ) {
-                n = parseHy2(line);
-            }
-
-            if (n) {
-                nodes.push(n);
-                continue;
-            }
-
-            // ===== 4) 兜底未知：保留 raw，方便后续调试/扩展 =====
-            nodes.push({ type: "unknown", raw: line });
-        }
+    // ===== 1) JSON 节点行 =====
+    const jsonNode = tryParseJsonNode(line);
+    if (jsonNode) {
+      result.push(jsonNode);
+      continue;
     }
 
-    return nodes;
+    const lower = line.toLowerCase();
+
+    // ===== 2) 协议 URL：ss:// =====
+    if (lower.startsWith("ss://")) {
+      const n = parseSS(line);
+      result.push(
+        n
+          ? { ...n, type: "ss", raw: n.raw || line }
+          : { type: "ss", raw: line },
+      );
+      continue;
+    }
+
+    // ===== 3) 协议 URL：trojan:// =====
+    if (lower.startsWith("trojan://")) {
+      const n = parseTrojan(line);
+      result.push(
+        n
+          ? { ...n, type: "trojan", raw: n.raw || line }
+          : { type: "trojan", raw: line },
+      );
+      continue;
+    }
+
+    // ===== 4) 协议 URL：hysteria2 / hy2 =====
+    if (
+      lower.startsWith("hysteria2://") ||
+      lower.startsWith("hy2://") ||
+      lower.startsWith("hysteria://")
+    ) {
+      const n = parseHy2(line);
+      result.push(
+        n
+          ? { ...n, type: "hysteria2", raw: n.raw || line }
+          : { type: "hysteria2", raw: line },
+      );
+      continue;
+    }
+
+    // ===== 5) 协议 URL：vmess:// =====
+    if (lower.startsWith("vmess://")) {
+      const n = parseVmess(line);
+      result.push(
+        n
+          ? { ...n, type: "vmess", raw: n.raw || line }
+          : { type: "vmess", raw: line },
+      );
+      continue;
+    }
+
+    // ===== 6) 协议 URL：vless:// =====
+    if (lower.startsWith("vless://")) {
+      const n = parseVless(line);
+      result.push(
+        n
+          ? { ...n, type: "vless", raw: n.raw || line }
+          : { type: "vless", raw: line },
+      );
+      continue;
+    }
+
+    // ===== 7) 其它未知行：保留 raw，标记成 unknown，方便以后扩展 / 调试 =====
+    result.push({
+      type: "unknown",
+      raw: line,
+    });
+  }
+
+  return result;
 }
