@@ -14,7 +14,7 @@
       • vless       → parseVless
 
   - 输出：
-      • 标准化 Node[] 数组
+      • 标准化 Node[] 数组，供各客户端渲染器使用
 */
 
 import { splitMixedTextToLines } from "./shared/utils/text.js";
@@ -37,15 +37,18 @@ function isLikelyBase64(s) {
   if (!s) return false;
   const t = String(s).trim();
 
+  // 太短的一般不是
   if (t.length < 16) return false;
+  // base64 合法字符
   if (!/^[A-Za-z0-9+/_\-=]+$/.test(t)) return false;
+  // 已经有 :// 的，说明更像 URL
   if (t.includes("://")) return false;
 
   return true;
 }
 
 /**
- * urlsafe base64 解码
+ * urlsafe base64 解码（兼容 -/_）
  */
 function b64DecodeUrlSafe(input) {
   if (!input) return "";
@@ -63,6 +66,7 @@ function b64DecodeUrlSafe(input) {
 
 /**
  * 尝试把“像 base64”的文本解码成带 scheme 的内容
+ * 最多解 maxDepth 层（防止死循环）
  */
 function decodeMaybeToScheme(s, maxDepth = 2) {
   let cur = String(s || "").trim();
@@ -71,9 +75,12 @@ function decodeMaybeToScheme(s, maxDepth = 2) {
     const decoded = b64DecodeUrlSafe(cur);
     if (!decoded || decoded === cur) return "";
 
+    // 解出来如果已经包含我们关心的协议，就返回
     if (SCHEME_RE.test(decoded)) {
       return decoded;
     }
+
+    // 否则继续尝试下一层
     cur = decoded;
   }
   return "";
@@ -103,43 +110,66 @@ export function parseAnythingToNodes(rawText) {
     // ss://
     if (line.startsWith("ss://")) {
       const n = parseSS(line);
-      nodes.push(n || { type: "ss", raw: line });
+      nodes.push(
+        n
+          ? { ...n, type: "ss", raw: n.raw || line }
+          : { type: "ss", raw: line }
+      );
       continue;
     }
 
     // vmess://
-    if (line.startsWith("vmess://")) {
+    if (line.toLowerCase().startsWith("vmess://")) {
       const n = parseVmess(line);
-      nodes.push(n || { type: "vmess", raw: line });
+      nodes.push(
+        n
+          ? { ...n, type: "vmess", raw: n.raw || line }
+          : { type: "vmess", raw: line }
+      );
       continue;
     }
 
     // vless://
     if (line.toLowerCase().startsWith("vless://")) {
       const n = parseVless(line);
-      nodes.push(n || { type: "vless", raw: line });
+      nodes.push(
+        n
+          ? { ...n, type: "vless", raw: n.raw || line }
+          : { type: "vless", raw: line }
+      );
       continue;
     }
 
     // trojan://
     if (line.toLowerCase().startsWith("trojan://")) {
       const n = parseTrojan(line);
-      nodes.push(n || { type: "trojan", raw: line });
+      nodes.push(
+        n
+          ? { ...n, type: "trojan", raw: n.raw || line }
+          : { type: "trojan", raw: line }
+      );
       continue;
     }
 
-    // hysteria2 / hy2 / hysteria
-    if (
-      line.toLowerCase().startsWith("hysteria2://") ||
-      line.toLowerCase().startsWith("hy2://") ||
-      line.toLowerCase().startsWith("hysteria://")
-    ) {
-      const n = parseHy2(line);
-      nodes.push(n || { type: "hysteria2", raw: line });
-      continue;
+    // hysteria2 / hy2 / hysteria://
+    {
+      const l = line.toLowerCase();
+      if (
+        l.startsWith("hysteria2://") ||
+        l.startsWith("hy2://") ||
+        l.startsWith("hysteria://")
+      ) {
+        const n = parseHy2(line);
+        nodes.push(
+          n
+            ? { ...n, type: "hysteria2", raw: n.raw || line }
+            : { type: "hysteria2", raw: line }
+        );
+        continue;
+      }
     }
 
-    // ===== 2) 没有 scheme 的行：尝试当 base64 解析成订阅 =====
+    // ===== 2) 没有明显 scheme：尝试当 base64 订阅解包 =====
 
     if (!line.includes("://") && isLikelyBase64(line)) {
       const decoded = decodeMaybeToScheme(line, 3);
@@ -154,7 +184,7 @@ export function parseAnythingToNodes(rawText) {
       }
     }
 
-    // ===== 3) 兜底未知 =====
+    // ===== 3) 兜底未知：保留 raw，方便后续调试/扩展 =====
     nodes.push({ type: "unknown", raw: line });
   }
 
