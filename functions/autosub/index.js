@@ -1,28 +1,42 @@
-/* index.js
- * 文件作用：
- *   - 作为 Cloudflare Pages Functions 入口
- *   - 接收请求 → 获取节点文本 → 判断客户端类型 → 调用 Exit.js 生成订阅内容
+/**
+ * autosub/index.js
  *
- * 注意： 
- *   - 这里是 Pages Functions 写法：export async function onRequest(context)
- *   - 不能用 Workers 写法：export default { async fetch(request, env, ctx) { ... } }
+ * 作用：
+ *   - 作为 Cloudflare Pages Functions 的入口
+ *   - 统一处理 /autosub 请求：
+ *       1. 从 KV / Query / Body 里拿到原始节点文本
+ *       2. 根据 UA / query 判断目标客户端类型（clash / surge / v2ray）
+ *       3. 调用 Exit.js → Parser / Normalizer / Router → 生成最终订阅内容
+ *
+ * 注意：
+ *   - 这是 Pages Functions 写法：export async function onRequest(context)
+ *   - 不是 Worker 写法（没有 export default { fetch() {} }）
  */
 
 import { renderSubscription } from "./Exit.js";
 
-/* 从 env 中拿到 Paste_Sub 这个 KV */
+/**
+ * 获取绑定在 env 上的 Paste_Sub 命名空间
+ * 方便后面做容错（未绑定时给出更清晰的报错）
+ */
 function getPasteKV(env) {
   return env && env.Paste_Sub ? env.Paste_Sub : null;
 }
 
-/* 按 id 从 KV 里面读原始文本 */
+/**
+ * 按 id 从 KV 中读取原始内容
+ *
+ * 兼容两种存储方式：
+ *   1. JSON：{ content / text / data / raw / value }
+ *   2. 纯文本：直接存了一段字符串
+ */
 async function loadFromKVById(env, id) {
   if (!id) return "";
 
   const kv = getPasteKV(env);
   if (!kv) throw new Error("KV namespace `Paste_Sub` not bound");
 
-  // 优先尝试 JSON
+  // 1）优先尝试 JSON 读取
   const rec = await kv.get(id, "json").catch(() => null);
   if (rec && typeof rec === "object") {
     const raw =
@@ -35,28 +49,38 @@ async function loadFromKVById(env, id) {
     if (raw && String(raw).trim()) return String(raw);
   }
 
-  // 其次尝试纯文本
+  // 2）如果不是 JSON，就当纯文本再读一次
   const rawText = await kv.get(id, "text").catch(() => "");
   if (rawText && String(rawText).trim()) return String(rawText);
 
+  // 都没有就返回空
   return "";
 }
 
-/* 根据 UA 判断客户端类型
- * 返回："clash" / "surge" / "v2ray"
+/**
+ * 根据 UA 判断大致客户端类型
+ *
+ * 返回：
+ *   - "clash"
+ *   - "surge"
+ *   - "v2ray"（兜底）
+ *
+ * 说明：
+ *   - 这里只负责「大类区分」，不区分具体哪个 Clash（Meta / Mihomo 等）
+ *   - Stash 已按你的要求彻底不做特殊处理
  */
 function pickClientFromUA(uaRaw) {
   const ua = (uaRaw || "").toLowerCase();
 
-  // UA 为空：兜底 v2ray
+  // UA 为空：默认当 v2ray
   if (!ua) return "v2ray";
 
-  // Surge
+  // Surge（macOS / iOS）
   if (ua.includes("surge")) {
     return "surge";
   }
 
-  // Clash 系（clash / meta / mihomo / cfw / clash for windows）
+  // Clash 系（cfw / meta / mihomo / clash for windows 等都统一当 clash）
   if (
     ua.includes("clash") ||
     ua.includes("mihomo") ||
@@ -67,47 +91,59 @@ function pickClientFromUA(uaRaw) {
     return "clash";
   }
 
-  // 其他全部当 v2ray(Base64)
+  // 其它全部当 v2ray(Base64 订阅) 处理
   return "v2ray";
 }
 
-/* 决定最终使用的 client 类型
+/**
+ * 决定最终 client 类型
+ *
  * 优先级：
- *   1. URL 上显式 ?client=clash/surge/v2ray
- *   2. ?text= 存在时，固定当 clash（方便浏览器调试）
- *   3. 其余情况按 UA 判断
+ *   1. URL 显式指定 ?client=clash|surge|v2ray
+ *   2. 如果有 ?text=（调试用），默认当 clash，方便直接导入 Clash 看效果
+ *   3. 其它情况按 UA 自动判断
  */
 function decideClient(url, uaRaw) {
   const p = (url.searchParams.get("client") || "")
     .trim()
     .toLowerCase();
 
+  // 显式指定优先
   if (p === "clash" || p === "surge" || p === "v2ray") {
     return p;
   }
 
-  // 调试接口：?text= 直接当 Clash 使用
+  // 浏览器调试接口：?text= 时，强制输出 clash 配置
   if (url.searchParams.has("text")) {
     return "clash";
   }
 
+  // 否则按 UA 判断
   return pickClientFromUA(uaRaw);
 }
 
-/* 入口函数：处理所有 /autosub 请求 */
+/**
+ * Cloudflare Pages Functions 入口
+ * 这里负责：
+ *   - 限制路径（只响应 /autosub）
+ *   - 处理 CORS 预检
+ *   - 收集原始节点文本
+ *   - 调用 renderSubscription 得到最终订阅内容
+ */
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const path = url.pathname;
 
-  // 只处理 /autosub 路径，其它路径交给静态页面
+  // 只处理 /autosub 路径，其它交给静态站
+  // 如果你想改成 /api/sub，把这里的判断一起改掉
   if (path !== "/autosub") {
     return new Response("Not Found", { status: 404 });
   }
 
   const ua = request.headers.get("User-Agent") || "";
 
-  // CORS 预检
+  // CORS 预检请求
   if (request.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
@@ -120,13 +156,13 @@ export async function onRequest(context) {
     });
   }
 
-  // 决定客户端类型：clash / surge / v2ray
+  // 先决定好输出给谁用：clash / surge / v2ray
   const client = decideClient(url, ua);
 
   let rawText = "";
-  let source = "";
+  let source = ""; // 记录数据来源：kv:id / query / body / empty，方便调试
 
-  // 1) 优先从 KV:id 读
+  // ===== 1）优先从 KV 中取：?id=xxx =====
   const id = (url.searchParams.get("id") || "").trim();
   if (id) {
     rawText = await loadFromKVById(env, id).catch(() => "");
@@ -135,7 +171,7 @@ export async function onRequest(context) {
     }
   }
 
-  // 2) 其次从 query text/raw 取
+  // ===== 2）其次从 query string 中取：?text= / ?raw= =====
   if (!rawText) {
     const qText =
       url.searchParams.get("text") ||
@@ -147,7 +183,7 @@ export async function onRequest(context) {
     }
   }
 
-  // 3) 再次从 body 取（POST/PUT）
+  // ===== 3）最后从请求 body 中取（POST / PUT 等） =====
   if (!rawText && request.method !== "GET") {
     const bodyText = await request.text().catch(() => "");
     if (bodyText && String(bodyText).trim()) {
@@ -156,19 +192,24 @@ export async function onRequest(context) {
     }
   }
 
-  // 4) 兜底：没有内容就是空串
+  // ===== 4）兜底：拿不到内容就当空文本 =====
   if (!rawText) {
     rawText = "";
     if (!source) source = "empty";
   }
 
-  // 把 query 转成普通对象，方便 Exit.js 使用
+  // 把 query 参数拍平为普通对象，传给 Exit.js 做更多细分控制（比如 mode / flag 等）
   const queryObj = Object.fromEntries(url.searchParams.entries());
 
-  // 交给 Exit.js 处理：
-  //   - 解析节点（ss/vmess/vless/trojan/hy2 等）
-  //   - 规范化
-  //   - 调用 Router.routeAndRender，输出 Clash/Surge/v2ray 格式
+  /**
+   * renderSubscription 做的事：
+   *   1. parseAnythingToNodes(rawText) → 解析各种协议/格式的节点
+   *   2. normalizeNodes(nodes) → 去重 / 补充默认字段
+   *   3. routeAndRender(nodes, { client, ua, query, source, rawText }) →
+   *        - Clash：输出 YAML
+   *        - Surge：输出 [Proxy] 段
+   *        - 兜底 v2ray：输出 Base64 订阅（内置防止“二次 Base64”）
+   */
   const { body, contentType } = renderSubscription(rawText, {
     client,
     source,
@@ -176,6 +217,7 @@ export async function onRequest(context) {
     query: queryObj,
   });
 
+  // 最终返回订阅内容
   return new Response(body || "", {
     headers: {
       "content-type": contentType || "text/plain; charset=utf-8",
