@@ -113,18 +113,19 @@ export function routeAndRender(
     rawText = "",
     query = {},
     source = "",
+    ua = "",
   } = {},
 ) {
   const c = String(client || "v2ray").toLowerCase();
 
   // Clash：输出简易完整配置
   if (c === "clash") {
-    return renderClash(nodes, { client, query, source, rawText });
+    return renderClash(nodes, { client, query, source, rawText, ua });
   }
 
   // Surge：只输出 [Proxy] 段
   if (c === "surge") {
-    return renderSurge(nodes, { client, query, source, rawText });
+    return renderSurge(nodes, { client, query, source, rawText, ua });
   }
 
   // 兜底：v2ray 样式订阅
