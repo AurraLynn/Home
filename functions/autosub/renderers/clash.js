@@ -12,13 +12,14 @@
       • hysteria2 / hy2
 
   - 输出：
-      Clash / Mihomo 通用配置：
-        • 头部内置一个简单可用的配置（port / dns / 规则）
-        • proxies 使用 JSON 内联写法，兼容 FIClash / NekoBox / Clash Verge 等：
-            proxies:
-              - {"name":"HK 02","type":"ss","server":"...","port":11411,"cipher":"...","password":"..."}
+      Clash / Mihomo 通用配置（块状 YAML）：
+        port / socks-port / dns / rules 等基础配置
+        proxies:
+          - name: "..."
+            type: ss / vmess / vless / trojan / hysteria2
+            ...
 
-  - client 用法（示例）：
+  - 调用示例：
       https://aura.us.kg/autosub?id=你的id&client=clash
 */
 
@@ -33,17 +34,32 @@ function pickNumber(v, fallback) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function yamlQuote(str) {
+  const s = String(str);
+  // 简单转义双引号和反斜杠
+  return `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
+/** 缩进 + 一行文本 */
+function pushLine(lines, indentLevel, text) {
+  const indent = "  ".repeat(indentLevel);
+  lines.push(indent + text);
+}
+
 /**
- * Node -> Clash 代理对象（JSON 内联用）
- * 返回形如：
- *   { name, type, server, port, ... }
+ * Node -> 内部 proxy 对象（_type 区分协议）
+ * 统一结构，后面 dumpProxyBlock 负责输出具体 YAML
  */
 function nodeToClashProxy(node) {
   if (!node || !node.type) return null;
 
   const type = String(node.type).toLowerCase();
-  const server = pickString(node.server);
-  const port = pickNumber(node.port);
+
+  // 关键修正：server / port 容错
+  // 很多解析器只填了 host / add / server_port，我们在这里兜一层
+  const server = pickString(node.server || node.host || node.add);
+  const port = pickNumber(node.port ?? node.server_port, 0);
+
   const nameBase =
     pickString(node.name) || (server && port ? `${server}:${port}` : "");
   const name = nameBase || "Unnamed";
@@ -57,8 +73,8 @@ function nodeToClashProxy(node) {
     if (!cipher || !password) return null;
 
     const proxy = {
+      _type: "ss",
       name,
-      type: "ss",
       server,
       port,
       cipher,
@@ -94,7 +110,7 @@ function nodeToClashProxy(node) {
       }
 
       if (Object.keys(opts).length > 0) {
-        proxy["plugin-opts"] = opts;
+        proxy.pluginOpts = opts;
       }
     }
 
@@ -107,8 +123,8 @@ function nodeToClashProxy(node) {
     if (!uuid) return null;
 
     const proxy = {
+      _type: "vmess",
       name,
-      type: "vmess",
       server,
       port,
       uuid,
@@ -184,8 +200,8 @@ function nodeToClashProxy(node) {
     if (!uuid) return null;
 
     const proxy = {
+      _type: "vless",
       name,
-      type: "vless",
       server,
       port,
       uuid,
@@ -280,8 +296,8 @@ function nodeToClashProxy(node) {
     if (!password) return null;
 
     const proxy = {
+      _type: "trojan",
       name,
-      type: "trojan",
       server,
       port,
       password,
@@ -291,7 +307,7 @@ function nodeToClashProxy(node) {
     if (sni) proxy.sni = sni;
 
     if (typeof node.skipCertVerify === "boolean") {
-      proxy["skip-cert-verify"] = node.skipCertVerify;
+      proxy.skipCertVerify = node.skipCertVerify;
     }
 
     const net = pickString(node.network).toLowerCase();
@@ -355,13 +371,11 @@ function nodeToClashProxy(node) {
     if (!mainPort) return null;
 
     const proxy = {
+      _type: "hysteria2",
       name,
-      type: "hysteria2",
       server,
       port: mainPort,
-      // 同时输出 password + auth，让不同内核自己选用
       password: pwd,
-      auth: pwd,
     };
 
     if (portsStr) {
@@ -379,7 +393,7 @@ function nodeToClashProxy(node) {
     }
 
     if (typeof node.skipCertVerify === "boolean") {
-      proxy["skip-cert-verify"] = node.skipCertVerify;
+      proxy.skipCertVerify = node.skipCertVerify;
     }
 
     const obfsHy = pickString(node.obfs);
@@ -390,6 +404,276 @@ function nodeToClashProxy(node) {
 
   // 未识别协议
   return null;
+}
+
+/** 输出单个 proxy 的块状 YAML */
+function dumpProxyBlock(lines, proxy) {
+  // 通用字段
+  pushLine(lines, 1, `- name: ${yamlQuote(proxy.name)}`);
+  pushLine(lines, 2, `type: ${proxy._type}`);
+  pushLine(lines, 2, `server: ${proxy.server}`);
+  pushLine(lines, 2, `port: ${proxy.port}`);
+
+  // ===== SS =====
+  if (proxy._type === "ss") {
+    pushLine(lines, 2, `cipher: ${proxy.cipher}`);
+    pushLine(lines, 2, `password: ${proxy.password}`);
+
+    if (proxy.plugin) pushLine(lines, 2, `plugin: ${proxy.plugin}`);
+
+    if (proxy.pluginOpts) {
+      pushLine(lines, 2, `plugin-opts:`);
+      if (proxy.pluginOpts.mode)
+        pushLine(lines, 3, `mode: ${proxy.pluginOpts.mode}`);
+      if (proxy.pluginOpts.host)
+        pushLine(lines, 3, `host: ${proxy.pluginOpts.host}`);
+      if (proxy.pluginOpts.uri)
+        pushLine(lines, 3, `uri: ${proxy.pluginOpts.uri}`);
+    }
+    return;
+  }
+
+  // ===== VMess =====
+  if (proxy._type === "vmess") {
+    pushLine(lines, 2, `uuid: ${proxy.uuid}`);
+    pushLine(lines, 2, `alterId: ${proxy.alterId}`);
+    if (proxy.cipher) pushLine(lines, 2, `cipher: ${proxy.cipher}`);
+    if (proxy.udp !== undefined)
+      pushLine(lines, 2, `udp: ${proxy.udp ? "true" : "false"}`);
+    if (proxy.tls) pushLine(lines, 2, `tls: true`);
+    if (proxy.servername)
+      pushLine(lines, 2, `servername: ${yamlQuote(proxy.servername)}`);
+    if (proxy.network) pushLine(lines, 2, `network: ${proxy.network}`);
+
+    if (proxy["ws-opts"]) {
+      pushLine(lines, 2, `ws-opts:`);
+      if (proxy["ws-opts"].path)
+        pushLine(lines, 3, `path: ${proxy["ws-opts"].path}`);
+      if (
+        proxy["ws-opts"].headers &&
+        proxy["ws-opts"].headers.Host
+      ) {
+        pushLine(lines, 3, `headers:`);
+        pushLine(
+          lines,
+          4,
+          `Host: ${yamlQuote(proxy["ws-opts"].headers.Host)}`
+        );
+      }
+    }
+
+    if (proxy["http-opts"]) {
+      pushLine(lines, 2, `http-opts:`);
+      if (proxy["http-opts"].path) {
+        pushLine(lines, 3, `path:`);
+        for (const p of proxy["http-opts"].path) {
+          pushLine(lines, 4, `- ${p}`);
+        }
+      }
+      if (proxy["http-opts"].headers) {
+        pushLine(lines, 3, `headers:`);
+        const hdrs = proxy["http-opts"].headers;
+        for (const key of Object.keys(hdrs)) {
+          const arr = hdrs[key] || [];
+          if (!arr.length) continue;
+          pushLine(lines, 4, `${key}:`);
+          for (const v of arr) {
+            pushLine(lines, 5, `- ${yamlQuote(v)}`);
+          }
+        }
+      }
+    }
+
+    if (proxy["grpc-opts"]) {
+      pushLine(lines, 2, `grpc-opts:`);
+      if (proxy["grpc-opts"]["grpc-service-name"])
+        pushLine(
+          lines,
+          3,
+          `grpc-service-name: ${proxy["grpc-opts"]["grpc-service-name"]}`
+        );
+    }
+
+    return;
+  }
+
+  // ===== VLESS =====
+  if (proxy._type === "vless") {
+    pushLine(lines, 2, `uuid: ${proxy.uuid}`);
+    if (proxy.udp !== undefined)
+      pushLine(lines, 2, `udp: ${proxy.udp ? "true" : "false"}`);
+    if (proxy.flow) pushLine(lines, 2, `flow: ${proxy.flow}`);
+    if (proxy.tls) pushLine(lines, 2, `tls: true`);
+    if (proxy.servername)
+      pushLine(lines, 2, `servername: ${yamlQuote(proxy.servername)}`);
+
+    if (proxy.alpn && Array.isArray(proxy.alpn) && proxy.alpn.length) {
+      pushLine(lines, 2, `alpn:`);
+      for (const a of proxy.alpn) {
+        pushLine(lines, 3, `- ${a}`);
+      }
+    }
+
+    if (proxy["client-fingerprint"]) {
+      pushLine(
+        lines,
+        2,
+        `client-fingerprint: ${proxy["client-fingerprint"]}`
+      );
+    }
+
+    if (proxy.network) pushLine(lines, 2, `network: ${proxy.network}`);
+
+    if (proxy["ws-opts"]) {
+      pushLine(lines, 2, `ws-opts:`);
+      if (proxy["ws-opts"].path)
+        pushLine(lines, 3, `path: ${proxy["ws-opts"].path}`);
+      if (
+        proxy["ws-opts"].headers &&
+        proxy["ws-opts"].headers.Host
+      ) {
+        pushLine(lines, 3, `headers:`);
+        pushLine(
+          lines,
+          4,
+          `Host: ${yamlQuote(proxy["ws-opts"].headers.Host)}`
+        );
+      }
+    }
+
+    if (proxy["http-opts"]) {
+      pushLine(lines, 2, `http-opts:`);
+      if (proxy["http-opts"].path) {
+        pushLine(lines, 3, `path:`);
+        for (const p of proxy["http-opts"].path) {
+          pushLine(lines, 4, `- ${p}`);
+        }
+      }
+      if (proxy["http-opts"].headers) {
+        pushLine(lines, 3, `headers:`);
+        const hdrs = proxy["http-opts"].headers;
+        for (const key of Object.keys(hdrs)) {
+          const arr = hdrs[key] || [];
+          if (!arr.length) continue;
+          pushLine(lines, 4, `${key}:`);
+          for (const v of arr) {
+            pushLine(lines, 5, `- ${yamlQuote(v)}`);
+          }
+        }
+      }
+    }
+
+    if (proxy["grpc-opts"]) {
+      pushLine(lines, 2, `grpc-opts:`);
+      if (proxy["grpc-opts"]["grpc-service-name"])
+        pushLine(
+          lines,
+          3,
+          `grpc-service-name: ${proxy["grpc-opts"]["grpc-service-name"]}`
+        );
+    }
+
+    if (proxy["reality-opts"]) {
+      pushLine(lines, 2, `reality-opts:`);
+      if (proxy["reality-opts"]["public-key"])
+        pushLine(
+          lines,
+          3,
+          `public-key: ${proxy["reality-opts"]["public-key"]}`
+        );
+      if (proxy["reality-opts"]["short-id"])
+        pushLine(
+          lines,
+          3,
+          `short-id: ${yamlQuote(proxy["reality-opts"]["short-id"])}`
+        );
+      if (proxy["reality-opts"]["spider-x"])
+        pushLine(
+          lines,
+          3,
+          `spider-x: ${yamlQuote(proxy["reality-opts"]["spider-x"])}`
+        );
+    }
+
+    return;
+  }
+
+  // ===== Trojan =====
+  if (proxy._type === "trojan") {
+    pushLine(lines, 2, `password: ${proxy.password}`);
+    if (proxy.sni) pushLine(lines, 2, `sni: ${proxy.sni}`);
+    if (typeof proxy.skipCertVerify === "boolean") {
+      pushLine(
+        lines,
+        2,
+        `skip-cert-verify: ${proxy.skipCertVerify ? "true" : "false"}`
+      );
+    }
+
+    if (proxy.network) {
+      pushLine(lines, 2, `network: ${proxy.network}`);
+    }
+
+    if (proxy["ws-opts"]) {
+      pushLine(lines, 2, `ws-opts:`);
+      if (proxy["ws-opts"].path)
+        pushLine(lines, 3, `path: ${proxy["ws-opts"].path}`);
+    }
+
+    if (proxy["grpc-opts"]) {
+      pushLine(lines, 2, `grpc-opts:`);
+      if (proxy["grpc-opts"]["grpc-service-name"])
+        pushLine(
+          lines,
+          3,
+          `grpc-service-name: ${proxy["grpc-opts"]["grpc-service-name"]}`
+        );
+    }
+
+    if (proxy["reality-opts"]) {
+      pushLine(lines, 2, `reality-opts:`);
+      if (proxy["reality-opts"]["public-key"])
+        pushLine(
+          lines,
+          3,
+          `public-key: ${proxy["reality-opts"]["public-key"]}`
+        );
+      if (proxy["reality-opts"]["short-id"])
+        pushLine(
+          lines,
+          3,
+          `short-id: ${yamlQuote(proxy["reality-opts"]["short-id"])}`
+        );
+      if (proxy["reality-opts"]["spider-x"])
+        pushLine(
+          lines,
+          3,
+          `spider-x: ${yamlQuote(proxy["reality-opts"]["spider-x"])}`
+        );
+    }
+
+    return;
+  }
+
+  // ===== Hysteria2 =====
+  if (proxy._type === "hysteria2") {
+    pushLine(lines, 2, `password: ${proxy.password}`);
+    if (proxy.ports) pushLine(lines, 2, `ports: ${proxy.ports}`);
+    if (proxy.mport) pushLine(lines, 2, `mport: ${proxy.mport}`);
+    if (typeof proxy.udp === "boolean") {
+      pushLine(lines, 2, `udp: ${proxy.udp ? "true" : "false"}`);
+    }
+    if (proxy.sni) pushLine(lines, 2, `sni: ${proxy.sni}`);
+    if (typeof proxy.skipCertVerify === "boolean") {
+      pushLine(
+        lines,
+        2,
+        `skip-cert-verify: ${proxy.skipCertVerify ? "true" : "false"}`
+      );
+    }
+    if (proxy.obfs) pushLine(lines, 2, `obfs: ${proxy.obfs}`);
+    return;
+  }
 }
 
 export function renderClash(nodes = []) {
@@ -430,42 +714,45 @@ export function renderClash(nodes = []) {
   lines.push(`log-level: info`);
   lines.push(``);
   lines.push(`dns:`);
-  lines.push(`  enable: true`);
-  lines.push(`  listen: 0.0.0.0:53`);
-  lines.push(`  ipv6: false`);
-  lines.push(`  nameserver:`);
-  lines.push(`    - 223.5.5.5`);
-  lines.push(`    - 223.6.6.6`);
+  pushLine(lines, 1, `enable: true`);
+  pushLine(lines, 1, `listen: 0.0.0.0:53`);
+  pushLine(lines, 1, `ipv6: false`);
+  pushLine(lines, 1, `nameserver:`);
+  pushLine(lines, 2, `- 223.5.5.5`);
+  pushLine(lines, 2, `- 223.6.6.6`);
   lines.push(``);
-  lines.push(`proxies:`);
 
+  // ===== proxies =====
+  lines.push(`proxies:`);
   if (proxies.length === 0) {
-    lines.push(`  # no supported proxies parsed yet`);
+    pushLine(lines, 1, `# 没有解析出任何可用节点`);
   } else {
     for (const p of proxies) {
-      lines.push(`  - ${JSON.stringify(p)}`);
+      dumpProxyBlock(lines, p);
     }
   }
 
+  // ===== proxy-groups =====
   lines.push(``);
   lines.push(`proxy-groups:`);
-  lines.push(`  - name: "🐹Lyn · Node"`);
-  lines.push(`    type: select`);
-  lines.push(`    proxies:`);
+  pushLine(lines, 1, `- name: ${yamlQuote("🐹Lyn · Node")}`);
+  pushLine(lines, 2, `type: select`);
+  pushLine(lines, 2, `proxies:`);
   if (names.length === 0) {
-    lines.push(`      - "DIRECT"`);
+    pushLine(lines, 3, `- DIRECT`);
   } else {
-    lines.push(`      - "DIRECT"`);
+    pushLine(lines, 3, `- DIRECT`);
     for (const name of names) {
-      lines.push(`      - "${String(name).replace(/"/g, '\\"')}"`);
+      pushLine(lines, 3, `- ${yamlQuote(name)}`);
     }
   }
 
+  // ===== rules =====
   lines.push(``);
   lines.push(`rules:`);
-  lines.push(`  - GEOIP,LAN,DIRECT`);
-  lines.push(`  - GEOIP,CN,DIRECT`);
-  lines.push(`  - MATCH,🐹Lyn · Node`);
+  pushLine(lines, 1, `- GEOIP,LAN,DIRECT`);
+  pushLine(lines, 1, `- GEOIP,CN,DIRECT`);
+  pushLine(lines, 1, `- MATCH,🐹Lyn · Node`);
 
   return {
     body: lines.join("\n"),
