@@ -3,7 +3,7 @@
  *   - 作为 Cloudflare Pages Functions 入口
  *   - 接收请求 → 获取节点文本 → 判断客户端类型 → 调用 Exit.js 生成订阅内容
  *
- * 注意：
+ * 注意： 
  *   - 这里是 Pages Functions 写法：export async function onRequest(context)
  *   - 不能用 Workers 写法：export default { async fetch(request, env, ctx) { ... } }
  */
