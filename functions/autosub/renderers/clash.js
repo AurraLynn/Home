@@ -1,14 +1,14 @@
 /*
-  renderers/clash.js
+  functions/autosub/renderers/clash.js
 
   - 输入：
-      Parser.js 标准化后的 Node 数组（Node[]）
+      Parser + Normalizer 产出的 Node 数组（Node[]）
 
   - 当前渲染支持协议：
       • Shadowsocks      → type: "ss"
       • VMess            → type: "vmess"
       • VLESS            → type: "vless"
-      • Trojan           → type: "trojan"（含 grpc / ws）
+      • Trojan           → type: "trojan"
       • Hysteria2 / hy2  → type: "hysteria2" / "hy2"
 
   - 输出：
@@ -31,6 +31,11 @@ function pickString(v, fallback = "") {
 function pickNumber(v, fallback) {
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
+}
+
+function yamlQuote(str) {
+  const s = String(str);
+  return `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 }
 
 /** 缩进 + 一行文本 */
@@ -404,11 +409,7 @@ function nodeToClashProxy(node) {
 /** 输出单个 proxy 的块状 YAML */
 function dumpProxyBlock(lines, proxy) {
   // 通用字段
-  pushLine(
-    lines,
-    1,
-    `- name: "${String(proxy.name).replace(/"/g, '\\"')}"`
-  );
+  pushLine(lines, 1, `- name: ${yamlQuote(proxy.name)}`);
   pushLine(lines, 2, `type: ${proxy._type}`);
   pushLine(lines, 2, `server: ${proxy.server}`);
   pushLine(lines, 2, `port: ${proxy.port}`);
@@ -441,11 +442,7 @@ function dumpProxyBlock(lines, proxy) {
       pushLine(lines, 2, `udp: ${proxy.udp ? "true" : "false"}`);
     if (proxy.tls) pushLine(lines, 2, `tls: true`);
     if (proxy.servername)
-      pushLine(
-        lines,
-        2,
-        `servername: "${proxy.servername.replace(/"/g, '\\"')}"`
-      );
+      pushLine(lines, 2, `servername: ${yamlQuote(proxy.servername)}`);
     if (proxy.network) pushLine(lines, 2, `network: ${proxy.network}`);
 
     if (proxy["ws-opts"]) {
@@ -460,7 +457,7 @@ function dumpProxyBlock(lines, proxy) {
         pushLine(
           lines,
           4,
-          `Host: "${proxy["ws-opts"].headers.Host.replace(/"/g, '\\"')}"`
+          `Host: ${yamlQuote(proxy["ws-opts"].headers.Host)}`
         );
       }
     }
@@ -483,11 +480,7 @@ function dumpProxyBlock(lines, proxy) {
           if (!arr.length) continue;
           pushLine(lines, 4, `${key}:`);
           for (const v of arr) {
-            pushLine(
-              lines,
-              5,
-              `- "${String(v).replace(/"/g, '\\"')}"`
-            );
+            pushLine(lines, 5, `- ${yamlQuote(v)}`);
           }
         }
       }
@@ -514,11 +507,7 @@ function dumpProxyBlock(lines, proxy) {
     if (proxy.flow) pushLine(lines, 2, `flow: ${proxy.flow}`);
     if (proxy.tls) pushLine(lines, 2, `tls: true`);
     if (proxy.servername)
-      pushLine(
-        lines,
-        2,
-        `servername: "${proxy.servername.replace(/"/g, '\\"')}"`
-      );
+      pushLine(lines, 2, `servername: ${yamlQuote(proxy.servername)}`);
 
     if (proxy.alpn && Array.isArray(proxy.alpn) && proxy.alpn.length) {
       pushLine(lines, 2, `alpn:`);
@@ -549,7 +538,7 @@ function dumpProxyBlock(lines, proxy) {
         pushLine(
           lines,
           4,
-          `Host: "${proxy["ws-opts"].headers.Host.replace(/"/g, '\\"')}"`
+          `Host: ${yamlQuote(proxy["ws-opts"].headers.Host)}`
         );
       }
     }
@@ -570,11 +559,7 @@ function dumpProxyBlock(lines, proxy) {
           if (!arr.length) continue;
           pushLine(lines, 4, `${key}:`);
           for (const v of arr) {
-            pushLine(
-              lines,
-              5,
-              `- "${String(v).replace(/"/g, '\\"')}"`
-            );
+            pushLine(lines, 5, `- ${yamlQuote(v)}`);
           }
         }
       }
@@ -602,17 +587,13 @@ function dumpProxyBlock(lines, proxy) {
         pushLine(
           lines,
           3,
-          `short-id: "${String(
-            proxy["reality-opts"]["short-id"]
-          ).replace(/"/g, '\\"')}"`
+          `short-id: ${yamlQuote(proxy["reality-opts"]["short-id"])}`
         );
       if (proxy["reality-opts"]["spider-x"])
         pushLine(
           lines,
           3,
-          `spider-x: "${String(
-            proxy["reality-opts"]["spider-x"]
-          ).replace(/"/g, '\\"')}"`
+          `spider-x: ${yamlQuote(proxy["reality-opts"]["spider-x"])}`
         );
     }
 
@@ -663,17 +644,13 @@ function dumpProxyBlock(lines, proxy) {
         pushLine(
           lines,
           3,
-          `short-id: "${String(
-            proxy["reality-opts"]["short-id"]
-          ).replace(/"/g, '\\"')}"`
+          `short-id: ${yamlQuote(proxy["reality-opts"]["short-id"])}`
         );
       if (proxy["reality-opts"]["spider-x"])
         pushLine(
           lines,
           3,
-          `spider-x: "${String(
-            proxy["reality-opts"]["spider-x"]
-          ).replace(/"/g, '\\"')}"`
+          `spider-x: ${yamlQuote(proxy["reality-opts"]["spider-x"])}`
         );
     }
 
@@ -704,7 +681,7 @@ function dumpProxyBlock(lines, proxy) {
 
 export function renderClash(nodes = []) {
   const proxies = [];
-  for (const n of nodes) {
+  for (const n of nodes || []) {
     const p = nodeToClashProxy(n);
     if (p) proxies.push(p);
   }
@@ -715,14 +692,15 @@ export function renderClash(nodes = []) {
 
   // ===== 头部 =====
   lines.push(`# Generated by Lyn autosub`);
-  lines.push(`mixed-port: 7890`);
+  lines.push(`port: 7890`);
+  lines.push(`socks-port: 7891`);
+  lines.push(`mode: Rule`);
   lines.push(`allow-lan: true`);
-  lines.push(`mode: rule`);
   lines.push(`log-level: info`);
-  lines.push(`external-controller: '127.0.0.1:9090'`);
   lines.push(``);
   lines.push(`dns:`);
   pushLine(lines, 1, `enable: true`);
+  pushLine(lines, 1, `listen: 0.0.0.0:53`);
   pushLine(lines, 1, `ipv6: false`);
   pushLine(lines, 1, `nameserver:`);
   pushLine(lines, 2, `- 223.5.5.5`);
@@ -742,7 +720,7 @@ export function renderClash(nodes = []) {
   // ===== proxy-groups =====
   lines.push(``);
   lines.push(`proxy-groups:`);
-  pushLine(lines, 1, `- name: "🐹Lyn · Node"`);
+  pushLine(lines, 1, `- name: ${yamlQuote("🐹Lyn · Node")}`);
   pushLine(lines, 2, `type: select`);
   pushLine(lines, 2, `proxies:`);
   if (names.length === 0) {
@@ -750,11 +728,7 @@ export function renderClash(nodes = []) {
   } else {
     pushLine(lines, 3, `- DIRECT`);
     for (const name of names) {
-      pushLine(
-        lines,
-        3,
-        `- "${String(name).replace(/"/g, '\\"')}"`
-      );
+      pushLine(lines, 3, `- ${yamlQuote(name)}`);
     }
   }
 
