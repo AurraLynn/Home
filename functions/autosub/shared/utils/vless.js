@@ -3,7 +3,7 @@
  * 文件作用：
  *   - 解析 VLESS 节点为标准 Node 对象
  *   - 支持 Reality / XTLS / base64 userinfo 等多种写法
- *   - 尽量还原 uuid / server / port 及 pbk / sid / flow / sni 等高级参数
+ *   - 尽量还原 uuid/server/port 及 pbk/sid/flow/sni 等高级参数
  */
 
 function safeDecode(str) {
@@ -179,6 +179,9 @@ export function parseVless(input) {
 
     // 6. 其它字段整理
 
+    // XTLS 模式（数字 / 文本都兼容）：常见为 1=direct, 2=vision
+    const xtlsMode = (params.xtls || params.xtlsType || "").toString().trim();
+
     const name =
         (params.remarks ||
             params.remark ||
@@ -203,7 +206,7 @@ export function parseVless(input) {
         }
     }
 
-    // 有些机场 Reality 会用 xtls / reality 之类字段
+    // 有些机场 Reality 会用 reality/xtls 字段
     if (!security && (params.reality || params.xtls)) {
         security = "reality";
         tls = true;
@@ -234,7 +237,34 @@ export function parseVless(input) {
             params["grpc-service-name"] ||
             "") + "";
 
-    const flow = (params.flow || "").toString().trim();
+    // flow：优先使用显式 flow，其次根据 xtlsMode 映射
+    let flow = (params.flow || "").toString().trim();
+
+    if (!flow && xtlsMode) {
+        const m = xtlsMode.toLowerCase();
+
+        // 数字编码：常见面板用 1=direct, 2=vision
+        if (m === "1") {
+            flow = "xtls-rprx-direct";
+        } else if (m === "2") {
+            flow = "xtls-rprx-vision";
+        } else if (m === "3") {
+            flow = "xtls-rprx-origin";
+        } else if (m === "4") {
+            flow = "xtls-rprx-splice";
+        } else {
+            // 文本兜底：兼容直接写字符串的情况
+            if (m === "direct" || m === "xtls-rprx-direct") {
+                flow = "xtls-rprx-direct";
+            } else if (m === "vision" || m === "xtls-rprx-vision") {
+                flow = "xtls-rprx-vision";
+            } else if (m === "origin" || m === "xtls-rprx-origin") {
+                flow = "xtls-rprx-origin";
+            } else if (m === "splice" || m === "xtls-rprx-splice") {
+                flow = "xtls-rprx-splice";
+            }
+        }
+    }
 
     // udp：默认 true，0/false 关掉
     let udp = true;
