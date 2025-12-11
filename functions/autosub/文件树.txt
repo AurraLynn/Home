@@ -1,0 +1,28 @@
+functions/
+└─ autosub/
+   ├─ index.js              /* 入口：读请求、KV、UA，决定 client，调用 Exit */
+   ├─ Exit.js               /* 出口：Parser → Normalizer → Router 的总控 */
+   ├─ Parser.js             /* 解析所有输入形态，产生标准 Node[] */
+   ├─ Normalizer.js         /* 去重 / 补字段，保证节点结构稳定 */
+   ├─ Router.js             /* 根据 client + UA 选择 Clash / Surge / v2ray(Base64) */
+   ├─ renderers/
+   │   ├─ clash.js          /* Node[] → Clash/Mihomo YAML 完整配置 */
+   │   └─ surge.js          /* Node[] → Surge [Proxy] 配置片段 */
+   └─ shared/
+       └─ utils/
+           ├─ text.js       /* 文本辅助：拆混合文本成若干“行” */
+           ├─ ss.js         /* Shadowsocks 节点解析 → Node */
+           ├─ trojan.js     /* Trojan 节点解析 → Node */
+           ├─ vmess.js      /* VMess 节点解析 → Node (base64 JSON + URL 形式) */
+           ├─ vless.js      /* VLESS 节点解析 → Node */
+           └─ hy2.js        /* Hysteria2 / hy2 / hysteria 节点解析 → Node */
+
+
+
+	•	Clash：https://aura.us.kg/autosub?id=xxx&client=clash
+
+	•	Surge：https://aura.us.kg/autosub?id=xxx&client=surge
+
+        •	v2ray(Base64)：https://aura.us,kg/autosub?id=xxx&client=v2ray
+
+   	•	调试模式: https://aura.us.kg/autosub?text=(文本/URL))
