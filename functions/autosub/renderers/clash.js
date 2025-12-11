@@ -735,7 +735,7 @@ export function renderClash(nodes = []) {
   // ===== proxy-groups =====
   lines.push(``);
   lines.push(`proxy-groups:`);
-  pushLine(lines, 1, `- name: ${yamlQuote("🐹Lyn · Node")}`);
+  pushLine(lines, 1, `- name: ${yamlQuote("🐹 · Select")}`);
   pushLine(lines, 2, `type: select`);
   pushLine(lines, 2, `proxies:`);
   if (names.length === 0) {
@@ -752,7 +752,7 @@ export function renderClash(nodes = []) {
   lines.push(`rules:`);
   pushLine(lines, 1, `- GEOIP,LAN,DIRECT`);
   pushLine(lines, 1, `- GEOIP,CN,DIRECT`);
-  pushLine(lines, 1, `- MATCH,🐹Lyn · Node`);
+  pushLine(lines, 1, `- MATCH,🐹 · Select`);
 
   return {
     body: lines.join("\n"),
