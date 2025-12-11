@@ -2,8 +2,8 @@
  * 文件路径：functions/autosub/shared/utils/vless.js
  * 文件作用：
  *   - 解析 VLESS 节点为标准 Node 对象
- *   - 支持 Reality / XTLS / base64 userinfo 等多种写法
- *   - 尽量还原 uuid/server/port 及 pbk/sid/flow/sni 等高级参数
+ *   - 支持 Reality / XTLS / base64 userinfo / obfs(websocket/grpc) 等多种写法
+ *   - 尽量还原 uuid/server/port 及 pbk/sid/flow/sni/host/path 等高级参数
  */
 
 function safeDecode(str) {
@@ -64,8 +64,9 @@ function tryDecodeBase64UserInfo(basePart) {
  *   - 支持：
  *       • 标准写法：vless://uuid@host:port?...#name
  *       • base64 userinfo：vless://BASE64?remarks=...&tls=1&peer=...&pbk=...&sid=...
- *       • Reality / XTLS 相关参数：pbk/sid/flow/sni/reality/xtls 等
- *   - 当 server/port/uuid 不完整时，也会返回“半成品”节点，方便后续调试
+ *       • Reality / XTLS：security=reality / pbk / sid / xtls / flow
+ *       • 传输方式：type/network 或 obfs=websocket/grpc + obfsParam
+ *   - 当 server/port/uuid 不完整时，也会返回“半成品”节点，方便调试
  */
 export function parseVless(input) {
     if (!input) return null;
@@ -182,6 +183,11 @@ export function parseVless(input) {
     // XTLS 模式（数字 / 文本都兼容）：常见为 1=direct, 2=vision
     const xtlsMode = (params.xtls || params.xtlsType || "").toString().trim();
 
+    // obfs：很多节点用 obfs=websocket / obfsParam=host 表示 ws/grpc
+    const obfs = (params.obfs || params.obfsType || "").toString().trim().toLowerCase();
+    const obfsParam =
+        (params.obfsParam || params["obfs-param"] || "").toString().trim();
+
     const name =
         (params.remarks ||
             params.remark ||
@@ -220,15 +226,24 @@ export function parseVless(input) {
             "") + "";
     sni = sni.toString().trim();
 
+    // network：优先 type/network，其次 obfs
     let network =
-        (params.type || params.network || "tcp").toString().trim().toLowerCase();
+        (params.type || params.network || "").toString().trim().toLowerCase();
 
+    if (!network && obfs) {
+        if (obfs === "ws" || obfs === "websocket") {
+            network = "ws";
+        } else if (obfs === "grpc" || obfs === "gun") {
+            network = "grpc";
+        }
+    }
+
+    if (!network) network = "tcp";
     if (network === "gun") network = "grpc";
     if (network === "websocket") network = "ws";
-    if (!network) network = "tcp";
 
     const host =
-        (params.host || params.headerTypeHost || "").toString().trim();
+        (params.host || params.headerTypeHost || obfsParam || "").toString().trim();
 
     const path =
         (params.path ||
