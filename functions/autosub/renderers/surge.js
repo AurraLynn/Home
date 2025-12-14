@@ -30,9 +30,33 @@ function makeProxyName(node, fallbackPrefix) {
 }
 
 /*
+ * 格式化 SS 密码：
+ *   - 如果是 URL 编码（包含 %3D 之类），先 decode 一次
+ *   - 外面包一层双引号，内部的 " 做转义
+ *   - 这样可以正确还原：
+ *       password="NzE1MThkYTQwYWMwYWJmMA==:MjI1M2QwNDgtMWMyOC00MQ=="
+ */
+function formatSSPassword(pwd) {
+  if (pwd == null) return '""';
+  let out = String(pwd);
+
+  if (out.includes("%")) {
+    try {
+      out = decodeURIComponent(out);
+    } catch {
+      // 解码失败就用原始值
+    }
+  }
+
+  // 避免破坏 Surge 配置，转义内部引号
+  out = out.replace(/"/g, '\\"');
+  return `"${out}"`;
+}
+
+/*
  * 渲染 Shadowsocks 节点为 Surge 代理行
  * 参考格式：
- *   NAME = ss, server, port, encrypt-method=aes-128-gcm, password=xxxx, udp-relay=true, tfo=true
+ *   NAME = ss, server, port, encrypt-method=aes-128-gcm, password="xxxx", udp-relay=true, tfo=true
  */
 function renderSS(node) {
   if (!node.server || !node.port || !node.cipher || !node.password) return null;
@@ -43,12 +67,11 @@ function renderSS(node) {
     node.server,
     node.port,
     `encrypt-method=${node.cipher}`,
-    `password=${node.password}`,
+    `password=${formatSSPassword(node.password)}`,
     "udp-relay=true",
     "tfo=true",
   ];
 
-  // plugin 暂时不展开，避免兼容性问题
   return parts.join(", ");
 }
 
