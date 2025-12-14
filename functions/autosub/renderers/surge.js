@@ -1,175 +1,243 @@
 /*
- * 文件路径：functions/autosub/shared/utils/ss.js
+ * 文件路径：functions/autosub/renderers/surge.js
  * 文件作用：
- *   - 解析 Shadowsocks (ss://) 节点为标准 Node 对象
- *   - 支持：
- *       • 明文：ss://cipher:password@server:port#name
- *       • 整串 base64：ss://BASE64(cipher:password@server:port)#name
- *       • 2022-blake3 系列：cipher:password1:password2@server:port
- *   - 解析出字段：server / port / cipher / password / name / plugin / pluginOpts
+ *   - 将标准 Node[] 渲染为 Surge 可用的代理列表
+ *   - 当前仅支持协议：ss / vmess / hysteria2 / trojan
+ *   - 其它协议暂不转换（只在结尾给出统计提示）
  */
 
-function safeDecodeURIComponent(str) {
-  try {
-    return decodeURIComponent(str);
-  } catch {
-    return str;
-  }
+/*
+ * 工具函数：生成安全的代理名称
+ *   - 去掉换行、逗号等可能影响 Surge 解析的字符
+ */
+function makeProxyName(node, fallbackPrefix) {
+    const rawName = (node && node.name) || "";
+    const base = (rawName || `${fallbackPrefix}-${node.server || "unknown"}:${node.port || ""}`)
+        .toString()
+        .trim();
+
+    return (
+        base
+            .replace(/[\r\n]/g, " ")
+            .replace(/[=]/g, "-")
+            .replace(/,/g, "、") || `${fallbackPrefix}-${Date.now()}`
+    );
 }
 
 /*
- * 粗略判断一段文本是否像 base64
+ * 渲染 Shadowsocks 节点为 Surge 代理行
+ * 参考格式：
+ *   NAME = ss, server, port, encrypt-method=aes-128-gcm, password=xxxx, udp-relay=true, tfo=true
  */
-function isLikelyBase64(s) {
-  if (!s) return false;
-  const t = String(s).trim();
-  if (t.length < 8) return false;
-  if (!/^[A-Za-z0-9+/_=-]+$/.test(t)) return false;
-  return true;
+function renderSS(node) {
+    if (!node.server || !node.port || !node.cipher || !node.password) return null;
+
+    const name = makeProxyName(node, "SS");
+    const parts = [
+        `${name} = ss`,
+        node.server,
+        node.port,
+        `encrypt-method=${node.cipher}`,
+        `password=${node.password}`,
+        "udp-relay=true",
+        "tfo=true",
+    ];
+
+    // plugin 暂时不展开，避免兼容性问题
+    return parts.join(", ");
 }
 
 /*
- * url-safe base64 解码（兼容 -/_）
+ * 渲染 Trojan 节点为 Surge 代理行
+ * 参考格式：
+ *   NAME = trojan, server, port, password=xxx, sni=example.com, skip-cert-verify=true, udp-relay=true, tfo=true
  */
-function b64DecodeUrlSafe(input) {
-  if (!input) return "";
-  let s = String(input).trim().replace(/-/g, "+").replace(/_/g, "/");
-  const pad = s.length % 4;
-  if (pad) s += "=".repeat(4 - pad);
-  try {
-    return atob(s);
-  } catch {
-    return "";
-  }
-}
+function renderTrojan(node) {
+    if (!node.server || !node.port || !node.password) return null;
 
-/*
- * 工具：拆分 server:port（使用最后一个 :，兼容 IPv6）
- */
-function splitHostPort(str) {
-  const s = (str || "").trim();
-  if (!s) return ["", 0];
+    const name = makeProxyName(node, "Trojan");
+    const parts = [
+        `${name} = trojan`,
+        node.server,
+        node.port,
+        `password=${node.password}`,
+        "udp-relay=true",
+        "tfo=true",
+    ];
 
-  const lastColon = s.lastIndexOf(":");
-  if (lastColon < 0) {
-    return [s, 0];
-  }
-
-  const host = s.slice(0, lastColon).trim();
-  const portStr = s.slice(lastColon + 1).trim();
-  const portNum = portStr ? Number(portStr) || 0 : 0;
-
-  return [host, portNum];
-}
-
-/*
- * 主函数：解析 ss:// 节点
- */
-export function parseSS(input) {
-  if (!input) return null;
-  const raw = String(input).trim();
-  if (!raw.toLowerCase().startsWith("ss://")) return null;
-
-  // 1. 拆掉 #name（备注）
-  let nameFromHash = "";
-  let main = raw;
-  const hashIndex = raw.indexOf("#");
-  if (hashIndex >= 0) {
-    const hashPart = raw.slice(hashIndex + 1);
-    nameFromHash = safeDecodeURIComponent(hashPart);
-    main = raw.slice(0, hashIndex);
-  }
-
-  // 2. 去掉 ss://
-  main = main.replace(/^ss:\/\//i, "");
-
-  // 3. 拆 query（plugin 等）
-  let mainPart = main;
-  let query = "";
-  const qIndex = main.indexOf("?");
-  if (qIndex >= 0) {
-    mainPart = main.slice(0, qIndex);
-    query = main.slice(qIndex + 1);
-  }
-
-  // 4. 解析 query 参数（主要是 plugin）
-  const params = {};
-  if (query) {
-    const segs = query.split("&");
-    for (const seg of segs) {
-      if (!seg) continue;
-      const [kRaw, vRaw = ""] = seg.split("=", 2);
-      const k = (kRaw || "").trim();
-      if (!k) continue;
-      const key = safeDecodeURIComponent(k);
-      const val = safeDecodeURIComponent(vRaw);
-      params[key] = val;
+    if (node.sni) {
+        parts.push(`sni=${node.sni}`);
     }
-  }
 
-  // 5. 处理 mainPart：
-  //    情况 A：已经是 cipher:pwd@host:port
-  //    情况 B：整串 base64("cipher:pwd@host:port")
-  let work = mainPart.trim();
-
-  let atIndex = work.indexOf("@");
-  if (atIndex < 0 && isLikelyBase64(work)) {
-    const decoded = b64DecodeUrlSafe(work);
-    if (decoded && decoded.includes("@")) {
-      work = decoded.trim();
-      atIndex = work.indexOf("@");
+    if (node.skipCertVerify === true) {
+        parts.push("skip-cert-verify=true");
     }
-  }
 
-  let userinfo = work;
-  let hostPortPart = "";
+    return parts.join(", ");
+}
 
-  if (atIndex >= 0) {
-    userinfo = work.slice(0, atIndex);
-    hostPortPart = work.slice(atIndex + 1);
-  }
+/*
+ * 渲染 VMess 节点为 Surge 代理行
+ * 参考格式（Surge 5+）：
+ *   NAME = vmess, server, port, username=<uuid>, tls=true, sni=example.com,
+ *          ws=true, ws-path=/xxx, ws-headers=Host:example.com
+ */
+function renderVmess(node) {
+    if (!node.server || !node.port || !node.uuid) return null;
 
-  // 6. userinfo → cipher + password
-  //    支持 2022-blake3 这种多冒号写法：
-  //    cipher:pwd1:pwd2 → cipher = 第一段，其余全部合起来当 password
-  let cipher = "";
-  let password = "";
+    const name = makeProxyName(node, "VMess");
+    const parts = [
+        `${name} = vmess`,
+        node.server,
+        node.port,
+        `username=${node.uuid}`,
+        "udp-relay=true",
+        "tfo=true",
+    ];
 
-  if (userinfo) {
-    const parts = userinfo.split(":");
-    if (parts.length >= 2) {
-      cipher = parts[0].trim();
-      password = parts.slice(1).join(":").trim();
+    // 加密方式：Surge 一般用 encrypt-method=auto 即可
+    parts.push("encrypt-method=auto");
+
+    // TLS
+    if (node.tls === true || String(node.security || "").toLowerCase() === "tls") {
+        parts.push("tls=true");
+        if (node.sni) {
+            parts.push(`sni=${node.sni}`);
+        }
     }
-  }
 
-  // 7. host:port
-  let server = "";
-  let port = 0;
-  if (hostPortPart) {
-    const [h, p] = splitHostPort(hostPortPart);
-    server = h;
-    port = p;
-  }
+    const net = String(node.network || "").toLowerCase();
 
-  // 8. plugin / plugin-opts
-  const plugin = params.plugin || params["plugin-type"] || "";
-  // 有些写法用 plugin-opts / plugin_opts
-  const pluginOpts =
-    params["plugin-opts"] || params["plugin_opts"] || params["pluginOpts"] || "";
+    // WebSocket
+    if (net === "ws" || net === "websocket") {
+        parts.push("ws=true");
+        if (node.path) {
+            parts.push(`ws-path=${node.path}`);
+        }
+        const host = node.host || node.sni;
+        if (host) {
+            parts.push(`ws-headers=Host:${host}`);
+        }
+    }
 
-  // 9. 返回 Node（即便不完整也返回，方便后续调试）
-  return {
-    type: "ss",
-    raw,
-    name: nameFromHash || (server && port ? `${server}:${port}` : raw),
+    // gRPC (简单支持)
+    if (net === "grpc") {
+        parts.push("grpc=true");
+        const serviceName =
+            node.path ||
+            node.serviceName ||
+            node["grpc-service-name"] ||
+            "";
+        if (serviceName) {
+            parts.push(`grpc-service-name=${serviceName}`);
+        }
+    }
 
-    server: server,
-    port: port,
-    cipher: cipher,
-    password: password,
+    return parts.join(", ");
+}
 
-    plugin: plugin || undefined,
-    pluginOpts: pluginOpts || undefined,
-  };
+/*
+ * 渲染 Hysteria2 节点为 Surge 代理行
+ * 参考格式：
+ *   NAME = hysteria2, server, port, password=xxx, sni=example.com,
+ *          skip-cert-verify=true, udp-relay=true, tfo=true
+ */
+function renderHy2(node) {
+    const pwd = node.password || node.auth;
+    if (!node.server || !node.port || !pwd) return null;
+
+    const name = makeProxyName(node, "Hy2");
+
+    const parts = [
+        `${name} = hysteria2`,
+        node.server,
+        node.port,
+        `password=${pwd}`,
+        "udp-relay=true",
+        "tfo=true",
+    ];
+
+    if (node.sni) {
+        parts.push(`sni=${node.sni}`);
+    }
+
+    if (node.skipCertVerify === true) {
+        parts.push("skip-cert-verify=true");
+    }
+
+    if (node.alpn) {
+        parts.push(`alpn=${node.alpn}`);
+    }
+    if (node.obfs) {
+        parts.push(`obfs=${node.obfs}`);
+    }
+
+    return parts.join(", ");
+}
+
+/*
+ * 主渲染函数：Node[] → Surge 配置文本
+ *
+ * 支持：
+ *   - ss
+ *   - vmess
+ *   - hysteria2 (包含标准化的 hysteria / hy2)
+ *   - trojan
+ *
+ * 返回：
+ *   - { body, contentType }
+ */
+export function renderSurge(nodes = []) {
+    const lines = [];
+    const unsupportedTypes = {};
+    let supportedCount = 0;
+
+    lines.push("# AUTOSUB · Surge Proxy List");
+    lines.push("# 支持协议：ss / vmess / hysteria2 / trojan");
+    lines.push("# 其它协议暂不转换，仅在末尾统计方便排查");
+    lines.push("");
+    lines.push("[Proxy]");
+
+    for (const n of nodes || []) {
+        if (!n || !n.type) continue;
+        const type = String(n.type || "").toLowerCase();
+
+        let line = null;
+
+        if (type === "ss") {
+            line = renderSS(n);
+        } else if (type === "trojan") {
+            line = renderTrojan(n);
+        } else if (type === "vmess") {
+            line = renderVmess(n);
+        } else if (type === "hysteria2" || type === "hysteria" || type === "hy2") {
+            line = renderHy2(n);
+        } else {
+            unsupportedTypes[type] = (unsupportedTypes[type] || 0) + 1;
+        }
+
+        if (line) {
+            lines.push(line);
+            supportedCount++;
+        }
+    }
+
+    if (supportedCount === 0) {
+        lines.push("# （未找到可转换为 Surge 的支持协议节点）");
+    }
+
+    const uns = Object.entries(unsupportedTypes);
+    if (uns.length) {
+        lines.push("");
+        lines.push("# ===== 未转换的协议统计（仅提示，不影响使用） =====");
+        for (const [t, count] of uns) {
+            lines.push(`# ${t}: ${count} 条`);
+        }
+    }
+
+    const body = lines.join("\n");
+    return {
+        body,
+        contentType: "text/plain; charset=utf-8",
+    };
 }
