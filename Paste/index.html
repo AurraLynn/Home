@@ -541,30 +541,37 @@
         }
         .uc-item-actions{margin-top:4px;display:flex;flex-wrap:wrap;gap:6px;}
 
-        /* ✅ 更素一点的绿色订阅按钮 */
+                /* ✅ 用户中心：订阅按钮（更高级一点） */
         .uc-sub-btn{
             margin-left:6px;
-            padding:2px 10px;
+            padding:3px 10px;
             border-radius:999px;
-            border:1px solid rgba(34,197,94,0.9);
-            background:rgba(34,197,94,0.06);
-            color:#16a34a;
+            border:1px solid rgba(99,102,241,0.55);
+            background:linear-gradient(90deg, rgba(99,102,241,0.22), rgba(56,189,248,0.10));
+            color:var(--text-main);
             font-size:11px;
-            font-weight:500;
+            font-weight:600;
             cursor:pointer;
             display:inline-flex;
             align-items:center;
-            gap:4px;
+            gap:6px;
+            box-shadow:0 10px 22px rgba(99,102,241,0.14);
+        }
+        body.theme-light .uc-sub-btn{
+            background:linear-gradient(90deg, rgba(99,102,241,0.10), rgba(37,99,235,0.06));
+            color:#111827;
         }
         .uc-sub-btn:hover{
-            background:rgba(34,197,94,0.16);
-            box-shadow:0 0 0 1px rgba(34,197,94,0.4);
+            border-color:var(--accent2);
+            box-shadow:0 14px 28px rgba(99,102,241,0.22);
             transform:translateY(-0.5px);
         }
         .uc-sub-btn:active{
             transform:translateY(0);
-            opacity:.9;
+            opacity:.92;
         }
+
+
 
         /* 解码按钮交互：点击时变黑 + 替换图标 */
         .base64-decode-btn.decode-active{
@@ -582,35 +589,38 @@
             display:inline-flex;
         }
 
-        /* 订阅客户端选择面板 */
+                /* 订阅客户端选择面板（重写：更像截图里的选择器） */
         .sub-menu-backdrop{
             position:fixed;
             inset:0;
-            background:rgba(15,23,42,0.55);
+            background:rgba(0,0,0,0.48);
             display:none;
-            align-items:center;      /* 原来是 flex-end，这里改成 center */
-            justify-content:center;  /* 保持居中 */
+            align-items:center;
+            justify-content:center;
+            padding:16px;
             z-index:45;
         }
 
         .sub-menu{
             width:100%;
-            max-width:360px;
+            max-width:420px;
             background:var(--layer);
-            border-radius:16px; /* 原来是 16px 16px 0 0，改成四角圆 */
-            border:1px solid rgba(148,163,184,0.8);
-            box-shadow:0 20px 60px rgba(15,23,42,0.9); /* 适当改成通用弹窗阴影 */
-            padding:10px 14px 14px;
+            border-radius:18px;
+            border:1px solid rgba(148,163,184,0.7);
+            box-shadow:0 22px 60px rgba(15,23,42,0.92);
+            padding:12px 12px 12px;
         }
+
         .sub-menu-header{
             display:flex;
             justify-content:space-between;
             align-items:center;
-            margin-bottom:8px;
+            margin-bottom:10px;
         }
         .sub-menu-title{
             font-size:13px;
-            font-weight:600;
+            font-weight:700;
+            letter-spacing:.02em;
         }
         .sub-menu-close{
             border:none;
@@ -619,25 +629,121 @@
             font-size:18px;
             line-height:1;
             cursor:pointer;
+            width:28px;height:28px;
+            border-radius:999px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
         }
-        .sub-menu-list{
+        .sub-menu-close:hover{
+            background:rgba(148,163,184,0.12);
+        }
+
+        .sub-step{
+            padding:6px 2px 10px;
+        }
+        .sub-step-title{
+            font-size:12px;
+            font-weight:700;
+            color:var(--text-main);
+            margin-bottom:10px;
+        }
+
+        .sub-step-options{
             display:flex;
             flex-wrap:wrap;
-            gap:8px;
+            gap:10px;
         }
-        .sub-menu-btn{
-            flex:0 0 calc(50% - 4px);
-            padding:6px 10px;
+        .sub-opt{
+            flex:0 0 calc(33.333% - 7px);
+            min-width:110px;
+            padding:8px 12px;
             border-radius:999px;
-            border:1px solid var(--border-soft);
-            background:var(--layer-soft);
+            border:1px solid rgba(148,163,184,0.45);
+            background:rgba(148,163,184,0.10);
+            color:var(--text-main);
             font-size:12px;
+            font-weight:600;
             cursor:pointer;
             text-align:center;
+            transition:transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease;
         }
-        .sub-menu-btn:hover{
-            border-color:var(--accent2);
+        body.theme-light .sub-opt{
+            background:rgba(15,23,42,0.04);
         }
+        .sub-opt:hover{
+            transform:translateY(-1px);
+            border-color:rgba(99,102,241,0.75);
+        }
+        .sub-opt.active{
+            background:linear-gradient(90deg, var(--accent2), rgba(99,102,241,0.65));
+            border-color:rgba(99,102,241,0.95);
+            color:#ffffff;
+            box-shadow:0 12px 28px rgba(99,102,241,0.25);
+        }
+
+        .sub-link-row{
+            padding:8px 2px 2px;
+        }
+        .sub-link-field{
+            position:relative;
+        }
+        .sub-link-field input{
+            width:100%;
+            border-radius:999px;
+            border:1px solid rgba(148,163,184,0.7);
+            background:var(--input-bg);
+            color:var(--text-main);
+            font-size:12px;
+            padding:10px 44px 10px 12px;
+            outline:none;
+        }
+        .sub-copy-btn{
+            position:absolute;
+            top:50%;
+            right:8px;
+            transform:translateY(-50%);
+            width:32px;
+            height:32px;
+            border-radius:10px;
+            border:1px solid rgba(148,163,184,0.55);
+            background:rgba(148,163,184,0.12);
+            color:var(--text-main);
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            padding:0;
+        }
+        .sub-copy-btn:hover{
+            border-color:rgba(99,102,241,0.8);
+            background:rgba(99,102,241,0.12);
+        }
+
+        .sub-link-hint{
+            margin-top:8px;
+            font-size:11px;
+            color:var(--text-sub);
+        }
+
+        .sub-toast{
+            margin-top:10px;
+            font-size:11px;
+            color:#22c55e;
+            min-height:1.2em;
+            opacity:0;
+            transform:translateY(-2px);
+            transition:opacity .15s ease, transform .15s ease;
+        }
+        .sub-toast.show{
+            opacity:1;
+            transform:translateY(0);
+        }
+
+        @media(max-width:420px){
+            .sub-opt{ flex:0 0 calc(50% - 5px); min-width:0; }
+        }
+
+
 
         @media(max-width:780px){
             body{padding:22px 10px;}
@@ -1119,20 +1225,44 @@
 
 <!-- 订阅客户端选择面板 -->
 <div class="sub-menu-backdrop" id="subClientOverlay" style="display:none;">
-    <div class="sub-menu">
+    <div class="sub-menu" role="dialog" aria-modal="true" aria-label="订阅链接">
         <div class="sub-menu-header">
-            <div class="sub-menu-title">选择订阅客户端 (点击自动复制)</div>
-            <button type="button" class="sub-menu-close" id="subMenuCloseBtn">×</button>
+            <div class="sub-menu-title">订阅链接</div>
+            <button type="button" class="sub-menu-close" id="subMenuCloseBtn" aria-label="关闭">×</button>
         </div>
-        <div class="sub-menu-list">
-            <button type="button" class="sub-menu-btn" data-client="general">通用客户端</button>
-            <button type="button" class="sub-menu-btn" data-client="surge">Surge</button>
-            <button type="button" class="sub-menu-btn" data-client="clash">Clash</button>
-            <button type="button" class="sub-menu-btn" data-client="stash">Stash</button>
-            <button type="button" class="sub-menu-btn" data-client="quantumultx">Quantumult X</button>
+
+        <div class="sub-step">
+            <div class="sub-step-title">2. 选择格式</div>
+            <div class="sub-step-options" id="subClientOptions">
+                <button type="button" class="sub-opt active" data-client="general">通用格式</button>
+                <button type="button" class="sub-opt" data-client="base64">Base64</button>
+                <button type="button" class="sub-opt" data-client="clash">Clash</button>
+                <button type="button" class="sub-opt" data-client="singbox">Sing-Box</button>
+                <button type="button" class="sub-opt" data-client="surge">Surge</button>
+                <button type="button" class="sub-opt" data-client="loon">Loon</button>
+            </div>
         </div>
+
+        <div class="sub-link-row">
+            <div class="sub-link-field">
+                <input id="subLinkInput" type="text" readonly value="" placeholder="请选择格式以生成链接">
+                <button type="button" class="sub-copy-btn" id="subLinkCopyBtn" aria-label="复制">
+                    <span class="icon-svg">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </span>
+                </button>
+            </div>
+            <div class="sub-link-hint" id="subLinkHint">选择格式后点击右侧复制</div>
+        </div>
+
+        <div class="sub-toast" id="subToast" aria-live="polite"></div>
     </div>
 </div>
+
+
 
 <script>
     const THEME_KEY="lyn_paste_theme_v3";
@@ -1706,18 +1836,69 @@
 
     // 订阅链接拼接
     function buildSubLink(slug, clientKey) {
-        const base = `${location.origin}/autosub?id=${encodeURIComponent(slug)}`;
+        const base = `${location.origin}/api/sub?id=${encodeURIComponent(slug)}`;
         if (!clientKey || clientKey === "general") return base;
         return `${base}&client=${encodeURIComponent(clientKey)}`;
     }
 
-    // ===== 订阅选择面板逻辑 =====
+        // ===== 订阅选择面板逻辑（重写：选择格式 -> 展示链接 -> 点击复制） =====
     let currentSubSlug = null;
+    let currentSubClient = "general";
+    let toastTimer = null;
+
+    function showSubToast(msg){
+        const $t = document.getElementById("subToast");
+        if(!$t) return;
+        $t.textContent = msg || "";
+        $t.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(()=>{ $t.classList.remove("show"); }, 1200);
+    }
+
+    async function copyText(text){
+        try{
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(text);
+            } else {
+                window.prompt("复制链接：", text);
+            }
+            return true;
+        }catch(_){
+            window.prompt("复制失败，可手动复制：", text);
+            return false;
+        }
+    }
+
+    function setActiveSubClient(clientKey){
+        currentSubClient = clientKey || "general";
+
+        const box = document.getElementById("subClientOptions");
+        if (box){
+            box.querySelectorAll(".sub-opt").forEach(btn=>{
+                btn.classList.toggle("active", (btn.getAttribute("data-client") || "general") === currentSubClient);
+            });
+        }
+
+        const input = document.getElementById("subLinkInput");
+        if(!input) return;
+        if(!currentSubSlug){
+            input.value = "";
+            return;
+        }
+        input.value = buildSubLink(currentSubSlug, currentSubClient);
+    }
 
     function openSubClientMenu(slug) {
         currentSubSlug = slug;
+        currentSubClient = "general";
         const overlay = document.getElementById("subClientOverlay");
         if (overlay) overlay.style.display = "flex";
+        setActiveSubClient("general");
+        const input = document.getElementById("subLinkInput");
+        if(input){
+            input.focus();
+            input.select?.();
+        }
     }
 
     function closeSubClientMenu() {
@@ -1737,26 +1918,35 @@
             if (e.target === overlay) closeSubClientMenu();
         });
 
-        overlay.querySelectorAll(".sub-menu-btn").forEach(btn=>{
-            btn.addEventListener("click", async ()=>{
-                if (!currentSubSlug) return;
-                const clientKey = btn.getAttribute("data-client") || "general";
-                const url = buildSubLink(currentSubSlug, clientKey);
-
-                try{
-                    if (navigator.clipboard && navigator.clipboard.writeText) {
-                        await navigator.clipboard.writeText(url);
-                        setStatus(`已复制 ${btn.textContent.trim()} 订阅链接。`, "success");
-                    } else {
-                        window.prompt("复制订阅链接：", url);
-                    }
-                }catch(_){
-                    window.prompt("复制失败，可手动复制以下链接：", url);
-                }
-                closeSubClientMenu();
+        const optBox = document.getElementById("subClientOptions");
+        if(optBox){
+            optBox.querySelectorAll(".sub-opt").forEach(btn=>{
+                btn.addEventListener("click", ()=>{
+                    const clientKey = btn.getAttribute("data-client") || "general";
+                    setActiveSubClient(clientKey);
+                });
             });
-        });
+        }
+
+        const input = document.getElementById("subLinkInput");
+        if(input){
+            input.addEventListener("click", ()=>{
+                input.select?.();
+            });
+        }
+
+        const copyBtn = document.getElementById("subLinkCopyBtn");
+        if(copyBtn){
+            copyBtn.addEventListener("click", async ()=>{
+                if(!currentSubSlug) return;
+                const url = buildSubLink(currentSubSlug, currentSubClient);
+                const ok = await copyText(url);
+                if(ok) showSubToast("已复制");
+            });
+        }
     })();
+
+
 
     async function loadUserPastes(){
         if(!$ucEmpty||!$ucList)return;
