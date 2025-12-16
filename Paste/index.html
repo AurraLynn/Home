@@ -665,15 +665,15 @@
         .sub-ios-grid{
             display:grid;
             grid-template-columns: repeat(2, 1fr);
-            gap:10px;
+            gap: 8px;
         }
         .sub-ios-pill{
-            height:40px;
-            border-radius:12px;
+            height:34px;
+            border-radius:11px;
             border:1px solid rgba(148,163,184,0.25);
             background:rgba(148,163,184,0.18);
             color:var(--text-main);
-            font-size:15px;
+            font-size:13px;
             font-weight:700;
             cursor:pointer;
             display:flex;
@@ -1827,7 +1827,7 @@
 
     // 订阅链接拼接
     function buildSubLink(slug, clientKey) {
-        const base = `${location.origin}/api/sub?id=${encodeURIComponent(slug)}`;
+        const base = `${location.origin}/autosub?id=${encodeURIComponent(slug)}`;
         if (!clientKey || clientKey === "general") return base;
         return `${base}&client=${encodeURIComponent(clientKey)}`;
     }
