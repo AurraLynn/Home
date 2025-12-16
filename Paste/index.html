@@ -541,30 +541,48 @@
         }
         .uc-item-actions{margin-top:4px;display:flex;flex-wrap:wrap;gap:6px;}
 
-        /* ✅ 更素一点的绿色订阅按钮 */
+        
+        /* 用户中心：订阅按钮（iOS 小胶囊） */
         .uc-sub-btn{
             margin-left:6px;
-            padding:2px 10px;
+            padding:3px 10px;
+            height:24px;
             border-radius:999px;
-            border:1px solid rgba(34,197,94,0.9);
-            background:rgba(34,197,94,0.06);
-            color:#16a34a;
+
+            border:1px solid rgba(59,130,246,0.45);
+            background:rgba(59,130,246,0.12);
+            color:var(--accent);
+
             font-size:11px;
-            font-weight:500;
+            font-weight:700;
+            letter-spacing:.2px;
+
             cursor:pointer;
             display:inline-flex;
             align-items:center;
-            gap:4px;
+            gap:6px;
+
+            box-shadow:0 10px 22px rgba(37,99,235,0.10);
+        }
+        body.theme-dark .uc-sub-btn{
+            border-color:rgba(99,102,241,0.55);
+            background:rgba(99,102,241,0.16);
+            color:#c7d2fe;
         }
         .uc-sub-btn:hover{
-            background:rgba(34,197,94,0.16);
-            box-shadow:0 0 0 1px rgba(34,197,94,0.4);
+            background:rgba(59,130,246,0.18);
+            box-shadow:0 0 0 2px rgba(59,130,246,0.18);
             transform:translateY(-0.5px);
+        }
+        body.theme-dark .uc-sub-btn:hover{
+            background:rgba(99,102,241,0.22);
+            box-shadow:0 0 0 2px rgba(99,102,241,0.20);
         }
         .uc-sub-btn:active{
             transform:translateY(0);
-            opacity:.9;
+            opacity:.92;
         }
+
 
         /* 解码按钮交互：点击时变黑 + 替换图标 */
         .base64-decode-btn.decode-active{
@@ -582,180 +600,153 @@
             display:inline-flex;
         }
 
-        /* 订阅客户端选择面板 */
-/* =========================
- * 订阅弹窗（截图风格）
- * - 三列网格按钮
- * - 下方显示订阅链接 + 右侧复制按钮
- * - 颜色/字体随主题变量自动适配（避免白天/黑夜看不见）
- * ========================= */
+        
+        /* 订阅客户端选择面板（iOS 风格：格式按钮 + 链接框 + 复制） */
+        .sub-menu-backdrop{
+            position:fixed;
+            inset:0;
+            display:none;
+            align-items:center;
+            justify-content:center;
+            padding:16px;
+            z-index:45;
 
-.sub-menu-backdrop{
-    position:fixed;
-    inset:0;
-    display:none;               /* 默认隐藏：JS 打开时切换为 flex */
-    align-items:center;
-    justify-content:center;
-    padding:16px;
-    z-index:45;
+            background:rgba(0,0,0,0.38);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
 
-    background:rgba(2,6,23,0.62);
-    backdrop-filter:blur(10px);
-    -webkit-backdrop-filter:blur(10px);
-}
+        .sub-menu.sub-ios{
+            width:100%;
+            max-width:520px;
+            border-radius:22px;
+            background:var(--layer);
+            border:1px solid rgba(148,163,184,0.6);
+            box-shadow:0 28px 90px rgba(15,23,42,0.55);
+            padding:16px 16px 14px;
+        }
 
-/* 亮色模式：遮罩层稍微淡一点 */
-body.theme-light .sub-menu-backdrop{
-    background:rgba(15,23,42,0.18);
-}
+        /* 亮色下更贴近 iOS 的“卡片”观感 */
+        body.theme-light .sub-menu.sub-ios{
+            border-color:rgba(15,23,42,0.12);
+            box-shadow:0 22px 60px rgba(15,23,42,0.18);
+        }
 
-.sub-menu.sub-modal{
-    width:min(520px, 100%);
-    border-radius:22px;
-    padding:18px 18px 16px;
+        .sub-ios-head{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+            margin-bottom:12px;
+        }
+        .sub-ios-title{
+            font-size:20px;
+            font-weight:800;
+            letter-spacing:.2px;
+            color:var(--text-main);
+        }
+        .sub-ios-close{
+            width:30px;
+            height:30px;
+            border-radius:999px;
+            border:1px solid var(--border-soft);
+            background:rgba(148,163,184,0.12);
+            color:var(--text-sub);
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            cursor:pointer;
+        }
+        .sub-ios-close:hover{
+            background:rgba(148,163,184,0.18);
+        }
 
-    background:var(--layer);
-    border:1px solid var(--border-soft);
-    box-shadow:var(--shadow-main);
-}
+        /* 按钮网格：iOS 圆角“软灰”按钮 */
+        .sub-ios-grid{
+            display:grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap:12px;
+        }
+        .sub-ios-pill{
+            height:46px;
+            border-radius:14px;
+            border:1px solid rgba(148,163,184,0.25);
+            background:rgba(148,163,184,0.18);
+            color:var(--text-main);
+            font-size:18px;
+            font-weight:700;
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            transition: transform .08s ease, background .15s ease, box-shadow .15s ease, border-color .15s ease, color .15s ease;
+        }
+        body.theme-light .sub-ios-pill{
+            background:#e5e7eb;
+            border-color:rgba(15,23,42,0.08);
+            color:#374151;
+        }
+        .sub-ios-pill:active{ transform: scale(0.985); }
 
-body.theme-light .sub-menu.sub-modal{
-    background:var(--layer);
-    border:1px solid rgba(15,23,42,0.14);
-    box-shadow:0 18px 50px rgba(15,23,42,0.18);
-}
+        /* 选中：iOS 蓝 */
+        .sub-ios-pill.is-active{
+            border-color:transparent;
+            background:linear-gradient(135deg,#3b82f6,#6366f1);
+            color:#ffffff;
+            box-shadow:0 12px 26px rgba(59,130,246,0.28);
+        }
 
-/* 头部：标题 + 关闭 */
-.sub-modal-head{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    margin-bottom:14px;
-}
-.sub-step-title{
-    font-size:20px;
-    font-weight:800;
-    letter-spacing:.2px;
-    color:var(--text-main);
-}
-.sub-menu-close{
-    width:32px;
-    height:32px;
-    border-radius:999px;
-    border:1px solid var(--border-soft);
-    background:var(--layer-soft);
-    color:var(--text-main);
-    cursor:pointer;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    font-size:18px;
-    line-height:1;
-}
-.sub-menu-close:hover{
-    border-color:var(--accent2);
-}
+        /* 链接框 */
+        .sub-ios-link{
+            margin-top:14px;
+            display:flex;
+            align-items:center;
+            gap:10px;
 
-/* 网格按钮 */
-.sub-format-grid{
-    display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:12px;
-}
-@media (max-width: 480px){
-    .sub-format-grid{ grid-template-columns:repeat(2, 1fr); }
-}
+            padding:12px 12px;
+            border-radius:16px;
+            border:1px solid rgba(148,163,184,0.18);
+            background:rgba(148,163,184,0.12);
+        }
+        body.theme-light .sub-ios-link{
+            background:#f3f4f6;
+            border-color:rgba(15,23,42,0.08);
+        }
 
-.sub-format-btn{
-    height:44px;
-    border-radius:14px;
-    border:1px solid var(--border-soft);
-    background:var(--layer-soft);
-    color:var(--text-main);
-    font-weight:700;
-    cursor:pointer;
-    transition:transform .08s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
-.sub-format-btn:active{ transform:scale(.98); }
+        .sub-ios-input{
+            flex:1;
+            min-width:0;
+            border:none;
+            outline:none;
+            background:transparent;
+            color:var(--text-main);
+            font-size:17px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        }
+        body.theme-light .sub-ios-input{ color:#374151; }
 
-.sub-format-btn.is-active{
-    border-color:transparent;
-    color:#fff;
-    background:linear-gradient(135deg, var(--accent2), #7c3aed);
-    box-shadow:0 12px 26px rgba(99,102,241,0.25);
-}
-
-/* 链接区域（像截图那种输入框） */
-.sub-link-row{
-    margin-top:14px;
-    display:flex;
-    align-items:center;
-    gap:10px;
-
-    padding:10px 12px;
-    border-radius:14px;
-
-    background:var(--layer-soft);
-    border:1px solid var(--border-soft);
-}
-
-.sub-link-input{
-    flex:1;
-    border:none;
-    outline:none;
-    background:transparent;
-
-    color:var(--text-main);
-    font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-    font-size:15px;
-}
-
-.sub-link-copy{
-    width:40px;
-    height:40px;
-    border:none;
-    border-radius:12px;
-    background:transparent;
-    cursor:pointer;
-    color:var(--text-sub);
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
-.sub-link-copy:hover{
-    background:rgba(148,163,184,0.18);
-    color:var(--text-main);
-}
-
-/* =========================
- * 图标：随主题变色（避免白天/黑夜看不见）
- * 说明：把 SVG 统一当作“单色图标”，用 currentColor 渲染
- * ========================= */
-.icon-svg{ color: var(--text-main); }
-.btn-secondary .icon-svg,
-.btn-primary .icon-svg,
-.sub-link-copy .icon-svg,
-.sub-menu-close .icon-svg{
-    color: inherit;
-}
-.icon-svg svg{
-    width:18px;
-    height:18px;
-    display:block;
-    fill: currentColor;
-}
-.icon-svg svg [fill]:not([fill="none"]){
-    fill: currentColor;
-}
-.icon-svg svg [stroke]:not([stroke="none"]){
-    stroke: currentColor;
-}
-
+        .sub-ios-copy{
+            width:38px;
+            height:38px;
+            border-radius:12px;
+            border:1px solid rgba(148,163,184,0.25);
+            background:rgba(148,163,184,0.10);
+            color:var(--text-sub);
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            cursor:pointer;
+        }
+        body.theme-light .sub-ios-copy{
+            background:#ffffff;
+            color:#6b7280;
+            border-color:rgba(15,23,42,0.10);
+        }
+        .sub-ios-copy:hover{
+            background:rgba(148,163,184,0.18);
+        }
+        .sub-ios-copy .icon-svg{width:18px;height:18px;}
+        .sub-ios-copy .icon-svg svg{width:18px;height:18px;fill:currentColor;}
 
         @media(max-width:780px){
             body{padding:22px 10px;}
@@ -1235,37 +1226,33 @@ body.theme-light .sub-menu.sub-modal{
     </div>
 </div>
 
-<!-- 订阅客户端选择面板（新版：网格选择 + 链接展示 + 复制） -->
-<div class="sub-menu-backdrop" id="subClientOverlay" style="display:none;" aria-hidden="true">
-    <div class="sub-menu sub-modal" role="dialog" aria-modal="true" aria-label="订阅格式选择">
-        <div class="sub-modal-head">
-            <div class="sub-step-title">2. 选择格式</div>
-            <button type="button" class="sub-menu-close" id="subMenuCloseBtn" aria-label="关闭">×</button>
+<!-- 订阅客户端选择面板（iOS 风格） -->
+<div class="sub-menu-backdrop" id="subClientOverlay" style="display:none;">
+    <div class="sub-menu sub-ios">
+        <div class="sub-ios-head">
+            <div class="sub-ios-title">2. 选择格式</div>
+            <button type="button" class="sub-ios-close" id="subMenuCloseBtn" aria-label="关闭">×</button>
         </div>
 
-        <!-- 三列按钮网格 -->
-        <div class="sub-format-grid" id="subFormatGrid">
-            <button type="button" class="sub-format-btn is-active" data-client="general">通用格式</button>
-            <button type="button" class="sub-format-btn" data-client="base64">Base64</button>
-            <button type="button" class="sub-format-btn" data-client="clash">Clash</button>
-            <button type="button" class="sub-format-btn" data-client="singbox">Sing-Box</button>
-            <button type="button" class="sub-format-btn" data-client="surge">Surge</button>
-            <button type="button" class="sub-format-btn" data-client="loon">Loon</button>
+        <!-- 仅保留：通用格式 / Clash / Base64-V2ray / Surge -->
+        <div class="sub-ios-grid" role="tablist" aria-label="订阅格式">
+            <button type="button" class="sub-ios-pill is-active" data-client="general">通用格式</button>
+            <button type="button" class="sub-ios-pill" data-client="base64">Base64/V2ray</button>
+            <button type="button" class="sub-ios-pill" data-client="clash">Clash</button>
+            <button type="button" class="sub-ios-pill" data-client="surge">Surge</button>
         </div>
 
-        <!-- 链接展示 + 复制 -->
-        <div class="sub-link-row">
-            <input id="subLinkInput" class="sub-link-input" type="text" readonly value="" />
-            <button type="button" id="subLinkCopyBtn" class="sub-link-copy" title="复制链接" aria-label="复制订阅链接">
-                <span class="icon-svg">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
+        <div class="sub-ios-link" aria-label="订阅链接">
+            <input id="subLinkInput" class="sub-ios-input" type="text" readonly value="" />
+            <button type="button" id="subLinkCopyBtn" class="sub-ios-copy" title="复制链接" aria-label="复制链接">
+                <span class="icon-svg" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
                         <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H10V7h9v14z"></path>
                     </svg>
                 </span>
             </button>
         </div>
     </div>
-</div>
 </div>
 
 <script>
@@ -1839,35 +1826,29 @@ body.theme-light .sub-menu.sub-modal{
     }
 
     // 订阅链接拼接
-        // ===== 订阅选择面板逻辑（新版：选格式 -> 显示链接 -> 点击复制）=====
-    let currentSubSlug = null;
-
-    // 构造订阅链接：/api/sub?id=xxx&client=yyy
-    // 注意：client=general 时不额外拼接，保持“通用格式”
     function buildSubLink(slug, clientKey) {
         const base = `${location.origin}/api/sub?id=${encodeURIComponent(slug)}`;
         if (!clientKey || clientKey === "general") return base;
         return `${base}&client=${encodeURIComponent(clientKey)}`;
     }
 
-    // 打开面板：记录当前 slug，并显示弹窗
+    // ===== 订阅选择面板逻辑 =====
+    let currentSubSlug = null;
+
     function openSubClientMenu(slug) {
         currentSubSlug = slug;
         const overlay = document.getElementById("subClientOverlay");
-        if (!overlay) return;
-        overlay.style.display = "flex";
-        overlay.setAttribute("aria-hidden", "false");
-
-        // 触发一次刷新（默认选中“通用格式”）
-        overlay.dispatchEvent(new Event("sub:open"));
+        if (overlay) {
+            overlay.style.display = "flex";
+            // 打开时默认选中「通用格式」并刷新链接
+            if (window.__subMenuSync) window.__subMenuSync();
+        }
     }
 
     function closeSubClientMenu() {
         currentSubSlug = null;
         const overlay = document.getElementById("subClientOverlay");
-        if (!overlay) return;
-        overlay.style.display = "none";
-        overlay.setAttribute("aria-hidden", "true");
+        if (overlay) overlay.style.display = "none";
     }
 
     (function initSubClientMenu(){
@@ -1877,52 +1858,51 @@ body.theme-light .sub-menu.sub-modal{
         const closeBtn = document.getElementById("subMenuCloseBtn");
         const input = document.getElementById("subLinkInput");
         const copyBtn = document.getElementById("subLinkCopyBtn");
-        const btns = Array.from(overlay.querySelectorAll(".sub-format-btn"));
+        const pills = Array.from(overlay.querySelectorAll(".sub-ios-pill"));
 
-        let selectedClient = "general";
+        let selected = "general";
 
-        // 根据当前选择刷新：按钮高亮 + 输入框链接
-        function refresh() {
-            btns.forEach(b => {
-                const key = b.getAttribute("data-client") || "general";
-                b.classList.toggle("is-active", key === selectedClient);
+        // 刷新：按钮高亮 + 输入框链接
+        function refresh(){
+            pills.forEach(btn=>{
+                const key = btn.getAttribute("data-client") || "general";
+                btn.classList.toggle("is-active", key === selected);
             });
-
-            if (!input) return;
-            if (!currentSubSlug) { input.value = ""; return; }
-            input.value = buildSubLink(currentSubSlug, selectedClient);
+            if (input) {
+                input.value = currentSubSlug ? buildSubLink(currentSubSlug, selected) : "";
+            }
         }
 
-        function setSelected(clientKey){
-            selectedClient = clientKey || "general";
+        function setSelected(key){
+            selected = key || "general";
             refresh();
         }
 
-        // 点击关闭
+        // 供 openSubClientMenu 调用：打开时重置为通用格式
+        window.__subMenuSync = function(){
+            selected = "general";
+            refresh();
+        };
+
+        // 关闭按钮
         if (closeBtn) closeBtn.addEventListener("click", closeSubClientMenu);
 
         // 点击遮罩关闭
-        overlay.addEventListener("click", (e) => {
+        overlay.addEventListener("click",(e)=>{
             if (e.target === overlay) closeSubClientMenu();
         });
 
-        // ESC 关闭（可选但更顺手）
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "Escape" && overlay.style.display !== "none") closeSubClientMenu();
-        });
-
-        // 格式按钮：只切换，不自动复制
-        btns.forEach(btn => {
-            btn.addEventListener("click", () => {
-                const key = btn.getAttribute("data-client") || "general";
-                setSelected(key);
+        // 选择格式：仅切换，不复制
+        pills.forEach(btn=>{
+            btn.addEventListener("click", ()=>{
+                setSelected(btn.getAttribute("data-client") || "general");
             });
         });
 
-        // 复制按钮：复制输入框内容（复制成功后可自动关闭）
-        if (copyBtn) copyBtn.addEventListener("click", async () => {
-            const url = (input && input.value ? input.value.trim() : "");
-            if (!url) return;
+        // 复制：复制输入框的订阅链接
+        if (copyBtn) copyBtn.addEventListener("click", async ()=>{
+            if (!currentSubSlug) return;
+            const url = buildSubLink(currentSubSlug, selected);
 
             try{
                 if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1934,16 +1914,17 @@ body.theme-light .sub-menu.sub-modal{
             }catch(_){
                 window.prompt("复制失败，可手动复制以下链接：", url);
             }
-
             closeSubClientMenu();
         });
 
-        // 打开弹窗时：默认选中“通用格式”，并刷新链接
-        overlay.addEventListener("sub:open", () => {
-            selectedClient = "general";
-            refresh();
+        // ESC 关闭（桌面端更顺手）
+        document.addEventListener("keydown",(e)=>{
+            if (e.key === "Escape" && overlay.style.display !== "none") closeSubClientMenu();
         });
+
+        refresh();
     })();
+
 
     async function loadUserPastes(){
         if(!$ucEmpty||!$ucList)return;
