@@ -618,12 +618,14 @@
 
         .sub-menu.sub-ios{
             width:100%;
-            max-width:520px;
-            border-radius:22px;
+            max-width:380px;
+            border-radius:18px;
             background:var(--layer);
-            border:1px solid rgba(148,163,184,0.6);
-            box-shadow:0 28px 90px rgba(15,23,42,0.55);
-            padding:16px 16px 14px;
+            border:1px solid rgba(148,163,184,0.55);
+            box-shadow:0 22px 70px rgba(15,23,42,0.45);
+            padding:14px 14px 12px;
+            transform: translateY(10px) scale(.99);
+            transition: transform .18s ease;
         }
 
         /* 亮色下更贴近 iOS 的“卡片”观感 */
@@ -640,22 +642,23 @@
             margin-bottom:12px;
         }
         .sub-ios-title{
-            font-size:20px;
+            font-size:18px;
             font-weight:800;
             letter-spacing:.2px;
             color:var(--text-main);
         }
         .sub-ios-close{
-            width:30px;
-            height:30px;
+            width:28px;
+            height:28px;
             border-radius:999px;
             border:1px solid var(--border-soft);
-            background:rgba(148,163,184,0.12);
+            background:rgba(148,163,184,0.10);
             color:var(--text-sub);
             display:inline-flex;
             align-items:center;
             justify-content:center;
             cursor:pointer;
+            transition: transform .12s ease, background .15s ease, border-color .15s ease;
         }
         .sub-ios-close:hover{
             background:rgba(148,163,184,0.18);
@@ -664,49 +667,86 @@
         /* 按钮网格：iOS 圆角“软灰”按钮 */
         .sub-ios-grid{
             display:grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 6px;
         }
         .sub-ios-pill{
-            height:34px;
-            border-radius:11px;
-            border:1px solid rgba(148,163,184,0.25);
-            background:rgba(148,163,184,0.18);
+            height:30px;
+            border-radius:10px;
+            border:1px solid rgba(148,163,184,0.22);
+            background:rgba(148,163,184,0.14);
             color:var(--text-main);
-            font-size:13px;
+            font-size:12px;
             font-weight:700;
             cursor:pointer;
             display:flex;
             align-items:center;
             justify-content:center;
-            transition: transform .08s ease, background .15s ease, box-shadow .15s ease, border-color .15s ease, color .15s ease;
+            position: relative;
+            overflow: hidden; /* ripple */
+            user-select:none;
+
+            transition: transform .10s ease, background .15s ease, box-shadow .15s ease, border-color .15s ease, color .15s ease, filter .15s ease;
         }
         body.theme-light .sub-ios-pill{
             background:#e5e7eb;
             border-color:rgba(15,23,42,0.08);
             color:#374151;
         }
-        .sub-ios-pill:active{ transform: scale(0.985); }
+        .sub-ios-pill:active{ transform: scale(0.96); }
 
-        /* 选中：iOS 蓝 */
+        
+        .sub-ios-pill:hover{
+            filter: brightness(1.04);
+            border-color: rgba(148,163,184,0.35);
+        }
+        .sub-ios-pill:focus-visible{
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.22);
+        }
+/* 选中：iOS 蓝 */
         .sub-ios-pill.is-active{
             border-color:transparent;
             background:linear-gradient(135deg,#3b82f6,#6366f1);
             color:#ffffff;
-            box-shadow:0 12px 26px rgba(59,130,246,0.28);
+            box-shadow:0 10px 20px rgba(59,130,246,0.24);
         }
 
-        /* 链接框 */
+        
+        /* iOS 风“涟漪”点击反馈（按钮内部波纹） */
+        .sub-ios-pill .ios-ripple{
+            position:absolute;
+            left:50%;
+            top:50%;
+            width:10px;
+            height:10px;
+            border-radius:999px;
+            transform: translate(-50%,-50%) scale(1);
+            opacity: 0.35;
+            background: rgba(255,255,255,0.7);
+            pointer-events:none;
+            animation: iosRipple .45s ease-out forwards;
+        }
+        body.theme-light .sub-ios-pill .ios-ripple{
+            background: rgba(59,130,246,0.35);
+        }
+        @keyframes iosRipple{
+            to{
+                transform: translate(-50%,-50%) scale(18);
+                opacity: 0;
+            }
+        }
+/* 链接框 */
         .sub-ios-link{
-            margin-top:14px;
+            margin-top:10px;
             display:flex;
             align-items:center;
-            gap:10px;
+            gap:8px;
 
-            padding:12px 12px;
-            border-radius:16px;
-            border:1px solid rgba(148,163,184,0.18);
-            background:rgba(148,163,184,0.12);
+            padding:10px 10px;
+            border-radius:14px;
+            border:1px solid rgba(148,163,184,0.16);
+            background:rgba(148,163,184,0.10);
         }
         body.theme-light .sub-ios-link{
             background:#f3f4f6;
@@ -720,22 +760,23 @@
             outline:none;
             background:transparent;
             color:var(--text-main);
-            font-size:17px;
+            font-size:14px;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
         }
         body.theme-light .sub-ios-input{ color:#374151; }
 
         .sub-ios-copy{
-            width:38px;
-            height:38px;
-            border-radius:12px;
-            border:1px solid rgba(148,163,184,0.25);
+            width:34px;
+            height:34px;
+            border-radius:11px;
+            border:1px solid rgba(148,163,184,0.22);
             background:rgba(148,163,184,0.10);
             color:var(--text-sub);
             display:inline-flex;
             align-items:center;
             justify-content:center;
             cursor:pointer;
+            transition: transform .12s ease, background .15s ease, border-color .15s ease, color .15s ease;
         }
         body.theme-light .sub-ios-copy{
             background:#ffffff;
@@ -1894,7 +1935,19 @@
 
         // 选择格式：仅切换，不复制
         pills.forEach(btn=>{
-            btn.addEventListener("click", ()=>{
+            btn.addEventListener("click", (e)=>{
+                // ✅ 触感反馈：点击涟漪（iOS 风格）
+                try{
+                    const r = btn.getBoundingClientRect();
+                    const ripple = document.createElement("span");
+                    ripple.className = "ios-ripple";
+                    ripple.style.left = ((e?.clientX ?? (r.left + r.width/2)) - r.left) + "px";
+                    ripple.style.top  = ((e?.clientY ?? (r.top + r.height/2)) - r.top) + "px";
+                    btn.appendChild(ripple);
+                    ripple.addEventListener("animationend", ()=> ripple.remove(), { once:true });
+                }catch(_){}
+
+                // ✅ 切换格式
                 setSelected(btn.getAttribute("data-client") || "general");
             });
         });
