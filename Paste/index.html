@@ -601,156 +601,201 @@
         }
 
         
-        /* 订阅客户端选择面板（iOS 风格：格式按钮 + 链接框 + 复制） */
+        
+        /* =========================
+           订阅客户端选择面板（iOS 风格）
+           - 更小更紧凑：避免“太大”
+           - 有交互：hover/active/选中高亮/复制反馈
+           - 主题适配：亮/暗都保证文字和图标可见
+           ========================= */
+
         .sub-menu-backdrop{
             position:fixed;
             inset:0;
-            display:none;
+            display:none; /* 由 JS 控制显示 */
             align-items:center;
             justify-content:center;
             padding:16px;
             z-index:45;
 
-            background:rgba(0,0,0,0.38);
+            /* iOS 风格：柔和遮罩 + 背景虚化 */
+            background:rgba(0,0,0,0.36);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
+
+            /* 动画 */
+            opacity:0;
+            pointer-events:none;
+            transition: opacity .18s ease;
+        }
+        .sub-menu-backdrop.is-open{
+            opacity:1;
+            pointer-events:auto;
         }
 
         .sub-menu.sub-ios{
-            width:100%;
-            max-width:520px;
+            width:min(420px, calc(100vw - 32px));
             border-radius:22px;
-            background:var(--layer);
-            border:1px solid rgba(148,163,184,0.6);
-            box-shadow:0 28px 90px rgba(15,23,42,0.55);
-            padding:16px 16px 14px;
+            padding:18px 18px 16px;
+
+            /* 深色下：更像 iOS 卡片 */
+            background:rgba(18, 22, 28, 0.96);
+            border:1px solid rgba(255,255,255,0.16);
+            box-shadow:0 26px 80px rgba(0,0,0,0.42);
+
+            /* 动画：轻微缩放 + 上移 */
+            transform: translateY(10px) scale(0.985);
+            transition: transform .18s cubic-bezier(.22,1,.36,1);
+        }
+        .sub-menu-backdrop.is-open .sub-menu.sub-ios{
+            transform: translateY(0) scale(1);
         }
 
-        /* 亮色下更贴近 iOS 的“卡片”观感 */
+        /* 亮色下：白卡 + 轻阴影 */
         body.theme-light .sub-menu.sub-ios{
-            border-color:rgba(15,23,42,0.12);
-            box-shadow:0 22px 60px rgba(15,23,42,0.18);
+            background:rgba(255,255,255,0.98);
+            border:1px solid rgba(15,23,42,0.12);
+            box-shadow:0 18px 60px rgba(15,23,42,0.16);
         }
 
         .sub-ios-head{
             display:flex;
             align-items:center;
             justify-content:space-between;
-            gap:10px;
-            margin-bottom:12px;
+            gap:12px;
+            margin-bottom:14px;
         }
         .sub-ios-title{
-            font-size:20px;
-            font-weight:800;
-            letter-spacing:.2px;
+            font-size:24px;
+            font-weight:900;
+            letter-spacing:-0.2px;
             color:var(--text-main);
         }
+
+        /* 关闭按钮：iOS 圆形按钮 */
         .sub-ios-close{
-            width:30px;
-            height:30px;
+            width:40px;height:40px;
             border-radius:999px;
-            border:1px solid var(--border-soft);
+            border:1px solid rgba(148,163,184,0.35);
             background:rgba(148,163,184,0.12);
             color:var(--text-sub);
-            display:inline-flex;
+            cursor:pointer;
+            display:flex;
             align-items:center;
             justify-content:center;
-            cursor:pointer;
+            font-size:20px;
+            line-height:1;
+            transition: transform .08s ease, background .15s ease, border-color .15s ease, color .15s ease;
         }
         .sub-ios-close:hover{
             background:rgba(148,163,184,0.18);
+            color:var(--text-main);
         }
+        .sub-ios-close:active{ transform: scale(0.96); }
 
-        /* 按钮网格：iOS 圆角“软灰”按钮 */
+        /* 2x2 网格（只保留 4 个格式） */
         .sub-ios-grid{
             display:grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns:1fr 1fr;
             gap:12px;
+            margin-bottom:14px;
         }
+
+        /* 按钮：更紧凑、更像 iOS 灰底 pill */
         .sub-ios-pill{
-            height:46px;
-            border-radius:14px;
-            border:1px solid rgba(148,163,184,0.25);
-            background:rgba(148,163,184,0.18);
+            height:44px;
+            border-radius:16px;
+            border:1px solid rgba(148,163,184,0.28);
+            background:rgba(148,163,184,0.14);
             color:var(--text-main);
-            font-size:18px;
-            font-weight:700;
+            font-size:16px;
+            font-weight:800;
             cursor:pointer;
             display:flex;
             align-items:center;
             justify-content:center;
             transition: transform .08s ease, background .15s ease, box-shadow .15s ease, border-color .15s ease, color .15s ease;
+            user-select:none;
         }
-        body.theme-light .sub-ios-pill{
-            background:#e5e7eb;
-            border-color:rgba(15,23,42,0.08);
-            color:#374151;
+        .sub-ios-pill:hover{
+            background:rgba(148,163,184,0.18);
+            border-color:rgba(148,163,184,0.40);
         }
-        .sub-ios-pill:active{ transform: scale(0.985); }
+        .sub-ios-pill:active{ transform: scale(0.98); }
 
         /* 选中：iOS 蓝 */
         .sub-ios-pill.is-active{
-            border-color:transparent;
-            background:linear-gradient(135deg,#3b82f6,#6366f1);
-            color:#ffffff;
-            box-shadow:0 12px 26px rgba(59,130,246,0.28);
+            background: linear-gradient(180deg, rgba(59,130,246,1), rgba(37,99,235,1));
+            border-color: rgba(59,130,246,0.85);
+            color:#fff;
+            box-shadow: 0 12px 26px rgba(37,99,235,0.28);
         }
 
-        /* 链接框 */
+        /* 链接框：更瘦、更像 iOS 输入框 */
         .sub-ios-link{
-            margin-top:14px;
             display:flex;
             align-items:center;
             gap:10px;
-
-            padding:12px 12px;
-            border-radius:16px;
-            border:1px solid rgba(148,163,184,0.18);
-            background:rgba(148,163,184,0.12);
+            padding:10px 12px;
+            border-radius:18px;
+            background:rgba(148,163,184,0.10);
+            border:1px solid rgba(148,163,184,0.25);
         }
         body.theme-light .sub-ios-link{
-            background:#f3f4f6;
-            border-color:rgba(15,23,42,0.08);
+            background:rgba(15,23,42,0.04);
+            border-color:rgba(15,23,42,0.12);
         }
 
         .sub-ios-input{
             flex:1;
-            min-width:0;
             border:none;
             outline:none;
             background:transparent;
             color:var(--text-main);
-            font-size:17px;
+            font-size:15px;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
         }
-        body.theme-light .sub-ios-input{ color:#374151; }
 
+        /* 复制按钮：默认灰，复制成功变蓝并显示对勾 */
         .sub-ios-copy{
-            width:38px;
-            height:38px;
-            border-radius:12px;
+            width:44px;height:44px;
+            border-radius:16px;
             border:1px solid rgba(148,163,184,0.25);
             background:rgba(148,163,184,0.10);
             color:var(--text-sub);
-            display:inline-flex;
+            cursor:pointer;
+            display:flex;
             align-items:center;
             justify-content:center;
-            cursor:pointer;
-        }
-        body.theme-light .sub-ios-copy{
-            background:#ffffff;
-            color:#6b7280;
-            border-color:rgba(15,23,42,0.10);
+            transition: transform .08s ease, background .15s ease, border-color .15s ease, color .15s ease;
         }
         .sub-ios-copy:hover{
-            background:rgba(148,163,184,0.18);
+            background:rgba(148,163,184,0.16);
+            color:var(--text-main);
         }
-        .sub-ios-copy .icon-svg{width:18px;height:18px;}
-        .sub-ios-copy .icon-svg svg{width:18px;height:18px;fill:currentColor;}
+        .sub-ios-copy:active{ transform: scale(0.96); }
 
-        @media(max-width:780px){
-            body{padding:22px 10px;}
-            .card{padding:14px 12px 12px;border-radius:18px;}
+        .sub-ios-copy .icon-svg svg{
+            width:18px;height:18px;
+            fill:currentColor; /* ✅ 图标随主题颜色变化 */
+        }
+        .sub-ios-copy .icon-check{ display:none; }
+        .sub-ios-copy.is-copied{
+            background: linear-gradient(180deg, rgba(59,130,246,1), rgba(37,99,235,1));
+            border-color: rgba(59,130,246,0.85);
+            color:#fff;
+            box-shadow: 0 10px 22px rgba(37,99,235,0.25);
+        }
+        .sub-ios-copy.is-copied .icon-copy{ display:none; }
+        .sub-ios-copy.is-copied .icon-check{ display:inline-flex; }
+
+        @media (max-width:420px){
+            .sub-menu.sub-ios{ width:calc(100vw - 24px); padding:16px 16px 14px; }
+            .sub-ios-title{ font-size:22px; }
+            .sub-ios-pill{ font-size:15px; }
+        }
+
+.card{padding:14px 12px 12px;border-radius:18px;}
             .header{flex-direction:column;align-items:flex-start;gap:10px;}
             .brand{width:100%;}
             .header-actions{align-self:flex-end;}
@@ -1245,12 +1290,17 @@
         <div class="sub-ios-link" aria-label="订阅链接">
             <input id="subLinkInput" class="sub-ios-input" type="text" readonly value="" />
             <button type="button" id="subLinkCopyBtn" class="sub-ios-copy" title="复制链接" aria-label="复制链接">
-                <span class="icon-svg" aria-hidden="true">
+                <span class="icon-svg icon-copy" aria-hidden="true">
                     <svg viewBox="0 0 24 24">
                         <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H10V7h9v14z"></path>
                     </svg>
                 </span>
-            </button>
+                <span class="icon-svg icon-check" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"></path>
+                    </svg>
+                </span>
+</button>
         </div>
     </div>
 </div>
@@ -1827,9 +1877,16 @@
 
     // 订阅链接拼接
     function buildSubLink(slug, clientKey) {
-        const base = `${location.origin}/api/sub?id=${encodeURIComponent(slug)}`;
-        if (!clientKey || clientKey === "general") return base;
-        return `${base}&client=${encodeURIComponent(clientKey)}`;
+        // ✅ 订阅链接基址（修复：从 /api/sub 改为 /autosub）
+        const u = new URL("/autosub", location.origin);
+        u.searchParams.set("id", slug);
+
+        // 通用格式：不额外带 client（后端自行识别/Auto）
+        if (!clientKey || clientKey === "general") return u.toString();
+
+        // 其它格式：追加 client 参数
+        u.searchParams.set("client", clientKey);
+        return u.toString();
     }
 
     // ===== 订阅选择面板逻辑 =====
@@ -1838,17 +1895,28 @@
     function openSubClientMenu(slug) {
         currentSubSlug = slug;
         const overlay = document.getElementById("subClientOverlay");
-        if (overlay) {
-            overlay.style.display = "flex";
-            // 打开时默认选中「通用格式」并刷新链接
-            if (window.__subMenuSync) window.__subMenuSync();
-        }
+        if (!overlay) return;
+
+        // 显示 + 触发动画
+        overlay.style.display = "flex";
+        overlay.classList.remove("is-open");
+        // 下一帧再加 class，才能触发 transition
+        requestAnimationFrame(() => overlay.classList.add("is-open"));
+
+        // 打开时默认选中「通用格式」并刷新链接
+        if (window.__subMenuSync) window.__subMenuSync();
     }
 
     function closeSubClientMenu() {
         currentSubSlug = null;
         const overlay = document.getElementById("subClientOverlay");
-        if (overlay) overlay.style.display = "none";
+        if (!overlay) return;
+
+        overlay.classList.remove("is-open");
+        // 等动画结束再隐藏
+        setTimeout(() => {
+            overlay.style.display = "none";
+        }, 180);
     }
 
     (function initSubClientMenu(){
@@ -1899,7 +1967,7 @@
             });
         });
 
-        // 复制：复制输入框的订阅链接
+        // 复制：复制输入框的订阅链接（带 iOS 风格反馈）
         if (copyBtn) copyBtn.addEventListener("click", async ()=>{
             if (!currentSubSlug) return;
             const url = buildSubLink(currentSubSlug, selected);
@@ -1914,7 +1982,13 @@
             }catch(_){
                 window.prompt("复制失败，可手动复制以下链接：", url);
             }
-            closeSubClientMenu();
+
+            // ✅ 复制成功视觉反馈：按钮变蓝 + 对勾
+            copyBtn.classList.add("is-copied");
+            setTimeout(()=>{
+                copyBtn.classList.remove("is-copied");
+                closeSubClientMenu();
+            }, 520);
         });
 
         // ESC 关闭（桌面端更顺手）
