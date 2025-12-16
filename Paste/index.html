@@ -541,6 +541,39 @@
         }
         .uc-item-actions{margin-top:4px;display:flex;flex-wrap:wrap;gap:6px;}
 
+/* ✅ 统计标签（<b>12</b> 节点） */
+.uc-stat-tag{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:2px 8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.86);
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+  transition: transform .15s ease, background .15s ease, border-color .15s ease;
+  backdrop-filter: blur(10px);
+}
+.uc-stat-tag b{
+  font-size:11px;
+  font-weight:900;
+  padding:2px 7px;
+  border-radius:999px;
+  background: rgba(129,140,248,0.18);
+  border:1px solid rgba(110,70,255,0.30);
+  color: rgba(255,255,255,.92);
+}
+.uc-stat-tag:hover{
+  background:rgba(255,255,255,.10);
+  border-color:rgba(255,255,255,.18);
+  transform: translateY(-1px);
+}
+.uc-stat-tag:active{ transform: translateY(0); }
+
+        
                 /* ✅ 用户中心：订阅按钮（更高级一点） */
         .uc-sub-btn{
             margin-left:6px;
@@ -2048,15 +2081,15 @@
                 }
                 meta.textContent=metaText;
 
-                // 节点订阅按钮
-                if (hasNode && titleBox) {
-                    const subBtn=document.createElement("button");
-                    subBtn.type="button";
-                    subBtn.className="uc-sub-btn";
-                    subBtn.textContent = nodeCount > 0 ? `订阅(${nodeCount})` : "订阅";
-                    subBtn.addEventListener("click",()=>openSubClientMenu(slug));
-                    titleBox.appendChild(subBtn);
-                }
+                // 节点订阅（统计标签样式）
+if (hasNode && titleBox) {
+  const subBtn = document.createElement("button");
+  subBtn.type = "button";
+  subBtn.className = "uc-stat-tag";
+  subBtn.innerHTML = `<b>${nodeCount}</b> 节点`;   // ✅ 统计样式
+  subBtn.addEventListener("click", () => openSubClientMenu(slug));
+  titleBox.appendChild(subBtn);
+}
 
                 const btnEdit=document.createElement("button");
                 btnEdit.type="button";
