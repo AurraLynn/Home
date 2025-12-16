@@ -541,34 +541,31 @@
         }
         .uc-item-actions{margin-top:4px;display:flex;flex-wrap:wrap;gap:6px;}
 
-/* ✅ 统计标签（<b>12</b> 节点） */
+/* ✅ 统计标签（黑金） */
 .uc-stat-tag{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:2px 8px;
+  display:inline-flex; align-items:center; gap:8px;
+  padding:3px 10px;
   border-radius:999px;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.12);
-  color:rgba(255,255,255,.86);
-  font-size:11px;
-  font-weight:700;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.78);
+  font-size:11px; font-weight:700;
   cursor:pointer;
-  transition: transform .15s ease, background .15s ease, border-color .15s ease;
   backdrop-filter: blur(10px);
+  transition: transform .15s ease, background .15s ease, border-color .15s ease;
 }
 .uc-stat-tag b{
-  font-size:11px;
-  font-weight:900;
-  padding:2px 7px;
+  font-size:11px; font-weight:900;
+  padding:2px 8px;
   border-radius:999px;
-  background: rgba(129,140,248,0.18);
-  border:1px solid rgba(110,70,255,0.30);
-  color: rgba(255,255,255,.92);
+  color: rgba(255,244,220,.95);
+  background: linear-gradient(180deg, rgba(238,187,77,.26), rgba(238,187,77,.12));
+  border:1px solid rgba(238,187,77,.30);
+  box-shadow: 0 0 0 4px rgba(238,187,77,.07);
 }
 .uc-stat-tag:hover{
-  background:rgba(255,255,255,.10);
-  border-color:rgba(255,255,255,.18);
+  background:rgba(255,255,255,.075);
+  border-color:rgba(255,255,255,.16);
   transform: translateY(-1px);
 }
 .uc-stat-tag:active{ transform: translateY(0); }
