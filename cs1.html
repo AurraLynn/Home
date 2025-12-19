@@ -2,66 +2,67 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>PasteBox :: Retro-Link</title>
+    <title>PasteBox :: Aurora</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
         /* =========================================
-           1. 核心變數 (Neo-Brutalism Palette)
+           1. 核心變數 (Fluid Glass Palette)
            ========================================= */
         :root {
-            /* Light Mode */
-            --bg-body: #e0e7ff;      /* 淺靛藍背景 */
-            --bg-card: #ffffff;
-            --bg-input: #f3f4f6;
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-head: 'Outfit', sans-serif;
+
+            /* Light Mode Glass */
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            --glass-blur: blur(20px);
             
-            --border-color: #000000; /* 強制純黑邊框 */
-            --border-width: 2px;
+            --input-bg: rgba(255, 255, 255, 0.5);
+            --input-focus-bg: rgba(255, 255, 255, 0.9);
             
-            --shadow-offset: 4px;
-            --shadow-color: #000000;
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
             
-            --primary: #4f46e5;      /* 靛藍 */
-            --primary-fg: #ffffff;
+            --text-main: #2d3748;
+            --text-sub: #718096;
             
-            --accent: #fcd34d;       /* 亮黃 */
-            --accent-fg: #000000;
-            
-            --danger: #ff6b6b;
-            --success: #4ecdc4;
-            
-            --text-main: #111827;
-            --text-sub: #4b5563;
-            
-            --font-head: 'Space Grotesk', sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
+            --accent-color: #764ba2;
+            --danger-color: #ff6b6b;
+            --success-color: #00b894;
+
+            /* Animated Background Colors */
+            --blob-1: #ff9a9e;
+            --blob-2: #fad0c4;
+            --blob-3: #a18cd1;
         }
 
-        /* Dark Mode (Cyber Terminal) */
         body.theme-dark {
-            --bg-body: #0f172a;
-            --bg-card: #1e293b;
-            --bg-input: #0f172a;
+            /* Dark Mode Glass */
+            --glass-bg: rgba(20, 20, 25, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
             
-            --border-color: #38bdf8; /* 螢光藍邊框 */
-            --shadow-color: #0ea5e9;
+            --input-bg: rgba(0, 0, 0, 0.3);
+            --input-focus-bg: rgba(0, 0, 0, 0.5);
             
-            --primary: #38bdf8;
-            --primary-fg: #0f172a;
+            --primary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --primary-shadow: 0 4px 15px rgba(0, 242, 254, 0.2);
+
+            --text-main: #f7fafc;
+            --text-sub: #a0aec0;
             
-            --accent: #f472b6;       /* 螢光粉 */
-            --accent-fg: #ffffff;
+            --accent-color: #4facfe;
             
-            --danger: #ef4444;
-            --success: #22c55e;
-            
-            --text-main: #f0f9ff;
-            --text-sub: #94a3b8;
+            --blob-1: #0f2027;
+            --blob-2: #203a43;
+            --blob-3: #2c5364;
         }
 
         * { box-sizing: border-box; }
@@ -69,43 +70,67 @@
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: var(--font-mono); /* 全局使用等寬字體 */
-            background-color: var(--bg-body);
-            background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
-            background-size: 20px 20px; /* 點陣背景 */
+            font-family: var(--font-main);
             color: var(--text-main);
             display: flex;
             justify-content: center;
             padding: 20px;
-            transition: background 0.3s;
+            overflow-x: hidden;
+            position: relative;
+            background: #f0f2f5; /* Fallback */
+            transition: color 0.3s;
+        }
+
+        /* 背景流體動畫 */
+        .ambient-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: var(--blob-1);
+            background-image: 
+                radial-gradient(at 0% 0%, var(--blob-3) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, var(--blob-1) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, var(--blob-2) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, var(--blob-3) 0px, transparent 50%);
+            background-size: 200% 200%;
+            animation: aurora 15s ease infinite;
+        }
+        
+        @keyframes aurora {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         /* SVG Reset */
         .icon-svg svg {
-            width: 1em; height: 1em;
-            fill: none; stroke: currentColor; stroke-width: 2.5;
-            stroke-linecap: square; stroke-linejoin: miter;
+            width: 1.2em; height: 1.2em;
+            fill: none; stroke: currentColor; stroke-width: 2;
+            stroke-linecap: round; stroke-linejoin: round;
         }
 
         /* =========================================
-           2. 佈局容器 (The Box)
+           2. 主容器 (Glass Card)
            ========================================= */
         .shell {
             width: 100%;
-            max-width: 900px;
+            max-width: 850px;
             display: flex;
             flex-direction: column;
             gap: 20px;
+            position: relative;
+            z-index: 1;
         }
 
-        /* 卡片通用樣式 - 硬邊框、硬陰影 */
-        .card, .auth-panel, .uc-panel, .sub-menu {
-            background: var(--bg-card);
-            border: var(--border-width) solid var(--border-color);
-            box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow-color);
-            border-radius: 0; /* 直角 */
-            padding: 24px;
-            position: relative;
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-radius: 24px;
+            padding: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         /* =========================================
@@ -115,10 +140,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--bg-card);
-            border: var(--border-width) solid var(--border-color);
-            padding: 12px 20px;
-            box-shadow: var(--shadow-offset) var(--shadow-offset) 0 var(--shadow-color);
+            padding: 10px 10px;
+            background: rgba(255,255,255,0.2); /* Extra subtle layer */
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 10px;
         }
 
         .brand {
@@ -127,527 +153,460 @@
             gap: 12px;
             text-decoration: none;
             color: inherit;
+            padding-left: 10px;
         }
 
         .brand-logo {
-            width: 48px; height: 48px;
-            border: var(--border-width) solid var(--border-color);
-            background: var(--accent);
-            display: flex; align-items: center; justify-content: center;
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: #fff;
         }
-        .brand-logo img { width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply;}
-        body.theme-dark .brand-logo img { mix-blend-mode: normal; }
+        .brand-logo img { width: 100%; height: 100%; object-fit: cover; }
 
         .brand-text { display: flex; flex-direction: column; }
         .brand-title { 
             font-family: var(--font-head); 
-            font-size: 24px; 
-            font-weight: 800; 
-            text-transform: uppercase;
-            letter-spacing: -1px;
-            line-height: 1;
+            font-size: 20px; 
+            font-weight: 700; 
+            letter-spacing: -0.5px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .brand-sub { font-size: 11px; font-weight: 700; background: var(--text-main); color: var(--bg-card); padding: 2px 4px; margin-top: 4px; width: fit-content;}
+        .brand-sub { font-size: 11px; opacity: 0.7; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;}
 
-        .header-actions { display: flex; gap: 12px; }
+        .header-actions { display: flex; gap: 10px; align-items: center; }
 
         /* =========================================
-           4. 按鈕 (Brutalist Buttons)
+           4. 按鈕 (Soft UI)
            ========================================= */
-        button, .btn-primary, .btn-secondary, .pill-btn, .theme-toggle, .upload-btn {
-            font-family: var(--font-mono);
-            font-weight: 700;
-            text-transform: uppercase;
+        button, .btn-primary, .btn-secondary, .theme-toggle, .upload-label {
+            font-family: var(--font-main);
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            border-radius: 12px;
             cursor: pointer;
-            border: var(--border-width) solid var(--border-color);
-            background: var(--bg-card);
-            color: var(--text-main);
-            padding: 8px 16px;
-            box-shadow: 2px 2px 0 var(--shadow-color);
-            transition: all 0.1s;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             display: inline-flex;
             align-items: center; justify-content: center; gap: 8px;
-            font-size: 12px;
-            text-decoration: none;
             outline: none;
+            text-decoration: none;
         }
 
-        button:hover, .btn-secondary:hover {
-            transform: translate(-1px, -1px);
-            box-shadow: 4px 4px 0 var(--shadow-color);
-            background: var(--bg-input);
-        }
-
-        button:active, .btn-secondary:active {
-            transform: translate(2px, 2px);
-            box-shadow: 0 0 0 var(--shadow-color);
-        }
-
-        /* 主要按鈕 */
+        /* 主按鈕 - 漸變色 */
         .btn-primary, #submitBtn {
-            background: var(--primary);
-            color: var(--primary-fg);
+            background: var(--primary-gradient);
+            color: #fff;
+            padding: 10px 24px;
+            box-shadow: var(--primary-shadow);
         }
-        .btn-primary:hover { background: var(--primary); opacity: 0.9; }
-        
-        /* 藥丸按鈕 (改為方塊) */
-        .pill-btn, .theme-toggle { border-radius: 0; padding: 6px 12px; }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(118, 75, 162, 0.4);
+            filter: brightness(1.1);
+        }
+        .btn-primary:active { transform: translateY(0); }
 
-        /* 危險按鈕 */
-        .btn-danger { background: var(--danger); color: white; }
+        /* 次級按鈕 - 玻璃質感 */
+        .btn-secondary, .upload-label {
+            background: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--glass-border);
+            padding: 8px 16px;
+        }
+        .btn-secondary:hover, .upload-label:hover {
+            background: var(--input-focus-bg);
+            border-color: var(--accent-color);
+        }
 
-        /* Reset Button */
-        .btn-reset { border: none; background: transparent; box-shadow: none; color: var(--text-sub); text-transform: none;}
-        .btn-reset:hover { background: transparent; color: var(--danger); box-shadow: none; transform: none; text-decoration: underline;}
+        /* Icon Button */
+        .icon-btn { padding: 8px; border-radius: 50%; width: 40px; height: 40px; }
+        .theme-toggle { background: transparent; color: var(--text-main); border: 1px solid transparent; }
+        .theme-toggle:hover { background: var(--input-bg); }
+
+        /* Danger Button */
+        .btn-danger { background: rgba(255, 107, 107, 0.1); color: var(--danger-color); border: 1px solid rgba(255, 107, 107, 0.2); }
+        .btn-danger:hover { background: var(--danger-color); color: #fff; }
 
         /* =========================================
-           5. 編輯區域 (The Workspace)
+           5. 輸入框與編輯器 (Inset Glass)
            ========================================= */
-        .card-section {
-            margin-bottom: 24px;
-            border-bottom: 2px dashed var(--border-color);
-            padding-bottom: 24px;
+        .input-group { margin-bottom: 24px; }
+        .group-header { 
+            display: flex; justify-content: space-between; align-items: flex-end; 
+            margin-bottom: 12px; 
         }
-        .card-section:last-child { border-bottom: none; padding-bottom: 0; }
-
-        .section-title {
-            font-family: var(--font-head);
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .section-title .tag {
-            background: var(--text-main);
-            color: var(--bg-card);
-            padding: 2px 6px;
-            font-size: 12px;
+        .label-title { 
+            font-family: var(--font-head); font-weight: 700; font-size: 14px; 
+            color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px;
         }
 
-        .section-text { font-size: 14px; line-height: 1.5; color: var(--text-sub); }
-        .warning-label { background: var(--danger); color: white; padding: 0 4px; }
-
-        /* Textarea */
-        .textarea-wrap { position: relative; }
-        textarea {
+        textarea, input[type="text"], input[type="password"] {
             width: 100%;
-            min-height: 350px;
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
             padding: 16px;
-            background: var(--bg-input);
-            border: var(--border-width) solid var(--border-color);
-            color: var(--text-main);
-            font-family: var(--font-mono);
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace; /* Code font */
             font-size: 14px;
             line-height: 1.6;
-            resize: vertical;
-            outline: none;
-            box-shadow: inset 2px 2px 0 rgba(0,0,0,0.05);
-        }
-        textarea:focus {
-            background: var(--bg-card);
-            border-color: var(--primary);
-        }
-        
-        .line-counter {
-            position: absolute; bottom: var(--border-width); right: var(--border-width);
-            background: var(--bg-card);
-            border-top: var(--border-width) solid var(--border-color);
-            border-left: var(--border-width) solid var(--border-color);
-            padding: 4px 8px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        /* 工具列 (Upload / Base64) */
-        .upload-row {
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--bg-input);
-            border: var(--border-width) solid var(--border-color);
-            padding: 8px 12px;
-            margin-top: -2px; /* Connect to textarea */
-            flex-wrap: wrap; gap: 10px;
-        }
-        .byte-count { font-size: 12px; font-weight: 700; }
-        .byte-actions { display: flex; gap: 8px; }
-        .btn-xs { padding: 4px 8px; font-size: 11px; height: auto; }
-
-        /* =========================================
-           6. 設定與輸入框
-           ========================================= */
-        .field-row { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 16px;}
-        .field-block { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 6px; }
-        .field-label { font-weight: 700; font-size: 12px; text-transform: uppercase; color: var(--text-sub); }
-
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            background: var(--bg-card);
-            border: var(--border-width) solid var(--border-color);
-            padding: 10px;
-            font-family: var(--font-mono);
-            font-size: 14px;
             color: var(--text-main);
             outline: none;
-            box-shadow: 2px 2px 0 transparent;
-            transition: box-shadow 0.2s;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
         }
-        input:focus { box-shadow: 4px 4px 0 var(--accent); border-color: var(--text-main); }
-        .input-error { border-color: var(--danger) !important; background: rgba(255,0,0,0.05); }
-
-        /* TTL Group */
-        .ttl-group { display: flex; gap: 0; border: var(--border-width) solid var(--border-color); width: fit-content; }
-        .ttl-btn {
-            border: none; border-right: var(--border-width) solid var(--border-color);
-            box-shadow: none; margin: 0;
-            background: var(--bg-card);
-            color: var(--text-sub);
-        }
-        .ttl-btn:last-child { border-right: none; }
-        .ttl-btn:hover { transform: none; background: var(--accent); color: var(--accent-fg); box-shadow: none; }
-        .ttl-btn.active { background: var(--text-main); color: var(--bg-body); }
-        .ttl-btn:active { transform: none; }
-
-        /* Result Box */
-        .result-box {
-            margin-top: 20px;
-            background: var(--success);
-            color: #000;
-            border: var(--border-width) solid var(--border-color);
-            padding: 16px;
-            box-shadow: 4px 4px 0 var(--border-color);
-        }
-        .result-label { font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 8px;}
-        .result-link { 
-            background: #fff; padding: 8px; border: 2px solid #000; 
-            font-weight: 700; word-break: break-all; margin-bottom: 12px;
-        }
-        .status-msg { margin-top: 10px; font-weight: 700; text-align: right; }
-        .status-msg.success { color: var(--success); text-shadow: 1px 1px 0 #000; }
-        .status-msg.error { color: var(--danger); text-shadow: 1px 1px 0 #000; }
+        textarea { min-height: 320px; resize: vertical; display: block; }
         
-        /* 隱藏原生 File Input */
+        textarea:focus, input:focus {
+            background: var(--input-focus-bg);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.15);
+        }
+        
+        /* 懸浮在輸入框上的工具列 */
+        .toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 8px 12px;
+            border-radius: 0 0 16px 16px; /* Attach to bottom of textarea */
+            margin-top: -16px; /* Overlap */
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+        .meta-info { font-size: 12px; font-weight: 600; color: var(--text-sub); display: flex; gap: 12px; align-items: center;}
+        .tools-right { display: flex; gap: 8px; }
+        
+        .btn-xs { padding: 4px 10px; font-size: 11px; border-radius: 8px; height: 28px; }
+        
         #fileInput { display: none; }
 
         /* =========================================
-           7. Modals (彈窗)
+           6. 設定區域 (Pills)
            ========================================= */
-        .modal-backdrop, .uc-backdrop, .sub-menu-backdrop {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px); /* 網點效果 */
-            z-index: 100;
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.2s;
-            padding: 20px;
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
-        /* JS 切換 display: flex 時的狀態 */
-        .modal-backdrop[style*="display: flex"],
-        .uc-backdrop[style*="display: flex"],
-        .sub-menu-backdrop[style*="display: flex"] { opacity: 1; pointer-events: auto; }
+        @media(max-width: 600px) { .settings-grid { grid-template-columns: 1fr; } }
 
-        .auth-panel { width: 350px; background: var(--accent); color: var(--accent-fg); }
-        .auth-panel-header { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;}
-        .auth-panel-title { font-family: var(--font-head); font-size: 20px; font-weight: 700; }
-        .auth-panel-close { background: transparent; border: none; box-shadow: none; padding: 0; width: 24px; height: 24px;}
-        .auth-panel-close:hover { transform: scale(1.2); background: transparent; }
+        .ttl-selector {
+            display: flex;
+            background: var(--input-bg);
+            padding: 4px;
+            border-radius: 14px;
+            border: 1px solid var(--glass-border);
+        }
+        .ttl-btn {
+            flex: 1;
+            background: transparent;
+            color: var(--text-sub);
+            padding: 8px 0;
+            border-radius: 10px;
+            font-size: 12px;
+            box-shadow: none;
+            border: none;
+        }
+        .ttl-btn:hover { background: rgba(0,0,0,0.05); }
+        .ttl-btn.active {
+            background: #fff;
+            color: var(--accent-color);
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        body.theme-dark .ttl-btn.active { background: #333; color: #fff; }
 
-        .auth-panel-form { display: flex; flex-direction: column; gap: 12px; }
-        .auth-panel-form input { border: 2px solid #000; box-shadow: 4px 4px 0 rgba(0,0,0,0.2); }
-        .auth-panel-actions { display: flex; gap: 10px; margin-top: 10px; }
-        .auth-panel-actions button { flex: 1; border-color: #000; box-shadow: 2px 2px 0 #000; }
-        
-        /* User Center */
-        .uc-panel { width: 100%; max-width: 800px; height: 80vh; padding: 0; display: flex; flex-direction: column; }
-        .uc-header { 
-            padding: 16px 24px; 
-            border-bottom: var(--border-width) solid var(--border-color); 
-            background: var(--bg-input);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .uc-title-main { font-family: var(--font-head); font-weight: 700; font-size: 20px; }
-        
-        .uc-body { padding: 20px; overflow-y: auto; flex: 1; background: var(--bg-body); }
-        .uc-list { display: flex; flex-direction: column; gap: 16px; }
-
-        .uc-item {
-            background: var(--bg-card);
-            border: var(--border-width) solid var(--border-color);
-            padding: 16px;
-            box-shadow: 4px 4px 0 var(--border-color);
-            transition: transform 0.2s;
-        }
-        .uc-item:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--border-color); }
-        
-        .uc-item-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;}
-        .uc-slug-tag { background: #000; color: #fff; padding: 2px 6px; font-size: 12px; }
-        .uc-remark-tag { background: var(--accent); color: #000; padding: 2px 6px; font-size: 12px; font-weight: 700; margin-right: 8px;}
-        
-        .uc-link-row { 
-            font-size: 12px; color: var(--text-sub); 
-            background: var(--bg-input); padding: 4px 8px; 
-            border: 1px dashed var(--border-color); margin-bottom: 12px;
-            word-break: break-all;
-        }
-        .uc-item-actions { display: flex; gap: 8px; justify-content: flex-end; }
-        .uc-sub-btn { background: var(--primary); color: white; padding: 2px 8px; font-size: 10px; margin-left: 8px; border: 1px solid #000; box-shadow: 2px 2px 0 #000; cursor: pointer; }
+        .hint-text { font-size: 12px; color: var(--text-sub); margin-top: 6px; margin-left: 4px;}
 
         /* =========================================
-           8. Subscription Menu (Retro IOS)
+           7. 結果與狀態
            ========================================= */
-        .sub-menu.sub-ios { width: 100%; max-width: 450px; background: var(--bg-card); border: 3px solid var(--border-color); }
-        .sub-ios-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; }
-        .sub-ios-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; }
-        .sub-ios-close { width: 30px; height: 30px; border: 2px solid #000; background: var(--danger); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer;}
+        .result-card {
+            margin-top: 20px;
+            background: linear-gradient(135deg, rgba(72, 198, 239, 0.15) 0%, rgba(111, 134, 214, 0.15) 100%);
+            border: 1px solid rgba(72, 198, 239, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { from{opacity:0; transform:scale(0.9);} to{opacity:1; transform:scale(1);} }
 
-        .sub-ios-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .sub-ios-pill {
-            height: 44px;
-            background: var(--bg-input);
-            border: 2px solid var(--border-color);
-            font-weight: 700;
+        .result-link {
+            font-family: 'Menlo', monospace;
+            font-size: 16px;
+            color: var(--accent-color);
+            margin: 12px 0;
+            word-break: break-all;
+            background: rgba(255,255,255,0.5);
+            padding: 10px; border-radius: 8px;
+            cursor: text;
+        }
+        body.theme-dark .result-link { background: rgba(0,0,0,0.3); color: #81ecec; }
+
+        .status-toast {
+            text-align: center; font-weight: 600; font-size: 13px; margin-top: 10px; min-height: 20px;
+            transition: all 0.3s;
+        }
+        .status-toast.success { color: var(--success-color); }
+        .status-toast.error { color: var(--danger-color); }
+
+        /* =========================================
+           8. Modals (Blur Overlay)
+           ========================================= */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.2);
+            backdrop-filter: blur(8px);
+            z-index: 100;
             display: flex; align-items: center; justify-content: center;
-            position: relative; overflow: hidden;
-            cursor: pointer;
-            transition: all 0.2s;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            padding: 20px;
         }
-        .sub-ios-pill:hover { background: var(--bg-hover); }
-        .sub-ios-pill.is-active {
-            background: var(--text-main);
-            color: var(--bg-body);
-            box-shadow: 4px 4px 0 var(--accent);
-            transform: translate(-2px, -2px);
-        }
-        /* Ripple override */
-        .ios-ripple {
-            position: absolute; background: rgba(255,255,255,0.4); border-radius: 50%;
-            animation: ripple-anim 0.4s linear; pointer-events: none; transform: scale(0);
-        }
-        @keyframes ripple-anim { to { transform: scale(4); opacity: 0; } }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
 
-        .sub-ios-link { display: flex; gap: 8px; }
-        .sub-ios-input { flex: 1; border: 2px solid var(--border-color); padding: 0 8px; font-size: 12px; }
-        .sub-ios-copy { width: 40px; background: var(--success); border: 2px solid #000; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .sub-ios-copy:active { transform: translate(2px, 2px); }
-
-        /* Footer */
-        .footer-row { text-align: center; margin-top: 40px; font-size: 12px; opacity: 0.6; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            .header { flex-direction: column; gap: 12px; align-items: flex-start; }
-            .header-actions { width: 100%; justify-content: space-between; }
-            .field-row { flex-direction: column; gap: 12px; }
-            .uc-header { flex-direction: column; gap: 10px; align-items: flex-start; }
-            .uc-actions { width: 100%; display: flex; justify-content: space-between; }
+        .modal-box {
+            background: var(--glass-bg); /* Use theme variable */
+            /* Force solid background for modals to prevent too much transparency overlap issue */
+            background: #ffffff; 
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            width: 100%; max-width: 400px;
+            padding: 30px;
+            transform: translateY(20px); transition: transform 0.3s;
+            position: relative;
         }
+        body.theme-dark .modal-box { background: #1a202c; }
+        
+        .modal-overlay.active .modal-box { transform: translateY(0); }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .modal-title { font-family: var(--font-head); font-size: 22px; font-weight: 700; color: var(--text-main); }
+        .close-btn { background: transparent; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub); }
+        .close-btn:hover { color: var(--danger-color); }
+
+        .modal-body input { margin-bottom: 15px; }
+        .auth-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;}
+
+        /* User Center - Wider */
+        .uc-box { max-width: 800px; height: 80vh; display: flex; flex-direction: column; padding: 0; overflow: hidden;}
+        .uc-head { padding: 20px 30px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02); }
+        .uc-content { flex: 1; overflow-y: auto; padding: 30px; }
+        
+        .uc-item {
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex; flex-direction: column; gap: 8px;
+            transition: transform 0.2s;
+        }
+        .uc-item:hover { transform: scale(1.01); background: var(--input-focus-bg); }
+        .uc-top { display: flex; justify-content: space-between; }
+        .uc-tag { background: var(--accent-color); color: white; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;}
+        .uc-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+
+        /* Subscription Floating Menu */
+        .sub-menu-box {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            width: 100%; max-width: 360px;
+            padding: 24px;
+        }
+        body.theme-dark .sub-menu-box { background: #1a202c; border: 1px solid #333; }
+        
+        .sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .sub-opt {
+            padding: 10px; border-radius: 12px; border: 2px solid transparent;
+            background: var(--input-bg); color: var(--text-sub); font-weight: 600; font-size: 13px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .sub-opt.active {
+            border-color: var(--accent-color); color: var(--accent-color); background: rgba(118, 75, 162, 0.05);
+        }
+        .sub-link-wrap { display: flex; gap: 8px; background: var(--input-bg); padding: 8px; border-radius: 12px;}
+        .sub-input { border: none; background: transparent; flex: 1; font-size: 12px; color: var(--text-main); outline: none;}
+
+        .footer { text-align: center; margin-top: 40px; font-size: 12px; color: var(--text-sub); opacity: 0.6; }
+        
     </style>
 </head>
 <body class="theme-light">
 
+<div class="ambient-bg"></div>
+
 <div class="shell">
-    <header class="header">
+    <header class="header glass-panel">
         <a href="#" class="brand">
-            <div class="brand-logo"><img id="brandIcon" alt="ICON"></div>
+            <div class="brand-logo"><img id="brandIcon" alt="Logo"></div>
             <div class="brand-text">
                 <div class="brand-title">PasteBox</div>
-                <div class="brand-sub">NEO TERMINAL V3.0</div>
+                <div class="brand-sub">Aurora Edition</div>
             </div>
         </a>
         <div class="header-actions">
-            <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
-                <span class="icon-svg theme-icon theme-icon-sun">
-                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-                </span>
-                <span class="icon-svg theme-icon theme-icon-moon">
-                    <svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-                </span>
+            <button type="button" class="theme-toggle icon-btn" id="themeToggle" title="Switch Theme">
+                <span class="icon-svg theme-icon-sun"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2"/><path d="M12 21v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M18.36 18.36l1.42 1.42"/><path d="M1 12h2"/><path d="M21 12h2"/><path d="M4.22 19.78l1.42-1.42"/><path d="M18.36 5.64l1.42-1.42"/></svg></span>
+                <span class="icon-svg theme-icon-moon" style="display:none;"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
             </button>
 
-            <button type="button" class="pill-btn" id="btnHome" style="display:none;">
-                <span class="icon-svg"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
-                Home
+            <button type="button" class="btn-secondary" id="btnHome" style="display:none; border-radius:20px;">
+                <span class="icon-svg"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
             </button>
 
-            <button type="button" class="btn-primary" id="btnAuthOpen">
-                <span class="icon-svg"><svg viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+            <button type="button" class="btn-primary" id="btnAuthOpen" style="border-radius:20px;">
                 <span id="btnAuthLabel">Login</span>
+                <span class="icon-svg"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
             </button>
         </div>
     </header>
 
-    <main class="card" id="mainCard">
-        
-        <section class="card-section">
-            <div class="section-title">
-                <span class="tag">INFO</span>
-                <span>SYSTEM NOTICE</span>
-            </div>
-            <div class="section-text">
-                輸入文本或代碼 > 設定 TTL > 生成永久鏈接。<br>
-                <span class="warning-label">注意：請勿上傳機密數據。</span>
-            </div>
-        </section>
-
-        <div id="editorContainer">
-            <form id="pasteForm">
-                <section class="card-section">
-                    <div class="section-title">
-                        <span class="tag">INPUT</span>
-                        <span>DATA ENTRY</span>
+    <main class="glass-panel" id="mainCard">
+        <form id="pasteForm">
+            <div class="input-group">
+                <textarea id="content" placeholder="在此貼上程式碼或文本..." spellcheck="false" required></textarea>
+                
+                <div class="toolbar">
+                    <div class="meta-info">
+                        <span id="lineCounter">0 Lines</span>
+                        <span style="opacity:0.3">|</span>
+                        <span id="byteNum">0 B</span>
+                        <span id="nodeInfo" style="color:var(--accent-color); font-weight:700; display:none;"></span>
                     </div>
-                    
-                    <div class="field">
-                        <div class="textarea-wrap">
-                            <textarea id="content" placeholder="> 初始化輸入流..." required></textarea>
-                            <div class="line-counter" id="lineCounter">0 行</div>
-                        </div>
+                    <div class="tools-right">
+                        <label for="fileInput" class="btn-secondary btn-xs upload-label" title="Upload File">
+                            <span class="icon-svg"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+                            Upload
+                        </label>
+                        <input type="file" id="fileInput" accept="*">
                         
-                        <div class="upload-row">
-                            <div class="byte-count">
-                                <span>SIZE: <span id="byteNum">0</span> BYTES</span>
-                                <span id="nodeInfo" style="margin-left:8px; color:var(--primary); display:none;"></span>
-                            </div>
-
-                            <div class="byte-actions">
-                                <label class="btn-secondary btn-xs upload-btn" id="uploadBtn" for="fileInput">
-                                    LOAD FILE
-                                </label>
-                                <input type="file" id="fileInput" accept=".txt,.log,.conf,.json,.md,.yaml,.yml,.ini,.cfg,.csv,.html,.js,.ts,.py,.go,.rs,.php,.java,.c,.cpp,.sh,.bat,.ps1,.rb,.lua,.sql,.xml">
-
-                                <button type="button" class="btn-secondary btn-xs" id="btnBase64Encode">B64_ENC</button>
-                                <button type="button" class="btn-secondary btn-xs base64-decode-btn" id="btnBase64Decode">
-                                    <span class="icon-svg decode-icon-normal"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span>
-                                    <span class="icon-svg decode-icon-active" style="display:none"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
-                                    B64_DEC
-                                </button>
-                            </div>
-                            <span class="hint" id="fileHint" style="width:100%; font-size:10px; color:var(--text-sub); margin-top:4px;"></span>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="card-section">
-                    <div class="section-title">
-                        <span class="tag">CONFIG</span>
-                        <span>PARAMETERS</span>
-                    </div>
-                    
-                    <div class="field">
-                        <div class="field-label" style="margin-bottom:8px;">TTL (Time To Live)</div>
-                        <div class="ttl-group" id="ttlGroup">
-                            <button type="button" class="ttl-btn" data-ttl="10m">10m</button>
-                            <button type="button" class="ttl-btn" data-ttl="1d">1d</button>
-                            <button type="button" class="ttl-btn active" data-ttl="7d">7d</button>
-                            <button type="button" class="ttl-btn" data-ttl="30d">30d</button>
-                            <button type="button" class="ttl-btn" data-ttl="forever" id="ttlForeverBtn">INF</button>
-                        </div>
-                        <div class="ttl-hint" id="ttlHint" style="margin-top:6px; font-size:11px; color:var(--text-sub);"></div>
-                    </div>
-
-                    <div id="advancedSection" class="field-row">
-                        <div class="field-block">
-                            <div class="field-label">Custom Slug</div>
-                            <input id="customId" type="text" placeholder="e.g. my-code-01">
-                            <div class="hint" id="customHint">A-Za-z0-9_- only</div>
-                        </div>
-                        <div class="field-block">
-                            <div class="field-label">Remark</div>
-                            <input id="remark" type="text" placeholder="Private Note">
-                        </div>
-                    </div>
-                </section>
-
-                <div class="action-row" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
-                    <button type="button" class="btn-reset" id="btnResetContent">
-                        [ CLEAR BUFFER ]
-                    </button>
-                    <button type="submit" class="btn-primary" id="submitBtn">
-                        <span class="icon-svg"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg></span>
-                        <span class="text">EXECUTE PASTE</span>
-                    </button>
-                </div>
-
-                <div id="statusMsg" class="status-msg"></div>
-
-                <div id="resultBox" style="display:none;">
-                    <div class="result-box">
-                        <div class="result-row">
-                            <span class="result-label">OPERATION SUCCESSFUL</span>
-                            <div class="result-link" id="viewLinkText"></div>
-                            <div class="result-actions" style="display:flex; gap:10px;">
-                                <button type="button" class="btn-secondary btn-sm" id="btnCopyView">COPY</button>
-                                <button type="button" class="btn-secondary btn-sm" id="btnOpenView">OPEN</button>
-                                <button type="button" class="btn-secondary btn-sm" id="btnManageFromResult" style="display:none;">MANAGE</button>
-                            </div>
-                        </div>
+                        <button type="button" class="btn-secondary btn-xs" id="btnBase64Encode">B64 Enc</button>
+                        <button type="button" class="btn-secondary btn-xs" id="btnBase64Decode">B64 Dec</button>
+                        <button type="button" class="btn-secondary btn-xs" id="btnResetContent" title="Clear">
+                            <span class="icon-svg"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
+                        </button>
                     </div>
                 </div>
-            </form>
-        </div>
+                <div class="hint-text" id="fileHint"></div>
+            </div>
 
-        <div class="footer-row">
-            <span>Server: <span id="baseUrlText"></span></span>
-            <span style="margin-left:12px;">// DESIGNED BY GEMINI</span>
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <div class="label-title">Expiration (TTL)</div>
+                    <div class="ttl-selector" id="ttlGroup" style="margin-top:8px;">
+                        <button type="button" class="ttl-btn" data-ttl="10m">10m</button>
+                        <button type="button" class="ttl-btn" data-ttl="1d">1d</button>
+                        <button type="button" class="ttl-btn active" data-ttl="7d">7d</button>
+                        <button type="button" class="ttl-btn" data-ttl="30d">30d</button>
+                        <button type="button" class="ttl-btn" data-ttl="forever" id="ttlForeverBtn">INF</button>
+                    </div>
+                    <div class="hint-text" id="ttlHint">Auto-delete after 7 days</div>
+                </div>
+
+                <div class="setting-item" id="advancedSection">
+                    <div class="label-title">Custom ID / Remark</div>
+                    <div style="display:flex; gap:10px; margin-top:8px;">
+                        <div style="flex:1;">
+                            <input id="customId" type="text" placeholder="Slug (opt)" style="padding:10px;">
+                        </div>
+                        <div style="flex:1;">
+                            <input id="remark" type="text" placeholder="Note (opt)" style="padding:10px;">
+                        </div>
+                    </div>
+                    <div class="hint-text" id="customHint">Leave empty for random ID</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; display: flex; flex-direction: column; align-items: center; gap:10px;">
+                <button type="submit" class="btn-primary" id="submitBtn" style="width:100%; font-size:16px;">
+                    Create Paste
+                </button>
+                <div id="statusMsg" class="status-toast"></div>
+            </div>
+
+            <div id="resultBox" style="display:none;">
+                <div class="result-card">
+                    <div style="color:var(--success-color); font-weight:700; margin-bottom:5px;">SUCCESSFULLY CREATED</div>
+                    <div class="result-link" id="viewLinkText">https://...</div>
+                    <div style="display:flex; justify-content:center; gap:10px;">
+                        <button type="button" class="btn-secondary btn-sm" id="btnCopyView">Copy Link</button>
+                        <button type="button" class="btn-secondary btn-sm" id="btnOpenView">Open</button>
+                        <button type="button" class="btn-secondary btn-sm" id="btnManageFromResult" style="display:none;">Manage</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <div class="footer">
+            <span id="baseUrlText"></span>
         </div>
     </main>
 </div>
 
-<div class="modal-backdrop" id="authModal" style="display:none;">
-    <div class="auth-panel">
-        <div class="auth-panel-header">
-            <div class="auth-panel-title">AUTHENTICATE</div>
-            <button type="button" class="auth-panel-close" id="authCloseBtn">X</button>
+<div class="modal-overlay" id="authModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div class="modal-title">Welcome Back</div>
+            <button type="button" class="close-btn" id="authCloseBtn">&times;</button>
         </div>
-        <form class="auth-panel-form" id="authForm">
-            <input id="authUsername" type="text" placeholder="USER_ID" autocomplete="username">
-            <input id="authPassword" type="password" placeholder="PASSWORD" autocomplete="current-password">
-            <label style="display:flex;align-items:center;gap:8px;font-size:12px;">
+        <form id="authForm" class="modal-body">
+            <input id="authUsername" type="text" placeholder="Username" autocomplete="username">
+            <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-sub);">
                 <input id="authRemember" type="checkbox" checked>
-                <span>PERSIST SESSION</span>
+                Remember me
             </label>
-            <div class="auth-panel-actions">
-                <button type="button" class="btn-secondary" id="btnDoRegister">REGISTER</button>
-                <button type="submit" class="btn-primary" id="btnDoLogin">LOGIN</button>
+            <div class="auth-actions">
+                <button type="button" class="btn-secondary" id="btnDoRegister">Sign Up</button>
+                <button type="submit" class="btn-primary" id="btnDoLogin">Log In</button>
             </div>
+            <div id="authMsg" class="status-toast"></div>
         </form>
-        <div class="auth-panel-msg" id="authMsg" style="text-align:center; font-size:12px; margin-top:10px;"></div>
     </div>
 </div>
 
-<div class="uc-backdrop" id="userCenter" style="display:none;">
-    <div class="uc-panel">
-        <div class="uc-header">
-            <div class="uc-title-main">DATABASE RECORDS</div>
-            <div class="uc-actions">
-                <button type="button" class="btn-secondary btn-xs" id="ucRefreshBtn">REFRESH</button>
-                <button type="button" class="btn-secondary btn-xs" id="ucLogoutBtn">LOGOUT</button>
-                <button type="button" class="btn-secondary btn-xs" id="ucCloseBtn">CLOSE</button>
+<div class="modal-overlay" id="userCenter">
+    <div class="modal-box uc-box">
+        <div class="uc-head">
+            <div class="modal-title" style="font-size:18px;">My Pastes</div>
+            <div style="display:flex; gap:8px;">
+                <button type="button" class="btn-secondary btn-xs" id="ucRefreshBtn">Refresh</button>
+                <button type="button" class="btn-secondary btn-xs" id="ucLogoutBtn" style="color:var(--danger-color);">Logout</button>
+                <button type="button" class="close-btn" id="ucCloseBtn" style="margin-left:10px;">&times;</button>
             </div>
         </div>
-        <div class="uc-body">
-            <div class="uc-empty" id="ucEmpty" style="text-align:center; padding:40px; color:var(--text-sub);">FETCHING DATA...</div>
-            <div class="uc-list" id="ucList" style="display:none;"></div>
+        <div class="uc-content">
+            <div id="ucEmpty" style="text-align:center; color:var(--text-sub); margin-top:40px;">Loading data...</div>
+            <div id="ucList" style="display:none; flex-direction:column;"></div>
         </div>
     </div>
 </div>
 
-<div class="sub-menu-backdrop" id="subClientOverlay" style="display:none;">
-    <div class="sub-menu sub-ios">
-        <div class="sub-ios-head">
-            <div class="sub-ios-title">EXPORT FORMAT</div>
-            <button type="button" class="sub-ios-close" id="subMenuCloseBtn">X</button>
+<div class="modal-overlay" id="subClientOverlay">
+    <div class="sub-menu-box">
+        <div class="modal-header" style="margin-bottom:15px;">
+            <div class="modal-title" style="font-size:18px;">Subscribe</div>
+            <button type="button" class="close-btn" id="subMenuCloseBtn">&times;</button>
         </div>
-
-        <div class="sub-ios-grid" role="tablist">
-            <button type="button" class="sub-ios-pill is-active" data-client="general">GENERAL</button>
-            <button type="button" class="sub-ios-pill" data-client="base64">BASE64</button>
-            <button type="button" class="sub-ios-pill" data-client="clash">CLASH</button>
-            <button type="button" class="sub-ios-pill" data-client="surge">SURGE</button>
+        <div class="sub-grid">
+            <button type="button" class="sub-opt active" data-client="general">General</button>
+            <button type="button" class="sub-opt" data-client="base64">Base64</button>
+            <button type="button" class="sub-opt" data-client="clash">Clash</button>
+            <button type="button" class="sub-opt" data-client="surge">Surge</button>
         </div>
-
-        <div class="sub-ios-link">
-            <input id="subLinkInput" class="sub-ios-input" type="text" readonly value="" />
-            <button type="button" id="subLinkCopyBtn" class="sub-ios-copy">
-                <span class="icon-svg"><svg viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="0" ry="0"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></span>
+        <div class="sub-link-wrap">
+            <input id="subLinkInput" class="sub-input" readonly>
+            <button type="button" id="subLinkCopyBtn" class="icon-btn" style="width:24px; height:24px; padding:0;">
+                <span class="icon-svg"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></span>
             </button>
         </div>
     </div>
@@ -655,14 +614,23 @@
 
 <script>
     // -------------------------------------------------------------
-    // 保留原始邏輯 (Original Script Block)
+    // 邏輯層保持原樣 (Logic kept identical)
     // -------------------------------------------------------------
-    const THEME_KEY="lyn_paste_theme_v3";
+    const THEME_KEY="lyn_paste_theme_v4";
     const themeToggle=document.getElementById("themeToggle");
+    const sunIcon=document.querySelector(".theme-icon-sun");
+    const moonIcon=document.querySelector(".theme-icon-moon");
 
     function applyTheme(t){
         document.body.classList.remove("theme-light","theme-dark");
         document.body.classList.add("theme-"+t);
+        if(t==="dark"){
+            sunIcon.style.display="inline-flex";
+            moonIcon.style.display="none";
+        }else{
+            sunIcon.style.display="none";
+            moonIcon.style.display="inline-flex";
+        }
         try{localStorage.setItem(THEME_KEY,t);}catch(_){}
     }
 
@@ -671,6 +639,7 @@
         try{
             const s=localStorage.getItem(THEME_KEY);
             if(s==="dark"||s==="light")t=s;
+            else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) t="dark";
         }catch(_){}
         applyTheme(t);
     })();
@@ -679,7 +648,7 @@
         applyTheme(cur==="dark"?"light":"dark");
     });
     
-    // (Logo icon logic kept but CSS handles styling)
+    // Icon Logic
     (function(){
         const ICONS=[];
         for(let i=1;i<=10;i++)ICONS.push(`https://save.aura.us.kg/Picture/Preview/YL${i}.png`);
@@ -693,6 +662,7 @@
     const AUTH_BASE=location.origin+"/api/auth";
     const qs=id=>document.getElementById(id);
 
+    // Elements
     const $content=qs("content");
     const $byteNum=qs("byteNum");
     const $lineCounter=qs("lineCounter");
@@ -715,7 +685,6 @@
     const $remark=qs("remark");
     const $fileInput=qs("fileInput");
     const $fileHint=qs("fileHint");
-    const $uploadBtn=qs("uploadBtn");
     const $btnResetContent=qs("btnResetContent");
     const $btnBase64Encode = qs("btnBase64Encode");
     const $btnBase64Decode = qs("btnBase64Decode");
@@ -762,6 +731,9 @@
         $statusMsg.textContent=msg||"";
         $statusMsg.classList.remove("success","error");
         if(type)$statusMsg.classList.add(type);
+        
+        // Auto clear status
+        if(msg) setTimeout(()=>{$statusMsg.textContent=""}, 5000);
     }
     function setAuthTip(msg,type){
         if(!$authMsg)return;
@@ -838,7 +810,7 @@
         });
         const data=await res.json().catch(()=>({}));
         if(!res.ok||data.ok===false){
-            throw new Error(data.error||`請求失敗（${res.status}）`);
+            throw new Error(data.error||`Error (${res.status})`);
         }
         return data;
     }
@@ -848,17 +820,17 @@
         let len=0;
         try{len=new TextEncoder().encode($content.value).length;}
         catch(_){len=$content.value.length;}
-        $byteNum.textContent=len;
+        $byteNum.textContent=len + " B";
         if($lineCounter){
             const v=$content.value||"";
             const lines=v ? v.split(/\r\n|\r|\n/).length : 0;
-            $lineCounter.textContent = lines+" LINES";
+            $lineCounter.textContent = lines+" Lines";
         }
 
         if ($nodeInfo) {
             const info = detectNodes($content.value || "");
             if (info.isNode && info.count > 0) {
-                $nodeInfo.textContent = `[NODES: ${info.count}]`;
+                $nodeInfo.textContent = `Nodes: ${info.count}`;
                 $nodeInfo.style.display="inline";
             } else {
                 $nodeInfo.textContent = "";
@@ -871,11 +843,7 @@
         $content.addEventListener("input",updateByteCount);
     }
 
-    if($uploadBtn&&$fileInput){
-        $uploadBtn.addEventListener("click",e=>{
-            e.preventDefault();
-            $fileInput.click();
-        });
+    if($fileInput){
         $fileInput.addEventListener("change",()=>{
             const file=$fileInput.files&&$fileInput.files[0];
             if(!file)return;
@@ -886,17 +854,15 @@
                     updateByteCount();
                 }
                 if($fileHint){
-                    $fileHint.textContent=`FILE: ${file.name} (${file.size} B)`;
-                    $fileHint.style.color="var(--success)";
+                    $fileHint.textContent=`Loaded: ${file.name} (${file.size} B)`;
+                    $fileHint.style.color="var(--success-color)";
                 }
-                setStatus(`Loaded: ${file.name}`,"success");
             };
             reader.onerror=()=>{
                 if($fileHint){
-                    $fileHint.textContent="READ_ERR";
-                    $fileHint.style.color="var(--danger)";
+                    $fileHint.textContent="Read Error";
+                    $fileHint.style.color="var(--danger-color)";
                 }
-                setStatus("File read error.","error");
             };
             reader.readAsText(file);
         });
@@ -907,7 +873,7 @@
             if($content)$content.value="";
             if($remark)$remark.value="";
             updateByteCount();
-            setStatus("Buffer cleared.");
+            setStatus("Cleared.");
         });
     }
 
@@ -915,18 +881,15 @@
         $btnBase64Encode.addEventListener("click", () => {
             if (!$content) return;
             const v = $content.value;
-            if (!v) {
-                setStatus("Empty buffer.", "error");
-                return;
-            }
+            if (!v) return;
             const encoded = base64EncodeUtf8(v);
             if (encoded == null) {
-                setStatus("Encoding failed.", "error");
+                setStatus("Encode Failed", "error");
                 return;
             }
             $content.value = encoded;
             updateByteCount();
-            setStatus("Encoded to Base64.", "success");
+            setStatus("Encoded to Base64", "success");
         });
     }
 
@@ -934,32 +897,24 @@
         $btnBase64Decode.addEventListener("click", () => {
             if (!$content) return;
             const v = $content.value;
-            if (!v) {
-                setStatus("Empty buffer.", "error");
-                return;
-            }
+            if (!v) return;
             const decoded = base64DecodeUtf8(v);
             if (decoded == null) {
-                setStatus("Decoding failed.", "error");
+                setStatus("Decode Failed", "error");
                 return;
             }
             $content.value = decoded;
             updateByteCount();
-            setStatus("Decoded from Base64.", "success");
-
-            $btnBase64Decode.classList.add("decode-active");
-            setTimeout(() => {
-                $btnBase64Decode.classList.remove("decode-active");
-            }, 300);
+            setStatus("Decoded Base64", "success");
         });
     }
 
     const ttlText={
-        "10m":"EXPIRE: 10 MIN",
-        "1d":"EXPIRE: 1 DAY",
-        "7d":"EXPIRE: 7 DAYS",
-        "30d":"EXPIRE: 30 DAYS",
-        "forever":"EXPIRE: NEVER"
+        "10m":"Delete in 10 minutes",
+        "1d":"Delete in 24 hours",
+        "7d":"Delete in 7 days",
+        "30d":"Delete in 30 days",
+        "forever":"Never delete"
     };
     function setTtl(key){
         state.ttlKey=key;
@@ -990,30 +945,27 @@
             if($advancedSection)$advancedSection.style.display="none";
             return;
         }else{
-            if($advancedSection)$advancedSection.style.display="flex";
+            if($advancedSection)$advancedSection.style.display="block";
         }
         if(!val){
             if($customHint){
-                $customHint.textContent="Random ID if empty.";
-                $customHint.classList.remove("hint-error");
+                $customHint.textContent="Random ID if empty";
+                $customHint.style.color="var(--text-sub)";
             }
-            $customId.classList.remove("input-error");
             return;
         }
         const ok=/^[A-Za-z0-9_-]+$/.test(val);
         if(!ok){
             state.customSlugError=true;
             if($customHint){
-                $customHint.textContent="Invalid chars.";
-                $customHint.classList.add("hint-error");
+                $customHint.textContent="Invalid characters";
+                $customHint.style.color="var(--danger-color)";
             }
-            $customId.classList.add("input-error");
         }else{
             if($customHint){
-                $customHint.textContent="ID Available.";
-                $customHint.classList.remove("hint-error");
+                $customHint.textContent="ID Available";
+                $customHint.style.color="var(--success-color)";
             }
-            $customId.classList.remove("input-error");
         }
     }
     if($customId)$customId.addEventListener("input",validateCustomSlug);
@@ -1021,10 +973,7 @@
     function enterCreateMode(clear){
         state.mode="create";
         state.originalSlug=null;
-        if($submitBtn){
-            const span=$submitBtn.querySelector(".text");
-            if(span)span.textContent="EXECUTE PASTE";
-        }
+        if($submitBtn) $submitBtn.textContent="Create Paste";
         if($btnHome)$btnHome.style.display="none";
         if(clear){
             if($content)$content.value="";
@@ -1046,12 +995,12 @@
     function applyAuthUI(){
         if($btnAuthLabel){
             $btnAuthLabel.textContent = state.loggedIn ?
-                (state.username || "USER") : "LOGIN";
+                (state.username || "User") : "Login";
         }
 
         if($advancedSection){
             $advancedSection.style.display = state.loggedIn ?
-                "flex" : "none";
+                "block" : "none";
         }
 
         if ($ttlForeverBtn) {
@@ -1070,7 +1019,7 @@
 
     function setLoggedIn(username){
         state.loggedIn = true;
-        state.username = username || "USER";
+        state.username = username || "User";
         try { localStorage.setItem("pbx_username", state.username); } catch(_) {}
         setTtl("forever");
         applyAuthUI();
@@ -1090,7 +1039,7 @@
             if(res.status===401){setLoggedOut();return;}
             const data=await res.json().catch(()=>({}));
             if(data&&data.ok){
-                setLoggedIn(saved||"USER");
+                setLoggedIn(saved||"User");
             }else{
                 setLoggedOut();
             }
@@ -1099,18 +1048,25 @@
         }
     }
 
+    // Modal Helpers
+    function showModal(id){
+        const el=document.getElementById(id);
+        if(el)el.classList.add("active");
+    }
+    function hideModal(id){
+        const el=document.getElementById(id);
+        if(el)el.classList.remove("active");
+    }
+
     function openAuthModal(){
-        if(!$authModal)return;
-        $authModal.style.display="flex";
+        showModal("authModal");
         setAuthTip("");
         if($authUsername)$authUsername.focus();
     }
     function closeAuthModal(){
-        if(!$authModal)return;
-        $authModal.style.display="none";
+        hideModal("authModal");
         if($authForm)$authForm.reset();
         if($authRemember) $authRemember.checked = true;
-        setAuthTip("");
     }
     if($authCloseBtn)$authCloseBtn.addEventListener("click",closeAuthModal);
     if($authModal){
@@ -1120,13 +1076,11 @@
     }
 
     function openUserCenter(){
-        if(!$userCenter)return;
-        $userCenter.style.display="flex";
+        showModal("userCenter");
         loadUserPastes();
     }
     function closeUserCenter(){
-        if(!$userCenter)return;
-        $userCenter.style.display="none";
+        hideModal("userCenter");
     }
     if($ucCloseBtn)$ucCloseBtn.addEventListener("click",closeUserCenter);
     if($userCenter){
@@ -1150,10 +1104,10 @@
             const remember = $authRemember ? $authRemember.checked : true;
 
             if(!u||!p){
-                setAuthTip("Credentials required.","error");
+                setAuthTip("Missing input","error");
                 return;
             }
-            setAuthTip("Authenticating...");
+            setAuthTip("Logging in...");
             try{
                 const data=await postJSON(AUTH_BASE+"/login",{
                     username:u,
@@ -1161,10 +1115,10 @@
                     remember
                 });
                 setLoggedIn(data.username||u);
-                setAuthTip("Access Granted.","success");
-                setTimeout(closeAuthModal,300);
+                setAuthTip("Success","success");
+                setTimeout(closeAuthModal,500);
             }catch(err){
-                setAuthTip(err.message||"Access Denied.","error");
+                setAuthTip(err.message||"Failed","error");
             }
         });
     }
@@ -1172,14 +1126,14 @@
         $btnDoRegister.addEventListener("click",async ()=>{
             const u=$authUsername.value.trim();
             const p=$authPassword.value;
-            if(!u||!p){setAuthTip("Input missing.","error");return;}
-            if(p.length<6){setAuthTip("Pwd < 6 chars.","error");return;}
+            if(!u||!p){setAuthTip("Missing input","error");return;}
+            if(p.length<6){setAuthTip("Password too short","error");return;}
             setAuthTip("Registering...");
             try{
                 await postJSON(AUTH_BASE+"/register",{username:u,password:p});
-                setAuthTip("Done. Please Login.","success");
+                setAuthTip("Registered. Please login.","success");
             }catch(err){
-                setAuthTip(err.message||"Failed.","error");
+                setAuthTip(err.message||"Failed","error");
             }
         });
     }
@@ -1200,6 +1154,7 @@
         return d;
     }
 
+    // Subscription Logic
     function buildSubLink(slug, clientKey) {
         const base = `${location.origin}/autosub?id=${encodeURIComponent(slug)}`;
         if (!clientKey || clientKey === "general") return base;
@@ -1209,17 +1164,13 @@
     let currentSubSlug = null;
     function openSubClientMenu(slug) {
         currentSubSlug = slug;
-        const overlay = document.getElementById("subClientOverlay");
-        if (overlay) {
-            overlay.style.display = "flex";
-            if (window.__subMenuSync) window.__subMenuSync();
-        }
+        showModal("subClientOverlay");
+        if (window.__subMenuSync) window.__subMenuSync();
     }
 
     function closeSubClientMenu() {
         currentSubSlug = null;
-        const overlay = document.getElementById("subClientOverlay");
-        if (overlay) overlay.style.display = "none";
+        hideModal("subClientOverlay");
     }
 
     (function initSubClientMenu(){
@@ -1229,14 +1180,14 @@
         const closeBtn = document.getElementById("subMenuCloseBtn");
         const input = document.getElementById("subLinkInput");
         const copyBtn = document.getElementById("subLinkCopyBtn");
-        const pills = Array.from(overlay.querySelectorAll(".sub-ios-pill"));
+        const opts = Array.from(overlay.querySelectorAll(".sub-opt"));
 
         let selected = "general";
 
         function refresh(){
-            pills.forEach(btn=>{
+            opts.forEach(btn=>{
                 const key = btn.getAttribute("data-client") || "general";
-                btn.classList.toggle("is-active", key === selected);
+                btn.classList.toggle("active", key === selected);
             });
             if (input) {
                 input.value = currentSubSlug ? buildSubLink(currentSubSlug, selected) : "";
@@ -1256,18 +1207,8 @@
         overlay.addEventListener("click",(e)=>{
             if (e.target === overlay) closeSubClientMenu();
         });
-        pills.forEach(btn=>{
-            btn.addEventListener("click", (e)=>{
-                // Ripple Effect (Kept but modified visual in CSS)
-                try{
-                    const r = btn.getBoundingClientRect();
-                    const ripple = document.createElement("span");
-                    ripple.className = "ios-ripple";
-                    ripple.style.left = ((e?.clientX ?? (r.left + r.width/2)) - r.left) + "px";
-                    ripple.style.top  = ((e?.clientY ?? (r.top + r.height/2)) - r.top) + "px";
-                    btn.appendChild(ripple);
-                    ripple.addEventListener("animationend", ()=> ripple.remove(), { once:true });
-                }catch(_){}
+        opts.forEach(btn=>{
+            btn.addEventListener("click", ()=>{
                 setSelected(btn.getAttribute("data-client") || "general");
             });
         });
@@ -1278,17 +1219,17 @@
             try{
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     await navigator.clipboard.writeText(url);
-                    setStatus("LINK COPIED.", "success");
+                    setStatus("Link Copied", "success");
                 } else {
-                    window.prompt("COPY:", url);
+                    window.prompt("Copy link:", url);
                 }
             }catch(_){
-                window.prompt("COPY:", url);
+                window.prompt("Copy link:", url);
             }
             closeSubClientMenu();
         });
         document.addEventListener("keydown",(e)=>{
-            if (e.key === "Escape" && overlay.style.display !== "none") closeSubClientMenu();
+            if (e.key === "Escape" && overlay.classList.contains("active")) closeSubClientMenu();
         });
         refresh();
     })();
@@ -1296,25 +1237,25 @@
 
     async function loadUserPastes(){
         if(!$ucEmpty||!$ucList)return;
-        $ucEmpty.style.display="";
-        $ucEmpty.textContent="LOADING...";
+        $ucEmpty.style.display="block";
+        $ucEmpty.textContent="Fetching...";
         $ucList.style.display="none";
         $ucList.innerHTML="";
         try{
             const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
             if(res.status===401){
-                $ucEmpty.textContent="SESSION EXPIRED.";
+                $ucEmpty.textContent="Session Expired";
                 setLoggedOut();
                 return;
             }
             const data=await res.json().catch(()=>({}));
             if(!data.ok){
-                $ucEmpty.textContent=data.error||"ERROR.";
+                $ucEmpty.textContent=data.error||"Error";
                 return;
             }
             const items=data.items||[];
             if(!items.length){
-                $ucEmpty.textContent="NO RECORDS FOUND.";
+                $ucEmpty.textContent="No records found";
                 return;
             }
 
@@ -1337,8 +1278,7 @@
                 }catch(_){}
             }));
             if(!valid.length){
-                $ucEmpty.style.display="";
-                $ucEmpty.textContent="NO VALID RECORDS.";
+                $ucEmpty.textContent="No valid records";
                 return;
             }
 
@@ -1362,94 +1302,64 @@
 
                 const row=document.createElement("div");
                 row.className="uc-item";
-                row.innerHTML=`
-                    <div class="uc-item-top">
-                        <div class="uc-item-title">
-                            <span class="uc-remark-tag">${escapeHTML(remark)}</span>
-                            <span class="uc-slug-tag">ID: ${escapeHTML(slug)}</span>
-                        </div>
-                        <div class="uc-item-meta" style="font-size:11px;color:var(--text-sub);"></div>
-                    </div>
-                    <div class="uc-link-row">
-                        ${escapeHTML(viewUrl)}
-                    </div>
-                    <div class="uc-item-actions"></div>
-                `;
-                const meta=row.querySelector(".uc-item-meta");
-                const act=row.querySelector(".uc-item-actions");
-                const titleBox=row.querySelector(".uc-item-title");
-
+                
                 let metaText="";
                 if(!expires || ttlKey==="forever"){
-                    metaText=`EXP: NEVER`;
+                    metaText=`Never Expire`;
                 }else{
-                    metaText+=`EXP: ${formatDate(expires)}`;
+                    metaText+=`Exp: ${formatDate(expires)}`;
                     if(remain!=null && remain>=0){
                         metaText+=` (${remain}d left)`;
                     }
                 }
-                meta.textContent=metaText;
-                
-                if (hasNode && titleBox) {
-                    const subBtn=document.createElement("button");
-                    subBtn.type="button";
-                    subBtn.className="uc-sub-btn";
-                    subBtn.textContent = `SUB (${nodeCount})`;
-                    subBtn.addEventListener("click",()=>openSubClientMenu(slug));
-                    titleBox.appendChild(subBtn);
-                }
 
-                const btnEdit=document.createElement("button");
-                btnEdit.type="button";
-                btnEdit.className="btn-secondary btn-xs";
-                btnEdit.innerHTML = `EDIT`;
-                btnEdit.addEventListener("click",()=>{
+                row.innerHTML=`
+                    <div class="uc-top">
+                        <div style="font-weight:700;">${escapeHTML(slug)}</div>
+                        <div style="font-size:12px;color:var(--text-sub);">${escapeHTML(remark)}</div>
+                    </div>
+                    <div style="font-size:11px; color:var(--text-sub);">${metaText}</div>
+                    <div class="uc-actions">
+                        ${hasNode ? `<button type="button" class="btn-secondary btn-xs uc-sub-btn">Sub (${nodeCount})</button>` : ''}
+                        <button type="button" class="btn-secondary btn-xs uc-edit-btn">Edit</button>
+                        <button type="button" class="btn-secondary btn-xs uc-copy-btn">Copy</button>
+                        <button type="button" class="btn-secondary btn-xs uc-open-btn">Open</button>
+                        <button type="button" class="btn-danger btn-xs uc-del-btn">Del</button>
+                    </div>
+                `;
+
+                if (hasNode) {
+                   row.querySelector(".uc-sub-btn").addEventListener("click",()=>openSubClientMenu(slug));
+                }
+                
+                row.querySelector(".uc-edit-btn").addEventListener("click",()=>{
                     closeUserCenter();
                     enterEditMode(slug);
                 });
-                const btnCopy=document.createElement("button");
-                btnCopy.type="button";
-                btnCopy.className="btn-secondary btn-xs";
-                btnCopy.innerHTML=`COPY`
-                btnCopy.addEventListener("click",async ()=>{
+                row.querySelector(".uc-copy-btn").addEventListener("click",async ()=>{
                     try{
                         await navigator.clipboard.writeText(viewUrl);
-                        setStatus("Copied.","success");
-                    }catch(_){
-                        setStatus("Copy failed.","error");
-                    }
+                        setStatus("Copied","success");
+                    }catch(_){setStatus("Failed","error");}
                 });
-
-                const btnOpen=document.createElement("button");
-                btnOpen.type="button";
-                btnOpen.className="btn-secondary btn-xs";
-                btnOpen.innerHTML = `OPEN`;
-                btnOpen.addEventListener("click",()=>{window.open(viewUrl,"_blank","noopener");});
-
-                const btnDel=document.createElement("button");
-                btnDel.type="button";
-                btnDel.className="btn-danger btn-xs";
-                btnDel.innerHTML =`DEL`;
-                btnDel.addEventListener("click",async ()=>{
-                    if(!confirm("DELETE?"))return;
+                row.querySelector(".uc-open-btn").addEventListener("click",()=>{
+                    window.open(viewUrl,"_blank","noopener");
+                });
+                row.querySelector(".uc-del-btn").addEventListener("click",async ()=>{
+                    if(!confirm("Delete this paste?"))return;
                     try{
                         await postJSON(API_BASE,{action:"delete",slug});
                         loadUserPastes();
-                        setStatus("DELETED.","success");
+                        setStatus("Deleted","success");
                     }catch(err){
-                        setStatus(err.message||"ERR","error");
+                        setStatus(err.message||"Error","error");
                     }
                 });
-                act.appendChild(btnEdit);
-                act.appendChild(btnCopy);
-                act.appendChild(btnOpen);
-                act.appendChild(btnDel);
 
                 $ucList.appendChild(row);
             });
         }catch(err){
-            $ucEmpty.style.display="";
-            $ucEmpty.textContent=err.message||"ERROR.";
+            $ucEmpty.textContent=err.message||"Error";
         }
     }
 
@@ -1460,26 +1370,23 @@
             setLoggedOut();
             closeUserCenter();
             enterCreateMode(true);
-            setStatus("LOGGED OUT.","success");
+            setStatus("Logged Out","success");
         });
     }
 
     async function enterEditMode(slug){
         state.mode="edit";
         state.originalSlug=slug;
-        if($submitBtn){
-            const span=$submitBtn.querySelector(".text");
-            if(span)span.textContent="UPDATE PASTE";
-        }
+        if($submitBtn) $submitBtn.textContent="Update Paste";
         if($btnHome)$btnHome.style.display="inline-flex";
-        setStatus("LOADING DATA...");
+        setStatus("Loading...");
         try{
             const url=new URL(`${API_BASE}/${encodeURIComponent(slug)}`);
             url.searchParams.set("manage","1");
             const res=await fetch(url.toString(),{credentials:"include"});
             const data=await res.json().catch(()=>({}));
             if(!res.ok||data.ok===false){
-                throw new Error(data.error||"NOT FOUND.");
+                throw new Error(data.error||"Not Found");
             }
             if($content)$content.value=data.content||"";
             if($remark)$remark.value=data.remark||"";
@@ -1492,9 +1399,9 @@
             const urlClean=new URL(location.href);
             urlClean.searchParams.set("id",slug);
             history.replaceState(null,"",urlClean.toString());
-            setStatus("EDIT MODE ACTIVE.","success");
+            setStatus("Edit Mode","success");
         }catch(err){
-            setStatus(err.message||"ERROR.","error");
+            setStatus(err.message||"Error","error");
             enterCreateMode(false);
         }
     }
@@ -1516,9 +1423,9 @@
             if(!text)return;
             try{
                 await navigator.clipboard.writeText(text);
-                setStatus("URL Copied.","success");
+                setStatus("Link Copied","success");
             }catch(_){
-                setStatus("Copy failed.","error");
+                setStatus("Copy failed","error");
             }
         });
     }
@@ -1543,8 +1450,8 @@
         $form.addEventListener("submit",async e=>{
             e.preventDefault();
             const text=($content&&$content.value.trim())||"";
-            if(!text){setStatus("INPUT REQUIRED.","error");return;}
-            if(state.customSlugError){setStatus("INVALID SLUG.","error");return;}
+            if(!text){setStatus("Content required","error");return;}
+            if(state.customSlugError){setStatus("Invalid ID","error");return;}
 
             let slug=null;
             let newSlug=null;
@@ -1571,28 +1478,22 @@
             if(newSlug)payload.newSlug=newSlug;
 
             state.isSubmitting=true;
-            if($submitBtn){
-                $submitBtn.disabled=true;
-                const span=$submitBtn.querySelector(".text");
-                if(span)span.textContent="PROCESSING...";
-            }
-            setStatus("SENDING...");
+            if($submitBtn) $submitBtn.textContent="Processing...";
+
             try{
                 const data=await postJSON(API_BASE,payload);
                 const finalSlug=data.slug||newSlug||slug;
-                if(!finalSlug)throw new Error("No slug returned.");
+                if(!finalSlug)throw new Error("No slug returned");
                 showResultLink(finalSlug);
 
-                setStatus("SUCCESS.","success");
+                setStatus("Success","success");
                 enterCreateMode(true);
             }catch(err){
-                setStatus(err.message||"FAILED.","error");
+                setStatus(err.message||"Failed","error");
             }finally{
                 state.isSubmitting=false;
                 if($submitBtn){
-                    $submitBtn.disabled=false;
-                    const span=$submitBtn.querySelector(".text");
-                    if(span)span.textContent=state.mode==="edit"?"UPDATE":"EXECUTE PASTE";
+                    $submitBtn.textContent=state.mode==="edit"?"Update Paste":"Create Paste";
                 }
             }
         });
@@ -1603,12 +1504,12 @@
     document.addEventListener("keydown",e=>{
         if(e.key==="Escape"){
             const overlay = document.getElementById("subClientOverlay");
-            if(overlay && overlay.style.display==="flex"){
+            if(overlay && overlay.classList.contains("active")){
                 closeSubClientMenu();
                 return;
             }
-            if($userCenter&&$userCenter.style.display==="flex")closeUserCenter();
-            else if($authModal&&$authModal.style.display==="flex")closeAuthModal();
+            if($userCenter&&$userCenter.classList.contains("active"))closeUserCenter();
+            else if($authModal&&$authModal.classList.contains("active"))closeAuthModal();
         }
     });
     (async function init(){
