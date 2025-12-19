@@ -919,7 +919,218 @@
             *{ animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
             body::before, body::after{ animation: none !important; }
         }
-    </style>
+    
+        /* =========================================================
+           v5 — mobile-perfect + clearer interactions
+           ========================================================= */
+        html, body{ height:100%; }
+        body{
+            display:block;
+            overflow-x:hidden;
+            min-height: 100svh;
+            padding: 28px 16px;
+            padding-top: calc(22px + env(safe-area-inset-top));
+            padding-bottom: calc(22px + env(safe-area-inset-bottom));
+        }
+        .shell{ margin: 0 auto; }
+
+        /* Make overall spacing more fluid on small screens */
+        .card{ padding: clamp(14px, 3.8vw, 28px); }
+        textarea{
+            min-height: 360px;
+        }
+        @media (max-width: 720px){
+            textarea{ min-height: min(280px, 38svh); }
+        }
+        @media (max-width: 420px){
+            textarea{ min-height: min(240px, 34svh); }
+        }
+
+        /* Compact buttons (especially mobile) */
+        .btn-primary, .btn-secondary, .btn-danger{
+            height: 34px;
+            padding: 0 12px;
+        }
+        .pill-btn, .theme-toggle{ height: 34px; padding: 0 12px; }
+        @media (max-width: 420px){
+            .btn-primary, .btn-secondary, .btn-danger{ height: 32px; padding: 0 10px; }
+            .pill-btn, .theme-toggle{ height: 32px; padding: 0 10px; }
+        }
+
+        /* ===== Subscription sheet (new) ===== */
+        .sub-menu-backdrop{
+            align-items:center;
+            justify-content:center;
+            padding: 18px;
+        }
+        .sub-menu.sub-sheet{
+            width: 100%;
+            max-width: 440px;
+            padding: 18px;
+            border-radius: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            box-shadow: 0 28px 90px rgba(0,0,0,.25);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+        .sub-handle{
+            display:none;
+            width: 44px; height: 5px;
+            border-radius: 999px;
+            margin: 2px auto 12px auto;
+            background: rgba(255,255,255,.35);
+            opacity: .45;
+        }
+        body.theme-dark .sub-handle{ background: rgba(255,255,255,.35); opacity: .35; }
+
+        .sub-choice{
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .sub-opt{
+            position:relative;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,.28);
+            color: var(--text-main);
+            padding: 10px 12px;
+            min-height: 44px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap: 10px;
+            transition: transform .18s var(--ease), background .22s var(--ease), border-color .22s var(--ease), box-shadow .22s var(--ease);
+            overflow:hidden;
+        }
+        body.theme-dark .sub-opt{ background: rgba(255,255,255,.05); }
+        .sub-opt:hover{
+            border-color: var(--border-strong);
+            transform: translateY(-1px);
+            box-shadow: 0 14px 34px rgba(0,0,0,.10);
+        }
+        .sub-opt:active{ transform: translateY(0) scale(.985); }
+        .sub-opt:focus-visible{
+            outline: 2px solid var(--border-focus);
+            outline-offset: 2px;
+        }
+        .sub-opt-text{ display:flex; flex-direction:column; gap: 2px; min-width: 0; }
+        .sub-opt-label{
+            font-size: 13px;
+            font-weight: 880;
+            letter-spacing: .01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .sub-opt-meta{
+            font-size: 11px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* ripple for sheet options */
+        .sub-opt .ios-ripple{
+            position:absolute;
+            width: 10px; height: 10px;
+            background: rgba(255,255,255,.35);
+            border-radius:50%;
+            transform: scale(0);
+            animation: ripple-anim .6s linear;
+            pointer-events:none;
+        }
+.sub-opt-check{
+            width: 28px; height: 28px;
+            border-radius: 12px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,.18);
+            opacity: .0;
+            transform: scale(.85);
+            transition: opacity .18s var(--ease), transform .18s var(--ease), background .22s var(--ease), border-color .22s var(--ease);
+            flex: 0 0 auto;
+        }
+        body.theme-dark .sub-opt-check{ background: rgba(255,255,255,.06); }
+        .sub-opt.is-active{
+            border-color: transparent;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            box-shadow: 0 20px 52px rgba(124,58,237,.22);
+            color: var(--primary-fg);
+        }
+        .sub-opt.is-active .sub-opt-meta{ color: rgba(6,7,11,.72); }
+        .sub-opt.is-active .sub-opt-check{
+            opacity: 1;
+            transform: scale(1);
+            background: rgba(255,255,255,.36);
+            border-color: rgba(255,255,255,.42);
+        }
+        .sub-tip{
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* iOS bottom sheet on mobile */
+        @media (max-width: 600px){
+            body{
+                padding: 14px 12px;
+                padding-top: calc(14px + env(safe-area-inset-top));
+                padding-bottom: calc(16px + env(safe-area-inset-bottom));
+            }
+            .sub-menu-backdrop{
+                align-items:flex-end;
+                justify-content:center;
+                padding: 0;
+            }
+            .sub-menu.sub-sheet{
+                max-width: none;
+                border-radius: 26px 26px 0 0;
+                padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+                border-left: none;
+                border-right: none;
+                border-bottom: none;
+            }
+            .sub-handle{ display:block; }
+            .sub-choice{ grid-template-columns: 1fr; }
+            .sub-opt{ min-height: 42px; border-radius: 18px; }
+        }
+
+        /* Make UC subscription button more compact + obvious */
+        .uc-sub-btn{
+            height: 28px;
+            padding: 0 10px;
+            border-radius: 999px;
+            display:inline-flex;
+            align-items:center;
+            gap: 8px;
+        }
+        .uc-sub-ic{ display:inline-flex; width: 14px; height: 14px; }
+        .uc-sub-badge{
+            margin-left: 2px;
+            height: 18px;
+            min-width: 18px;
+            padding: 0 6px;
+            border-radius: 999px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            font-size: 11px;
+            font-weight: 880;
+            color: var(--primary-fg);
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+        }
+
+        /* Clearer tap feedback globally */
+        *{ -webkit-tap-highlight-color: transparent; }
+
+</style>
 </head>
 <body class="theme-light">
 
@@ -1146,28 +1357,59 @@
 </div>
 
 <div class="sub-menu-backdrop" id="subClientOverlay" style="display:none;">
-    <div class="sub-menu sub-ios">
+    <div class="sub-menu sub-sheet" role="dialog" aria-modal="true" aria-label="订阅格式选择">
+        <div class="sub-handle" aria-hidden="true"></div>
         <div class="sub-ios-head">
             <div class="sub-ios-title">选择订阅格式</div>
-            <button type="button" class="sub-ios-close" id="subMenuCloseBtn">
-                <span class="icon-svg"><svg viewBox="0 0 24 24" class="lucide"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
+            <button type="button" class="sub-ios-close" id="subMenuCloseBtn" aria-label="关闭">
+                <span class="icon-svg"><svg class="lucide" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>
             </button>
         </div>
 
-        <div class="sub-ios-grid" role="tablist">
-            <button type="button" class="sub-ios-pill is-active" data-client="general">通用格式</button>
-            <button type="button" class="sub-ios-pill" data-client="base64">Base64</button>
-            <button type="button" class="sub-ios-pill" data-client="clash">Clash</button>
-            <button type="button" class="sub-ios-pill" data-client="surge">Surge</button>
+        <div class="sub-choice" role="listbox" aria-label="订阅格式">
+            <button type="button" class="sub-opt is-active" data-client="general" role="option" aria-selected="true">
+                <span class="sub-opt-text">
+                    <span class="sub-opt-label">通用格式</span>
+                    <span class="sub-opt-meta">Auto / 推荐</span>
+                </span>
+                <span class="sub-opt-check"><svg class="lucide" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>
+            </button>
+
+            <button type="button" class="sub-opt" data-client="clash" role="option" aria-selected="false">
+                <span class="sub-opt-text">
+                    <span class="sub-opt-label">Clash</span>
+                    <span class="sub-opt-meta">Mihomo / Meta</span>
+                </span>
+                <span class="sub-opt-check"><svg class="lucide" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>
+            </button>
+
+            <button type="button" class="sub-opt" data-client="base64" role="option" aria-selected="false">
+                <span class="sub-opt-text">
+                    <span class="sub-opt-label">Base64 / V2ray</span>
+                    <span class="sub-opt-meta">v2rayNG 等</span>
+                </span>
+                <span class="sub-opt-check"><svg class="lucide" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>
+            </button>
+
+            <button type="button" class="sub-opt" data-client="surge" role="option" aria-selected="false">
+                <span class="sub-opt-text">
+                    <span class="sub-opt-label">Surge</span>
+                    <span class="sub-opt-meta">macOS / iOS</span>
+                </span>
+                <span class="sub-opt-check"><svg class="lucide" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>
+            </button>
         </div>
 
-        <div class="sub-ios-link">
+        <div class="sub-ios-link" aria-label="订阅链接">
             <input id="subLinkInput" class="sub-ios-input" type="text" readonly value="" />
-            <button type="button" id="subLinkCopyBtn" class="sub-ios-copy">
-                <span class="icon-svg"><svg viewBox="0 0 24 24" class="lucide"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></span>
+            <button type="button" id="subLinkCopyBtn" class="sub-ios-copy" aria-label="复制链接">
+                <span class="icon-svg"><svg class="lucide" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
             </button>
         </div>
+
+        <div class="sub-tip">点选上方格式后生成链接，再复制导入客户端</div>
     </div>
+</div>
 </div>
 
 <script>
@@ -1766,7 +2008,7 @@
         const closeBtn = document.getElementById("subMenuCloseBtn");
         const input = document.getElementById("subLinkInput");
         const copyBtn = document.getElementById("subLinkCopyBtn");
-        const pills = Array.from(overlay.querySelectorAll(".sub-ios-pill"));
+        const pills = Array.from(overlay.querySelectorAll(".sub-opt"));
 
         let selected = "general";
 
@@ -1775,7 +2017,8 @@
             pills.forEach(btn=>{
                 const key = btn.getAttribute("data-client") || "general";
                 btn.classList.toggle("is-active", key === selected);
-            });
+                btn.setAttribute("aria-selected", String(key === selected));
+});
             if (input) {
                 input.value = currentSubSlug ? buildSubLink(currentSubSlug, selected) : "";
             }
@@ -1943,7 +2186,8 @@
                     const subBtn=document.createElement("button");
                     subBtn.type="button";
                     subBtn.className="uc-sub-btn";
-                    subBtn.textContent = nodeCount > 0 ? `订阅 (${nodeCount})` : "订阅";
+                    const badge = (nodeCount > 0) ? `<span class="uc-sub-badge">${nodeCount}</span>` : "";
+                    subBtn.innerHTML = `<span class="uc-sub-ic"><svg class="lucide" viewBox="0 0 24 24"><path d="M12 3v10"/><path d="M7 13l5 5 5-5"/><path d="M5 21h14"/></svg></span><span class="uc-sub-txt">订阅</span>${badge}`;
                     subBtn.addEventListener("click",()=>openSubClientMenu(slug));
                     titleBox.appendChild(subBtn);
                 }
