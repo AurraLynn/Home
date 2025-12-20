@@ -103,7 +103,7 @@
             display: grid;
             grid-template-columns: 1fr 340px; 
             gap: 24px;
-            align-items: stretch; /* 关键：使左右子元素高度拉伸对齐 */
+            align-items: stretch; /* 左右等高 */
         }
 
         /* 头部 */
@@ -167,10 +167,7 @@
 
         /* 左侧：主编辑器 */
         .editor-zone {
-            /* 关键：使用 flex-grow 让输入框填满卡片 */
-            height: 100%; 
-            /* 设置最小高度，确保初始状态与右侧差不多高 */
-            min-height: 480px; 
+            height: 100%; min-height: 480px; 
             position: relative; display: flex; flex-direction: column;
         }
         
@@ -181,13 +178,10 @@
         }
         .editor-textarea::placeholder { color: var(--txt-placeholder); }
         
-        /* 悬浮状态栏 */
         .editor-status-bar {
             position: absolute; bottom: 12px; right: 12px;
-            pointer-events: none; /* 让点击穿透 */
-            display: flex; gap: 6px; z-index: 20;
+            pointer-events: none; display: flex; gap: 6px; z-index: 20;
         }
-        /* 关键修复：子元素恢复点击事件 */
         .editor-status-bar > * { pointer-events: auto; }
 
         .status-pill {
@@ -207,12 +201,10 @@
         /* 右侧：控制面板 */
         .sidebar {
             display: flex; flex-direction: column; gap: 20px;
-            justify-content: space-between; /* 确保发布按钮在底部对齐 */
+            justify-content: space-between;
         }
         
-        .sidebar-content {
-            display: flex; flex-direction: column; gap: 20px;
-        }
+        .sidebar-content { display: flex; flex-direction: column; gap: 20px; }
 
         .panel-header {
             font-size: 12px; font-weight: 700; color: var(--txt-secondary);
@@ -220,7 +212,6 @@
             margin-bottom: 8px; margin-left: 4px; opacity: 0.8;
         }
 
-        /* 选项组 */
         .seg-control {
             background: rgba(128,128,128,0.08); padding: 4px; border-radius: 16px;
             display: flex; gap: 2px; border: 1px solid var(--border-subtle);
@@ -235,7 +226,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
 
-        /* 功能网格 */
         .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .tool-card {
             background: var(--bg-glass); backdrop-filter: blur(10px);
@@ -249,7 +239,7 @@
         .tool-icon { width: 22px; height: 22px; opacity: 0.8; }
         .tool-label { font-size: 12px; color: var(--txt-secondary); }
 
-        /* 左右并排的输入组 */
+        /* 左右并排输入组 (链接显示) */
         .input-group-row {
             display: flex; align-items: center; gap: 0;
             background: var(--bg-glass); border: 1px solid var(--border-subtle);
@@ -258,15 +248,16 @@
         }
         .input-group-row:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); background: var(--bg-card); }
         .input-group-row input {
-            flex: 1; border: none; background: transparent; padding: 0 12px; height: 44px;
-            color: var(--txt-primary); font-size: 13px; font-weight: 500; min-width: 0;
+            flex: 1; border: none; background: transparent; padding: 0 12px; height: 36px;
+            color: var(--txt-primary); font-size: 12px; font-family: var(--font-mono); min-width: 0;
         }
         .input-group-row button {
             border: none; background: transparent; color: var(--accent);
-            font-weight: 600; font-size: 13px; cursor: pointer;
-            padding: 0 16px; height: 44px;
-            border-left: 1px solid var(--border-subtle);
+            display: flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px;
+            border-left: 1px solid var(--border-subtle); cursor: pointer;
         }
+        .input-group-row button:hover { background: rgba(0,0,0,0.05); }
 
         .input-box {
             background: var(--bg-glass); border: 1px solid var(--border-subtle);
@@ -277,7 +268,6 @@
         .input-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); background: var(--bg-card); }
         .input-real { width: 100%; border: none; background: transparent; color: var(--txt-primary); font-size: 13px; font-weight: 500; }
 
-        /* 结果面板 */
         .result-zone { display: none; animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .result-link {
             font-family: var(--font-mono); font-size: 12px; word-break: break-all;
@@ -288,7 +278,7 @@
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .footer {
-            grid-column: 1 / -1; text-align: center; font-size: 11px; color: var(--txt-secondary); opacity: 0.6; padding-top: 20px;
+            grid-column: 1 / -1; text-align: center; font-size: 12px; color: var(--txt-secondary); opacity: 0.8; padding-top: 30px; line-height: 1.6;
         }
 
         #fileInput { display: none; }
@@ -313,7 +303,6 @@
         .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-title { font-size: 20px; font-weight: 700; }
         
-        /* 统一关闭/刷新按钮样式 */
         .btn-circle {
             width: 36px; height: 36px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
@@ -324,7 +313,6 @@
         .btn-circle:hover { background: var(--bg-card); transform: rotate(90deg); color: var(--txt-primary); }
         .btn-circle svg { width: 18px; height: 18px; }
 
-        /* 移动端适配 */
         @media (max-width: 860px) {
             .app-shell {
                 grid-template-columns: 1fr; margin-top: 20px; gap: 20px;
@@ -333,7 +321,6 @@
             .editor-zone { min-height: 280px; }
             .header-section { margin-bottom: 0; }
             .tools-grid { grid-template-columns: repeat(4, 1fr); }
-            /* 手机端底部弹窗 */
             #subClientOverlay { align-items: flex-end; }
             #subClientOverlay .modal-panel { margin: 0; border-radius: 24px 24px 0 0; transform: translateY(100%); width: 100%; max-width: 100%; }
             #subClientOverlay.show .modal-panel { transform: translateY(0); }
@@ -366,7 +353,6 @@
 
         <form id="pasteForm" style="display:contents">
             
-            <!-- 左侧：沉浸式编辑器 -->
             <div class="bento-card editor-zone" id="editorZone">
                 <textarea id="content" class="editor-textarea" placeholder="在这里粘贴代码或文本..." spellcheck="false" required></textarea>
                 
@@ -374,23 +360,13 @@
                     <span class="status-pill" id="lineCounter">0 行</span>
                     <span class="status-pill"><span id="byteNum">0</span> 字符</span>
                     <span class="status-pill node-indicator" id="nodeInfo">节点</span>
-                    <!-- 关键修复：z-index 和 pointer-events -->
                     <button type="button" class="btn btn-glass" id="btnHome" style="height:24px; font-size:11px; padding:0 10px; display:none; pointer-events:auto;">结束编辑</button>
                 </div>
             </div>
 
-            <!-- 右侧：控制中心 -->
             <div class="sidebar">
                 
                 <div class="sidebar-content">
-                    
-                    <!-- 新增：个人中心快捷入口 (登录后显示) -->
-                    <div id="userCard" class="tool-card" style="display:none; height:50px; flex-direction:row; gap:10px; background:var(--bg-card); border-color:var(--accent);">
-                         <svg class="icon tool-icon" viewBox="0 0 24 24" style="color:var(--accent);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                         <span class="tool-label" style="color:var(--txt-primary); font-weight:600;">进入个人中心</span>
-                    </div>
-
-                    <!-- 快捷工具网格 -->
                     <div>
                         <div class="panel-header">快捷操作</div>
                         <div class="tools-grid">
@@ -414,7 +390,6 @@
                         </div>
                     </div>
 
-                    <!-- 有效期设置 -->
                     <div class="bento-card" style="padding:16px;">
                         <div class="panel-header">有效期</div>
                         <div class="seg-control" id="ttlGroup">
@@ -427,7 +402,6 @@
                         <div id="ttlHint" style="font-size:11px; font-weight:500; color:var(--accent); margin-top:8px; text-align:right;"></div>
                     </div>
 
-                    <!-- 高级设置 -->
                     <div id="advancedSection" style="display:none; flex-direction:column; gap:12px;">
                         <div class="panel-header">高级选项</div>
                         <div class="input-box">
@@ -439,9 +413,7 @@
                     </div>
                 </div>
 
-                <!-- 底部提交区域 -->
                 <div style="display:flex; flex-direction:column; gap:8px;">
-                     <!-- 结果展示 -->
                     <div id="resultBox" class="bento-card result-zone" style="padding:16px;">
                         <div class="panel-header" style="color:var(--success)">发布成功</div>
                         <div class="result-link" id="viewLinkText">...</div>
@@ -460,8 +432,9 @@
 
         </form>
 
+        <!-- 底部一言 -->
         <footer class="footer">
-            <span id="baseUrlText"></span> • Designed by Aura
+            <div id="hitokotoText">Loading Hitokoto...</div>
         </footer>
     </main>
 
@@ -497,7 +470,6 @@
             <div class="modal-head">
                 <span class="modal-title">我的发布</span>
                 <div style="display:flex; gap:12px;">
-                    <!-- 修正：两个按钮使用完全相同的类名 -->
                     <button class="btn-circle" id="ucRefreshBtn" title="刷新列表">
                         <svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
                     </button>
@@ -508,12 +480,11 @@
             <div class="uc-list" id="ucList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-bottom: 20px;"></div>
             <div id="ucEmpty" style="text-align:center; padding:40px; color:var(--txt-secondary); font-size:13px;">加载中...</div>
             
-            <!-- 修正：增加 margin-top -->
             <button class="btn btn-danger-pill" id="ucLogoutBtn" style="width:auto; margin:40px auto 0;">退出登录</button>
         </div>
     </div>
 
-    <!-- 订阅客户端选择 (PC端居中，移动端底部) -->
+    <!-- 订阅客户端选择 -->
     <div class="modal-mask" id="subClientOverlay">
         <div class="modal-panel" style="width:100%; max-width:500px;">
             <div class="modal-head">
@@ -528,10 +499,11 @@
                 <button class="btn btn-glass" data-client="surge" style="justify-content:center">Surge</button>
             </div>
             
-            <!-- 修正：输入框与复制按钮左右并排 -->
             <div class="input-group-row">
                 <input id="subLinkInput" readonly>
-                <button id="subLinkCopyBtn">复制</button>
+                <button id="subLinkCopyBtn">
+                    <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
             </div>
         </div>
     </div>
@@ -599,7 +571,6 @@
     const $btnCopyView=qs("btnCopyView");
     const $btnOpenView=qs("btnOpenView");
     const $statusMsg=qs("statusMsg");
-    const $baseUrlText=qs("baseUrlText");
     const $advancedSection=qs("advancedSection");
     const $ttlForeverBtn=qs("ttlForeverBtn");
     const $customId=qs("customId");
@@ -608,7 +579,6 @@
     const $fileInput=qs("fileInput");
     const $uploadBtn=qs("uploadBtn");
     const $btnResetContent=qs("btnResetContent");
-    const $userCard=qs("userCard");
 
     const $btnBase64Encode = qs("btnBase64Encode");
     const $btnBase64Decode = qs("btnBase64Decode");
@@ -633,8 +603,6 @@
     const $ucLogoutBtn=qs("ucLogoutBtn");
     const $ucCloseBtn=qs("ucCloseBtn");
 
-    if($baseUrlText)$baseUrlText.textContent=VIEW_BASE+"/{id}";
-
     const state={
         loggedIn:false,
         username:null,
@@ -644,6 +612,24 @@
         mode:"create",
         originalSlug:null
     };
+
+    function toggleScrollLock(lock) {
+        document.body.style.overflow = lock ? 'hidden' : '';
+    }
+
+    /* 一言 API 调用 */
+    (function fetchHitokoto(){
+        const el = document.getElementById("hitokotoText");
+        if(!el) return;
+        fetch('https://v1.hitokoto.cn')
+            .then(response => response.json())
+            .then(data => {
+                el.innerHTML = `「${data.hitokoto}」<br><span style="font-size:11px;opacity:0.6;">—— ${data.from}</span>`;
+            })
+            .catch(() => {
+                el.innerHTML = "Designed by Aura";
+            });
+    })();
 
     function escapeHTML(str){
         if(!str) return "";
@@ -782,8 +768,20 @@
         });
     }
 
-    // 修正：计算具体过期时间
     const ttlMap = { "10m": 10*60*1000, "1d": 24*3600*1000, "7d": 7*24*3600*1000, "30d": 30*24*3600*1000 };
+    function getExpireText(key, startTime) {
+        if(key === "forever") return "永久有效";
+        const ms = ttlMap[key];
+        if(!ms) return "未知";
+        const date = new Date(startTime + ms);
+        const y = date.getFullYear();
+        const m = (date.getMonth()+1).toString().padStart(2,'0');
+        const d = date.getDate().toString().padStart(2,'0');
+        const h = date.getHours().toString().padStart(2,'0');
+        const min = date.getMinutes().toString().padStart(2,'0');
+        return `${y}-${m}-${d} ${h}:${min} 过期`;
+    }
+
     function setTtl(key){
         state.ttlKey=key;
         if($ttlGroup){
@@ -791,24 +789,18 @@
                 b.classList.toggle("active",b.dataset.ttl===key);
             });
         }
-        
         let text = "";
         if (key === "forever") {
             text = "永久有效";
         } else {
-            const ms = ttlMap[key];
-            if (ms) {
-                const date = new Date(Date.now() + ms);
-                // 格式化为 YYYY-MM-DD HH:MM
-                const y = date.getFullYear();
-                const m = (date.getMonth()+1).toString().padStart(2,'0');
-                const d = date.getDate().toString().padStart(2,'0');
-                const h = date.getHours().toString().padStart(2,'0');
-                const min = date.getMinutes().toString().padStart(2,'0');
-                text = `有效期至: ${y}-${m}-${d} ${h}:${min}`;
-            } else {
-                text = "即将过期";
-            }
+            // 当前时间加时长演示
+            const ms = ttlMap[key] || 0;
+            const date = new Date(Date.now() + ms);
+            const m = (date.getMonth()+1).toString().padStart(2,'0');
+            const d = date.getDate().toString().padStart(2,'0');
+            const h = date.getHours().toString().padStart(2,'0');
+            const min = date.getMinutes().toString().padStart(2,'0');
+            text = `${m}-${d} ${h}:${min} 过期`;
         }
         $ttlHint.textContent = text;
     }
@@ -875,9 +867,6 @@
         if($btnAuthLabel) $btnAuthLabel.textContent = state.loggedIn ? (state.username || "用户") : "登录";
         if($advancedSection) $advancedSection.style.display = state.loggedIn ? "flex" : "none";
         
-        // 修正：显示用户中心卡片
-        if ($userCard) $userCard.style.display = state.loggedIn ? "flex" : "none";
-
         if ($ttlForeverBtn) {
             if (state.loggedIn) {
                 $ttlForeverBtn.disabled = false;
@@ -888,7 +877,6 @@
         }
         validateCustomSlug();
     }
-    if($userCard) $userCard.addEventListener("click", openUserCenter);
 
     function setLoggedIn(username){
         state.loggedIn = true;
@@ -916,13 +904,21 @@
         }catch(_){ setLoggedOut(); }
     }
 
-    function openAuthModal(){ if($authModal) $authModal.classList.add("show"); }
-    function closeAuthModal(){ if($authModal) $authModal.classList.remove("show"); }
+    function openAuthModal(){ 
+        if($authModal) { $authModal.classList.add("show"); toggleScrollLock(true); }
+    }
+    function closeAuthModal(){ 
+        if($authModal) { $authModal.classList.remove("show"); toggleScrollLock(false); }
+    }
     if($authCloseBtn)$authCloseBtn.addEventListener("click",closeAuthModal);
     if($authModal) $authModal.addEventListener("click",e=>{ if(e.target===$authModal)closeAuthModal(); });
 
-    function openUserCenter(){ if($userCenter){ $userCenter.classList.add("show"); loadUserPastes(); } }
-    function closeUserCenter(){ if($userCenter) $userCenter.classList.remove("show"); }
+    function openUserCenter(){ 
+        if($userCenter){ $userCenter.classList.add("show"); toggleScrollLock(true); loadUserPastes(); } 
+    }
+    function closeUserCenter(){ 
+        if($userCenter) { $userCenter.classList.remove("show"); toggleScrollLock(false); }
+    }
     if($ucCloseBtn)$ucCloseBtn.addEventListener("click",closeUserCenter);
     if($userCenter) $userCenter.addEventListener("click",e=>{ if(e.target===$userCenter)closeUserCenter(); });
 
@@ -971,11 +967,15 @@
         currentSubSlug = slug;
         if(document.getElementById("subClientOverlay")) {
             document.getElementById("subClientOverlay").classList.add("show");
+            toggleScrollLock(true);
             if (window.__subMenuSync) window.__subMenuSync();
         }
     }
     function closeSubClientMenu() {
-        if(document.getElementById("subClientOverlay")) document.getElementById("subClientOverlay").classList.remove("show");
+        if(document.getElementById("subClientOverlay")) {
+            document.getElementById("subClientOverlay").classList.remove("show");
+            toggleScrollLock(false);
+        }
     }
 
     (function initSubClientMenu(){
@@ -1054,17 +1054,26 @@
                 const hasNode = d._nodeInfo.isNode && d._nodeInfo.count>0;
                 const link = `${VIEW_BASE}/${d.slug}`;
                 
+                // 计算过期文本
+                const expireText = getExpireText(d.ttlKey, d.createdAt || Date.now());
+
                 row.innerHTML = `
                     <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:6px;">
                         <span>${escapeHTML(d.remark||"无标题")}</span>
                         <span style="font-family:var(--font-mono);opacity:0.6;font-size:12px;">/${escapeHTML(d.slug)}</span>
                     </div>
-                    <div style="font-size:11px;color:var(--txt-secondary);margin-bottom:12px;">${d.ttlKey==="forever"?"永久有效": "即将过期"}</div>
+                    <div style="font-size:11px;color:var(--txt-secondary);margin-bottom:12px;">${expireText}</div>
                     
+                    <!-- 链接展示框 -->
+                    <div class="input-group-row" style="margin-bottom:12px; height:32px;">
+                        <input value="${link}" readonly onclick="this.select()">
+                        <button onclick="navigator.clipboard.writeText('${link}');this.style.color='var(--success)'" style="height:32px; width:36px;">
+                            <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+
                     <div style="display:flex;gap:10px;">
                         ${hasNode?`<button class="btn btn-primary" style="height:32px;padding:0 14px;font-size:12px;" onclick="openSubClientMenu('${d.slug}')">订阅</button>`:''}
-                        
-                        <button class="btn btn-glass" style="height:32px;padding:0 14px;font-size:12px;" onclick="navigator.clipboard.writeText('${link}');setStatus('链接已复制','success')">复制链接</button>
                         
                         <button class="btn btn-glass" style="height:32px;padding:0 14px;font-size:12px;" onclick="closeUserCenter();enterEditMode('${d.slug}')">编辑</button>
                         
