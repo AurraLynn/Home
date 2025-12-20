@@ -2,8 +2,9 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Pastebox Pro</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pastebox Ultra</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,106 +14,127 @@
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
 
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Pastebox">
-    <meta property="og:title" content="Pastebox">
-    <meta property="og:description" content="Premium Text Hosting.">
-    <meta property="og:image" content="https://save.aura.us.kg/Picture/Preview/YL10.png">
-    <meta property="og:url" content="https://aura.us.kg/Paste">
-
     <style>
+        /* =========================================
+           1. 核心变量系统 (Design Tokens)
+           ========================================= */
         :root {
-            /* 核心调色板 - 默认暗色 (Obsidian Theme) */
-            --bg-body: #050505;
-            --bg-gradient-1: radial-gradient(circle at 15% 50%, rgba(76, 29, 149, 0.15), transparent 25%);
-            --bg-gradient-2: radial-gradient(circle at 85% 30%, rgba(56, 189, 248, 0.08), transparent 25%);
-            
-            --glass-surface: rgba(20, 20, 20, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-highlight: rgba(255, 255, 255, 0.03);
-            --glass-blur: blur(24px);
+            /* 字体栈 */
+            --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', SFMono-Regular, Consolas, "Liberation Mono", monospace;
 
-            --text-primary: #ffffff;
-            --text-secondary: #a1a1aa;
-            --text-tertiary: #52525b;
-
-            --accent-primary: #ffffff; /* 极致黑白 */
-            --accent-glow: 0 0 20px rgba(255,255,255,0.15);
-            --accent-blue: #3b82f6;
-            --accent-purple: #8b5cf6;
-            
-            --radius-lg: 24px;
-            --radius-md: 16px;
-            --radius-sm: 12px;
+            /* 尺寸 & 间距 */
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
             --radius-pill: 9999px;
-
-            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-
-            --input-bg: rgba(0, 0, 0, 0.3);
-            --input-focus-border: rgba(255, 255, 255, 0.2);
+            
+            --max-width: 860px;
+            --header-height: 70px;
         }
 
+        /* 暗色主题 (默认) - 深空黑金 */
+        :root {
+            --bg-base: #030303;
+            --bg-card: rgba(20, 20, 20, 0.7);
+            --bg-input: rgba(255, 255, 255, 0.04);
+            --bg-hover: rgba(255, 255, 255, 0.08);
+
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(255, 255, 255, 0.15);
+
+            --text-main: #ffffff;
+            --text-sub: #a1a1aa;
+            --text-muted: #52525b;
+
+            --accent-color: #3b82f6; /* 核心蓝 */
+            --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            --accent-glow: 0 0 25px rgba(59, 130, 246, 0.25);
+
+            --shadow-card: 0 20px 40px -10px rgba(0,0,0,0.5);
+            --backdrop-blur: blur(20px);
+        }
+
+        /* 亮色主题 - 陶瓷白 */
         body.theme-light {
-            /* 亮色模式 (Ceramic Theme) */
-            --bg-body: #f4f4f5;
-            --bg-gradient-1: radial-gradient(circle at 10% 20%, rgba(200, 200, 255, 0.4), transparent 30%);
-            --bg-gradient-2: radial-gradient(circle at 90% 80%, rgba(250, 230, 200, 0.4), transparent 30%);
+            --bg-base: #f8f9fa;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-input: rgba(0, 0, 0, 0.03);
+            --bg-hover: rgba(0, 0, 0, 0.05);
 
-            --glass-surface: rgba(255, 255, 255, 0.75);
-            --glass-border: rgba(0, 0, 0, 0.06);
-            --glass-highlight: rgba(255, 255, 255, 0.8);
-            
-            --text-primary: #18181b;
-            --text-secondary: #52525b;
-            --text-tertiary: #a1a1aa;
+            --border-color: rgba(0, 0, 0, 0.06);
+            --border-highlight: rgba(0, 0, 0, 0.1);
 
-            --accent-primary: #000000;
-            --accent-glow: 0 4px 12px rgba(0,0,0,0.1);
-            
-            --input-bg: rgba(244, 244, 245, 0.5);
-            --input-focus-border: rgba(0, 0, 0, 0.15);
+            --text-main: #18181b;
+            --text-sub: #52525b;
+            --text-muted: #a1a1aa;
+
+            --accent-color: #2563eb;
+            --accent-gradient: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+            --accent-glow: 0 8px 20px rgba(37, 99, 235, 0.15);
+
+            --shadow-card: 0 20px 40px -10px rgba(0,0,0,0.08);
         }
 
-        /* 全局重置 */
-        *, *::before, *::after { box-sizing: border-box; }
+        /* =========================================
+           2. 全局基础样式
+           ========================================= */
+        *, *::before, *::after { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
         body {
             margin: 0;
-            min-height: 100vh;
+            padding: 0;
             font-family: var(--font-sans);
-            background-color: var(--bg-body);
-            background-image: var(--bg-gradient-1), var(--bg-gradient-2);
-            background-attachment: fixed;
-            color: var(--text-primary);
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center; /* 垂直居中 */
-            padding: 40px 20px;
-            transition: background-color 0.5s ease, color 0.3s ease;
-            -webkit-font-smoothing: antialiased;
+            align-items: flex-start; /* 移动端滚动体验更好 */
+            padding-top: max(20px, env(safe-area-inset-top));
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+            overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.3s ease;
         }
 
-        /* 背景噪点纹理 - 增加质感 */
+        /* 极光背景特效 */
         body::before {
-            content: "";
+            content: '';
             position: fixed;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
-            pointer-events: none;
+            top: -20%; left: -10%;
+            width: 80vw; height: 80vh;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15), transparent 70%);
+            filter: blur(80px);
             z-index: -1;
+            pointer-events: none;
+            animation: floatAurora 15s infinite alternate ease-in-out;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -20%; right: -10%;
+            width: 70vw; height: 70vh;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.12), transparent 70%);
+            filter: blur(80px);
+            z-index: -1;
+            pointer-events: none;
+            animation: floatAurora 12s infinite alternate-reverse ease-in-out;
+        }
+        @keyframes floatAurora {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(30px, 50px); }
         }
 
-        /* 核心容器 */
+        /* =========================================
+           3. 布局容器
+           ========================================= */
         .shell {
             width: 100%;
-            max-width: 900px;
-            perspective: 1000px;
-            animation: fadeIn Up 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            max-width: var(--max-width);
+            padding: 0 16px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
         /* 顶部导航 */
@@ -120,479 +142,415 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-            padding: 0 10px;
+            height: var(--header-height);
+            margin-bottom: 20px;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
             text-decoration: none;
+            cursor: pointer;
+            group: brand;
         }
 
         .brand-logo {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
+            width: 44px; height: 44px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            border: 1px solid var(--glass-border);
             background: #000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-highlight);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+        .brand:hover .brand-logo { transform: rotate(-5deg) scale(1.05); }
         .brand-logo img { width: 100%; height: 100%; object-fit: cover; }
 
         .brand-text { display: flex; flex-direction: column; justify-content: center; }
         .brand-title {
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            font-size: 20px; font-weight: 700; letter-spacing: -0.5px;
+            background: linear-gradient(to right, var(--text-main), var(--text-sub));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .brand-sub { font-size: 11px; color: var(--text-tertiary); letter-spacing: 0.5px; text-transform: uppercase; font-weight: 500; margin-top: 2px;}
+        .brand-sub { font-size: 11px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.5px; }
 
-        /* 顶部按钮组 */
-        .header-actions { display: flex; gap: 10px; }
-        
-        .pill-btn, .theme-toggle, button {
-            cursor: pointer;
+        .header-actions { display: flex; gap: 8px; align-items: center; }
+
+        /* 通用按钮基础 */
+        button, .pill-btn {
             font-family: var(--font-sans);
-            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
         }
+        button:active, .pill-btn:active { transform: scale(0.96); }
 
-        .pill-btn {
-            height: 36px;
-            padding: 0 16px;
-            border-radius: var(--radius-pill);
-            border: 1px solid var(--glass-border);
-            background: var(--glass-surface);
-            backdrop-filter: blur(10px);
-            color: var(--text-primary);
-            font-size: 13px;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-        }
-        .pill-btn:hover {
-            transform: translateY(-1px);
-            background: rgba(255,255,255,0.1);
-            border-color: var(--text-tertiary);
-        }
-        body.theme-light .pill-btn:hover { background: rgba(0,0,0,0.05); }
-
-        .pill-btn-primary {
-            background: var(--text-primary);
-            color: var(--bg-body);
-            border-color: transparent;
-            font-weight: 600;
-        }
-        .pill-btn-primary:hover {
-            background: var(--text-primary);
-            opacity: 0.9;
-            box-shadow: var(--accent-glow);
-        }
-        .pill-btn-primary svg { fill: var(--bg-body); }
-
+        /* 圆形按钮 (主题切换) */
         .theme-toggle {
-            width: 36px;
-            height: 36px;
+            width: 38px; height: 38px;
             border-radius: 50%;
-            border: 1px solid var(--glass-border);
-            background: transparent;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-sub);
+            backdrop-filter: blur(10px);
         }
-        .theme-toggle:hover { color: var(--text-primary); background: var(--glass-surface); }
-        .theme-toggle .label { display: none; } /* 隐藏文字仅留图标 */
+        .theme-toggle:hover { color: var(--text-main); background: var(--bg-hover); }
+        .theme-toggle .label { display: none; }
 
-        /* 主卡片 - 玻璃拟态 */
+        /* 胶囊按钮 */
+        .pill-btn {
+            height: 38px;
+            padding: 0 18px;
+            border-radius: var(--radius-pill);
+            font-size: 13px; font-weight: 600;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .pill-btn:hover { background: var(--bg-hover); border-color: var(--border-highlight); }
+        
+        .pill-btn-primary {
+            background: var(--text-main);
+            color: var(--bg-base);
+            border-color: transparent;
+        }
+        .pill-btn-primary:hover { opacity: 0.9; box-shadow: 0 4px 12px rgba(125,125,125,0.2); }
+
+        /* =========================================
+           4. 主卡片 (Glassmorphism)
+           ========================================= */
         .card {
-            background: var(--glass-surface);
-            backdrop-filter: var(--glass-blur);
-            -webkit-backdrop-filter: var(--glass-blur);
-            border: 1px solid var(--glass-border);
+            background: var(--bg-card);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
             padding: 32px;
-            box-shadow: 
-                0 4px 6px -1px rgba(0, 0, 0, 0.05),
-                0 20px 50px -10px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 var(--glass-highlight);
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            position: relative;
-            overflow: hidden;
+            box-shadow: var(--shadow-card);
+            display: flex; flex-direction: column; gap: 24px;
+            margin-bottom: 40px;
         }
 
-        /* 装饰性光斑 */
-        .card::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.03) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
+        /* 章节标题 */
         .section-title {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text-tertiary);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
+            font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+            color: var(--text-muted); font-weight: 700;
+            margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
         }
         .section-title::after {
-            content: '';
-            height: 1px;
-            flex: 1;
-            background: linear-gradient(90deg, var(--glass-border), transparent);
+            content: ''; height: 1px; flex: 1;
+            background: linear-gradient(90deg, var(--border-color), transparent);
         }
-        .section-title .tag { display: none; } /* 简化UI，隐藏Tag */
+        .section-title .tag { display: none; }
 
+        /* 说明文本 */
         .section-text {
-            font-size: 13px;
-            line-height: 1.6;
-            color: var(--text-secondary);
-            background: rgba(125, 125, 125, 0.05);
-            padding: 12px 16px;
-            border-radius: var(--radius-sm);
-            border-left: 2px solid var(--accent-blue);
+            font-size: 13px; line-height: 1.6; color: var(--text-sub);
+            padding: 12px 16px; border-radius: var(--radius-md);
+            background: var(--bg-input); border-left: 2px solid var(--accent-color);
         }
         code {
-            background: rgba(0,0,0,0.3);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: var(--font-mono);
-            font-size: 0.9em;
-            color: var(--accent-blue);
+            font-family: var(--font-mono); font-size: 0.9em;
+            background: rgba(125,125,125,0.15); padding: 2px 4px; border-radius: 4px;
+            color: var(--text-main);
         }
-        body.theme-light code { background: rgba(0,0,0,0.06); }
 
-        /* 编辑区域 - 代码编辑器风格 */
+        /* =========================================
+           5. 编辑器区域
+           ========================================= */
         .textarea-wrap {
             position: relative;
-            background: var(--input-bg);
             border-radius: var(--radius-md);
-            border: 1px solid var(--glass-border);
-            transition: border-color 0.2s;
-            padding: 4px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
         }
         .textarea-wrap:focus-within {
-            border-color: var(--input-focus-border);
-            box-shadow: 0 0 0 2px rgba(255,255,255,0.05);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: rgba(0,0,0,0.1); /* Darker on focus */
         }
-        
+        body.theme-light .textarea-wrap:focus-within { background: #fff; }
+
         textarea {
-            width: 100%;
-            min-height: 300px;
-            background: transparent;
-            border: none;
-            color: var(--text-primary);
-            font-family: var(--font-mono);
-            font-size: 14px;
-            line-height: 1.6;
-            padding: 16px;
-            resize: vertical;
-            outline: none;
-            display: block;
+            width: 100%; min-height: 320px;
+            background: transparent; border: none;
+            padding: 20px; padding-bottom: 30px;
+            font-family: var(--font-mono); font-size: 14px; line-height: 1.6;
+            color: var(--text-main); resize: vertical;
         }
-        textarea::placeholder { color: var(--text-tertiary); opacity: 0.7; }
+        textarea::placeholder { color: var(--text-muted); opacity: 0.7; }
 
         .line-counter {
-            position: absolute;
-            bottom: 12px;
-            right: 16px;
-            font-family: var(--font-mono);
-            font-size: 10px;
-            color: var(--text-tertiary);
-            background: var(--glass-surface);
-            padding: 2px 8px;
-            border-radius: 6px;
-            border: 1px solid var(--glass-border);
-            pointer-events: none;
+            position: absolute; bottom: 10px; right: 10px;
+            font-size: 10px; color: var(--text-muted);
+            background: var(--bg-card); padding: 2px 8px;
+            border-radius: 6px; border: 1px solid var(--border-color);
+            pointer-events: none; font-family: var(--font-mono);
         }
 
-        /* 统计栏与工具条 */
-        .field { margin-top: 10px; }
-        .field-inline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+        /* 统计栏 */
+        .field { margin-top: 12px; }
+        .byte-count { font-size: 12px; color: var(--text-sub); font-family: var(--font-mono); }
+        .byte-num { color: var(--accent-color); font-weight: 600; }
+        .node-info.active { color: #10b981; margin-left: 8px; font-weight: 500; font-size: 11px; }
+
+        /* =========================================
+           6. 工具栏 (上传/Base64)
+           ========================================= */
+        .field-inline {
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+        }
         
-        .byte-count {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            color: var(--text-tertiary);
-        }
-        .byte-num { color: var(--text-secondary); font-weight: 600; }
-        .node-info.active { color: #10b981; font-weight: 500; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 4px; }
-
-        /* 按钮与上传 */
         .upload-row {
-            background: rgba(125,125,125,0.03);
-            border-radius: var(--radius-pill);
-            padding: 4px 6px;
-            border: 1px solid var(--glass-border);
+            display: flex; gap: 6px; align-items: center;
+            background: var(--bg-input);
+            padding: 4px; border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary, .upload-btn, .btn-reset {
+            background: transparent; border: none;
+            color: var(--text-sub); font-size: 12px; font-weight: 500;
+            padding: 6px 12px; border-radius: 8px;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-secondary:hover, .upload-btn:hover, .btn-reset:hover {
+            color: var(--text-main); background: var(--bg-hover);
+        }
+        .btn-secondary.decode-active {
+            background: var(--text-main); color: var(--bg-base);
         }
         
-        .upload-btn, .btn-secondary, .btn-reset {
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            font-size: 12px;
-            padding: 6px 12px;
-            border-radius: var(--radius-pill);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        .upload-btn:hover, .btn-secondary:hover, .btn-reset:hover {
-            color: var(--text-primary);
-            background: rgba(255,255,255,0.05);
-        }
-        body.theme-light .upload-btn:hover { background: rgba(0,0,0,0.05); }
+        /* 提示信息 */
+        .hint { font-size: 11px; color: var(--text-muted); display: block; margin-top: 6px; }
 
-        .btn-secondary.decode-active {
-            background: var(--text-primary);
-            color: var(--bg-body);
-        }
-
-        /* TTL 选择器 - iOS 分段控件风格 */
+        /* TTL 选择器 (分段控件) */
         .ttl-group {
-            display: flex;
-            background: rgba(0,0,0,0.2);
-            padding: 4px;
-            border-radius: 12px;
-            gap: 2px;
-            border: 1px solid var(--glass-border);
+            display: flex; gap: 4px;
+            background: var(--bg-input); padding: 4px;
+            border-radius: 14px; border: 1px solid var(--border-color);
         }
-        body.theme-light .ttl-group { background: rgba(0,0,0,0.04); }
-
         .ttl-btn {
-            flex: 1;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            font-size: 12px;
-            padding: 8px 0;
-            border-radius: 8px;
-            font-weight: 500;
+            flex: 1; padding: 8px 0; font-size: 12px; font-weight: 500;
+            color: var(--text-sub); background: transparent; border-radius: 10px;
         }
-        .ttl-btn:hover { color: var(--text-primary); }
+        .ttl-btn:hover:not(:disabled) { color: var(--text-main); }
         .ttl-btn.active {
-            background: var(--glass-surface);
-            color: var(--text-primary);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            font-weight: 600;
+            background: var(--bg-card); color: var(--text-main);
+            font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        .ttl-hint { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; text-align: right; }
+        .ttl-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        
+        .ttl-hint { font-size: 11px; color: var(--text-muted); text-align: right; margin-top: 6px; }
 
-        /* 自定义链接输入区 */
-        .field-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-        .field-block { display: flex; flex-direction: column; gap: 6px; }
-        .field-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-left: 4px; }
+        /* 表单输入框 (自定义ID/备注) */
+        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+        .field-label { font-size: 11px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; display: block; }
         
         input[type="text"], input[type="password"] {
-            width: 100%;
-            background: var(--input-bg);
-            border: 1px solid var(--glass-border);
-            color: var(--text-primary);
-            padding: 10px 14px;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
-            outline: none;
-            transition: all 0.2s;
+            width: 100%; padding: 10px 14px;
+            border-radius: var(--radius-sm); border: 1px solid var(--border-color);
+            background: var(--bg-input); color: var(--text-main);
+            font-size: 13px; transition: all 0.2s;
         }
-        input:focus {
-            border-color: var(--text-tertiary);
-            background: rgba(255,255,255,0.03);
-        }
-        body.theme-light input:focus { background: #fff; }
-        
+        input:focus { border-color: var(--accent-color); background: var(--bg-card); }
         .input-error { border-color: #ef4444 !important; }
-        .hint { font-size: 10px; color: var(--text-tertiary); margin-left: 4px; margin-top: 4px;}
 
-        /* 底部动作 */
-        .action-row { display: flex; justify-content: flex-end; gap: 12px; align-items: center; margin-top: 10px; }
+        /* =========================================
+           7. 底部提交区域
+           ========================================= */
+        .action-row {
+            display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 24px;
+        }
 
-        /* Submit Button - 重点设计 */
+        /* 主按钮 (渐变) */
         .btn-primary {
-            background: var(--text-primary);
-            color: var(--bg-body);
-            border: none;
-            padding: 10px 24px;
-            border-radius: var(--radius-pill);
-            font-size: 14px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            background: var(--accent-gradient);
+            color: #ffffff;
+            padding: 10px 28px; border-radius: var(--radius-pill);
+            font-size: 14px; font-weight: 600;
             box-shadow: var(--accent-glow);
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .btn-primary:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            filter: brightness(1.1); transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
         }
-        .btn-primary svg { fill: currentColor; width: 16px; height: 16px; }
-        .btn-primary.btn-disabled { opacity: 0.6; transform: none; box-shadow: none; cursor: not-allowed; }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-primary.btn-disabled { opacity: 0.6; pointer-events: none; filter: grayscale(1); }
 
-        /* 结果框 */
+        /* 结果区域 */
         .result-box {
-            background: rgba(16, 185, 129, 0.05);
+            margin-top: 20px; padding: 16px;
+            background: rgba(16, 185, 129, 0.06);
             border: 1px solid rgba(16, 185, 129, 0.2);
-            padding: 16px;
             border-radius: var(--radius-md);
-            margin-top: 16px;
         }
-        .result-label { font-size: 10px; text-transform: uppercase; color: #10b981; font-weight: 700; letter-spacing: 1px; display: block; margin-bottom: 4px; }
+        .result-label { font-size: 10px; color: #10b981; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
         .result-link {
-            font-family: var(--font-mono);
-            font-size: 13px;
-            color: var(--text-primary);
-            word-break: break-all;
+            font-family: var(--font-mono); font-size: 13px; color: var(--text-main);
+            margin-top: 4px; word-break: break-all;
         }
-        .result-actions { margin-top: 12px; display: flex; gap: 8px; justify-content: flex-end; }
-        
-        .status-msg { font-size: 12px; text-align: right; min-height: 20px; }
+        .result-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+
+        .status-msg { font-size: 12px; min-height: 18px; text-align: right; }
         .status-msg.success { color: #10b981; }
         .status-msg.error { color: #ef4444; }
 
         /* 页脚 */
         .footer-row {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid var(--glass-border);
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: var(--text-tertiary);
-            font-family: var(--font-mono);
+            border-top: 1px solid var(--border-color);
+            margin-top: 32px; padding-top: 16px;
+            display: flex; justify-content: space-between;
+            font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);
         }
 
-        /* 图标 SVG 通用样式 */
-        .icon-svg svg { width: 14px; height: 14px; fill: currentColor; }
-        
-        /* 弹窗系统 (Modal) */
+        /* SVG 图标尺寸 */
+        .icon-svg svg { width: 16px; height: 16px; fill: currentColor; }
+
+        /* =========================================
+           8. 弹窗系统 (Modal)
+           ========================================= */
         .modal-backdrop, .uc-backdrop, .sub-menu-backdrop {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.6);
+            position: fixed; inset: 0; z-index: 100;
+            background: rgba(0,0,0,0.4);
             backdrop-filter: blur(16px);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            opacity: 0;
-            animation: fadeIn 0.3s forwards;
+            -webkit-backdrop-filter: blur(16px);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
         }
-        @keyframes fadeIn { to { opacity: 1; } }
+        .modal-backdrop[style*="display: flex"],
+        .uc-backdrop[style*="display: flex"],
+        .sub-menu-backdrop[style*="display: flex"] {
+            opacity: 1; pointer-events: auto;
+        }
 
-        /* 弹窗面板 */
         .auth-panel, .uc-panel, .sub-menu {
-            background: var(--bg-body); /* 实色背景防止文字重叠 */
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            color: var(--text-primary);
-            position: relative;
-            overflow: hidden;
-            transform: scale(0.95);
-            animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            background: var(--bg-card); /* 需要不透明背景防止内容混杂 */
+            border: 1px solid var(--border-highlight);
+            box-shadow: 0 40px 80px -12px rgba(0,0,0,0.5);
+            color: var(--text-main);
+            border-radius: 24px;
+            position: relative; overflow: hidden;
+            transform: scale(0.95) translateY(10px);
+            transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1);
         }
-        @keyframes popIn { to { transform: scale(1); } }
-        
-        /* 登录框特定样式 */
-        .auth-panel { width: 320px; padding: 24px; background: linear-gradient(145deg, var(--bg-body), #0f0f0f); }
-        .auth-panel-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .modal-backdrop[style*="display: flex"] .auth-panel,
+        .uc-backdrop[style*="display: flex"] .uc-panel,
+        .sub-menu-backdrop[style*="display: flex"] .sub-menu {
+            transform: scale(1) translateY(0);
+        }
+
+        /* 登录框 */
+        .auth-panel { width: 340px; padding: 24px; background: var(--bg-base); }
+        .auth-panel-header { display: flex; justify-content: space-between; margin-bottom: 24px; }
         .auth-panel-title { font-size: 18px; font-weight: 700; }
-        .auth-panel-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; }
-        .auth-panel-close { 
-            background: transparent; border: none; color: var(--text-tertiary); cursor: pointer; padding: 4px;
-        }
-        .auth-panel-close:hover { color: var(--text-primary); }
-        .auth-panel-form { gap: 16px; }
-        .auth-panel-row input { background: rgba(255,255,255,0.05); border: 1px solid transparent; padding: 12px; }
-        .auth-panel-actions { margin-top: 10px; justify-content: space-between; display: flex; }
-        
+        .auth-panel-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .auth-panel-close { background: transparent; padding: 4px; color: var(--text-sub); border: none; cursor: pointer; }
+        .auth-panel-form { display: flex; flex-direction: column; gap: 16px; }
+        .auth-panel-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+
         /* 用户中心 */
-        .uc-panel { width: 100%; max-width: 800px; max-height: 85vh; display: flex; flex-direction: column; }
-        .uc-header { padding: 20px 24px; border-bottom: 1px solid var(--glass-border); background: rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center;}
+        .uc-panel { width: 90vw; max-width: 800px; max-height: 85vh; display: flex; flex-direction: column; background: var(--bg-base); }
+        .uc-header { padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .uc-title-main { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .uc-body { padding: 0; overflow-y: auto; background: var(--bg-body); }
-        .uc-list { gap: 0; } /* Remove gap for list look */
+        .uc-actions { display: flex; gap: 8px; }
+        .uc-body { flex: 1; overflow-y: auto; padding: 0; }
+        .uc-empty { padding: 40px; text-align: center; color: var(--text-muted); font-size: 13px; }
+        
         .uc-item {
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--glass-border);
-            background: transparent;
-            border-radius: 0;
-            border-left: none; border-right: none; border-top: none;
+            padding: 16px 24px; border-bottom: 1px solid var(--border-color);
             transition: background 0.2s;
         }
-        .uc-item:hover { background: rgba(255,255,255,0.02); }
-        .uc-item-top { margin-bottom: 6px; }
-        .uc-item-title { font-size: 14px; font-weight: 500; }
+        .uc-item:hover { background: var(--bg-hover); }
+        .uc-item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .uc-item-title { font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 8px; }
         .uc-remark-tag { 
-            background: rgba(59, 130, 246, 0.1); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 8px;
+            background: rgba(59, 130, 246, 0.1); color: var(--accent-color);
+            padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;
         }
-        .uc-slug-tag { font-family: var(--font-mono); color: var(--text-secondary); font-size: 12px; }
-        .uc-link-tag { font-family: var(--font-mono); color: var(--text-tertiary); font-size: 11px; }
-        .uc-item-actions { display: flex; gap: 8px; margin-top: 10px; opacity: 0.6; transition: opacity 0.2s;}
+        .uc-link-tag { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+        .uc-item-actions { display: flex; gap: 8px; opacity: 0.5; transition: opacity 0.2s; }
         .uc-item:hover .uc-item-actions { opacity: 1; }
         
-        /* 订阅按钮样式 */
         .uc-sub-btn {
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-            color: #fff;
-            border: none;
-            font-size: 10px; padding: 2px 8px; border-radius: 10px; cursor: pointer;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+            background: var(--accent-gradient); color: #fff; border: none;
+            padding: 2px 8px; border-radius: 10px; font-size: 10px; cursor: pointer;
         }
 
-        /* iOS 订阅弹窗 */
-        .sub-ios { width: 360px; padding: 20px; }
-        .sub-ios-head { margin-bottom: 16px; }
-        .sub-ios-title { font-size: 16px; font-weight: 600; }
+        /* 订阅面板 (iOS Style) */
+        .sub-ios { width: 360px; padding: 20px; background: var(--bg-base); }
+        .sub-ios-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .sub-ios-title { font-weight: 600; font-size: 16px; }
+        .sub-ios-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .sub-ios-pill {
-            height: 40px; border-radius: 12px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--glass-border);
-            color: var(--text-secondary);
-            font-weight: 500;
+            height: 40px; background: var(--bg-input); border: 1px solid var(--border-color);
+            border-radius: 12px; color: var(--text-sub); font-weight: 500;
         }
         .sub-ios-pill.is-active {
-            background: var(--text-primary);
-            color: var(--bg-body);
-            border-color: transparent;
+            background: var(--text-main); color: var(--bg-base); border-color: transparent;
         }
-        .sub-ios-link { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 4px 4px 4px 12px; margin-top: 16px; }
-        .sub-ios-input { font-size: 12px; color: var(--text-secondary); }
-        .sub-ios-copy { width: 32px; height: 32px; background: var(--glass-surface); border-radius: 8px; border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; color: var(--text-primary); }
+        .sub-ios-link {
+            background: var(--bg-input); border-radius: 12px; padding: 6px 6px 6px 12px; margin-top: 16px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .sub-ios-input { background: transparent; border: none; font-size: 12px; color: var(--text-main); width: 100%; }
+        .sub-ios-copy {
+            width: 32px; height: 32px; background: var(--bg-card); border-radius: 8px;
+            border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;
+        }
 
-        /* 响应式调整 */
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            .card { padding: 20px; border-radius: 20px; }
-            .field-row { grid-template-columns: 1fr; }
-            .header-actions .label { display: none; }
-            .pill-btn { padding: 0 12px; }
-            .uc-panel { height: 100vh; max-height: 100vh; border-radius: 0; }
+        /* =========================================
+           9. 移动端响应式 (Mobile Adaptation)
+           ========================================= */
+        @media (max-width: 640px) {
+            :root {
+                --header-height: 60px;
+                --radius-lg: 24px; /* 底部圆角更大 */
+            }
+
+            body {
+                align-items: flex-start;
+                padding: 10px;
+                padding-bottom: 40px;
+            }
+
+            .card {
+                padding: 20px;
+                gap: 20px;
+                margin-bottom: 20px;
+            }
+
+            .header {
+                padding: 0 4px;
+                margin-bottom: 10px;
+            }
+            
+            .header-actions .label { display: none; } /* 隐藏Home文字，只留图标 */
+            .pill-btn { padding: 0 12px; } /* 缩小按钮内边距 */
+
+            /* 移动端工具栏改为堆叠 */
+            .field-inline { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .upload-row { width: 100%; justify-content: space-between; overflow-x: auto; }
+            
+            /* 输入区域全宽 */
+            .field-row { grid-template-columns: 1fr; gap: 12px; }
+
+            /* 弹窗全屏化体验 */
+            .auth-panel { width: 90%; }
+            .sub-ios { width: 90%; }
+            .uc-panel { width: 95%; height: 80vh; border-radius: 20px; }
+            
+            /* 用户中心列表优化 */
+            .uc-item { padding: 14px 16px; }
+            .uc-item-actions { opacity: 1; margin-top: 8px; } /* 移动端常显操作栏 */
+            
+            /* 增大点击热区 */
+            .btn-secondary, .ttl-btn { padding-top: 10px; padding-bottom: 10px; }
         }
     </style>
 </head>
@@ -602,7 +560,7 @@
             <div class="brand-logo"><img id="brandIcon" alt="Icon"></div>
             <div class="brand-text">
                 <div class="brand-title">Pastebox</div>
-                <div class="brand-sub">Pro Edition</div>
+                <div class="brand-sub">Ultra Edition</div>
             </div>
         </a>
         <div class="header-actions">
@@ -614,7 +572,7 @@
             </button>
             <button type="button" class="pill-btn" id="btnHome" style="display:none;">
                 <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
-                Home
+                <span class="label">Home</span>
             </button>
             <button type="button" class="pill-btn pill-btn-primary" id="btnAuthOpen">
                 <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
@@ -630,7 +588,7 @@
                 Brief
             </div>
             <div class="section-text">
-                Paste text. Get URL. Share code or logs securely with ephemeral storage. <br>
+                Securely paste text, code, or logs. Share via ephemeral URL.<br>
                 <span style="color:#ef4444; font-weight:600;">Warning:</span> Do not store sensitive PII data. Files may be deleted without notice.
             </div>
         </section>
@@ -640,10 +598,10 @@
                 <section class="field">
                     <div class="section-title">
                         <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></span>
-                        Editor
+                        Content
                     </div>
                     <div class="textarea-wrap">
-                        <textarea id="content" placeholder="// Paste your code, logs, or text here..." required spellcheck="false"></textarea>
+                        <textarea id="content" placeholder="// Type or paste your content here..." required spellcheck="false"></textarea>
                         <div class="line-counter" id="lineCounter">0 Lines</div>
                     </div>
                 </section>
@@ -658,7 +616,7 @@
                         <div class="upload-row">
                              <label class="upload-btn" id="uploadBtn" for="fileInput">
                                 <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>
-                                <span id="uploadBtnText">Import File</span>
+                                <span id="uploadBtnText">Import</span>
                             </label>
                             <input type="file" id="fileInput" style="display:none;" accept=".txt,.log,.conf,.json,.md,.yaml,.yml,.ini,.cfg,.csv,.html,.js,.ts,.py,.go,.rs,.php,.java,.c,.cpp,.sh,.bat,.ps1,.rb,.lua,.sql,.xml">
 
@@ -686,24 +644,24 @@
 
                 <section class="field" id="advancedSection" style="margin-top: 20px;">
                     <div class="field-row">
-                        <div class="field-block">
+                        <div>
                             <label class="field-label">Custom Slug (Optional)</label>
                             <input id="customId" type="text" placeholder="e.g. my-code-v1">
-                            <div class="hint" id="customHint">A-Za-z0-9_- only. Leave empty for random.</div>
+                            <div class="hint" id="customHint">A-Za-z0-9_- only.</div>
                         </div>
-                        <div class="field-block">
+                        <div>
                             <label class="field-label">Remark (Private)</label>
                             <input id="remark" type="text" placeholder="Note for yourself...">
                         </div>
                     </div>
                 </section>
 
-                <section class="field" style="margin-top: 30px;">
+                <section class="field">
                     <div id="resultBox" class="result-box" style="display:none;">
-                        <span class="result-label">Generated Link</span>
+                        <span class="result-label">Success</span>
                         <div class="result-link" id="viewLinkText"></div>
                         <div class="result-actions">
-                            <button type="button" class="btn-secondary" id="btnCopyView">Copy Link</button>
+                            <button type="button" class="btn-secondary" id="btnCopyView">Copy</button>
                             <button type="button" class="btn-secondary" id="btnOpenView">Open</button>
                             <button type="button" class="btn-secondary" id="btnManageFromResult" style="display:none;">Manage</button>
                         </div>
@@ -722,8 +680,8 @@
         </div>
 
         <footer class="footer-row">
-            <span>Server: <span id="baseUrlText"></span></span>
-            <span>&copy; PasteBox Pro</span>
+            <span>Entry: <span id="baseUrlText"></span></span>
+            <span>&copy; PasteBox Ultra</span>
         </footer>
     </main>
 </div>
@@ -732,29 +690,28 @@
     <div class="auth-panel">
         <div class="auth-panel-header">
             <div>
-                <div class="auth-panel-title">Welcome Back</div>
-                <div class="auth-panel-sub">Sign in to manage your pastes.</div>
+                <div class="auth-panel-title">Sign In</div>
+                <div class="auth-panel-sub">Manage your pastes securely.</div>
             </div>
             <button type="button" class="auth-panel-close" id="authCloseBtn">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
         </div>
-        <form class="auth-panel-form" id="authForm" style="display:flex; flex-direction:column;">
-            <div class="auth-panel-row">
-                <input id="authUsername" type="text" placeholder="Username" autocomplete="username">
-            </div>
-            <div class="auth-panel-row">
-                <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
-            </div>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-tertiary);">
-                <input id="authRemember" type="checkbox" checked> Remember me
-            </label>
+        <form class="auth-panel-form" id="authForm">
+            <input id="authUsername" type="text" placeholder="Username" autocomplete="username">
+            <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+            
             <div class="auth-panel-actions">
-                <button type="button" class="btn-secondary" id="btnDoRegister">Sign Up</button>
-                <button type="submit" class="btn-primary" id="btnDoLogin" style="width: auto;">Log In</button>
+                <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub);">
+                    <input id="authRemember" type="checkbox" checked> Remember me
+                </label>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="btn-secondary" id="btnDoRegister">Sign Up</button>
+                    <button type="submit" class="btn-primary" id="btnDoLogin" style="padding: 8px 16px; font-size:12px;">Log In</button>
+                </div>
             </div>
         </form>
-        <div class="auth-panel-msg" id="authMsg" style="margin-top:10px; font-size:12px; text-align:center;"></div>
+        <div class="auth-panel-msg" id="authMsg" style="margin-top:12px; font-size:12px; text-align:center;"></div>
     </div>
 </div>
 
@@ -762,17 +719,17 @@
     <div class="uc-panel">
         <div class="uc-header">
             <div class="uc-title-main">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                 Dashboard
             </div>
-            <div class="uc-actions" style="display:flex; gap:8px;">
+            <div class="uc-actions">
                 <button type="button" class="btn-secondary" id="ucRefreshBtn">Refresh</button>
                 <button type="button" class="btn-secondary" id="ucLogoutBtn" style="color:#ef4444;">Logout</button>
                 <button type="button" class="btn-secondary" id="ucCloseBtn">Close</button>
             </div>
         </div>
         <div class="uc-body">
-            <div class="uc-empty" id="ucEmpty" style="padding:40px; text-align:center; color:var(--text-tertiary);">Loading records...</div>
+            <div class="uc-empty" id="ucEmpty">Loading records...</div>
             <div class="uc-list" id="ucList" style="display:none; flex-direction:column;"></div>
         </div>
     </div>
@@ -781,26 +738,22 @@
 <div class="sub-menu-backdrop" id="subClientOverlay" style="display:none;">
     <div class="sub-menu sub-ios">
         <div class="sub-ios-head">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div class="sub-ios-title">Export Subscription</div>
-                <button type="button" class="auth-panel-close" id="subMenuCloseBtn">✕</button>
-            </div>
+            <div class="sub-ios-title">Export Subscription</div>
+            <button type="button" class="auth-panel-close" id="subMenuCloseBtn">✕</button>
         </div>
 
-        <div class="sub-ios-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+        <div class="sub-ios-grid">
             <button type="button" class="sub-ios-pill is-active" data-client="general">General</button>
-            <button type="button" class="sub-ios-pill" data-client="base64">Base64 / V2Ray</button>
+            <button type="button" class="sub-ios-pill" data-client="base64">Base64 / V2</button>
             <button type="button" class="sub-ios-pill" data-client="clash">Clash</button>
             <button type="button" class="sub-ios-pill" data-client="surge">Surge</button>
         </div>
 
         <div class="sub-ios-link">
-            <div style="display:flex; align-items:center; gap:8px;">
-                <input id="subLinkInput" class="sub-ios-input" type="text" readonly style="background:transparent; border:none; padding:0; width:100%;" />
-                <button type="button" id="subLinkCopyBtn" class="sub-ios-copy" title="Copy">
-                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                </button>
-            </div>
+            <input id="subLinkInput" class="sub-ios-input" type="text" readonly />
+            <button type="button" id="subLinkCopyBtn" class="sub-ios-copy" title="Copy">
+               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
         </div>
     </div>
 </div>
@@ -809,33 +762,24 @@
     const THEME_KEY="lyn_paste_theme_v3";
     const themeToggle=document.getElementById("themeToggle");
 
-    // 修改：调整 SVG 显示逻辑以适配新 CSS
     function applyTheme(t){
         document.body.classList.remove("theme-light","theme-dark");
         document.body.classList.add("theme-"+t);
-        
-        // Icon toggle logic for the redesign
         const sun = document.querySelector('.theme-icon-sun');
         const moon = document.querySelector('.theme-icon-moon');
         if(sun && moon) {
             if(t === 'dark') {
-                sun.style.display = 'block';
-                moon.style.display = 'none';
+                sun.style.display = 'block'; moon.style.display = 'none';
             } else {
-                sun.style.display = 'none';
-                moon.style.display = 'block';
+                sun.style.display = 'none'; moon.style.display = 'block';
             }
         }
-        
         try{localStorage.setItem(THEME_KEY,t);}catch(_){}
     }
 
     (function(){
-        let t="dark"; // Default to dark for premium feel
-        try{
-            const s=localStorage.getItem(THEME_KEY);
-            if(s==="dark"||s==="light")t=s;
-        }catch(_){}
+        let t="dark";
+        try{const s=localStorage.getItem(THEME_KEY); if(s==="dark"||s==="light")t=s;}catch(_){}
         applyTheme(t);
     })();
 
@@ -857,72 +801,31 @@
     const AUTH_BASE=location.origin+"/api/auth";
     const qs=id=>document.getElementById(id);
 
-    const $content=qs("content");
-    const $byteNum=qs("byteNum");
-    const $lineCounter=qs("lineCounter");
-    const $nodeInfo=qs("nodeInfo");
-    const $ttlGroup=qs("ttlGroup");
-    const $ttlHint=qs("ttlHint");
-    const $form=qs("pasteForm");
-    const $submitBtn=qs("submitBtn");
-    const $resultBox=qs("resultBox");
-    const $viewLinkText=qs("viewLinkText");
-    const $btnCopyView=qs("btnCopyView");
-    const $btnOpenView=qs("btnOpenView");
-    const $btnManageFromResult=qs("btnManageFromResult");
-    const $statusMsg=qs("statusMsg");
-    const $baseUrlText=qs("baseUrlText");
-    const $advancedSection=qs("advancedSection");
-    const $ttlForeverBtn=qs("ttlForeverBtn");
-    const $customId=qs("customId");
-    const $customHint=qs("customHint");
-    const $remark=qs("remark");
-    const $fileInput=qs("fileInput");
-    const $fileHint=qs("fileHint");
-    const $uploadBtn=qs("uploadBtn");
-    const $btnResetContent=qs("btnResetContent");
-
-    // Base64 按钮
-    const $btnBase64Encode = qs("btnBase64Encode");
-    const $btnBase64Decode = qs("btnBase64Decode");
-
-    const $btnHome=qs("btnHome");
-    const $btnAuthOpen=qs("btnAuthOpen");
-    const $btnAuthLabel=qs("btnAuthLabel");
-    const $authModal=qs("authModal");
-    const $authForm=qs("authForm");
-    const $authUsername=qs("authUsername");
-    const $authPassword=qs("authPassword");
-    const $authRemember=qs("authRemember");
-    const $btnDoLogin=qs("btnDoLogin");
-    const $btnDoRegister=qs("btnDoRegister");
-    const $authCloseBtn=qs("authCloseBtn");
-    const $authMsg=qs("authMsg");
-
-    const $userCenter=qs("userCenter");
-    const $ucEmpty=qs("ucEmpty");
-    const $ucList=qs("ucList");
-    const $ucRefreshBtn=qs("ucRefreshBtn");
-    const $ucLogoutBtn=qs("ucLogoutBtn");
-    const $ucCloseBtn=qs("ucCloseBtn");
+    const $content=qs("content"), $byteNum=qs("byteNum"), $lineCounter=qs("lineCounter");
+    const $nodeInfo=qs("nodeInfo"), $ttlGroup=qs("ttlGroup"), $ttlHint=qs("ttlHint");
+    const $form=qs("pasteForm"), $submitBtn=qs("submitBtn"), $resultBox=qs("resultBox");
+    const $viewLinkText=qs("viewLinkText"), $btnCopyView=qs("btnCopyView");
+    const $btnOpenView=qs("btnOpenView"), $btnManageFromResult=qs("btnManageFromResult");
+    const $statusMsg=qs("statusMsg"), $baseUrlText=qs("baseUrlText"), $advancedSection=qs("advancedSection");
+    const $ttlForeverBtn=qs("ttlForeverBtn"), $customId=qs("customId"), $customHint=qs("customHint");
+    const $remark=qs("remark"), $fileInput=qs("fileInput"), $fileHint=qs("fileHint");
+    const $uploadBtn=qs("uploadBtn"), $btnResetContent=qs("btnResetContent");
+    const $btnBase64Encode=qs("btnBase64Encode"), $btnBase64Decode=qs("btnBase64Decode");
+    const $btnHome=qs("btnHome"), $btnAuthOpen=qs("btnAuthOpen"), $btnAuthLabel=qs("btnAuthLabel");
+    const $authModal=qs("authModal"), $authForm=qs("authForm"), $authUsername=qs("authUsername");
+    const $authPassword=qs("authPassword"), $authRemember=qs("authRemember");
+    const $btnDoLogin=qs("btnDoLogin"), $btnDoRegister=qs("btnDoRegister");
+    const $authCloseBtn=qs("authCloseBtn"), $authMsg=qs("authMsg");
+    const $userCenter=qs("userCenter"), $ucEmpty=qs("ucEmpty"), $ucList=qs("ucList");
+    const $ucRefreshBtn=qs("ucRefreshBtn"), $ucLogoutBtn=qs("ucLogoutBtn"), $ucCloseBtn=qs("ucCloseBtn");
 
     if($baseUrlText)$baseUrlText.textContent=VIEW_BASE+"/{id}";
 
-    const state={
-        loggedIn:false,
-        username:null,
-        ttlKey:"7d",
-        customSlugError:false,
-        isSubmitting:false,
-        mode:"create",
-        originalSlug:null
-    };
+    const state={loggedIn:false,username:null,ttlKey:"7d",customSlugError:false,isSubmitting:false,mode:"create",originalSlug:null};
 
     function escapeHTML(str){
         if(!str) return "";
-        return String(str).replace(/[&<>"']/g,c=>({
-            "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
-        }[c]||c));
+        return String(str).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]||c));
     }
 
     function setStatus(msg,type){
@@ -938,613 +841,279 @@
         if(type)$authMsg.classList.add(type);
     }
 
-    // ===== Base64 UTF-8 安全编码 / 解码 =====
-    function base64EncodeUtf8(str) {
-        try {
-            return btoa(unescape(encodeURIComponent(str)));
-        } catch (_) {
-            return null;
-        }
-    }
+    function base64EncodeUtf8(str) { try { return btoa(unescape(encodeURIComponent(str))); } catch (_) { return null; } }
+    function base64DecodeUtf8(str) { try { return decodeURIComponent(escape(atob(str))); } catch (_) { return null; } }
 
-    function base64DecodeUtf8(str) {
-        try {
-            return decodeURIComponent(escape(atob(str)));
-        } catch (_) {
-            return null;
-        }
-    }
-
-    // ===== 节点检测 =====
     function detectNodes(raw) {
         const text = (raw || "").trim();
         if (!text) return { isNode:false, count:0, fromBase64:false };
-
-        const schemes = [
-            "ss://","ssr://","vmess://","vless://","trojan://",
-            "hysteria://","hysteria2://","hy2://","tuic://",
-            "socks://","socks5://"
-        ];
-
+        const schemes = ["ss://","ssr://","vmess://","vless://","trojan://","hysteria://","hysteria2://","hy2://","tuic://","socks://","socks5://"];
         function countIn(str) {
             let count = 0;
             str.split(/\r\n|\r|\n/).forEach(line => {
-                const s = line.trim();
-                if (!s) return;
-                for (const p of schemes) {
-                    if (s.startsWith(p)) {
-                        count++;
-                        break;
-                    }
-                }
+                const s = line.trim(); if(!s)return;
+                for (const p of schemes) { if(s.startsWith(p)) { count++; break; } }
             });
             return count;
         }
-
         let count = countIn(text);
-        if (count > 0) {
-            return { isNode:true, count, fromBase64:false };
-        }
-
-        // 尝试识别整段 Base64 订阅内容
+        if (count > 0) return { isNode:true, count, fromBase64:false };
         const compact = text.replace(/\s+/g,"");
         if (compact.length >= 16 && compact.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(compact)) {
             const decoded = base64DecodeUtf8(compact);
             if (decoded != null) {
                 const c2 = countIn(decoded);
-                if (c2 > 0) {
-                    return { isNode:true, count:c2, fromBase64:true };
-                }
+                if (c2 > 0) return { isNode:true, count:c2, fromBase64:true };
             }
         }
-
         return { isNode:false, count:0, fromBase64:false };
     }
 
     async function postJSON(url,body){
-        const res=await fetch(url,{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            credentials:"include",
-            body:JSON.stringify(body||{})
-        });
+        const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},credentials:"include",body:JSON.stringify(body||{})});
         const data=await res.json().catch(()=>({}));
-        if(!res.ok||data.ok===false){
-            throw new Error(data.error||`请求失败（${res.status}）`);
-        }
+        if(!res.ok||data.ok===false) throw new Error(data.error||`Error (${res.status})`);
         return data;
     }
 
     function updateByteCount(){
         if(!$content||!$byteNum)return;
-        let len=0;
-        try{len=new TextEncoder().encode($content.value).length;}
-        catch(_){len=$content.value.length;}
+        let len=0; try{len=new TextEncoder().encode($content.value).length;} catch(_){len=$content.value.length;}
         $byteNum.textContent=len;
-
-        if($lineCounter){
-            const v=$content.value||"";
-            const lines=v ? v.split(/\r\n|\r|\n/).length : 0;
-            $lineCounter.textContent = lines+" Lines";
-        }
-
-        // 节点检测
+        if($lineCounter){ const v=$content.value||""; $lineCounter.textContent = (v?v.split(/\r\n|\r|\n/).length:0)+" Lines"; }
         if ($nodeInfo) {
             const info = detectNodes($content.value || "");
-            if (info.isNode && info.count > 0) {
-                $nodeInfo.textContent = `(${info.count} Nodes Detected)`;
-                $nodeInfo.classList.add("active");
-            } else {
-                $nodeInfo.textContent = "";
-                $nodeInfo.classList.remove("active");
-            }
+            if (info.isNode && info.count > 0) { $nodeInfo.textContent = `(${info.count} Nodes)`; $nodeInfo.classList.add("active"); }
+            else { $nodeInfo.textContent = ""; $nodeInfo.classList.remove("active"); }
         }
     }
-    if($content){
-        updateByteCount();
-        $content.addEventListener("input",updateByteCount);
-    }
+    if($content){ updateByteCount(); $content.addEventListener("input",updateByteCount); }
 
     if($uploadBtn&&$fileInput){
-        // 注意：原代码的label绑定方式在UI大改后依然有效，因为for属性存在
         $fileInput.addEventListener("change",()=>{
-            const file=$fileInput.files&&$fileInput.files[0];
-            if(!file)return;
+            const file=$fileInput.files&&$fileInput.files[0]; if(!file)return;
             const reader=new FileReader();
             reader.onload=()=>{
-                if($content){
-                    $content.value=reader.result||"";
-                    updateByteCount();
-                }
-                if($fileHint){
-                    $fileHint.textContent=`Loaded: ${file.name} (${file.size} Bytes)`;
-                    $fileHint.style.color = "#10b981";
-                }
-                setStatus(`File loaded: ${file.name}`,"success");
+                if($content){ $content.value=reader.result||""; updateByteCount(); }
+                if($fileHint){ $fileHint.textContent=`Loaded: ${file.name} (${file.size}B)`; $fileHint.style.color="#10b981"; }
+                setStatus(`Loaded: ${file.name}`,"success");
             };
-            reader.onerror=()=>{
-                if($fileHint){
-                    $fileHint.textContent="Read failed.";
-                    $fileHint.style.color = "#ef4444";
-                }
-                setStatus("Read failed.","error");
-            };
+            reader.onerror=()=>{ if($fileHint){ $fileHint.textContent="Error reading file."; $fileHint.style.color="#ef4444"; } };
             reader.readAsText(file);
         });
     }
 
     if($btnResetContent){
         $btnResetContent.addEventListener("click",()=>{
-            if($content)$content.value="";
-            if($remark)$remark.value="";
-            updateByteCount();
-            setStatus("Cleared.");
+            if($content)$content.value=""; if($remark)$remark.value="";
+            updateByteCount(); setStatus("Cleared.");
+            if($resultBox)$resultBox.style.display="none";
         });
     }
 
-    // Base64 编码
     if ($btnBase64Encode) {
         $btnBase64Encode.addEventListener("click", () => {
-            if (!$content) return;
-            const v = $content.value;
-            if (!v) {
-                setStatus("No content to encode.", "error");
-                return;
-            }
+            if (!$content) return; const v = $content.value;
+            if (!v) { setStatus("Empty content.", "error"); return; }
             const encoded = base64EncodeUtf8(v);
-            if (encoded == null) {
-                setStatus("Base64 encode failed.", "error");
-                return;
-            }
-            $content.value = encoded;
-            updateByteCount();
-            setStatus("Base64 Encoded.", "success");
+            if (encoded == null) { setStatus("Encode failed.", "error"); return; }
+            $content.value = encoded; updateByteCount(); setStatus("Encoded.", "success");
         });
     }
 
-    // Base64 解码
     if ($btnBase64Decode) {
         $btnBase64Decode.addEventListener("click", () => {
-            if (!$content) return;
-            const v = $content.value;
-            if (!v) {
-                setStatus("No content to decode.", "error");
-                return;
-            }
+            if (!$content) return; const v = $content.value;
+            if (!v) { setStatus("Empty content.", "error"); return; }
             const decoded = base64DecodeUtf8(v);
-            if (decoded == null) {
-                setStatus("Base64 decode failed.", "error");
-                return;
-            }
-            $content.value = decoded;
-            updateByteCount();
-            setStatus("Base64 Decoded.", "success");
-
+            if (decoded == null) { setStatus("Decode failed.", "error"); return; }
+            $content.value = decoded; updateByteCount(); setStatus("Decoded.", "success");
             $btnBase64Decode.classList.add("decode-active");
-            setTimeout(() => {
-                $btnBase64Decode.classList.remove("decode-active");
-            }, 300);
+            setTimeout(() => { $btnBase64Decode.classList.remove("decode-active"); }, 300);
         });
     }
 
-    const ttlText={
-        "10m":"Content expires in 10 Minutes.",
-        "1d":"Content expires in 1 Day.",
-        "7d":"Content expires in 7 Days.",
-        "30d":"Content expires in 30 Days.",
-        "forever":"Content never expires (unless manually deleted)."
-    };
+    const ttlText={"10m":"Expires in 10 Minutes.","1d":"Expires in 1 Day.","7d":"Expires in 7 Days.","30d":"Expires in 30 Days.","forever":"Never expires."};
     function setTtl(key){
         state.ttlKey=key;
-        if($ttlGroup){
-            $ttlGroup.querySelectorAll(".ttl-btn").forEach(b=>{
-                b.classList.toggle("active",b.dataset.ttl===key);
-            });
-        }
+        if($ttlGroup){ $ttlGroup.querySelectorAll(".ttl-btn").forEach(b=>{ b.classList.toggle("active",b.dataset.ttl===key); }); }
         if($ttlHint)$ttlHint.textContent=ttlText[key]||ttlText["7d"];
     }
     setTtl("7d");
     if($ttlGroup){
         $ttlGroup.addEventListener("click",e=>{
-            const btn=e.target.closest(".ttl-btn");
-            if(!btn)return;
-            if(btn.disabled)return;
-            const key=btn.dataset.ttl;
-            if(!key)return;
-            setTtl(key);
+            const btn=e.target.closest(".ttl-btn"); if(!btn || btn.disabled)return;
+            const key=btn.dataset.ttl; if(!key)return; setTtl(key);
         });
     }
 
     function validateCustomSlug(){
-        state.customSlugError=false;
-        if(!$customId)return;
+        state.customSlugError=false; if(!$customId)return;
         const val=$customId.value.trim();
-        if(!state.loggedIn){
-            if($advancedSection)$advancedSection.style.display="none";
-            return;
-        }else{
-            if($advancedSection)$advancedSection.style.display="";
-        }
+        if(!state.loggedIn){ if($advancedSection)$advancedSection.style.display="none"; return; }
+        else{ if($advancedSection)$advancedSection.style.display="grid"; }
         if(!val){
-            if($customHint){
-                $customHint.textContent="A-Za-z0-9_- only. Leave empty for random.";
-                $customHint.classList.remove("hint-error","hint-success");
-                $customHint.style.color = "var(--text-tertiary)";
-            }
-            $customId.classList.remove("input-error");
-            return;
+            if($customHint){ $customHint.textContent="A-Za-z0-9_- only."; $customHint.style.color="var(--text-muted)"; }
+            $customId.classList.remove("input-error"); return;
         }
         const ok=/^[A-Za-z0-9_-]+$/.test(val);
         if(!ok){
-            state.customSlugError=true;
-            if($customHint){
-                $customHint.textContent="Invalid characters.";
-                $customHint.style.color = "#ef4444";
-            }
+            state.customSlugError=true; if($customHint){ $customHint.textContent="Invalid format."; $customHint.style.color="#ef4444"; }
             $customId.classList.add("input-error");
         }else{
-            if($customHint){
-                $customHint.textContent="Available.";
-                $customHint.style.color = "#10b981";
-            }
+            if($customHint){ $customHint.textContent="Valid."; $customHint.style.color="#10b981"; }
             $customId.classList.remove("input-error");
         }
     }
     if($customId)$customId.addEventListener("input",validateCustomSlug);
 
     function enterCreateMode(clear){
-        state.mode="create";
-        state.originalSlug=null;
-        if($submitBtn){
-            const span=$submitBtn.querySelector(".text");
-            if(span)span.textContent="Publish Paste";
-        }
+        state.mode="create"; state.originalSlug=null;
+        if($submitBtn){ const span=$submitBtn.querySelector(".text"); if(span)span.textContent="Publish Paste"; }
         if($btnHome)$btnHome.style.display="none";
         if(clear){
-            if($content)$content.value="";
-            if($remark)$remark.value="";
-            if($customId)$customId.value="";
-            updateByteCount();
-            setStatus("");
-            if($resultBox)$resultBox.style.display="none";
+            if($content)$content.value=""; if($remark)$remark.value=""; if($customId)$customId.value="";
+            updateByteCount(); setStatus(""); if($resultBox)$resultBox.style.display="none";
         }
     }
 
     if($btnHome){
         $btnHome.addEventListener("click",()=>{
-            enterCreateMode(true);
-            history.replaceState(null,"",BASE_URL);
-            window.scrollTo({top:0,behavior:"smooth"});
+            enterCreateMode(true); history.replaceState(null,"",BASE_URL); window.scrollTo({top:0,behavior:"smooth"});
         });
     }
 
     function applyAuthUI(){
-        if($btnAuthLabel){
-            $btnAuthLabel.textContent = state.loggedIn ? (state.username || "User") : "Login";
-        }
-
-        if($advancedSection){
-            $advancedSection.style.display = state.loggedIn ? "block" : "none";
-        }
-
+        if($btnAuthLabel) $btnAuthLabel.textContent = state.loggedIn ? (state.username || "User") : "Login";
+        if($advancedSection) $advancedSection.style.display = state.loggedIn ? "grid" : "none";
         if ($ttlForeverBtn) {
-            if (state.loggedIn) {
-                $ttlForeverBtn.disabled = false;
-                $ttlForeverBtn.title = "";
-            } else {
-                $ttlForeverBtn.disabled = true;
-                $ttlForeverBtn.title = "Login Required";
-                if (state.ttlKey === "forever") {
-                    setTtl("7d");
-                }
-            }
+            if (state.loggedIn) { $ttlForeverBtn.disabled = false; $ttlForeverBtn.title = ""; }
+            else { $ttlForeverBtn.disabled = true; $ttlForeverBtn.title = "Login Required"; if (state.ttlKey === "forever") setTtl("7d"); }
         }
-
         validateCustomSlug();
     }
 
     function setLoggedIn(username){
-        state.loggedIn = true;
-        state.username = username || "User";
+        state.loggedIn = true; state.username = username || "User";
         try { localStorage.setItem("pbx_username", state.username); } catch(_) {}
-
-        // 登录后默认改为 Never
-        setTtl("forever");
-
-        applyAuthUI();
+        setTtl("forever"); applyAuthUI();
     }
     function setLoggedOut(){
-        state.loggedIn=false;
-        state.username=null;
+        state.loggedIn=false; state.username=null;
         try{localStorage.removeItem("pbx_username");}catch(_){}
         applyAuthUI();
     }
 
     async function initAuthFromServer(){
-        let saved=null;
-        try{saved=localStorage.getItem("pbx_username")||null;}catch(_){}
+        let saved=null; try{saved=localStorage.getItem("pbx_username")||null;}catch(_){}
         try{
             const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
             if(res.status===401){setLoggedOut();return;}
             const data=await res.json().catch(()=>({}));
-            if(data&&data.ok){
-                setLoggedIn(saved||"User");
-            }else{
-                setLoggedOut();
-            }
-        }catch(_){
-            setLoggedOut();
-        }
+            if(data&&data.ok) setLoggedIn(saved||"User"); else setLoggedOut();
+        }catch(_){ setLoggedOut(); }
     }
 
-    function openAuthModal(){
-        if(!$authModal)return;
-        $authModal.style.display="flex";
-        setAuthTip("");
-        if($authUsername)$authUsername.focus();
-    }
-    function closeAuthModal(){
-        if(!$authModal)return;
-        $authModal.style.display="none";
-        if($authForm)$authForm.reset();
-        if($authRemember) $authRemember.checked = true;
-        setAuthTip("");
-    }
+    function openAuthModal(){ if(!$authModal)return; $authModal.style.display="flex"; setAuthTip(""); if($authUsername)$authUsername.focus(); }
+    function closeAuthModal(){ if(!$authModal)return; $authModal.style.display="none"; if($authForm)$authForm.reset(); setAuthTip(""); }
     if($authCloseBtn)$authCloseBtn.addEventListener("click",closeAuthModal);
-    if($authModal){
-        $authModal.addEventListener("click",e=>{
-            if(e.target===$authModal)closeAuthModal();
-        });
-    }
+    if($authModal)$authModal.addEventListener("click",e=>{ if(e.target===$authModal)closeAuthModal(); });
 
-    function openUserCenter(){
-        if(!$userCenter)return;
-        $userCenter.style.display="flex";
-        loadUserPastes();
-    }
-    function closeUserCenter(){
-        if(!$userCenter)return;
-        $userCenter.style.display="none";
-    }
+    function openUserCenter(){ if(!$userCenter)return; $userCenter.style.display="flex"; loadUserPastes(); }
+    function closeUserCenter(){ if(!$userCenter)return; $userCenter.style.display="none"; }
     if($ucCloseBtn)$ucCloseBtn.addEventListener("click",closeUserCenter);
-    if($userCenter){
-        $userCenter.addEventListener("click",e=>{
-            if(e.target===$userCenter)closeUserCenter();
-        });
-    }
+    if($userCenter)$userCenter.addEventListener("click",e=>{ if(e.target===$userCenter)closeUserCenter(); });
 
-    if($btnAuthOpen){
-        $btnAuthOpen.addEventListener("click",()=>{
-            if(state.loggedIn)openUserCenter();
-            else openAuthModal();
-        });
-    }
+    if($btnAuthOpen)$btnAuthOpen.addEventListener("click",()=>{ if(state.loggedIn)openUserCenter(); else openAuthModal(); });
 
     if($authForm){
         $authForm.addEventListener("submit",async e=>{
             e.preventDefault();
-            const u=$authUsername.value.trim();
-            const p=$authPassword.value;
+            const u=$authUsername.value.trim(), p=$authPassword.value;
             const remember = $authRemember ? $authRemember.checked : true;
-
-            if(!u||!p){
-                setAuthTip("Username/Password required.","error");
-                return;
-            }
-            setAuthTip("Logging in...");
+            if(!u||!p){ setAuthTip("Missing credentials.","error"); return; }
+            setAuthTip("Processing...");
             try{
-                const data=await postJSON(AUTH_BASE+"/login",{
-                    username:u,
-                    password:p,
-                    remember
-                });
-                setLoggedIn(data.username||u);
-                setAuthTip("Success.","success");
-                setTimeout(closeAuthModal,300);
-            }catch(err){
-                setAuthTip(err.message||"Failed.","error");
-            }
+                const data=await postJSON(AUTH_BASE+"/login",{username:u,password:p,remember});
+                setLoggedIn(data.username||u); setAuthTip("Success.","success"); setTimeout(closeAuthModal,300);
+            }catch(err){ setAuthTip(err.message||"Failed.","error"); }
         });
     }
     if($btnDoRegister){
         $btnDoRegister.addEventListener("click",async ()=>{
-            const u=$authUsername.value.trim();
-            const p=$authPassword.value;
+            const u=$authUsername.value.trim(), p=$authPassword.value;
             if(!u||!p){setAuthTip("Fill info first.","error");return;}
             if(p.length<6){setAuthTip("Password too short.","error");return;}
-            setAuthTip("Registering...");
+            setAuthTip("Processing...");
             try{
-                await postJSON(AUTH_BASE+"/register",{username:u,password:p});
-                setAuthTip("Registered. Please login.","success");
-            }catch(err){
-                setAuthTip(err.message||"Failed.","error");
-            }
+                await postJSON(AUTH_BASE+"/register",{username:u,password:p}); setAuthTip("Done. Please login.","success");
+            }catch(err){ setAuthTip(err.message||"Failed.","error"); }
         });
     }
 
-    function formatDate(d){
-        if(!d)return"-";
-        const dt=new Date(d);
-        if(Number.isNaN(dt.getTime()))return"-";
-        const y=dt.getFullYear();
-        const m=String(dt.getMonth()+1).padStart(2,"0");
-        const da=String(dt.getDate()).padStart(2,"0");
-        return `${y}-${m}-${da}`;
-    }
-    function calcRemainDays(expires){
-        if(!expires)return null;
-        const t=new Date(expires).getTime();
-        if(Number.isNaN(t))return null;
-        const now=Date.now();
-        const diff=t-now;
-        const d=Math.ceil(diff/86400000);
-        return d;
-    }
-
-    // 订阅链接拼接
+    function formatDate(d){ if(!d)return"-"; const dt=new Date(d); if(Number.isNaN(dt.getTime()))return"-"; return dt.toISOString().split('T')[0]; }
+    function calcRemainDays(expires){ if(!expires)return null; const t=new Date(expires).getTime(); if(Number.isNaN(t))return null; return Math.ceil((t-Date.now())/86400000); }
     function buildSubLink(slug, clientKey) {
         const base = `${location.origin}/autosub?id=${encodeURIComponent(slug)}`;
         if (!clientKey || clientKey === "general") return base;
         return `${base}&client=${encodeURIComponent(clientKey)}`;
     }
 
-    // ===== 订阅选择面板逻辑 =====
     let currentSubSlug = null;
-
-    function openSubClientMenu(slug) {
-        currentSubSlug = slug;
-        const overlay = document.getElementById("subClientOverlay");
-        if (overlay) {
-            overlay.style.display = "flex";
-            if (window.__subMenuSync) window.__subMenuSync();
-        }
-    }
-
-    function closeSubClientMenu() {
-        currentSubSlug = null;
-        const overlay = document.getElementById("subClientOverlay");
-        if (overlay) overlay.style.display = "none";
-    }
-
+    function openSubClientMenu(slug) { currentSubSlug = slug; const o = document.getElementById("subClientOverlay"); if (o) { o.style.display = "flex"; if (window.__subMenuSync) window.__subMenuSync(); } }
+    function closeSubClientMenu() { currentSubSlug = null; const o = document.getElementById("subClientOverlay"); if (o) o.style.display = "none"; }
     (function initSubClientMenu(){
-        const overlay = document.getElementById("subClientOverlay");
-        if (!overlay) return;
-
-        const closeBtn = document.getElementById("subMenuCloseBtn");
-        const input = document.getElementById("subLinkInput");
-        const copyBtn = document.getElementById("subLinkCopyBtn");
-        const pills = Array.from(overlay.querySelectorAll(".sub-ios-pill"));
-
+        const overlay = document.getElementById("subClientOverlay"); if (!overlay) return;
+        const closeBtn = document.getElementById("subMenuCloseBtn"), input = document.getElementById("subLinkInput");
+        const copyBtn = document.getElementById("subLinkCopyBtn"), pills = Array.from(overlay.querySelectorAll(".sub-ios-pill"));
         let selected = "general";
-
         function refresh(){
-            pills.forEach(btn=>{
-                const key = btn.getAttribute("data-client") || "general";
-                btn.classList.toggle("is-active", key === selected);
-            });
-            if (input) {
-                input.value = currentSubSlug ? buildSubLink(currentSubSlug, selected) : "";
-            }
+            pills.forEach(btn=>{ const key = btn.getAttribute("data-client") || "general"; btn.classList.toggle("is-active", key === selected); });
+            if (input) input.value = currentSubSlug ? buildSubLink(currentSubSlug, selected) : "";
         }
-
-        function setSelected(key){
-            selected = key || "general";
-            refresh();
-        }
-
-        window.__subMenuSync = function(){
-            selected = "general";
-            refresh();
-        };
-
+        function setSelected(key){ selected = key || "general"; refresh(); }
+        window.__subMenuSync = function(){ selected = "general"; refresh(); };
         if (closeBtn) closeBtn.addEventListener("click", closeSubClientMenu);
-
-        overlay.addEventListener("click",(e)=>{
-            if (e.target === overlay) closeSubClientMenu();
-        });
-
-        pills.forEach(btn=>{
-            btn.addEventListener("click", (e)=>{
-                setSelected(btn.getAttribute("data-client") || "general");
-            });
-        });
-
+        overlay.addEventListener("click",(e)=>{ if (e.target === overlay) closeSubClientMenu(); });
+        pills.forEach(btn=>{ btn.addEventListener("click", ()=>{ setSelected(btn.getAttribute("data-client")); }); });
         if (copyBtn) copyBtn.addEventListener("click", async ()=>{
-            if (!currentSubSlug) return;
-            const url = buildSubLink(currentSubSlug, selected);
-
-            try{
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    await navigator.clipboard.writeText(url);
-                    setStatus("Link copied.", "success");
-                } else {
-                    window.prompt("Copy link:", url);
-                }
-            }catch(_){
-                window.prompt("Copy link:", url);
-            }
+            if (!currentSubSlug) return; const url = buildSubLink(currentSubSlug, selected);
+            try{ await navigator.clipboard.writeText(url); setStatus("Link copied.", "success"); }catch(_){ window.prompt("Copy link:", url); }
             closeSubClientMenu();
         });
-
-        document.addEventListener("keydown",(e)=>{
-            if (e.key === "Escape" && overlay.style.display !== "none") closeSubClientMenu();
-        });
-
+        document.addEventListener("keydown",(e)=>{ if (e.key === "Escape" && overlay.style.display !== "none") closeSubClientMenu(); });
         refresh();
     })();
 
-
     async function loadUserPastes(){
         if(!$ucEmpty||!$ucList)return;
-        $ucEmpty.style.display="block";
-        $ucEmpty.textContent="Loading records...";
-        $ucList.style.display="none";
-        $ucList.innerHTML="";
+        $ucEmpty.style.display="block"; $ucEmpty.textContent="Loading..."; $ucList.style.display="none"; $ucList.innerHTML="";
         try{
             const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
-            if(res.status===401){
-                $ucEmpty.textContent="Session expired.";
-                setLoggedOut();
-                return;
-            }
+            if(res.status===401){ $ucEmpty.textContent="Session expired."; setLoggedOut(); return; }
             const data=await res.json().catch(()=>({}));
-            if(!data.ok){
-                $ucEmpty.textContent=data.error||"Failed to load.";
-                return;
-            }
-            const items=data.items||[];
-            if(!items.length){
-                $ucEmpty.textContent="No records found.";
-                return;
-            }
-
+            if(!data.ok){ $ucEmpty.textContent=data.error||"Failed."; return; }
+            const items=data.items||[]; if(!items.length){ $ucEmpty.textContent="No records."; return; }
             const valid=[];
-            // 并发获取详情
             await Promise.all(items.map(async (item)=>{
-                const slug=item.slug||item.id;
-                if(!slug)return;
+                const slug=item.slug||item.id; if(!slug)return;
                 try{
-                    const u=new URL(`${API_BASE}/${encodeURIComponent(slug)}`);
-                    u.searchParams.set("manage","1");
-                    const r=await fetch(u.toString(),{credentials:"include"});
-                    if(!r.ok)return;
-                    const d=await r.json().catch(()=>null);
-                    if(!d||d.ok===false)return;
-                    const remain=calcRemainDays(d.expiresAt);
-                    if(remain!=null && remain<0)return; // 过期不显示
-
-                    d._nodeInfo = detectNodes(d.content || "");
-                    valid.push(d);
+                    const u=new URL(`${API_BASE}/${encodeURIComponent(slug)}`); u.searchParams.set("manage","1");
+                    const r=await fetch(u.toString(),{credentials:"include"}); if(!r.ok)return;
+                    const d=await r.json().catch(()=>null); if(!d||d.ok===false)return;
+                    const remain=calcRemainDays(d.expiresAt); if(remain!=null && remain<0)return;
+                    d._nodeInfo = detectNodes(d.content || ""); valid.push(d);
                 }catch(_){}
             }));
-
-            if(!valid.length){
-                $ucEmpty.textContent="No active records.";
-                return;
-            }
-
+            if(!valid.length){ $ucEmpty.textContent="No active pastes."; return; }
             valid.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-
-            $ucEmpty.style.display="none";
-            $ucList.style.display="flex";
-
+            $ucEmpty.style.display="none"; $ucList.style.display="flex";
             valid.forEach(d=>{
-                const slug=d.slug;
-                if(!slug)return;
-                const remark=d.remark||"Untitled";
-                const expires=d.expiresAt||null;
-                const ttlKey=d.ttlKey||"";
-
+                const slug=d.slug, remark=d.remark||"Untitled", expires=d.expiresAt, ttlKey=d.ttlKey;
                 const viewUrl=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
                 const remain=calcRemainDays(expires);
-
                 const nodeInfo = d._nodeInfo || detectNodes(d.content || "");
-                const hasNode = !!nodeInfo.isNode && nodeInfo.count > 0;
-                const nodeCount = nodeInfo.count || 0;
-
-                const row=document.createElement("div");
-                row.className="uc-item";
-                // 调整内部结构以匹配新 UI
+                const row=document.createElement("div"); row.className="uc-item";
                 row.innerHTML=`
                     <div class="uc-item-top">
                         <div class="uc-item-title">
@@ -1555,221 +1124,111 @@
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                          <span class="uc-link-tag">Expires: ${!expires||ttlKey==="forever" ? "Never" : (remain + " days")}</span>
                          <div class="uc-item-actions"></div>
-                    </div>
-                `;
-                const act=row.querySelector(".uc-item-actions");
-                const titleBox=row.querySelector(".uc-item-title");
-
-                if (hasNode && titleBox) {
-                    const subBtn=document.createElement("button");
-                    subBtn.type="button";
-                    subBtn.className="uc-sub-btn";
-                    subBtn.textContent = nodeCount > 0 ? `Sub(${nodeCount})` : "Sub";
-                    subBtn.addEventListener("click",(e)=>{
-                         e.stopPropagation();
-                         openSubClientMenu(slug);
-                    });
+                    </div>`;
+                const act=row.querySelector(".uc-item-actions"), titleBox=row.querySelector(".uc-item-title");
+                if (nodeInfo.isNode && titleBox) {
+                    const subBtn=document.createElement("button"); subBtn.className="uc-sub-btn";
+                    subBtn.textContent = nodeInfo.count > 0 ? `Sub(${nodeInfo.count})` : "Sub";
+                    subBtn.addEventListener("click",(e)=>{ e.stopPropagation(); openSubClientMenu(slug); });
                     titleBox.appendChild(subBtn);
                 }
-
-                const mkBtn = (label, cls, cb) => {
-                    const b = document.createElement("button");
-                    b.className = "btn-secondary " + cls;
-                    b.style.padding="2px 8px"; b.style.fontSize="11px";
-                    b.textContent = label;
-                    b.addEventListener("click", cb);
-                    return b;
+                const mkBtn = (lbl, cb, danger) => {
+                    const b = document.createElement("button"); b.className = "btn-secondary";
+                    b.style.padding="2px 6px"; b.style.fontSize="11px"; b.textContent = lbl;
+                    if(danger) b.style.color="#ef4444";
+                    b.addEventListener("click", cb); return b;
                 };
-
-                act.appendChild(mkBtn("Edit", "", ()=>{ closeUserCenter(); enterEditMode(slug); }));
-                act.appendChild(mkBtn("Copy", "", async ()=>{ 
-                    try{ await navigator.clipboard.writeText(viewUrl); setStatus("Link copied.","success"); }
-                    catch(_){ setStatus("Copy failed.","error"); }
-                }));
-                act.appendChild(mkBtn("Open", "", ()=>{ window.open(viewUrl,"_blank"); }));
-                
-                const delBtn = mkBtn("Del", "", async ()=>{
-                    if(!confirm("Delete this paste?"))return;
-                    try{
-                        await postJSON(API_BASE,{action:"delete",slug});
-                        loadUserPastes();
-                    }catch(err){ alert(err.message); }
-                });
-                delBtn.style.color="#ef4444";
-                act.appendChild(delBtn);
-
+                act.appendChild(mkBtn("Edit", ()=>{ closeUserCenter(); enterEditMode(slug); }));
+                act.appendChild(mkBtn("Copy", async ()=>{ try{ await navigator.clipboard.writeText(viewUrl); setStatus("Copied.","success"); }catch(_){} }));
+                act.appendChild(mkBtn("Open", ()=>{ window.open(viewUrl,"_blank"); }));
+                act.appendChild(mkBtn("Del", async ()=>{ if(confirm("Delete?")){ try{ await postJSON(API_BASE,{action:"delete",slug}); loadUserPastes(); }catch(_){} } }, true));
                 $ucList.appendChild(row);
             });
-        }catch(err){
-            $ucEmpty.style.display="block";
-            $ucEmpty.textContent="Error loading list.";
-        }
+        }catch(e){ $ucEmpty.style.display="block"; $ucEmpty.textContent="Error."; }
     }
 
     if($ucRefreshBtn)$ucRefreshBtn.addEventListener("click",loadUserPastes);
-    if($ucLogoutBtn){
-        $ucLogoutBtn.addEventListener("click",async ()=>{
-            try{await postJSON(AUTH_BASE+"/logout",{});}catch(_){}
-            setLoggedOut();
-            closeUserCenter();
-            enterCreateMode(true);
-            setStatus("Logged out.","success");
-        });
-    }
+    if($ucLogoutBtn)$ucLogoutBtn.addEventListener("click",async ()=>{
+        try{await postJSON(AUTH_BASE+"/logout",{});}catch(_){}
+        setLoggedOut(); closeUserCenter(); enterCreateMode(true); setStatus("Logged out.","success");
+    });
 
     async function enterEditMode(slug){
-        state.mode="edit";
-        state.originalSlug=slug;
-        if($submitBtn){
-            const span=$submitBtn.querySelector(".text");
-            if(span)span.textContent="Update Paste";
-        }
+        state.mode="edit"; state.originalSlug=slug;
+        if($submitBtn){ const span=$submitBtn.querySelector(".text"); if(span)span.textContent="Update Paste"; }
         if($btnHome)$btnHome.style.display="inline-flex";
         setStatus("Loading...");
         try{
-            const url=new URL(`${API_BASE}/${encodeURIComponent(slug)}`);
-            url.searchParams.set("manage","1");
+            const url=new URL(`${API_BASE}/${encodeURIComponent(slug)}`); url.searchParams.set("manage","1");
             const res=await fetch(url.toString(),{credentials:"include"});
             const data=await res.json().catch(()=>({}));
-            if(!res.ok||data.ok===false){
-                throw new Error(data.error||"Not found.");
-            }
-            if($content)$content.value=data.content||"";
-            if($remark)$remark.value=data.remark||"";
-            if($customId){
-                $customId.value=data.slug||slug;
-                $customId.readOnly=false;
-            }
-            updateByteCount();
-            if(data.ttlKey)setTtl(data.ttlKey);
-            const urlClean=new URL(location.href);
-            urlClean.searchParams.set("id",slug);
-            history.replaceState(null,"",urlClean.toString());
+            if(!res.ok||data.ok===false) throw new Error("Not found.");
+            if($content)$content.value=data.content||""; if($remark)$remark.value=data.remark||"";
+            if($customId){ $customId.value=data.slug||slug; $customId.readOnly=false; }
+            updateByteCount(); if(data.ttlKey)setTtl(data.ttlKey);
+            const urlClean=new URL(location.href); urlClean.searchParams.set("id",slug); history.replaceState(null,"",urlClean.toString());
             setStatus("Edit Mode.","success");
-        }catch(err){
-            setStatus(err.message||"Load failed.","error");
-            enterCreateMode(false);
-        }
+        }catch(e){ setStatus("Error.","error"); enterCreateMode(false); }
     }
 
     function showResultLink(slug){
         if(!$resultBox||!$viewLinkText)return;
         const url=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
-        $viewLinkText.textContent=url;
-        $resultBox.style.display="block";
-        if($btnManageFromResult){
-            $btnManageFromResult.style.display = state.loggedIn ? "inline-flex" : "none";
-        }
+        $viewLinkText.textContent=url; $resultBox.style.display="block";
+        if($btnManageFromResult) $btnManageFromResult.style.display = state.loggedIn ? "inline-flex" : "none";
     }
 
-    if($btnCopyView){
-        $btnCopyView.addEventListener("click",async ()=>{
-            const text=$viewLinkText&&$viewLinkText.textContent;
-            if(!text)return;
-            try{
-                await navigator.clipboard.writeText(text);
-                setStatus("Copied.","success");
-            }catch(_){
-                setStatus("Copy failed.","error");
-            }
-        });
-    }
-    if($btnOpenView){
-        $btnOpenView.addEventListener("click",()=>{
-            const text=$viewLinkText&&$viewLinkText.textContent;
-            if(!text)return;
-            window.open(text,"_blank","noopener");
-        });
-    }
-    if($btnManageFromResult){
-        $btnManageFromResult.addEventListener("click",()=>{
-            if(!state.loggedIn){
-                openAuthModal();
-                return;
-            }
-            openUserCenter();
-        });
-    }
+    if($btnCopyView) $btnCopyView.addEventListener("click",async ()=>{
+        const text=$viewLinkText&&$viewLinkText.textContent; if(!text)return;
+        try{ await navigator.clipboard.writeText(text); setStatus("Copied.","success"); }catch(_){}
+    });
+    if($btnOpenView) $btnOpenView.addEventListener("click",()=>{ const text=$viewLinkText&&$viewLinkText.textContent; if(text)window.open(text,"_blank"); });
+    if($btnManageFromResult) $btnManageFromResult.addEventListener("click",()=>{ if(!state.loggedIn)openAuthModal(); else openUserCenter(); });
 
     if($form){
         $form.addEventListener("submit",async e=>{
             e.preventDefault();
             const text=($content&&$content.value.trim())||"";
-            if(!text){setStatus("Content empty.","error");return;}
-            if(state.customSlugError){setStatus("Invalid slug.","error");return;}
-
-            let slug=null;
-            let newSlug=null;
+            if(!text){setStatus("Empty.","error");return;}
+            if(state.customSlugError){setStatus("Invalid Slug.","error");return;}
+            let slug=null, newSlug=null;
             if(state.mode==="edit"){
                 slug=state.originalSlug;
-                if($customId){
-                    const v=$customId.value.trim();
-                    if(v&&v!==slug)newSlug=v;
-                }
+                if($customId){ const v=$customId.value.trim(); if(v&&v!==slug)newSlug=v; }
             }else{
-                if(state.loggedIn&&$customId){
-                    const v=$customId.value.trim();
-                    if(v)slug=v;
-                }
+                if(state.loggedIn&&$customId){ const v=$customId.value.trim(); if(v)slug=v; }
             }
-
-            const payload={
-                action:state.mode==="edit"?"update":"create",
-                content:text,
-                ttlKey:state.ttlKey,
-                remark:$remark?$remark.value.trim():""
-            };
-            if(slug)payload.slug=slug;
-            if(newSlug)payload.newSlug=newSlug;
-
+            const payload={ action:state.mode==="edit"?"update":"create", content:text, ttlKey:state.ttlKey, remark:$remark?$remark.value.trim():"" };
+            if(slug)payload.slug=slug; if(newSlug)payload.newSlug=newSlug;
             state.isSubmitting=true;
-            if($submitBtn){
-                $submitBtn.disabled=true;
-                $submitBtn.classList.add("btn-disabled");
-                const span=$submitBtn.querySelector(".text");
-                if(span)span.textContent=state.mode==="edit"?"Saving...":"Uploading...";
-            }
-            setStatus("Submitting...");
+            if($submitBtn){ $submitBtn.disabled=true; $submitBtn.classList.add("btn-disabled"); const s=$submitBtn.querySelector(".text"); if(s)s.textContent="Working..."; }
+            setStatus("Sending...");
             try{
                 const data=await postJSON(API_BASE,payload);
                 const finalSlug=data.slug||newSlug||slug;
-                if(!finalSlug)throw new Error("Missing slug.");
                 showResultLink(finalSlug);
-
-                setStatus(state.mode==="edit"?"Updated.":"Uploaded.","success");
-                enterCreateMode(true);
-            }catch(err){
-                setStatus(err.message||"Failed.","error");
-            }finally{
+                setStatus(state.mode==="edit"?"Updated.":"Published.","success"); enterCreateMode(true);
+            }catch(err){ setStatus(err.message||"Failed.","error"); }
+            finally{
                 state.isSubmitting=false;
                 if($submitBtn){
-                    $submitBtn.disabled=false;
-                    $submitBtn.classList.remove("btn-disabled");
-                    const span=$submitBtn.querySelector(".text");
-                    if(span)span.textContent=state.mode==="edit"?"Update Paste":"Publish Paste";
+                    $submitBtn.disabled=false; $submitBtn.classList.remove("btn-disabled");
+                    const s=$submitBtn.querySelector(".text"); if(s)s.textContent=state.mode==="edit"?"Update Paste":"Publish Paste";
                 }
             }
         });
     }
 
-    if($baseUrlText)$baseUrlText.textContent=VIEW_BASE+"/{id}";
-
     document.addEventListener("keydown",e=>{
         if(e.key==="Escape"){
-            const overlay = document.getElementById("subClientOverlay");
-            if(overlay && overlay.style.display==="flex"){
-                closeSubClientMenu();
-                return;
-            }
+            const o=document.getElementById("subClientOverlay");
+            if(o && o.style.display==="flex"){ closeSubClientMenu(); return; }
             if($userCenter&&$userCenter.style.display==="flex")closeUserCenter();
             else if($authModal&&$authModal.style.display==="flex")closeAuthModal();
         }
     });
 
-    (async function init(){
-        await initAuthFromServer();
-        applyAuthUI();
-    })();
+    (async function init(){ await initAuthFromServer(); applyAuthUI(); })();
 </script>
 </body>
 </html>
