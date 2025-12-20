@@ -2,9 +2,24 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Pastebox Pro</title>
+    <title>Pastebox · 一个粘贴盒子而已</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
+
+    <!-- Open Graph / WeChat / Telegram 预览 -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Pastebox">
+    <meta property="og:title" content="Pastebox">
+    <meta property="og:description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/Preview/YL10.png">
+    <meta property="og:url" content="https://aura.us.kg/Paste">
+
+    <!-- Twitter 卡片 -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Pastebox">
+    <meta name="twitter:description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
+    <meta name="twitter:image" content="https://save.aura.us.kg/Picture/Preview/YL6.png">
+
 
     <!-- 字体引入 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -393,10 +408,10 @@
                     <div class="bento-card" style="padding:16px;">
                         <div class="panel-header">有效期</div>
                         <div class="seg-control" id="ttlGroup">
-                            <button type="button" class="seg-btn" data-ttl="10m">10分</button>
-                            <button type="button" class="seg-btn" data-ttl="1d">1天</button>
-                            <button type="button" class="seg-btn active" data-ttl="7d">7天</button>
-                            <button type="button" class="seg-btn" data-ttl="30d">30天</button>
+                            <button type="button" class="seg-btn" data-ttl="10m">10 Min</button>
+                            <button type="button" class="seg-btn" data-ttl="1d">1 Day</button>
+                            <button type="button" class="seg-btn active" data-ttl="7d">7 Day</button>
+                            <button type="button" class="seg-btn" data-ttl="30d">30 Day</button>
                             <button type="button" class="seg-btn" data-ttl="forever" id="ttlForeverBtn" disabled>∞</button>
                         </div>
                         <div id="ttlHint" style="font-size:11px; font-weight:500; color:var(--accent); margin-top:8px; text-align:right;"></div>
@@ -405,10 +420,10 @@
                     <div id="advancedSection" style="display:none; flex-direction:column; gap:12px;">
                         <div class="panel-header">高级选项</div>
                         <div class="input-box">
-                            <input type="text" id="customId" class="input-real" placeholder="自定义链接后缀 (选填)">
+                            <input type="text" id="customId" class="input-real" placeholder="自定义URL后缀 (选填)">
                         </div>
                         <div class="input-box">
-                            <input type="text" id="remark" class="input-real" placeholder="添加备注...">
+                            <input type="text" id="remark" class="input-real" placeholder="给链接取个名字吧(选填)">
                         </div>
                     </div>
                 </div>
@@ -442,7 +457,7 @@
     <div class="modal-mask" id="authModal">
         <div class="modal-panel">
             <div class="modal-head">
-                <span class="modal-title">欢迎</span>
+                <span class="modal-title">登录 · PasteBox</span>
                 <button class="btn-circle" id="authCloseBtn">×</button>
             </div>
             <form id="authForm" style="display:flex; flex-direction:column; gap:16px;">
@@ -468,7 +483,7 @@
     <div class="modal-mask" id="userCenter">
         <div class="modal-panel" style="max-width:600px; height:80vh; display:flex; flex-direction:column;">
             <div class="modal-head">
-                <span class="modal-title">我的发布</span>
+                <span class="modal-title">🗒️Manage / Paste</span>
                 <div style="display:flex; gap:12px;">
                     <button class="btn-circle" id="ucRefreshBtn" title="刷新列表">
                         <svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -488,12 +503,12 @@
     <div class="modal-mask" id="subClientOverlay">
         <div class="modal-panel" style="width:100%; max-width:500px;">
             <div class="modal-head">
-                <span class="modal-title">订阅节点</span>
+                <span class="modal-title">选择客户端格式</span>
                 <button class="btn-circle" id="subMenuCloseBtn">×</button>
             </div>
             
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:20px;">
-                <button class="btn btn-glass" data-client="general" style="justify-content:center">通用</button>
+                <button class="btn btn-glass" data-client="general" style="justify-content:center">通用格式</button>
                 <button class="btn btn-glass" data-client="base64" style="justify-content:center">Base64</button>
                 <button class="btn btn-glass" data-client="clash" style="justify-content:center">Clash</button>
                 <button class="btn btn-glass" data-client="surge" style="justify-content:center">Surge</button>
@@ -624,7 +639,7 @@
         fetch('https://v1.hitokoto.cn')
             .then(response => response.json())
             .then(data => {
-                el.innerHTML = `「${data.hitokoto}」<br><span style="font-size:11px;opacity:0.6;">—— ${data.from}</span>`;
+                el.innerHTML = `${data.hitokoto}<br><span style="font-size:11px;opacity:0.6;">—— ${data.from}</span>`;
             })
             .catch(() => {
                 el.innerHTML = "Designed by Aura";
@@ -706,7 +721,7 @@
         if ($nodeInfo) {
             const info = detectNodes($content.value || "");
             if (info.isNode && info.count > 0) {
-                $nodeInfo.textContent = `${info.count} 节点`;
+                $nodeInfo.textContent = `${info.count} 条代理`;
                 $nodeInfo.classList.add("active");
             } else {
                 $nodeInfo.classList.remove("active");
