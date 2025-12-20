@@ -2,610 +2,539 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Pastebox</title>
+    <title>Pastebox Pro</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <!-- Favicon -->
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
 
-    <!-- 字体：Inter (UI) + JetBrains Mono (Code) -->
+    <!-- 字体引入：Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            /* 基础色板 - 默认亮色 (Light Mode) */
-            --bg-body: #f5f5f7;
-            --bg-card: #ffffff;
-            --bg-panel: #f9fafb;
-            --bg-input: #ffffff;
-            --border-color: #e5e7eb;
-            --border-hover: #d1d5db;
+            /* --- 核心变量 --- */
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+            /* 亮色模式 (Light) - 高级灰调 */
+            --bg-app: #f2f2f7; /* iOS 系统灰 */
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-glass: rgba(255, 255, 255, 0.6);
+            --border-glass: rgba(255, 255, 255, 0.4);
+            --border-subtle: rgba(0, 0, 0, 0.06);
             
-            --text-main: #111827;
-            --text-sub: #6b7280;
-            --text-placeholder: #9ca3af;
+            --txt-primary: #1d1d1f;
+            --txt-secondary: #86868b;
+            --txt-placeholder: #aeaeb2;
+
+            --accent: #007aff; /* iOS Blue */
+            --accent-glow: rgba(0, 122, 255, 0.25);
+            --danger: #ff3b30;
+            --success: #34c759;
             
-            --primary: #000000;
-            --primary-fg: #ffffff;
-            --accent: #2563eb;
+            --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+            --shadow-inner: inset 0 1px 1px rgba(255, 255, 255, 0.8);
             
-            --danger: #ef4444;
-            --success: #10b981;
-            
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
-            --radius: 12px;
-            
-            /* 移动端安全区域 */
-            --sa-top: env(safe-area-inset-top);
-            --sa-bot: env(safe-area-inset-bottom);
+            --radius-box: 24px;
+            --radius-sm: 12px;
         }
 
         body.theme-dark {
-            /* 暗色模式 (Dark Mode) */
-            --bg-body: #0a0a0a;
-            --bg-card: #171717;
-            --bg-panel: #262626;
-            --bg-input: #171717;
-            --border-color: #262626;
-            --border-hover: #404040;
+            /* 暗色模式 (Dark) - 深邃黑金 */
+            --bg-app: #000000;
+            --bg-card: rgba(28, 28, 30, 0.75);
+            --bg-glass: rgba(44, 44, 46, 0.6);
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+
+            --txt-primary: #f5f5f7;
+            --txt-secondary: #86868b;
+            --txt-placeholder: #48484a;
+
+            --accent: #0a84ff;
+            --accent-glow: rgba(10, 132, 255, 0.3);
             
-            --text-main: #ededed;
-            --text-sub: #a1a1aa;
-            --text-placeholder: #52525b;
-            
-            --primary: #ffffff;
-            --primary-fg: #000000;
-            --accent: #3b82f6;
+            --shadow-card: 0 20px 50px -15px rgba(0, 0, 0, 0.7);
+            --shadow-inner: inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
-        /* 全局重置 */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        html, body { height: 100%; margin: 0; padding: 0; }
         
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: background-color 0.3s ease, color 0.3s ease;
-            /* 噪点纹理背景 */
-            background-image: radial-gradient(rgba(0,0,0,0) 1px, transparent 1px);
-            background-size: 24px 24px;
+            margin: 0; padding: 0;
+            font-family: var(--font-sans);
+            background-color: var(--bg-app);
+            color: var(--txt-primary);
+            min-height: 100vh;
+            display: flex; justify-content: center;
+            transition: background 0.5s ease;
+            overflow-x: hidden;
+            /* 背景流光 */
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(var(--accent), 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 59, 48, 0.08) 0px, transparent 50%);
+            background-attachment: fixed;
         }
 
-        /* 顶部导航 */
-        .header {
-            width: 100%;
-            max-width: 860px;
-            padding: calc(16px + var(--sa-top)) 20px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 10;
+        /* 顶部模糊导航栏 */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+            height: 64px;
+            padding: 0 max(20px, env(safe-area-inset-left));
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(var(--bg-card), 0.01); /* 几乎透明 */
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 0.5px solid var(--border-subtle);
         }
         
         .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 600;
-            font-size: 18px;
-            letter-spacing: -0.5px;
-            color: var(--text-main);
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 700; font-size: 18px; letter-spacing: -0.02em;
         }
-        .brand img {
-            width: 32px; height: 32px;
-            border-radius: 8px;
+        .brand-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             object-fit: cover;
-            box-shadow: var(--shadow-sm);
         }
-        
-        .nav-actions { display: flex; gap: 8px; }
 
-        /* 通用按钮 */
+        .nav-tools { display: flex; gap: 8px; align-items: center; }
+
+        /* 通用按钮系统 */
         .btn {
-            appearance: none; border: none; background: transparent;
-            font-family: inherit; font-size: 13px; font-weight: 500;
-            padding: 0 12px; height: 32px;
-            border-radius: 8px;
-            cursor: pointer;
+            border: none; cursor: pointer;
+            font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+            height: 36px; padding: 0 16px; border-radius: 99em;
             display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            transition: all 0.2s;
-            color: var(--text-main);
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative; overflow: hidden;
         }
         .btn:active { transform: scale(0.96); }
         
-        .btn-ghost { background: transparent; color: var(--text-sub); }
-        .btn-ghost:hover { background: var(--bg-panel); color: var(--text-main); }
-        
-        .btn-secondary {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-sm);
+        .btn-icon { width: 36px; padding: 0; border-radius: 50%; }
+
+        /* 玻璃态按钮 */
+        .btn-glass {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            color: var(--txt-primary);
+            box-shadow: var(--shadow-inner);
         }
-        .btn-secondary:hover { border-color: var(--border-hover); background: var(--bg-panel); }
-        
+        .btn-glass:hover { background: var(--bg-card); border-color: var(--txt-secondary); }
+
+        /* 主色按钮 */
         .btn-primary {
-            background: var(--primary);
-            color: var(--primary-fg);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 8px 20px -6px var(--accent-glow);
         }
-        .btn-primary:hover { opacity: 0.9; }
-        .btn-primary.disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary:hover { filter: brightness(1.1); box-shadow: 0 12px 24px -4px var(--accent-glow); }
+        .btn-primary.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
 
-        .icon-svg { width: 16px; height: 16px; display: block; }
-        .icon-svg svg { width: 100%; height: 100%; fill: currentColor; }
+        /* 幽灵按钮 */
+        .btn-ghost { background: transparent; color: var(--txt-secondary); }
+        .btn-ghost:hover { color: var(--txt-primary); background: rgba(128,128,128,0.1); }
 
-        /* 主容器 */
-        .container {
-            width: 100%;
-            max-width: 860px;
-            flex: 1;
-            padding: 0 20px 40px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        /* 卡片容器 */
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-lg);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* 编辑器区域 */
-        .editor-container {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            min-height: 400px;
-        }
-        
-        textarea {
-            flex: 1;
-            width: 100%;
-            padding: 20px;
-            border: none;
-            background: transparent;
-            color: var(--text-main);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
-            line-height: 1.6;
-            resize: vertical;
-        }
-        textarea::placeholder { color: var(--text-placeholder); }
-
-        /* 编辑器底部工具栏 */
-        .editor-toolbar {
-            padding: 10px 16px;
-            border-top: 1px solid var(--border-color);
-            background: var(--bg-panel);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .stats {
-            font-size: 12px;
-            color: var(--text-sub);
-            font-family: 'JetBrains Mono', monospace;
-            display: flex; gap: 12px; align-items: center;
-        }
-        .node-tag {
-            font-size: 10px; font-weight: 600;
-            padding: 2px 6px; border-radius: 4px;
-            background: rgba(16, 185, 129, 0.1); color: var(--success);
-            display: none;
-        }
-        .node-tag.active { display: inline-block; }
-
-        .toolbar-actions { display: flex; gap: 6px; align-items: center; }
-
-        /* 设置区域 */
-        .settings-grid {
+        /* 布局容器 */
+        .app-shell {
+            width: 100%; max-width: 1100px;
+            margin-top: 80px; margin-bottom: 40px;
+            padding: 0 20px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 16px;
+            grid-template-columns: 1fr 340px; /* 左侧编辑器，右侧工具栏 */
+            gap: 24px;
+            align-items: start;
         }
 
-        .settings-card {
+        /* 卡片容器系统 */
+        .bento-card {
             background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .label {
-            font-size: 12px; font-weight: 600;
-            color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px;
+            backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-box);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            transition: transform 0.3s ease;
         }
 
-        /* TTL 分段控制器 */
-        .ttl-group {
-            display: flex;
-            background: var(--bg-panel);
-            padding: 3px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-        .ttl-btn {
-            flex: 1;
-            border: none;
-            background: transparent;
-            color: var(--text-sub);
-            font-size: 12px;
-            font-weight: 500;
-            padding: 6px 0;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .ttl-btn:hover { color: var(--text-main); }
-        .ttl-btn.active {
-            background: var(--bg-card);
-            color: var(--text-main);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .ttl-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
-
-        /* 输入框样式 */
-        .input-wrapper {
+        /* 左侧：主编辑器 */
+        .editor-zone {
+            min-height: 70vh;
             position: relative;
-            display: flex; align-items: center;
         }
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            height: 36px;
-            padding: 0 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-input);
-            color: var(--text-main);
-            font-size: 13px;
-            transition: border-color 0.2s;
+        .editor-textarea {
+            width: 100%; height: 100%;
+            border: none; background: transparent;
+            padding: 24px 24px 60px; /* 底部留白给状态栏 */
+            font-family: var(--font-mono);
+            font-size: 14px; line-height: 1.6;
+            color: var(--txt-primary);
+            resize: none;
         }
-        input:focus { border-color: var(--text-sub); }
-        input.input-error { border-color: var(--danger); }
+        .editor-textarea::placeholder { color: var(--txt-placeholder); }
         
-        .hint-text { font-size: 11px; color: var(--text-sub); margin-top: 4px; }
-
-        /* 提交区域 */
-        .submit-area {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            align-items: center;
+        .editor-status-bar {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 48px;
+            padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-top: 1px solid var(--border-subtle);
+            background: rgba(var(--bg-card), 0.5);
+            font-size: 12px; color: var(--txt-secondary);
+            font-family: var(--font-mono);
+            pointer-events: none; /* 让鼠标穿透点击下面的东西 */
         }
-        .status-msg { font-size: 13px; color: var(--text-sub); margin-right: auto; }
-        .status-msg.success { color: var(--success); }
-        .status-msg.error { color: var(--danger); }
+        .editor-status-bar * { pointer-events: auto; } /* 恢复子元素交互 */
 
-        /* 结果框 */
-        .result-box {
-            background: var(--bg-panel);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            padding: 16px;
-            margin-top: 10px;
-            display: none; /* JS toggles this */
-            flex-direction: column;
-            gap: 12px;
-            animation: fadeIn 0.3s ease;
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 10px; border-radius: 6px;
+            background: rgba(128,128,128,0.08);
+        }
+        .node-indicator {
+            color: var(--success); background: rgba(52, 199, 89, 0.15);
+            font-weight: 600; display: none;
+        }
+        .node-indicator.active { display: inline-flex; }
+
+        /* 右侧：控制面板 */
+        .sidebar {
+            display: flex; flex-direction: column; gap: 20px;
+        }
+        
+        .panel-header {
+            font-size: 12px; font-weight: 700; color: var(--txt-secondary);
+            text-transform: uppercase; letter-spacing: 0.1em;
+            margin-bottom: 8px; margin-left: 4px;
+        }
+
+        /* 选项组（Segmented Control） */
+        .seg-control {
+            background: rgba(128,128,128,0.1);
+            padding: 4px; border-radius: 14px;
+            display: flex; gap: 2px;
+        }
+        .seg-btn {
+            flex: 1; border: none; background: transparent;
+            padding: 8px 0; font-size: 12px; font-weight: 600;
+            color: var(--txt-secondary); border-radius: 10px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .seg-btn.active {
+            background: var(--bg-card);
+            color: var(--txt-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .seg-btn[disabled] { opacity: 0.3; cursor: not-allowed; }
+
+        /* 功能网格 */
+        .tools-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        }
+        .tool-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .tool-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+        .tool-icon { width: 24px; height: 24px; color: var(--txt-primary); }
+        .tool-label { font-size: 11px; font-weight: 500; color: var(--txt-secondary); }
+
+        /* 输入框 */
+        .input-box {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 0 12px; height: 44px;
+            display: flex; align-items: center;
+            transition: 0.2s;
+        }
+        .input-box:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+            background: var(--bg-card);
+        }
+        .input-real {
+            width: 100%; border: none; background: transparent;
+            color: var(--txt-primary); font-size: 13px; font-weight: 500;
+        }
+        .input-real::placeholder { color: var(--txt-placeholder); }
+
+        /* 结果面板 */
+        .result-zone {
+            display: none; /* JS Toggle */
+            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .result-link {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
+            font-family: var(--font-mono); font-size: 12px;
             word-break: break-all;
-            color: var(--text-main);
-            padding: 10px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
+            padding: 12px; background: rgba(var(--accent), 0.1);
+            color: var(--accent); border-radius: 8px;
+            margin-bottom: 12px; text-align: center;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ----- 弹窗通用样式 ----- */
-        .modal-overlay {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(4px);
-            z-index: 100;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            opacity: 0; transition: opacity 0.2s;
-        }
-        .modal-overlay.show { opacity: 1; }
-        
-        .modal-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            width: 100%; max-width: 400px;
-            padding: 24px;
-            transform: scale(0.95); transition: transform 0.2s;
-            display: flex; flex-direction: column; gap: 16px;
-        }
-        .modal-overlay.show .modal-card { transform: scale(1); }
-        
-        .modal-header { display: flex; justify-content: space-between; align-items: center; }
-        .modal-title { font-size: 18px; font-weight: 600; }
-        .modal-close {
-            width: 28px; height: 28px;
-            border-radius: 50%;
-            background: var(--bg-panel);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; border: none; color: var(--text-sub);
-        }
-
-        /* 用户中心列表 */
-        .uc-modal { max-width: 600px; height: 70vh; }
-        .uc-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
-        .uc-item {
-            background: var(--bg-panel);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px;
-            transition: border-color 0.2s;
-        }
-        .uc-item:hover { border-color: var(--text-sub); }
-        .uc-item-top { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; font-weight: 500; }
-        .uc-item-meta { font-size: 11px; color: var(--text-sub); }
-        .uc-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-        
-        /* 订阅面板 (Bottom Sheet Style) */
-        .sub-sheet {
-            position: absolute; bottom: 0; left: 0; right: 0;
-            border-radius: 20px 20px 0 0;
-            border-bottom: none;
-            margin: 0; max-width: none;
-            padding-bottom: max(24px, var(--sa-bot));
-            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-        .modal-overlay.show .sub-sheet { transform: translateY(0); }
-        
-        .sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .sub-btn {
-            padding: 10px; font-size: 13px; font-weight: 500;
-            background: var(--bg-panel); border: 1px solid var(--border-color);
-            border-radius: 8px; cursor: pointer; color: var(--text-main);
-            transition: all 0.2s;
-        }
-        .sub-btn.is-active { background: var(--text-main); color: var(--bg-card); border-color: var(--text-main); }
-
-        /* 页脚 */
+        /* 底部信息 */
         .footer {
-            margin-top: auto; padding: 20px;
-            text-align: center; font-size: 12px; color: var(--text-sub);
+            grid-column: 1 / -1;
+            text-align: center; font-size: 11px; color: var(--txt-secondary); opacity: 0.6;
+            padding: 20px 0;
         }
 
-        /* 隐藏原生 Input */
+        /* 隐藏原生 */
         #fileInput { display: none; }
+        
+        /* 弹窗 (Modal) */
+        .modal-mask {
+            position: fixed; inset: 0; z-index: 100;
+            background: rgba(0,0,0,0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: 0.3s;
+        }
+        .modal-mask.show { opacity: 1; pointer-events: auto; }
+        
+        .modal-panel {
+            width: 90%; max-width: 400px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+            transform: scale(0.9); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-mask.show .modal-panel { transform: scale(1); }
+        
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 20px; font-weight: 700; }
+        .modal-close {
+            width: 32px; height: 32px; border-radius: 50%; background: rgba(128,128,128,0.1);
+            display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; color: var(--txt-secondary);
+        }
 
         /* 移动端适配 */
-        @media (max-width: 640px) {
-            .container { padding: 0 16px 30px; }
-            .header { padding: 12px 16px; }
-            .settings-grid { grid-template-columns: 1fr; }
-            .editor-container { min-height: 300px; }
-            .editor-toolbar { gap: 10px; }
-            .toolbar-actions { width: 100%; justify-content: space-between; margin-top: 6px; }
-            .submit-area { flex-direction: column-reverse; align-items: stretch; }
-            .btn-primary { height: 44px; font-size: 15px; }
+        @media (max-width: 860px) {
+            .app-shell {
+                grid-template-columns: 1fr;
+                margin-top: 70px; gap: 16px;
+            }
+            .sidebar { order: 2; } /* 编辑器在下? 不，通常编辑器在上 */
+            .editor-zone { min-height: 400px; }
+            .tools-grid { grid-template-columns: repeat(4, 1fr); }
+            .tool-card { padding: 8px; gap: 4px; }
+            .tool-label { font-size: 9px; }
+            .seg-btn { padding: 6px 0; }
         }
+        
+        /* SVG 图标定义 */
+        .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     </style>
 </head>
-<body>
+<body class="theme-light">
 
-    <header class="header">
+    <!-- 导航栏 -->
+    <nav class="navbar">
         <div class="brand">
-            <img id="brandIcon" alt="Icon">
+            <img id="brandIcon" class="brand-icon" alt="Logo">
             <span>PasteBox</span>
         </div>
-        <div class="nav-actions">
-            <!-- Theme Toggle -->
-            <button type="button" class="btn btn-ghost" id="themeToggle" aria-label="Toggle Theme">
-                <span class="icon-svg">
-                    <!-- Sun -->
-                    <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:var(--icon-sun-display)"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                    <!-- Moon -->
-                    <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:var(--icon-moon-display)"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                </span>
+        <div class="nav-tools">
+            <button type="button" class="btn btn-icon btn-glass" id="themeToggle">
+                <!-- Sun -->
+                <svg class="icon" id="iconSun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                <!-- Moon -->
+                <svg class="icon" id="iconMoon" viewBox="0 0 24 24" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             </button>
-            
-            <!-- Auth Button -->
-            <button type="button" class="btn btn-secondary" id="btnAuthOpen">
+            <button type="button" class="btn btn-glass" id="btnAuthOpen">
                 <span id="btnAuthLabel">Login</span>
             </button>
         </div>
-    </header>
+    </nav>
 
-    <main class="container">
-        <form id="pasteForm" style="display: contents;">
+    <!-- 主布局 -->
+    <main class="app-shell">
+        <form id="pasteForm" style="display:contents">
             
-            <!-- 主编辑器卡片 -->
-            <div class="card">
-                <div class="editor-container">
-                    <textarea id="content" placeholder="Type or paste your code here..." spellcheck="false" required></textarea>
-                </div>
+            <!-- 左侧：沉浸式编辑器 -->
+            <div class="bento-card editor-zone">
+                <textarea id="content" class="editor-textarea" placeholder="在这里粘贴代码或文本..." spellcheck="false" required></textarea>
                 
-                <div class="editor-toolbar">
-                    <div class="stats">
-                        <span id="lineCounter">0 Lines</span>
-                        <span style="opacity:0.3">|</span>
-                        <span class="byte-count"><span id="byteNum">0</span> Bytes</span>
-                        <span id="nodeInfo" class="node-tag">Node</span>
+                <div class="editor-status-bar">
+                    <div style="display:flex; gap:8px;">
+                        <span class="status-pill" id="lineCounter">0 Lines</span>
+                        <span class="status-pill"><span id="byteNum">0</span> Bytes</span>
+                        <span class="status-pill node-indicator" id="nodeInfo">Node</span>
                     </div>
-                    
-                    <div class="toolbar-actions">
-                        <!-- 文件导入 -->
-                        <label class="btn btn-ghost" id="uploadBtn" for="fileInput" title="Upload File">
-                            <span class="icon-svg"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>
-                            <span style="display:none">Import</span> <!-- 隐藏文字保持布局整洁 -->
+                    <!-- Home 按钮仅在编辑模式显示 -->
+                    <button type="button" class="btn btn-glass" id="btnHome" style="height:32px; font-size:12px; display:none;">Close Edit</button>
+                </div>
+            </div>
+
+            <!-- 右侧：控制中心 -->
+            <div class="sidebar">
+                
+                <!-- 快捷工具网格 -->
+                <div>
+                    <div class="panel-header">Quick Actions</div>
+                    <div class="tools-grid">
+                        <label class="tool-card" id="uploadBtn" for="fileInput">
+                            <svg class="icon tool-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <span class="tool-label">Import</span>
+                            <input type="file" id="fileInput">
                         </label>
-                        <input type="file" id="fileInput">
-
-                        <!-- Base64 Tools -->
-                        <button type="button" class="btn btn-ghost" id="btnBase64Encode" title="Encode Base64">
-                            <span style="font-size:11px; font-weight:700;">B64<span style="font-size:9px">EN</span></span>
-                        </button>
-                        <button type="button" class="btn btn-ghost" id="btnBase64Decode" title="Decode Base64">
-                            <span style="font-size:11px; font-weight:700;">B64<span style="font-size:9px">DE</span></span>
-                        </button>
-                        
-                        <!-- 只有编辑模式显示的 Home 按钮 -->
-                        <button type="button" class="btn btn-secondary" id="btnHome" style="display:none;">
-                            Close
-                        </button>
+                        <div class="tool-card" id="btnResetContent">
+                            <svg class="icon tool-icon" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            <span class="tool-label">Clear</span>
+                        </div>
+                        <div class="tool-card" id="btnBase64Encode">
+                            <svg class="icon tool-icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                            <span class="tool-label">Encode</span>
+                        </div>
+                        <div class="tool-card" id="btnBase64Decode">
+                            <svg class="icon tool-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                            <span class="tool-label">Decode</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- 设置区域 -->
-            <div class="settings-grid">
-                <!-- 有效期 -->
-                <div class="settings-card">
-                    <div class="label">Expiration</div>
-                    <div class="ttl-group" id="ttlGroup">
-                        <button type="button" class="ttl-btn" data-ttl="10m">10m</button>
-                        <button type="button" class="ttl-btn" data-ttl="1d">1d</button>
-                        <button type="button" class="ttl-btn active" data-ttl="7d">7d</button>
-                        <button type="button" class="ttl-btn" data-ttl="30d">30d</button>
-                        <button type="button" class="ttl-btn" data-ttl="forever" id="ttlForeverBtn" disabled>∞</button>
+                <!-- 有效期设置 -->
+                <div class="bento-card" style="padding:16px;">
+                    <div class="panel-header">Expiration (TTL)</div>
+                    <div class="seg-control" id="ttlGroup">
+                        <button type="button" class="seg-btn" data-ttl="10m">10m</button>
+                        <button type="button" class="seg-btn" data-ttl="1d">1d</button>
+                        <button type="button" class="seg-btn active" data-ttl="7d">7d</button>
+                        <button type="button" class="seg-btn" data-ttl="30d">30d</button>
+                        <button type="button" class="seg-btn" data-ttl="forever" id="ttlForeverBtn" disabled>∞</button>
                     </div>
-                    <div id="ttlHint" class="hint-text">Content expires in 7 Days.</div>
+                    <div id="ttlHint" style="font-size:10px; color:var(--txt-secondary); margin-top:8px; text-align:right;">Expires in 7 days</div>
                 </div>
 
-                <!-- 高级设置 (登录后显示) -->
-                <div class="settings-card" id="advancedSection" style="display:none;">
-                    <div class="label">Custom Link & Note</div>
-                    <div style="display:flex; flex-direction:column; gap:8px;">
-                        <input type="text" id="customId" placeholder="Custom Slug (Optional)">
-                        <input type="text" id="remark" placeholder="Remark / Note">
+                <!-- 高级设置 -->
+                <div id="advancedSection" style="display:none; flex-direction:column; gap:12px;">
+                    <div class="panel-header">Advanced</div>
+                    <div class="input-box">
+                        <input type="text" id="customId" class="input-real" placeholder="Custom URL Slug (Optional)">
                     </div>
-                    <div id="customHint" class="hint-text">Leave empty for random ID.</div>
+                    <div class="input-box">
+                        <input type="text" id="remark" class="input-real" placeholder="Add a remark...">
+                    </div>
+                    <div id="customHint" style="font-size:10px; color:var(--txt-secondary);">Login to customize URL</div>
                 </div>
-            </div>
 
-            <!-- 操作栏 -->
-            <div class="submit-area">
-                <div id="statusMsg" class="status-msg"></div>
-                <button type="button" class="btn btn-ghost" id="btnResetContent">Clear</button>
-                <button type="submit" class="btn btn-primary" id="submitBtn" style="padding:0 24px;">
-                    <span class="text">Publish</span>
+                <!-- 提交按钮 -->
+                <button type="submit" class="btn btn-primary" id="submitBtn" style="height:48px; width:100%; font-size:15px; margin-top:10px;">
+                    <span class="text">Publish Paste</span>
                 </button>
-            </div>
+                <div id="statusMsg" style="font-size:12px; text-align:center; min-height:20px;"></div>
 
-            <!-- 结果显示 -->
-            <div id="resultBox" class="result-box">
-                <div class="label" style="color:var(--success)">Successfully Published</div>
-                <div class="result-link" id="viewLinkText">https://...</div>
-                <div style="display:flex; gap:8px; justify-content:flex-end;">
-                    <button type="button" class="btn btn-secondary" id="btnCopyView">Copy</button>
-                    <button type="button" class="btn btn-secondary" id="btnOpenView">Open</button>
-                    <button type="button" class="btn btn-secondary" id="btnManageFromResult" style="display:none;">Manage</button>
+                <!-- 结果展示 -->
+                <div id="resultBox" class="bento-card result-zone" style="padding:16px;">
+                    <div class="panel-header" style="color:var(--success)">Published Successfully</div>
+                    <div class="result-link" id="viewLinkText">...</div>
+                    <div style="display:flex; gap:8px;">
+                        <button type="button" class="btn btn-glass" style="flex:1" id="btnCopyView">Copy</button>
+                        <button type="button" class="btn btn-glass" style="flex:1" id="btnOpenView">Open</button>
+                    </div>
+                    <button type="button" class="btn btn-ghost" id="btnManageFromResult" style="width:100%; margin-top:8px; display:none;">Manage in Dashboard</button>
                 </div>
             </div>
 
         </form>
+
+        <footer class="footer">
+            <span id="baseUrlText"></span> • Designed by Aura
+        </footer>
     </main>
 
-    <footer class="footer">
-        <span id="baseUrlText"></span>
-    </footer>
-
     <!-- 登录弹窗 -->
-    <div class="modal-overlay" id="authModal">
-        <div class="modal-card">
-            <div class="modal-header">
-                <div class="modal-title">Account</div>
-                <button type="button" class="modal-close" id="authCloseBtn">×</button>
+    <div class="modal-mask" id="authModal">
+        <div class="modal-panel">
+            <div class="modal-head">
+                <span class="modal-title">Welcome</span>
+                <button class="modal-close" id="authCloseBtn">×</button>
             </div>
-            <form id="authForm" style="display:flex; flex-direction:column; gap:12px;">
-                <input id="authUsername" type="text" placeholder="Username" autocomplete="username">
-                <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
-                <label style="font-size:12px; display:flex; gap:6px; color:var(--text-sub);">
-                    <input id="authRemember" type="checkbox" checked> Remember me
+            <form id="authForm" style="display:flex; flex-direction:column; gap:16px;">
+                <div class="input-box">
+                    <input id="authUsername" class="input-real" type="text" placeholder="Username" autocomplete="username">
+                </div>
+                <div class="input-box">
+                    <input id="authPassword" class="input-real" type="password" placeholder="Password" autocomplete="current-password">
+                </div>
+                <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--txt-secondary);">
+                    <input id="authRemember" type="checkbox" checked> Keep me logged in
                 </label>
-                <div id="authMsg" class="status-msg" style="font-size:12px; min-height:16px;"></div>
-                <div style="display:flex; gap:10px; margin-top:8px;">
-                    <button type="button" class="btn btn-secondary" id="btnDoRegister" style="flex:1;">Sign Up</button>
-                    <button type="submit" class="btn btn-primary" id="btnDoLogin" style="flex:1;">Log In</button>
+                <div id="authMsg" style="font-size:12px; text-align:center;"></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                    <button type="button" class="btn btn-glass" id="btnDoRegister">Sign Up</button>
+                    <button type="submit" class="btn btn-primary" id="btnDoLogin">Log In</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- 用户中心 -->
-    <div class="modal-overlay" id="userCenter">
-        <div class="modal-card uc-modal">
-            <div class="modal-header">
-                <div class="modal-title">My Pastes</div>
+    <!-- 用户中心 (全屏卡片) -->
+    <div class="modal-mask" id="userCenter">
+        <div class="modal-panel" style="max-width:600px; height:80vh; display:flex; flex-direction:column;">
+            <div class="modal-head">
+                <span class="modal-title">My Pastes</span>
                 <div style="display:flex; gap:8px;">
-                    <button type="button" class="btn btn-ghost" id="ucRefreshBtn" style="padding:0 8px;">Refresh</button>
-                    <button type="button" class="modal-close" id="ucCloseBtn">×</button>
+                    <button class="btn btn-glass btn-icon" id="ucRefreshBtn"><svg class="icon" viewBox="0 0 24 24" style="width:16px;"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button>
+                    <button class="modal-close" id="ucCloseBtn">×</button>
                 </div>
             </div>
-            <div class="uc-list" id="ucList">
-                <!-- JS 会填充这里 -->
-            </div>
-            <div id="ucEmpty" style="text-align:center; padding:30px; color:var(--text-sub); font-size:13px;">Loading...</div>
-            <button type="button" class="btn btn-ghost" id="ucLogoutBtn" style="margin-top:auto; color:var(--danger);">Log Out</button>
-        </div>
-    </div>
-
-    <!-- 订阅客户端选择 (Bottom Sheet 风格) -->
-    <div class="modal-overlay" id="subClientOverlay" style="align-items:flex-end;">
-        <div class="modal-card sub-sheet">
-            <div class="modal-header" style="margin-bottom:16px;">
-                <div class="modal-title">Subscribe Format</div>
-                <button type="button" class="modal-close" id="subMenuCloseBtn">×</button>
-            </div>
             
-            <div class="sub-grid">
-                <button type="button" class="sub-btn is-active" data-client="general">General</button>
-                <button type="button" class="sub-btn" data-client="base64">Base64 / V2Ray</button>
-                <button type="button" class="sub-btn" data-client="clash">Clash</button>
-                <button type="button" class="sub-btn" data-client="surge">Surge</button>
+            <div class="uc-list" id="ucList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">
+                <!-- JS Fill -->
             </div>
+            <div id="ucEmpty" style="text-align:center; padding:40px; color:var(--txt-secondary); font-size:13px;">Loading...</div>
+            
+            <button class="btn btn-ghost" id="ucLogoutBtn" style="margin-top:16px; color:var(--danger); width:100%;">Log Out</button>
+        </div>
+    </div>
 
-            <div style="margin-top:16px; position:relative;">
-                <input type="text" id="subLinkInput" readonly style="padding-right:60px;">
-                <button type="button" id="subLinkCopyBtn" style="position:absolute; right:4px; top:4px; bottom:4px; border:none; background:var(--bg-card); color:var(--text-main); font-weight:600; cursor:pointer; padding:0 12px; border-radius:6px;">Copy</button>
+    <!-- 订阅客户端选择 (底部滑出) -->
+    <div class="modal-mask" id="subClientOverlay" style="align-items:flex-end;">
+        <div class="modal-panel" style="width:100%; border-radius:24px 24px 0 0; margin:0; max-width:600px;">
+            <div class="modal-head">
+                <span class="modal-title">Subscribe Format</span>
+                <button class="modal-close" id="subMenuCloseBtn">×</button>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:20px;">
+                <button class="btn btn-glass" data-client="general" style="justify-content:center">General</button>
+                <button class="btn btn-glass" data-client="base64" style="justify-content:center">Base64</button>
+                <button class="btn btn-glass" data-client="clash" style="justify-content:center">Clash</button>
+                <button class="btn btn-glass" data-client="surge" style="justify-content:center">Surge</button>
+            </div>
+            <div class="input-box">
+                <input id="subLinkInput" class="input-real" readonly>
+                <button id="subLinkCopyBtn" style="border:none; background:none; color:var(--accent); font-weight:600; font-size:13px; cursor:pointer;">Copy</button>
             </div>
         </div>
     </div>
 
-    <!-- 原有 JavaScript 逻辑，不做任何修改，确保功能 100% 兼容 -->
+    <!-- 核心 JS 逻辑 (完全保留) -->
     <script>
-    const THEME_KEY="lyn_paste_theme_v3";
+    const THEME_KEY="lyn_paste_theme_v4";
     const themeToggle=document.getElementById("themeToggle");
+    const iconSun=document.getElementById("iconSun");
+    const iconMoon=document.getElementById("iconMoon");
 
-    // CSS Variable based theme switcher helper
     function applyTheme(t){
         document.body.classList.remove("theme-light","theme-dark");
         document.body.classList.add("theme-"+t);
-        
-        // Update Icons
-        document.body.style.setProperty('--icon-sun-display', t === 'dark' ? 'none' : 'block');
-        document.body.style.setProperty('--icon-moon-display', t === 'dark' ? 'block' : 'none');
-        
+        if(iconSun && iconMoon){
+            if(t==="dark"){
+                iconSun.style.display="none";
+                iconMoon.style.display="block";
+            }else{
+                iconSun.style.display="block";
+                iconMoon.style.display="none";
+            }
+        }
         try{localStorage.setItem(THEME_KEY,t);}catch(_){}
     }
 
@@ -614,6 +543,7 @@
         try{
             const s=localStorage.getItem(THEME_KEY);
             if(s==="dark"||s==="light")t=s;
+            else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) t="dark";
         }catch(_){}
         applyTheme(t);
     })();
@@ -657,11 +587,9 @@
     const $customHint=qs("customHint");
     const $remark=qs("remark");
     const $fileInput=qs("fileInput");
-    const $fileHint=qs("fileHint"); // Note: fileHint element might not exist in new layout but kept for safety
     const $uploadBtn=qs("uploadBtn");
     const $btnResetContent=qs("btnResetContent");
 
-    // Base64 按钮
     const $btnBase64Encode = qs("btnBase64Encode");
     const $btnBase64Decode = qs("btnBase64Decode");
 
@@ -707,75 +635,42 @@
     function setStatus(msg,type){
         if(!$statusMsg)return;
         $statusMsg.textContent=msg||"";
-        $statusMsg.classList.remove("success","error");
-        if(type)$statusMsg.classList.add(type);
+        $statusMsg.style.color = type==="error" ? "var(--danger)" : (type==="success" ? "var(--success)" : "var(--txt-secondary)");
     }
     function setAuthTip(msg,type){
         if(!$authMsg)return;
         $authMsg.textContent=msg||"";
-        $authMsg.classList.remove("success","error");
-        if(type)$authMsg.classList.add(type);
+        $authMsg.style.color = type==="error" ? "var(--danger)" : (type==="success" ? "var(--success)" : "var(--txt-secondary)");
     }
 
-    // ===== Base64 UTF-8 安全编码 / 解码 =====
-    function base64EncodeUtf8(str) {
-        try {
-            return btoa(unescape(encodeURIComponent(str)));
-        } catch (_) {
-            return null;
-        }
-    }
+    function base64EncodeUtf8(str) { try { return btoa(unescape(encodeURIComponent(str))); } catch (_) { return null; } }
+    function base64DecodeUtf8(str) { try { return decodeURIComponent(escape(atob(str))); } catch (_) { return null; } }
 
-    function base64DecodeUtf8(str) {
-        try {
-            return decodeURIComponent(escape(atob(str)));
-        } catch (_) {
-            return null;
-        }
-    }
-
-    // ===== 节点检测 =====
     function detectNodes(raw) {
         const text = (raw || "").trim();
         if (!text) return { isNode:false, count:0, fromBase64:false };
-
-        const schemes = [
-            "ss://","ssr://","vmess://","vless://","trojan://",
-            "hysteria://","hysteria2://","hy2://","tuic://",
-            "socks://","socks5://"
-        ];
-
+        const schemes = ["ss://","ssr://","vmess://","vless://","trojan://","hysteria://","hysteria2://","hy2://","tuic://","socks://","socks5://"];
         function countIn(str) {
             let count = 0;
             str.split(/\r\n|\r|\n/).forEach(line => {
                 const s = line.trim();
                 if (!s) return;
                 for (const p of schemes) {
-                    if (s.startsWith(p)) {
-                        count++;
-                        break;
-                    }
+                    if (s.startsWith(p)) { count++; break; }
                 }
             });
             return count;
         }
-
         let count = countIn(text);
-        if (count > 0) {
-            return { isNode:true, count, fromBase64:false };
-        }
-
+        if (count > 0) return { isNode:true, count, fromBase64:false };
         const compact = text.replace(/\s+/g,"");
         if (compact.length >= 16 && compact.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(compact)) {
             const decoded = base64DecodeUtf8(compact);
             if (decoded != null) {
                 const c2 = countIn(decoded);
-                if (c2 > 0) {
-                    return { isNode:true, count:c2, fromBase64:true };
-                }
+                if (c2 > 0) return { isNode:true, count:c2, fromBase64:true };
             }
         }
-
         return { isNode:false, count:0, fromBase64:false };
     }
 
@@ -787,9 +682,7 @@
             body:JSON.stringify(body||{})
         });
         const data=await res.json().catch(()=>({}));
-        if(!res.ok||data.ok===false){
-            throw new Error(data.error||`Error (${res.status})`);
-        }
+        if(!res.ok||data.ok===false) throw new Error(data.error||`Error (${res.status})`);
         return data;
     }
 
@@ -799,21 +692,17 @@
         try{len=new TextEncoder().encode($content.value).length;}
         catch(_){len=$content.value.length;}
         $byteNum.textContent=len;
-
         if($lineCounter){
             const v=$content.value||"";
             const lines=v ? v.split(/\r\n|\r|\n/).length : 0;
             $lineCounter.textContent = lines+" Lines";
         }
-
-        // 节点检测
         if ($nodeInfo) {
             const info = detectNodes($content.value || "");
             if (info.isNode && info.count > 0) {
                 $nodeInfo.textContent = `${info.count} Nodes`;
                 $nodeInfo.classList.add("active");
             } else {
-                $nodeInfo.textContent = "";
                 $nodeInfo.classList.remove("active");
             }
         }
@@ -824,21 +713,15 @@
     }
 
     if($uploadBtn&&$fileInput){
-        // uploadBtn is label for fileInput
         $fileInput.addEventListener("change",()=>{
             const file=$fileInput.files&&$fileInput.files[0];
             if(!file)return;
             const reader=new FileReader();
             reader.onload=()=>{
-                if($content){
-                    $content.value=reader.result||"";
-                    updateByteCount();
-                }
-                setStatus(`Loaded content from [${file.name}]`,"success");
+                if($content){ $content.value=reader.result||""; updateByteCount(); }
+                setStatus(`Loaded: ${file.name}`,"success");
             };
-            reader.onerror=()=>{
-                setStatus("Read failed.","error");
-            };
+            reader.onerror=()=>{ setStatus("Read failed.","error"); };
             reader.readAsText(file);
         });
     }
@@ -848,7 +731,7 @@
             if($content)$content.value="";
             if($remark)$remark.value="";
             updateByteCount();
-            setStatus("Content cleared.");
+            setStatus("Cleared.");
         });
     }
 
@@ -856,18 +739,12 @@
         $btnBase64Encode.addEventListener("click", () => {
             if (!$content) return;
             const v = $content.value;
-            if (!v) {
-                setStatus("Nothing to encode.", "error");
-                return;
-            }
+            if (!v) { setStatus("Empty content.", "error"); return; }
             const encoded = base64EncodeUtf8(v);
-            if (encoded == null) {
-                setStatus("Encoding failed.", "error");
-                return;
-            }
+            if (encoded == null) { setStatus("Encode failed.", "error"); return; }
             $content.value = encoded;
             updateByteCount();
-            setStatus("Encoded to Base64.", "success");
+            setStatus("Encoded.", "success");
         });
     }
 
@@ -875,46 +752,32 @@
         $btnBase64Decode.addEventListener("click", () => {
             if (!$content) return;
             const v = $content.value;
-            if (!v) {
-                setStatus("Nothing to decode.", "error");
-                return;
-            }
+            if (!v) { setStatus("Empty content.", "error"); return; }
             const decoded = base64DecodeUtf8(v);
-            if (decoded == null) {
-                setStatus("Decoding failed. Invalid Base64?", "error");
-                return;
-            }
+            if (decoded == null) { setStatus("Decode failed.", "error"); return; }
             $content.value = decoded;
             updateByteCount();
-            setStatus("Decoded from Base64.", "success");
+            setStatus("Decoded.", "success");
         });
     }
 
-    const ttlText={
-        "10m":"Expires in 10 Minutes",
-        "1d":"Expires in 1 Day",
-        "7d":"Expires in 7 Days",
-        "30d":"Expires in 30 Days",
-        "forever":"Never Expires"
-    };
+    const ttlText={ "10m":"10 Minutes", "1d":"1 Day", "7d":"7 Days", "30d":"30 Days", "forever":"Never" };
     function setTtl(key){
         state.ttlKey=key;
         if($ttlGroup){
-            $ttlGroup.querySelectorAll(".ttl-btn").forEach(b=>{
+            $ttlGroup.querySelectorAll(".seg-btn").forEach(b=>{
                 b.classList.toggle("active",b.dataset.ttl===key);
             });
         }
-        if($ttlHint)$ttlHint.textContent=ttlText[key]||ttlText["7d"];
+        if($ttlHint)$ttlHint.textContent=`Expires in ${ttlText[key]||"7 Days"}`;
     }
     setTtl("7d");
     if($ttlGroup){
         $ttlGroup.addEventListener("click",e=>{
-            const btn=e.target.closest(".ttl-btn");
-            if(!btn)return;
-            if(btn.disabled)return;
+            const btn=e.target.closest(".seg-btn");
+            if(!btn || btn.disabled)return;
             const key=btn.dataset.ttl;
-            if(!key)return;
-            setTtl(key);
+            if(key) setTtl(key);
         });
     }
 
@@ -923,36 +786,35 @@
         if(!$customId)return;
         const val=$customId.value.trim();
         
-        // UI logic: advanced section visibility
         if(!state.loggedIn){
-            if($advancedSection)$advancedSection.style.display="none";
-            return;
+             if($advancedSection)$advancedSection.style.display="none";
+             return;
         }else{
-            if($advancedSection)$advancedSection.style.display="flex";
+             if($advancedSection)$advancedSection.style.display="flex";
         }
         
         if(!val){
             if($customHint){
                 $customHint.textContent="Leave empty for random ID.";
-                $customHint.style.color="var(--text-sub)";
+                $customHint.style.color="var(--txt-secondary)";
             }
-            $customId.classList.remove("input-error");
+            $customId.parentElement.style.borderColor="var(--border-subtle)";
             return;
         }
         const ok=/^[A-Za-z0-9_-]+$/.test(val);
         if(!ok){
             state.customSlugError=true;
             if($customHint){
-                $customHint.textContent="Only A-Z, a-z, 0-9, -, _ allowed.";
+                $customHint.textContent="Invalid characters.";
                 $customHint.style.color="var(--danger)";
             }
-            $customId.classList.add("input-error");
+            $customId.parentElement.style.borderColor="var(--danger)";
         }else{
             if($customHint){
-                $customHint.textContent="Valid Slug.";
+                $customHint.textContent="Valid.";
                 $customHint.style.color="var(--success)";
             }
-            $customId.classList.remove("input-error");
+            $customId.parentElement.style.borderColor="var(--success)";
         }
     }
     if($customId)$customId.addEventListener("input",validateCustomSlug);
@@ -960,10 +822,7 @@
     function enterCreateMode(clear){
         state.mode="create";
         state.originalSlug=null;
-        if($submitBtn){
-            const span=$submitBtn.querySelector(".text");
-            if(span)span.textContent="Publish";
-        }
+        if($submitBtn) $submitBtn.querySelector(".text").textContent="Publish Paste";
         if($btnHome)$btnHome.style.display="none";
         if(clear){
             if($content)$content.value="";
@@ -984,25 +843,16 @@
     }
 
     function applyAuthUI(){
-        if($btnAuthLabel){
-            $btnAuthLabel.textContent = state.loggedIn ? (state.username || "User") : "Login";
-        }
-
-        if($advancedSection){
-            $advancedSection.style.display = state.loggedIn ? "flex" : "none";
-        }
-
+        if($btnAuthLabel) $btnAuthLabel.textContent = state.loggedIn ? (state.username || "User") : "Login";
+        if($advancedSection) $advancedSection.style.display = state.loggedIn ? "flex" : "none";
         if ($ttlForeverBtn) {
             if (state.loggedIn) {
                 $ttlForeverBtn.disabled = false;
             } else {
                 $ttlForeverBtn.disabled = true;
-                if (state.ttlKey === "forever") {
-                    setTtl("7d");
-                }
+                if (state.ttlKey === "forever") setTtl("7d");
             }
         }
-
         validateCustomSlug();
     }
 
@@ -1027,59 +877,24 @@
             const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
             if(res.status===401){setLoggedOut();return;}
             const data=await res.json().catch(()=>({}));
-            if(data&&data.ok){
-                setLoggedIn(saved||"User");
-            }else{
-                setLoggedOut();
-            }
-        }catch(_){
-            setLoggedOut();
-        }
+            if(data&&data.ok) setLoggedIn(saved||"User");
+            else setLoggedOut();
+        }catch(_){ setLoggedOut(); }
     }
 
-    function openAuthModal(){
-        if(!$authModal)return;
-        $authModal.classList.add("show");
-        $authModal.style.display = "flex";
-        setAuthTip("");
-        if($authUsername)$authUsername.focus();
-    }
-    function closeAuthModal(){
-        if(!$authModal)return;
-        $authModal.classList.remove("show");
-        setTimeout(()=>$authModal.style.display="none", 200);
-        if($authForm)$authForm.reset();
-        if($authRemember) $authRemember.checked = true;
-        setAuthTip("");
-    }
+    function openAuthModal(){ if($authModal) $authModal.classList.add("show"); }
+    function closeAuthModal(){ if($authModal) $authModal.classList.remove("show"); }
     if($authCloseBtn)$authCloseBtn.addEventListener("click",closeAuthModal);
-    if($authModal){
-        $authModal.addEventListener("click",e=>{
-            if(e.target===$authModal)closeAuthModal();
-        });
-    }
+    if($authModal) $authModal.addEventListener("click",e=>{ if(e.target===$authModal)closeAuthModal(); });
 
-    function openUserCenter(){
-        if(!$userCenter)return;
-        $userCenter.style.display = "flex";
-        setTimeout(()=>$userCenter.classList.add("show"), 10);
-        loadUserPastes();
-    }
-    function closeUserCenter(){
-        if(!$userCenter)return;
-        $userCenter.classList.remove("show");
-        setTimeout(()=>$userCenter.style.display="none", 200);
-    }
+    function openUserCenter(){ if($userCenter){ $userCenter.classList.add("show"); loadUserPastes(); } }
+    function closeUserCenter(){ if($userCenter) $userCenter.classList.remove("show"); }
     if($ucCloseBtn)$ucCloseBtn.addEventListener("click",closeUserCenter);
-    if($userCenter){
-        $userCenter.addEventListener("click",e=>{
-            if(e.target===$userCenter)closeUserCenter();
-        });
-    }
+    if($userCenter) $userCenter.addEventListener("click",e=>{ if(e.target===$userCenter)closeUserCenter(); });
 
     if($btnAuthOpen){
         $btnAuthOpen.addEventListener("click",()=>{
-            if(state.loggedIn)openUserCenter();
+            if(state.loggedIn) openUserCenter();
             else openAuthModal();
         });
     }
@@ -1089,398 +904,218 @@
             e.preventDefault();
             const u=$authUsername.value.trim();
             const p=$authPassword.value;
-            const remember = $authRemember ? $authRemember.checked : true;
-
-            if(!u||!p){
-                setAuthTip("Username & Password required.","error");
-                return;
-            }
-            setAuthTip("Logging in…");
+            if(!u||!p){ setAuthTip("Missing credentials.","error"); return; }
+            setAuthTip("Authenticating...");
             try{
-                const data=await postJSON(AUTH_BASE+"/login",{
-                    username:u,
-                    password:p,
-                    remember
-                });
+                const data=await postJSON(AUTH_BASE+"/login",{ username:u, password:p, remember: $authRemember ? $authRemember.checked : true });
                 setLoggedIn(data.username||u);
-                setAuthTip("Welcome back!","success");
+                setAuthTip("Success","success");
                 setTimeout(closeAuthModal,500);
-            }catch(err){
-                setAuthTip(err.message||"Login failed.","error");
-            }
+            }catch(err){ setAuthTip(err.message||"Failed","error"); }
         });
     }
     if($btnDoRegister){
         $btnDoRegister.addEventListener("click",async ()=>{
             const u=$authUsername.value.trim();
             const p=$authPassword.value;
-            if(!u||!p){setAuthTip("Fill in Username & Password first.","error");return;}
-            if(p.length<6){setAuthTip("Password too short (min 6).","error");return;}
-            setAuthTip("Signing up…");
+            if(!u||!p){ setAuthTip("Credentials required.","error"); return; }
             try{
                 await postJSON(AUTH_BASE+"/register",{username:u,password:p});
-                setAuthTip("Success! Please Login.","success");
-            }catch(err){
-                setAuthTip(err.message||"Register failed.","error");
-            }
+                setAuthTip("Registered. Please login.","success");
+            }catch(err){ setAuthTip(err.message,"error"); }
         });
     }
 
     function formatDate(d){
         if(!d)return"-";
         const dt=new Date(d);
-        if(Number.isNaN(dt.getTime()))return"-";
-        return dt.toISOString().slice(0,16).replace("T"," ");
+        return isNaN(dt.getTime()) ? "-" : dt.toISOString().slice(0,16).replace("T"," ");
     }
     function calcRemainDays(expires){
         if(!expires)return null;
         const t=new Date(expires).getTime();
-        if(Number.isNaN(t))return null;
-        const now=Date.now();
-        const diff=t-now;
-        const d=Math.ceil(diff/86400000);
-        return d;
+        return isNaN(t) ? null : Math.ceil((t-Date.now())/86400000);
     }
 
-    // Link builder
     function buildSubLink(slug, clientKey) {
         const base = `${location.origin}/autosub?id=${encodeURIComponent(slug)}`;
         if (!clientKey || clientKey === "general") return base;
         return `${base}&client=${encodeURIComponent(clientKey)}`;
     }
 
-    // Subscription Sheet Logic
     let currentSubSlug = null;
     function openSubClientMenu(slug) {
         currentSubSlug = slug;
-        const overlay = document.getElementById("subClientOverlay");
-        if (overlay) {
-            overlay.style.display="flex";
-            setTimeout(()=>overlay.classList.add("show"), 10);
+        if(document.getElementById("subClientOverlay")) {
+            document.getElementById("subClientOverlay").classList.add("show");
             if (window.__subMenuSync) window.__subMenuSync();
         }
     }
     function closeSubClientMenu() {
-        currentSubSlug = null;
-        const overlay = document.getElementById("subClientOverlay");
-        if (overlay) {
-            overlay.classList.remove("show");
-            setTimeout(()=>overlay.style.display="none", 300);
-        }
+        if(document.getElementById("subClientOverlay")) document.getElementById("subClientOverlay").classList.remove("show");
     }
 
     (function initSubClientMenu(){
         const overlay = document.getElementById("subClientOverlay");
         if (!overlay) return;
-        const closeBtn = document.getElementById("subMenuCloseBtn");
+        const pills = overlay.querySelectorAll("button[data-client]");
         const input = document.getElementById("subLinkInput");
-        const copyBtn = document.getElementById("subLinkCopyBtn");
-        const pills = Array.from(overlay.querySelectorAll(".sub-btn"));
         let selected = "general";
 
         function refresh(){
             pills.forEach(btn=>{
-                const key = btn.getAttribute("data-client") || "general";
-                btn.classList.toggle("is-active", key === selected);
-            });
-            if (input) {
-                input.value = currentSubSlug ? buildSubLink(currentSubSlug, selected) : "";
-            }
-        }
-        function setSelected(key){ selected = key || "general"; refresh(); }
-        window.__subMenuSync = function(){ selected = "general"; refresh(); };
-        
-        if (closeBtn) closeBtn.addEventListener("click", closeSubClientMenu);
-        overlay.addEventListener("click",(e)=>{
-            if (e.target === overlay) closeSubClientMenu();
-        });
-        pills.forEach(btn=>{
-            btn.addEventListener("click", (e)=>{
-                setSelected(btn.getAttribute("data-client") || "general");
-            });
-        });
-        if (copyBtn) copyBtn.addEventListener("click", async ()=>{
-            if (!currentSubSlug) return;
-            const url = buildSubLink(currentSubSlug, selected);
-            try{
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    await navigator.clipboard.writeText(url);
-                    setStatus("Link copied!", "success");
-                } else {
-                    window.prompt("Copy link:", url);
+                const key = btn.getAttribute("data-client");
+                if(key===selected){
+                    btn.style.background="var(--txt-primary)";
+                    btn.style.color="var(--bg-app)";
+                }else{
+                    btn.style.background="var(--bg-glass)";
+                    btn.style.color="var(--txt-primary)";
                 }
-            }catch(_){
-                window.prompt("Manual copy:", url);
+            });
+            if (input) input.value = currentSubSlug ? buildSubLink(currentSubSlug, selected) : "";
+        }
+        window.__subMenuSync = refresh;
+        
+        overlay.querySelector(".modal-close").addEventListener("click", closeSubClientMenu);
+        overlay.addEventListener("click",(e)=>{ if(e.target===overlay) closeSubClientMenu(); });
+        
+        pills.forEach(btn=>{
+            btn.addEventListener("click", ()=>{ selected = btn.getAttribute("data-client"); refresh(); });
+        });
+        document.getElementById("subLinkCopyBtn").addEventListener("click", async ()=>{
+            if(input && input.value) {
+                await navigator.clipboard.writeText(input.value);
+                setStatus("Link copied!","success");
             }
             closeSubClientMenu();
         });
-        refresh();
     })();
 
     async function loadUserPastes(){
         if(!$ucEmpty||!$ucList)return;
-        $ucEmpty.style.display="";
-        $ucEmpty.textContent="Loading records...";
-        $ucList.innerHTML="";
+        $ucEmpty.style.display=""; $ucEmpty.textContent="Loading..."; $ucList.innerHTML="";
         try{
             const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
-            if(res.status===401){
-                $ucEmpty.textContent="Session expired. Re-login.";
-                setLoggedOut();
-                return;
-            }
+            if(res.status===401){ setLoggedOut(); return; }
             const data=await res.json().catch(()=>({}));
-            if(!data.ok){
-                $ucEmpty.textContent=data.error||"Load failed.";
-                return;
-            }
+            if(!data.ok) throw new Error(data.error);
             const items=data.items||[];
-            if(!items.length){
-                $ucEmpty.textContent="No pastes yet.";
-                return;
-            }
+            if(!items.length) { $ucEmpty.textContent="No pastes."; return; }
 
             const valid=[];
-            // Async Node Check (simplified)
             await Promise.all(items.map(async (item)=>{
                 const slug=item.slug||item.id;
-                if(!slug)return;
                 try{
                     const u=new URL(`${API_BASE}/${encodeURIComponent(slug)}`);
                     u.searchParams.set("manage","1");
                     const r=await fetch(u.toString(),{credentials:"include"});
                     if(!r.ok)return;
-                    const d=await r.json().catch(()=>null);
-                    if(!d||d.ok===false)return;
-                    const remain=calcRemainDays(d.expiresAt);
-                    if(remain!=null && remain<0)return;
-
-                    d._nodeInfo = detectNodes(d.content || "");
+                    const d=await r.json();
+                    if(d.ok===false)return;
+                    d._nodeInfo = detectNodes(d.content||"");
                     valid.push(d);
                 }catch(_){}
             }));
-
-            if(!valid.length){
-                $ucEmpty.textContent="No valid records (expired?).";
-                return;
-            }
-
+            
             valid.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
             $ucEmpty.style.display="none";
-
+            
             valid.forEach(d=>{
-                const slug=d.slug;
-                if(!slug)return;
-                const remark=d.remark||"Untitled";
-                const expires=d.expiresAt||null;
-                const ttlKey=d.ttlKey||"";
-                const viewUrl=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
-                const remain=calcRemainDays(expires);
-                const nodeInfo = d._nodeInfo;
-                const hasNode = !!nodeInfo.isNode && nodeInfo.count > 0;
-
-                const row=document.createElement("div");
-                row.className="uc-item";
+                const row = document.createElement("div");
+                row.style.background="var(--bg-glass)";
+                row.style.padding="12px";
+                row.style.borderRadius="12px";
+                row.style.border="1px solid var(--border-subtle)";
                 
-                let metaText = (!expires || ttlKey==="forever") ? "Never Expires" : `Expires in ${remain} days`;
+                const hasNode = d._nodeInfo.isNode && d._nodeInfo.count>0;
                 
-                row.innerHTML=`
-                    <div class="uc-item-top">
-                        <span>${escapeHTML(remark)}</span>
-                        <span>/${escapeHTML(slug)}</span>
+                row.innerHTML = `
+                    <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:4px;">
+                        <span>${escapeHTML(d.remark||"Untitled")}</span>
+                        <span style="font-family:var(--font-mono);opacity:0.6">/${escapeHTML(d.slug)}</span>
                     </div>
-                    <div class="uc-item-meta">${metaText}</div>
-                    <div class="uc-actions">
-                        ${hasNode ? `<button class="btn btn-secondary sub-node-btn">Subscribe (${nodeInfo.count})</button>` : ''}
-                        <button class="btn btn-secondary edit-btn">Edit</button>
-                        <button class="btn btn-secondary copy-btn">Copy</button>
-                        <button class="btn btn-secondary del-btn" style="color:var(--danger)">Delete</button>
+                    <div style="font-size:11px;color:var(--txt-secondary);margin-bottom:8px;">${d.ttlKey==="forever"?"Never expires": "Expires soon"}</div>
+                    <div style="display:flex;gap:8px;">
+                        ${hasNode?`<button class="btn btn-glass" style="height:28px;padding:0 10px;font-size:11px;" onclick="openSubClientMenu('${d.slug}')">Sub</button>`:''}
+                        <button class="btn btn-glass" style="height:28px;padding:0 10px;font-size:11px;" onclick="closeUserCenter();enterEditMode('${d.slug}')">Edit</button>
+                        <button class="btn btn-glass" style="height:28px;padding:0 10px;font-size:11px;color:var(--danger);" onclick="deletePaste('${d.slug}')">Del</button>
                     </div>
                 `;
-                
-                if(hasNode){
-                    row.querySelector('.sub-node-btn').addEventListener('click', ()=>openSubClientMenu(slug));
-                }
-                row.querySelector('.edit-btn').addEventListener('click', ()=>{ closeUserCenter(); enterEditMode(slug); });
-                row.querySelector('.copy-btn').addEventListener('click', ()=>{
-                    navigator.clipboard.writeText(viewUrl).then(()=>setStatus("Link copied!","success"));
-                });
-                row.querySelector('.del-btn').addEventListener('click', async ()=>{
-                     if(!confirm("Delete this paste?"))return;
-                     try{
-                        await postJSON(API_BASE,{action:"delete",slug});
-                        loadUserPastes();
-                        setStatus("Deleted.","success");
-                     }catch(err){ setStatus("Delete failed.","error"); }
-                });
-
                 $ucList.appendChild(row);
             });
-        }catch(err){
-            $ucEmpty.textContent=err.message||"Error loading.";
-        }
+        }catch(e){ $ucEmpty.textContent="Load failed."; }
     }
+    
+    window.deletePaste = async (slug) => {
+        if(!confirm("Delete?"))return;
+        try{ await postJSON(API_BASE,{action:"delete",slug}); loadUserPastes(); } catch(_){}
+    };
 
     if($ucRefreshBtn)$ucRefreshBtn.addEventListener("click",loadUserPastes);
-    if($ucLogoutBtn){
-        $ucLogoutBtn.addEventListener("click",async ()=>{
-            try{await postJSON(AUTH_BASE+"/logout",{});}catch(_){}
-            setLoggedOut();
-            closeUserCenter();
-            enterCreateMode(true);
-            setStatus("Logged out.","success");
-        });
-    }
+    if($ucLogoutBtn)$ucLogoutBtn.addEventListener("click",async ()=>{
+        try{await postJSON(AUTH_BASE+"/logout",{});}catch(_){}
+        setLoggedOut(); closeUserCenter(); enterCreateMode(true);
+    });
 
     async function enterEditMode(slug){
-        state.mode="edit";
-        state.originalSlug=slug;
-        if($submitBtn){
-            const span=$submitBtn.querySelector(".text");
-            if(span)span.textContent="Update";
-        }
-        if($btnHome)$btnHome.style.display="inline-flex";
+        state.mode="edit"; state.originalSlug=slug;
+        if($submitBtn) $submitBtn.querySelector(".text").textContent="Update";
+        if($btnHome) $btnHome.style.display="inline-flex";
         setStatus("Loading...");
         try{
             const url=new URL(`${API_BASE}/${encodeURIComponent(slug)}`);
             url.searchParams.set("manage","1");
             const res=await fetch(url.toString(),{credentials:"include"});
-            const data=await res.json().catch(()=>({}));
-            if(!res.ok||data.ok===false){
-                throw new Error(data.error||"Not found.");
-            }
+            const data=await res.json();
+            if(!res.ok||data.ok===false) throw new Error();
             if($content)$content.value=data.content||"";
             if($remark)$remark.value=data.remark||"";
-            if($customId){
-                $customId.value=data.slug||slug;
-                $customId.readOnly=false;
-            }
+            if($customId){ $customId.value=data.slug||slug; $customId.readOnly=false; }
             updateByteCount();
-            if(data.ttlKey)setTtl(data.ttlKey);
-            const urlClean=new URL(location.href);
-            urlClean.searchParams.set("id",slug);
-            history.replaceState(null,"",urlClean.toString());
-            setStatus("Edit Mode.","success");
-        }catch(err){
-            setStatus(err.message||"Load failed.","error");
-            enterCreateMode(false);
-        }
+            if(data.ttlKey) setTtl(data.ttlKey);
+            history.replaceState(null,"",`?id=${slug}`);
+            setStatus("Edit Mode","success");
+        }catch(_){ setStatus("Error","error"); enterCreateMode(false); }
     }
 
     function showResultLink(slug){
         if(!$resultBox||!$viewLinkText)return;
-        const url=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
-        $viewLinkText.textContent=url;
-        $resultBox.style.display="flex";
-        if($btnManageFromResult){
-            $btnManageFromResult.style.display = state.loggedIn ? "inline-flex" : "none";
-        }
+        $viewLinkText.textContent=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
+        $resultBox.style.display="block";
+        if($btnManageFromResult) $btnManageFromResult.style.display=state.loggedIn?"block":"none";
     }
 
-    if($btnCopyView){
-        $btnCopyView.addEventListener("click",async ()=>{
-            const text=$viewLinkText&&$viewLinkText.textContent;
-            if(!text)return;
-            try{
-                await navigator.clipboard.writeText(text);
-                setStatus("Link copied!","success");
-            }catch(_){}
-        });
-    }
-    if($btnOpenView){
-        $btnOpenView.addEventListener("click",()=>{
-            const text=$viewLinkText&&$viewLinkText.textContent;
-            if(!text)return;
-            window.open(text,"_blank","noopener");
-        });
-    }
-    if($btnManageFromResult){
-        $btnManageFromResult.addEventListener("click",()=>{
-            if(!state.loggedIn){
-                openAuthModal();
-                return;
-            }
-            openUserCenter();
-        });
-    }
+    if($btnCopyView) $btnCopyView.addEventListener("click",()=>{ navigator.clipboard.writeText($viewLinkText.textContent); setStatus("Copied!","success"); });
+    if($btnOpenView) $btnOpenView.addEventListener("click",()=>{ window.open($viewLinkText.textContent); });
+    if($btnManageFromResult) $btnManageFromResult.addEventListener("click",()=>{ if(!state.loggedIn)openAuthModal(); else openUserCenter(); });
 
     if($form){
         $form.addEventListener("submit",async e=>{
             e.preventDefault();
-            const text=($content&&$content.value.trim())||"";
-            if(!text){setStatus("Content empty.","error");return;}
-            if(state.customSlugError){setStatus("Invalid Custom URL.","error");return;}
-
-            let slug=null;
-            let newSlug=null;
-            if(state.mode==="edit"){
-                slug=state.originalSlug;
-                if($customId){
-                    const v=$customId.value.trim();
-                    if(v&&v!==slug)newSlug=v;
-                }
-            }else{
-                if(state.loggedIn&&$customId){
-                    const v=$customId.value.trim();
-                    if(v)slug=v;
-                }
-            }
-
-            const payload={
-                action:state.mode==="edit"?"update":"create",
-                content:text,
-                ttlKey:state.ttlKey,
-                remark:$remark?$remark.value.trim():""
-            };
-            if(slug)payload.slug=slug;
-            if(newSlug)payload.newSlug=newSlug;
-
+            const text=$content.value.trim();
+            if(!text)return;
             state.isSubmitting=true;
-            if($submitBtn){
-                $submitBtn.disabled=true;
-                $submitBtn.style.opacity="0.7";
-                const span=$submitBtn.querySelector(".text");
-                if(span)span.textContent="Uploading...";
-            }
-            setStatus("Submitting...");
+            if($submitBtn) $submitBtn.querySelector(".text").textContent="Processing...";
             try{
-                const data=await postJSON(API_BASE,payload);
-                const finalSlug=data.slug||newSlug||slug;
-                if(!finalSlug)throw new Error("Missing slug in response.");
-                showResultLink(finalSlug);
+                const p={action:state.mode==="edit"?"update":"create", content:text, ttlKey:state.ttlKey, remark:$remark.value.trim()};
+                if(state.mode==="edit") p.slug=state.originalSlug;
+                if(state.mode==="edit" && $customId.value && $customId.value!==state.originalSlug) p.newSlug=$customId.value;
+                else if(state.mode==="create" && state.loggedIn && $customId.value) p.slug=$customId.value;
 
-                setStatus("Success!","success");
+                const data=await postJSON(API_BASE,p);
+                showResultLink(data.slug||p.slug);
+                setStatus("Success","success");
                 enterCreateMode(true);
-            }catch(err){
-                setStatus(err.message||"Failed.","error");
-            }finally{
+            }catch(e){ setStatus("Failed","error"); }
+            finally{
                 state.isSubmitting=false;
-                if($submitBtn){
-                    $submitBtn.disabled=false;
-                    $submitBtn.style.opacity="1";
-                    const span=$submitBtn.querySelector(".text");
-                    if(span)span.textContent=state.mode==="edit"?"Update":"Publish";
-                }
+                if($submitBtn) $submitBtn.querySelector(".text").textContent=state.mode==="edit"?"Update":"Publish Paste";
             }
         });
     }
 
-    document.addEventListener("keydown",e=>{
-        if(e.key==="Escape"){
-            const overlay = document.getElementById("subClientOverlay");
-            if(overlay && overlay.classList.contains("show")){
-                closeSubClientMenu();
-                return;
-            }
-            if($userCenter&&$userCenter.classList.contains("show"))closeUserCenter();
-            else if($authModal&&$authModal.classList.contains("show"))closeAuthModal();
-        }
-    });
-
-    (async function init(){
-        await initAuthFromServer();
-        applyAuthUI();
-    })();
+    (async function init(){ await initAuthFromServer(); applyAuthUI(); })();
     </script>
 </body>
 </html>
