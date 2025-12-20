@@ -2,334 +2,1774 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>PASTEBOX — Minimalist Storage</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastebox Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
-    
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Pastebox">
+    <meta property="og:title" content="Pastebox">
+    <meta property="og:description" content="Premium Text Hosting.">
+    <meta property="og:image" content="https://save.aura.us.kg/Picture/Preview/YL10.png">
+    <meta property="og:url" content="https://aura.us.kg/Paste">
+
     <style>
         :root {
-            --bg-color: #050505;
-            --surface: #0f0f0f;
-            --surface-hover: #161616;
-            --accent: #ffffff;
-            --accent-dim: #a0a0a0;
-            --border: rgba(255, 255, 255, 0.08);
-            --border-heavy: rgba(255, 255, 255, 0.15);
-            --text-main: #ffffff;
-            --text-sub: #888888;
-            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
-            --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
-            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            /* 核心调色板 - 默认暗色 (Obsidian Theme) */
+            --bg-body: #050505;
+            --bg-gradient-1: radial-gradient(circle at 15% 50%, rgba(76, 29, 149, 0.15), transparent 25%);
+            --bg-gradient-2: radial-gradient(circle at 85% 30%, rgba(56, 189, 248, 0.08), transparent 25%);
+            
+            --glass-surface: rgba(20, 20, 20, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.03);
+            --glass-blur: blur(24px);
+
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-tertiary: #52525b;
+
+            --accent-primary: #ffffff; /* 极致黑白 */
+            --accent-glow: 0 0 20px rgba(255,255,255,0.15);
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --radius-pill: 9999px;
+
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --input-bg: rgba(0, 0, 0, 0.3);
+            --input-focus-border: rgba(255, 255, 255, 0.2);
         }
 
         body.theme-light {
-            --bg-color: #f5f5f7;
-            --surface: #ffffff;
-            --surface-hover: #fafafa;
-            --accent: #000000;
-            --accent-dim: #444444;
-            --border: rgba(0, 0, 0, 0.06);
-            --border-heavy: rgba(0, 0, 0, 0.12);
-            --text-main: #1d1d1f;
-            --text-sub: #86868b;
+            /* 亮色模式 (Ceramic Theme) */
+            --bg-body: #f4f4f5;
+            --bg-gradient-1: radial-gradient(circle at 10% 20%, rgba(200, 200, 255, 0.4), transparent 30%);
+            --bg-gradient-2: radial-gradient(circle at 90% 80%, rgba(250, 230, 200, 0.4), transparent 30%);
+
+            --glass-surface: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(0, 0, 0, 0.06);
+            --glass-highlight: rgba(255, 255, 255, 0.8);
+            
+            --text-primary: #18181b;
+            --text-secondary: #52525b;
+            --text-tertiary: #a1a1aa;
+
+            --accent-primary: #000000;
+            --accent-glow: 0 4px 12px rgba(0,0,0,0.1);
+            
+            --input-bg: rgba(244, 244, 245, 0.5);
+            --input-focus-border: rgba(0, 0, 0, 0.15);
         }
 
-        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
-
+        /* 全局重置 */
+        *, *::before, *::after { box-sizing: border-box; }
         body {
             margin: 0;
             min-height: 100vh;
-            background-color: var(--bg-color);
-            color: var(--text-main);
             font-family: var(--font-sans);
+            background-color: var(--bg-body);
+            background-image: var(--bg-gradient-1), var(--bg-gradient-2);
+            background-attachment: fixed;
+            color: var(--text-primary);
             display: flex;
             justify-content: center;
-            padding: 60px 20px;
-            transition: background-color 0.5s ease;
+            align-items: center; /* 垂直居中 */
+            padding: 40px 20px;
+            transition: background-color 0.5s ease, color 0.3s ease;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .shell { width: 100%; max-width: 960px; }
+        /* 背景噪点纹理 - 增加质感 */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: -1;
+        }
 
-        /* --- Header --- */
+        /* 核心容器 */
+        .shell {
+            width: 100%;
+            max-width: 900px;
+            perspective: 1000px;
+            animation: fadeIn Up 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* 顶部导航 */
         .header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 60px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border);
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 0 10px;
         }
 
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            text-decoration: none;
+        }
+
+        .brand-logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border: 1px solid var(--glass-border);
+            background: #000;
+        }
+        .brand-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+        .brand-text { display: flex; flex-direction: column; justify-content: center; }
         .brand-title {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
-            letter-spacing: -0.02em;
-            text-transform: uppercase;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand-sub { font-size: 11px; color: var(--text-tertiary); letter-spacing: 0.5px; text-transform: uppercase; font-weight: 500; margin-top: 2px;}
+
+        /* 顶部按钮组 */
+        .header-actions { display: flex; gap: 10px; }
+        
+        .pill-btn, .theme-toggle, button {
+            cursor: pointer;
+            font-family: var(--font-sans);
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        .brand-sub {
-            font-size: 11px;
-            color: var(--text-sub);
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            margin-top: 4px;
-        }
-
-        .header-actions { display: flex; gap: 12px; }
-
-        /* --- Buttons --- */
-        button {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 10px 20px;
-            border-radius: 6px;
+        .pill-btn {
+            height: 36px;
+            padding: 0 16px;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--glass-border);
+            background: var(--glass-surface);
+            backdrop-filter: blur(10px);
+            color: var(--text-primary);
             font-size: 13px;
             font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
         }
-
-        button:hover {
-            border-color: var(--border-heavy);
-            background: var(--surface-hover);
+        .pill-btn:hover {
             transform: translateY(-1px);
+            background: rgba(255,255,255,0.1);
+            border-color: var(--text-tertiary);
         }
+        body.theme-light .pill-btn:hover { background: rgba(0,0,0,0.05); }
 
-        .btn-primary {
-            background: var(--accent);
-            color: var(--bg-color);
-            border: none;
+        .pill-btn-primary {
+            background: var(--text-primary);
+            color: var(--bg-body);
+            border-color: transparent;
+            font-weight: 600;
         }
-
-        .btn-primary:hover {
+        .pill-btn-primary:hover {
+            background: var(--text-primary);
             opacity: 0.9;
-            background: var(--accent);
+            box-shadow: var(--accent-glow);
         }
+        .pill-btn-primary svg { fill: var(--bg-body); }
 
-        /* --- Card & Sections --- */
+        .theme-toggle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+            background: transparent;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .theme-toggle:hover { color: var(--text-primary); background: var(--glass-surface); }
+        .theme-toggle .label { display: none; } /* 隐藏文字仅留图标 */
+
+        /* 主卡片 - 玻璃拟态 */
         .card {
+            background: var(--glass-surface);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.05),
+                0 20px 50px -10px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 var(--glass-highlight);
             display: flex;
             flex-direction: column;
-            gap: 40px;
-        }
-
-        .section-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-sub);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 16px;
-            display: block;
-        }
-
-        .textarea-container {
+            gap: 24px;
             position: relative;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
             overflow: hidden;
-            transition: var(--transition);
         }
 
-        .textarea-container:focus-within {
-            border-color: var(--accent-dim);
-            box-shadow: 0 0 0 1px var(--accent-dim);
+        /* 装饰性光斑 */
+        .card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
 
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-tertiary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        .section-title::after {
+            content: '';
+            height: 1px;
+            flex: 1;
+            background: linear-gradient(90deg, var(--glass-border), transparent);
+        }
+        .section-title .tag { display: none; } /* 简化UI，隐藏Tag */
+
+        .section-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            background: rgba(125, 125, 125, 0.05);
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            border-left: 2px solid var(--accent-blue);
+        }
+        code {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+            color: var(--accent-blue);
+        }
+        body.theme-light code { background: rgba(0,0,0,0.06); }
+
+        /* 编辑区域 - 代码编辑器风格 */
+        .textarea-wrap {
+            position: relative;
+            background: var(--input-bg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--glass-border);
+            transition: border-color 0.2s;
+            padding: 4px;
+        }
+        .textarea-wrap:focus-within {
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.05);
+        }
+        
         textarea {
             width: 100%;
-            min-height: 350px;
+            min-height: 300px;
             background: transparent;
             border: none;
-            outline: none;
-            color: var(--text-main);
-            padding: 24px;
+            color: var(--text-primary);
             font-family: var(--font-mono);
             font-size: 14px;
             line-height: 1.6;
+            padding: 16px;
             resize: vertical;
-        }
-
-        /* --- Input Fields --- */
-        .input-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 24px;
-        }
-
-        .field-box {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        input[type="text"], input[type="password"] {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            padding: 12px 16px;
-            border-radius: 8px;
-            color: var(--text-main);
-            font-size: 14px;
             outline: none;
-            transition: var(--transition);
+            display: block;
+        }
+        textarea::placeholder { color: var(--text-tertiary); opacity: 0.7; }
+
+        .line-counter {
+            position: absolute;
+            bottom: 12px;
+            right: 16px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-tertiary);
+            background: var(--glass-surface);
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--glass-border);
+            pointer-events: none;
         }
 
-        input:focus { border-color: var(--accent-dim); }
+        /* 统计栏与工具条 */
+        .field { margin-top: 10px; }
+        .field-inline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+        
+        .byte-count {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+        .byte-num { color: var(--text-secondary); font-weight: 600; }
+        .node-info.active { color: #10b981; font-weight: 500; background: rgba(16, 185, 129, 0.1); padding: 2px 6px; border-radius: 4px; }
 
-        /* --- TTL Selector --- */
-        .ttl-container {
+        /* 按钮与上传 */
+        .upload-row {
+            background: rgba(125,125,125,0.03);
+            border-radius: var(--radius-pill);
+            padding: 4px 6px;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .upload-btn, .btn-secondary, .btn-reset {
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: var(--radius-pill);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .upload-btn:hover, .btn-secondary:hover, .btn-reset:hover {
+            color: var(--text-primary);
+            background: rgba(255,255,255,0.05);
+        }
+        body.theme-light .upload-btn:hover { background: rgba(0,0,0,0.05); }
+
+        .btn-secondary.decode-active {
+            background: var(--text-primary);
+            color: var(--bg-body);
+        }
+
+        /* TTL 选择器 - iOS 分段控件风格 */
+        .ttl-group {
             display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+            background: rgba(0,0,0,0.2);
+            padding: 4px;
+            border-radius: 12px;
+            gap: 2px;
+            border: 1px solid var(--glass-border);
         }
+        body.theme-light .ttl-group { background: rgba(0,0,0,0.04); }
 
         .ttl-btn {
-            padding: 6px 16px;
-            border-radius: 4px;
-            font-size: 12px;
-            border: 1px solid var(--border);
+            flex: 1;
+            border: none;
             background: transparent;
-        }
-
-        .ttl-btn.active {
-            background: var(--accent);
-            color: var(--bg-color);
-            border-color: var(--accent);
-        }
-
-        /* --- Info Bar --- */
-        .info-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            color: var(--text-secondary);
             font-size: 12px;
-            color: var(--text-sub);
-            margin-top: -20px;
+            padding: 8px 0;
+            border-radius: 8px;
+            font-weight: 500;
         }
+        .ttl-btn:hover { color: var(--text-primary); }
+        .ttl-btn.active {
+            background: var(--glass-surface);
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-weight: 600;
+        }
+        .ttl-hint { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; text-align: right; }
 
-        .accent-num { color: var(--text-main); font-weight: 600; }
+        /* 自定义链接输入区 */
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .field-block { display: flex; flex-direction: column; gap: 6px; }
+        .field-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-left: 4px; }
+        
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        input:focus {
+            border-color: var(--text-tertiary);
+            background: rgba(255,255,255,0.03);
+        }
+        body.theme-light input:focus { background: #fff; }
+        
+        .input-error { border-color: #ef4444 !important; }
+        .hint { font-size: 10px; color: var(--text-tertiary); margin-left: 4px; margin-top: 4px;}
 
-        /* --- Footer --- */
-        .footer {
-            margin-top: 80px;
+        /* 底部动作 */
+        .action-row { display: flex; justify-content: flex-end; gap: 12px; align-items: center; margin-top: 10px; }
+
+        /* Submit Button - 重点设计 */
+        .btn-primary {
+            background: var(--text-primary);
+            color: var(--bg-body);
+            border: none;
+            padding: 10px 24px;
+            border-radius: var(--radius-pill);
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--accent-glow);
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .btn-primary svg { fill: currentColor; width: 16px; height: 16px; }
+        .btn-primary.btn-disabled { opacity: 0.6; transform: none; box-shadow: none; cursor: not-allowed; }
+
+        /* 结果框 */
+        .result-box {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            margin-top: 16px;
+        }
+        .result-label { font-size: 10px; text-transform: uppercase; color: #10b981; font-weight: 700; letter-spacing: 1px; display: block; margin-bottom: 4px; }
+        .result-link {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+        .result-actions { margin-top: 12px; display: flex; gap: 8px; justify-content: flex-end; }
+        
+        .status-msg { font-size: 12px; text-align: right; min-height: 20px; }
+        .status-msg.success { color: #10b981; }
+        .status-msg.error { color: #ef4444; }
+
+        /* 页脚 */
+        .footer-row {
+            margin-top: 30px;
             padding-top: 20px;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--glass-border);
             display: flex;
             justify-content: space-between;
             font-size: 11px;
-            color: var(--text-sub);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
         }
 
-        /* --- Result Box (Pop-up style) --- */
-        .result-box {
-            background: var(--surface);
-            border: 1px solid var(--accent-dim);
-            padding: 24px;
-            border-radius: 12px;
-            margin-top: 30px;
-            animation: slideUp 0.5s ease;
+        /* 图标 SVG 通用样式 */
+        .icon-svg svg { width: 14px; height: 14px; fill: currentColor; }
+        
+        /* 弹窗系统 (Modal) */
+        .modal-backdrop, .uc-backdrop, .sub-menu-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(16px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
+        }
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        /* 弹窗面板 */
+        .auth-panel, .uc-panel, .sub-menu {
+            background: var(--bg-body); /* 实色背景防止文字重叠 */
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            color: var(--text-primary);
+            position: relative;
+            overflow: hidden;
+            transform: scale(0.95);
+            animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes popIn { to { transform: scale(1); } }
+        
+        /* 登录框特定样式 */
+        .auth-panel { width: 320px; padding: 24px; background: linear-gradient(145deg, var(--bg-body), #0f0f0f); }
+        .auth-panel-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .auth-panel-title { font-size: 18px; font-weight: 700; }
+        .auth-panel-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; }
+        .auth-panel-close { 
+            background: transparent; border: none; color: var(--text-tertiary); cursor: pointer; padding: 4px;
+        }
+        .auth-panel-close:hover { color: var(--text-primary); }
+        .auth-panel-form { gap: 16px; }
+        .auth-panel-row input { background: rgba(255,255,255,0.05); border: 1px solid transparent; padding: 12px; }
+        .auth-panel-actions { margin-top: 10px; justify-content: space-between; display: flex; }
+        
+        /* 用户中心 */
+        .uc-panel { width: 100%; max-width: 800px; max-height: 85vh; display: flex; flex-direction: column; }
+        .uc-header { padding: 20px 24px; border-bottom: 1px solid var(--glass-border); background: rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center;}
+        .uc-title-main { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .uc-body { padding: 0; overflow-y: auto; background: var(--bg-body); }
+        .uc-list { gap: 0; } /* Remove gap for list look */
+        .uc-item {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--glass-border);
+            background: transparent;
+            border-radius: 0;
+            border-left: none; border-right: none; border-top: none;
+            transition: background 0.2s;
+        }
+        .uc-item:hover { background: rgba(255,255,255,0.02); }
+        .uc-item-top { margin-bottom: 6px; }
+        .uc-item-title { font-size: 14px; font-weight: 500; }
+        .uc-remark-tag { 
+            background: rgba(59, 130, 246, 0.1); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-right: 8px;
+        }
+        .uc-slug-tag { font-family: var(--font-mono); color: var(--text-secondary); font-size: 12px; }
+        .uc-link-tag { font-family: var(--font-mono); color: var(--text-tertiary); font-size: 11px; }
+        .uc-item-actions { display: flex; gap: 8px; margin-top: 10px; opacity: 0.6; transition: opacity 0.2s;}
+        .uc-item:hover .uc-item-actions { opacity: 1; }
+        
+        /* 订阅按钮样式 */
+        .uc-sub-btn {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            color: #fff;
+            border: none;
+            font-size: 10px; padding: 2px 8px; border-radius: 10px; cursor: pointer;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
         }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* iOS 订阅弹窗 */
+        .sub-ios { width: 360px; padding: 20px; }
+        .sub-ios-head { margin-bottom: 16px; }
+        .sub-ios-title { font-size: 16px; font-weight: 600; }
+        .sub-ios-pill {
+            height: 40px; border-radius: 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            font-weight: 500;
         }
+        .sub-ios-pill.is-active {
+            background: var(--text-primary);
+            color: var(--bg-body);
+            border-color: transparent;
+        }
+        .sub-ios-link { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 4px 4px 4px 12px; margin-top: 16px; }
+        .sub-ios-input { font-size: 12px; color: var(--text-secondary); }
+        .sub-ios-copy { width: 32px; height: 32px; background: var(--glass-surface); border-radius: 8px; border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; color: var(--text-primary); }
 
-        @media (max-width: 768px) {
-            body { padding: 40px 16px; }
-            .header { margin-bottom: 40px; }
-            .input-group { grid-template-columns: 1fr; }
+        /* 响应式调整 */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .card { padding: 20px; border-radius: 20px; }
+            .field-row { grid-template-columns: 1fr; }
+            .header-actions .label { display: none; }
+            .pill-btn { padding: 0 12px; }
+            .uc-panel { height: 100vh; max-height: 100vh; border-radius: 0; }
         }
     </style>
 </head>
-<body class="theme-dark">
-
-<div class="shell">
+<body class="theme-dark"> <div class="shell">
     <header class="header">
-        <div class="brand">
-            <div class="brand-title">Pastebox</div>
-            <div class="brand-sub">The Premium Text Vault</div>
-        </div>
+        <a href="#" class="brand" onclick="location.reload();return false;">
+            <div class="brand-logo"><img id="brandIcon" alt="Icon"></div>
+            <div class="brand-text">
+                <div class="brand-title">Pastebox</div>
+                <div class="brand-sub">Pro Edition</div>
+            </div>
+        </a>
         <div class="header-actions">
-            <button id="themeToggle">MODE</button>
-            <button id="btnUserCenter">ACCOUNT</button>
+            <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
+                <span class="icon-svg">
+                   <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                   <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </span>
+            </button>
+            <button type="button" class="pill-btn" id="btnHome" style="display:none;">
+                <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+                Home
+            </button>
+            <button type="button" class="pill-btn pill-btn-primary" id="btnAuthOpen">
+                <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
+                <span id="btnAuthLabel">Login</span>
+            </button>
         </div>
     </header>
 
-    <main class="card">
+    <main class="card" id="mainCard">
         <section>
-            <label class="section-label">01 — Content</label>
-            <div class="textarea-container">
-                <textarea id="mainContent" placeholder="Enter your data here..."></textarea>
+            <div class="section-title">
+                <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg></span>
+                Brief
             </div>
-            <div class="info-bar" style="margin-top: 12px;">
-                <div class="byte-count">SIZE: <span class="accent-num" id="byteCount">0</span> BYTES</div>
-                <div class="actions">
-                    <button class="btn-xs" id="btnBase64" title="Toggle Base64">B64</button>
-                    <button class="btn-xs" id="btnReset">CLEAR</button>
-                </div>
+            <div class="section-text">
+                Paste text. Get URL. Share code or logs securely with ephemeral storage. <br>
+                <span style="color:#ef4444; font-weight:600;">Warning:</span> Do not store sensitive PII data. Files may be deleted without notice.
             </div>
         </section>
 
-        <section>
-            <label class="section-label">02 — Configuration</label>
-            <div class="input-group">
-                <div class="field-box">
-                    <label class="brand-sub">Identifier (Optional)</label>
-                    <input type="text" id="customSlug" placeholder="Custom URL slug">
-                </div>
-                <div class="field-box">
-                    <label class="brand-sub">Password (Optional)</label>
-                    <input type="password" id="entryPass" placeholder="Encryption key">
-                </div>
-            </div>
-            
-            <div class="field-box" style="margin-top: 30px;">
-                <label class="brand-sub">Expiration</label>
-                <div class="ttl-container" id="ttlGroup">
-                    <button class="ttl-btn" data-ttl="3600">1H</button>
-                    <button class="ttl-btn" data-ttl="86400">1D</button>
-                    <button class="ttl-btn active" data-ttl="604800">7D</button>
-                    <button class="ttl-btn" data-ttl="2592000">30D</button>
-                    <button class="ttl-btn" data-ttl="0">NEVER</button>
-                </div>
-            </div>
-        </section>
+        <div id="editorContainer">
+            <form id="pasteForm">
+                <section class="field">
+                    <div class="section-title">
+                        <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></span>
+                        Editor
+                    </div>
+                    <div class="textarea-wrap">
+                        <textarea id="content" placeholder="// Paste your code, logs, or text here..." required spellcheck="false"></textarea>
+                        <div class="line-counter" id="lineCounter">0 Lines</div>
+                    </div>
+                </section>
 
-        <section style="display: flex; justify-content: flex-end; align-items: center; gap: 20px;">
-            <div id="statusMsg" style="font-size: 12px; letter-spacing: 0.05em;"></div>
-            <button class="btn-primary" id="btnSubmit" style="padding: 14px 40px; font-size: 14px; letter-spacing: 0.1em;">
-                PUBLISH DATA
+                <section class="field">
+                    <div class="field-inline">
+                        <span class="byte-count">
+                            <span class="byte-num" id="byteNum">0</span> Bytes
+                            <span id="nodeInfo" class="node-info"></span>
+                        </span>
+                        
+                        <div class="upload-row">
+                             <label class="upload-btn" id="uploadBtn" for="fileInput">
+                                <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>
+                                <span id="uploadBtnText">Import File</span>
+                            </label>
+                            <input type="file" id="fileInput" style="display:none;" accept=".txt,.log,.conf,.json,.md,.yaml,.yml,.ini,.cfg,.csv,.html,.js,.ts,.py,.go,.rs,.php,.java,.c,.cpp,.sh,.bat,.ps1,.rb,.lua,.sql,.xml">
+
+                            <button type="button" class="btn-secondary" id="btnBase64Encode">B64 Encode</button>
+                            <button type="button" class="btn-secondary base64-decode-btn" id="btnBase64Decode">B64 Decode</button>
+                        </div>
+                        <span class="hint" id="fileHint"></span>
+                    </div>
+                </section>
+
+                <section class="field">
+                    <div class="section-title">
+                        <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span>
+                        Expiration
+                    </div>
+                    <div class="ttl-group" id="ttlGroup">
+                        <button type="button" class="ttl-btn" data-ttl="10m">10m</button>
+                        <button type="button" class="ttl-btn" data-ttl="1d">1d</button>
+                        <button type="button" class="ttl-btn active" data-ttl="7d">7d</button>
+                        <button type="button" class="ttl-btn" data-ttl="30d">30d</button>
+                        <button type="button" class="ttl-btn" data-ttl="forever" id="ttlForeverBtn" title="Login Required">Never</button>
+                    </div>
+                    <div class="ttl-hint" id="ttlHint">Content expires in 7 Days.</div>
+                </section>
+
+                <section class="field" id="advancedSection" style="margin-top: 20px;">
+                    <div class="field-row">
+                        <div class="field-block">
+                            <label class="field-label">Custom Slug (Optional)</label>
+                            <input id="customId" type="text" placeholder="e.g. my-code-v1">
+                            <div class="hint" id="customHint">A-Za-z0-9_- only. Leave empty for random.</div>
+                        </div>
+                        <div class="field-block">
+                            <label class="field-label">Remark (Private)</label>
+                            <input id="remark" type="text" placeholder="Note for yourself...">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="field" style="margin-top: 30px;">
+                    <div id="resultBox" class="result-box" style="display:none;">
+                        <span class="result-label">Generated Link</span>
+                        <div class="result-link" id="viewLinkText"></div>
+                        <div class="result-actions">
+                            <button type="button" class="btn-secondary" id="btnCopyView">Copy Link</button>
+                            <button type="button" class="btn-secondary" id="btnOpenView">Open</button>
+                            <button type="button" class="btn-secondary" id="btnManageFromResult" style="display:none;">Manage</button>
+                        </div>
+                    </div>
+
+                    <div class="action-row">
+                        <div id="statusMsg" class="status-msg"></div>
+                        <button type="button" class="btn-reset" id="btnResetContent">Clear</button>
+                        <button type="submit" class="btn-primary" id="submitBtn">
+                            <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg></span>
+                            <span class="text">Publish Paste</span>
+                        </button>
+                    </div>
+                </section>
+            </form>
+        </div>
+
+        <footer class="footer-row">
+            <span>Server: <span id="baseUrlText"></span></span>
+            <span>&copy; PasteBox Pro</span>
+        </footer>
+    </main>
+</div>
+
+<div class="modal-backdrop" id="authModal" style="display:none;">
+    <div class="auth-panel">
+        <div class="auth-panel-header">
+            <div>
+                <div class="auth-panel-title">Welcome Back</div>
+                <div class="auth-panel-sub">Sign in to manage your pastes.</div>
+            </div>
+            <button type="button" class="auth-panel-close" id="authCloseBtn">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
-        </section>
+        </div>
+        <form class="auth-panel-form" id="authForm" style="display:flex; flex-direction:column;">
+            <div class="auth-panel-row">
+                <input id="authUsername" type="text" placeholder="Username" autocomplete="username">
+            </div>
+            <div class="auth-panel-row">
+                <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+            </div>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-tertiary);">
+                <input id="authRemember" type="checkbox" checked> Remember me
+            </label>
+            <div class="auth-panel-actions">
+                <button type="button" class="btn-secondary" id="btnDoRegister">Sign Up</button>
+                <button type="submit" class="btn-primary" id="btnDoLogin" style="width: auto;">Log In</button>
+            </div>
+        </form>
+        <div class="auth-panel-msg" id="authMsg" style="margin-top:10px; font-size:12px; text-align:center;"></div>
+    </div>
+</div>
 
-        <div id="resultArea" style="display:none;" class="result-box">
-            <label class="section-label" style="color: var(--accent);">Vault Secured</label>
-            <div id="resultLink" style="font-family: var(--font-mono); font-size: 16px; margin: 15px 0; word-break: break-all;"></div>
-            <div style="display: flex; gap: 10px;">
-                <button id="btnCopyLink" class="btn-primary">COPY URL</button>
-                <button id="btnGoView">OPEN</button>
+<div class="uc-backdrop" id="userCenter" style="display:none;">
+    <div class="uc-panel">
+        <div class="uc-header">
+            <div class="uc-title-main">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Dashboard
+            </div>
+            <div class="uc-actions" style="display:flex; gap:8px;">
+                <button type="button" class="btn-secondary" id="ucRefreshBtn">Refresh</button>
+                <button type="button" class="btn-secondary" id="ucLogoutBtn" style="color:#ef4444;">Logout</button>
+                <button type="button" class="btn-secondary" id="ucCloseBtn">Close</button>
             </div>
         </div>
-    </main>
+        <div class="uc-body">
+            <div class="uc-empty" id="ucEmpty" style="padding:40px; text-align:center; color:var(--text-tertiary);">Loading records...</div>
+            <div class="uc-list" id="ucList" style="display:none; flex-direction:column;"></div>
+        </div>
+    </div>
+</div>
 
-    <footer class="footer">
-        <div>© 2024 PASTEBOX — SECURE BEYOND LIMITS</div>
-        <div>V2.0.4 — TITANIUM EDITION</div>
-    </footer>
+<div class="sub-menu-backdrop" id="subClientOverlay" style="display:none;">
+    <div class="sub-menu sub-ios">
+        <div class="sub-ios-head">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="sub-ios-title">Export Subscription</div>
+                <button type="button" class="auth-panel-close" id="subMenuCloseBtn">✕</button>
+            </div>
+        </div>
+
+        <div class="sub-ios-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+            <button type="button" class="sub-ios-pill is-active" data-client="general">General</button>
+            <button type="button" class="sub-ios-pill" data-client="base64">Base64 / V2Ray</button>
+            <button type="button" class="sub-ios-pill" data-client="clash">Clash</button>
+            <button type="button" class="sub-ios-pill" data-client="surge">Surge</button>
+        </div>
+
+        <div class="sub-ios-link">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <input id="subLinkInput" class="sub-ios-input" type="text" readonly style="background:transparent; border:none; padding:0; width:100%;" />
+                <button type="button" id="subLinkCopyBtn" class="sub-ios-copy" title="Copy">
+                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    // ... 原有逻辑代码 ...
-    // 注意：请确保将新 UI 的 ID (如 mainContent, btnSubmit) 与您的 JS 逻辑对应
-</script>
+    const THEME_KEY="lyn_paste_theme_v3";
+    const themeToggle=document.getElementById("themeToggle");
 
+    // 修改：调整 SVG 显示逻辑以适配新 CSS
+    function applyTheme(t){
+        document.body.classList.remove("theme-light","theme-dark");
+        document.body.classList.add("theme-"+t);
+        
+        // Icon toggle logic for the redesign
+        const sun = document.querySelector('.theme-icon-sun');
+        const moon = document.querySelector('.theme-icon-moon');
+        if(sun && moon) {
+            if(t === 'dark') {
+                sun.style.display = 'block';
+                moon.style.display = 'none';
+            } else {
+                sun.style.display = 'none';
+                moon.style.display = 'block';
+            }
+        }
+        
+        try{localStorage.setItem(THEME_KEY,t);}catch(_){}
+    }
+
+    (function(){
+        let t="dark"; // Default to dark for premium feel
+        try{
+            const s=localStorage.getItem(THEME_KEY);
+            if(s==="dark"||s==="light")t=s;
+        }catch(_){}
+        applyTheme(t);
+    })();
+
+    themeToggle && themeToggle.addEventListener("click",()=>{
+        const cur=document.body.classList.contains("theme-dark")?"dark":"light";
+        applyTheme(cur==="dark"?"light":"dark");
+    });
+
+    (function(){
+        const ICONS=[];
+        for(let i=1;i<=10;i++)ICONS.push(`https://save.aura.us.kg/Picture/Preview/YL${i}.png`);
+        const img=document.getElementById("brandIcon");
+        if(img&&ICONS.length)img.src=ICONS[Math.floor(Math.random()*ICONS.length)];
+    })();
+
+    const BASE_URL=location.origin+"/Paste";
+    const VIEW_BASE=location.origin+"/api/paste";
+    const API_BASE=location.origin+"/api/paste";
+    const AUTH_BASE=location.origin+"/api/auth";
+    const qs=id=>document.getElementById(id);
+
+    const $content=qs("content");
+    const $byteNum=qs("byteNum");
+    const $lineCounter=qs("lineCounter");
+    const $nodeInfo=qs("nodeInfo");
+    const $ttlGroup=qs("ttlGroup");
+    const $ttlHint=qs("ttlHint");
+    const $form=qs("pasteForm");
+    const $submitBtn=qs("submitBtn");
+    const $resultBox=qs("resultBox");
+    const $viewLinkText=qs("viewLinkText");
+    const $btnCopyView=qs("btnCopyView");
+    const $btnOpenView=qs("btnOpenView");
+    const $btnManageFromResult=qs("btnManageFromResult");
+    const $statusMsg=qs("statusMsg");
+    const $baseUrlText=qs("baseUrlText");
+    const $advancedSection=qs("advancedSection");
+    const $ttlForeverBtn=qs("ttlForeverBtn");
+    const $customId=qs("customId");
+    const $customHint=qs("customHint");
+    const $remark=qs("remark");
+    const $fileInput=qs("fileInput");
+    const $fileHint=qs("fileHint");
+    const $uploadBtn=qs("uploadBtn");
+    const $btnResetContent=qs("btnResetContent");
+
+    // Base64 按钮
+    const $btnBase64Encode = qs("btnBase64Encode");
+    const $btnBase64Decode = qs("btnBase64Decode");
+
+    const $btnHome=qs("btnHome");
+    const $btnAuthOpen=qs("btnAuthOpen");
+    const $btnAuthLabel=qs("btnAuthLabel");
+    const $authModal=qs("authModal");
+    const $authForm=qs("authForm");
+    const $authUsername=qs("authUsername");
+    const $authPassword=qs("authPassword");
+    const $authRemember=qs("authRemember");
+    const $btnDoLogin=qs("btnDoLogin");
+    const $btnDoRegister=qs("btnDoRegister");
+    const $authCloseBtn=qs("authCloseBtn");
+    const $authMsg=qs("authMsg");
+
+    const $userCenter=qs("userCenter");
+    const $ucEmpty=qs("ucEmpty");
+    const $ucList=qs("ucList");
+    const $ucRefreshBtn=qs("ucRefreshBtn");
+    const $ucLogoutBtn=qs("ucLogoutBtn");
+    const $ucCloseBtn=qs("ucCloseBtn");
+
+    if($baseUrlText)$baseUrlText.textContent=VIEW_BASE+"/{id}";
+
+    const state={
+        loggedIn:false,
+        username:null,
+        ttlKey:"7d",
+        customSlugError:false,
+        isSubmitting:false,
+        mode:"create",
+        originalSlug:null
+    };
+
+    function escapeHTML(str){
+        if(!str) return "";
+        return String(str).replace(/[&<>"']/g,c=>({
+            "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+        }[c]||c));
+    }
+
+    function setStatus(msg,type){
+        if(!$statusMsg)return;
+        $statusMsg.textContent=msg||"";
+        $statusMsg.classList.remove("success","error");
+        if(type)$statusMsg.classList.add(type);
+    }
+    function setAuthTip(msg,type){
+        if(!$authMsg)return;
+        $authMsg.textContent=msg||"";
+        $authMsg.classList.remove("success","error");
+        if(type)$authMsg.classList.add(type);
+    }
+
+    // ===== Base64 UTF-8 安全编码 / 解码 =====
+    function base64EncodeUtf8(str) {
+        try {
+            return btoa(unescape(encodeURIComponent(str)));
+        } catch (_) {
+            return null;
+        }
+    }
+
+    function base64DecodeUtf8(str) {
+        try {
+            return decodeURIComponent(escape(atob(str)));
+        } catch (_) {
+            return null;
+        }
+    }
+
+    // ===== 节点检测 =====
+    function detectNodes(raw) {
+        const text = (raw || "").trim();
+        if (!text) return { isNode:false, count:0, fromBase64:false };
+
+        const schemes = [
+            "ss://","ssr://","vmess://","vless://","trojan://",
+            "hysteria://","hysteria2://","hy2://","tuic://",
+            "socks://","socks5://"
+        ];
+
+        function countIn(str) {
+            let count = 0;
+            str.split(/\r\n|\r|\n/).forEach(line => {
+                const s = line.trim();
+                if (!s) return;
+                for (const p of schemes) {
+                    if (s.startsWith(p)) {
+                        count++;
+                        break;
+                    }
+                }
+            });
+            return count;
+        }
+
+        let count = countIn(text);
+        if (count > 0) {
+            return { isNode:true, count, fromBase64:false };
+        }
+
+        // 尝试识别整段 Base64 订阅内容
+        const compact = text.replace(/\s+/g,"");
+        if (compact.length >= 16 && compact.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(compact)) {
+            const decoded = base64DecodeUtf8(compact);
+            if (decoded != null) {
+                const c2 = countIn(decoded);
+                if (c2 > 0) {
+                    return { isNode:true, count:c2, fromBase64:true };
+                }
+            }
+        }
+
+        return { isNode:false, count:0, fromBase64:false };
+    }
+
+    async function postJSON(url,body){
+        const res=await fetch(url,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            credentials:"include",
+            body:JSON.stringify(body||{})
+        });
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok||data.ok===false){
+            throw new Error(data.error||`请求失败（${res.status}）`);
+        }
+        return data;
+    }
+
+    function updateByteCount(){
+        if(!$content||!$byteNum)return;
+        let len=0;
+        try{len=new TextEncoder().encode($content.value).length;}
+        catch(_){len=$content.value.length;}
+        $byteNum.textContent=len;
+
+        if($lineCounter){
+            const v=$content.value||"";
+            const lines=v ? v.split(/\r\n|\r|\n/).length : 0;
+            $lineCounter.textContent = lines+" Lines";
+        }
+
+        // 节点检测
+        if ($nodeInfo) {
+            const info = detectNodes($content.value || "");
+            if (info.isNode && info.count > 0) {
+                $nodeInfo.textContent = `(${info.count} Nodes Detected)`;
+                $nodeInfo.classList.add("active");
+            } else {
+                $nodeInfo.textContent = "";
+                $nodeInfo.classList.remove("active");
+            }
+        }
+    }
+    if($content){
+        updateByteCount();
+        $content.addEventListener("input",updateByteCount);
+    }
+
+    if($uploadBtn&&$fileInput){
+        // 注意：原代码的label绑定方式在UI大改后依然有效，因为for属性存在
+        $fileInput.addEventListener("change",()=>{
+            const file=$fileInput.files&&$fileInput.files[0];
+            if(!file)return;
+            const reader=new FileReader();
+            reader.onload=()=>{
+                if($content){
+                    $content.value=reader.result||"";
+                    updateByteCount();
+                }
+                if($fileHint){
+                    $fileHint.textContent=`Loaded: ${file.name} (${file.size} Bytes)`;
+                    $fileHint.style.color = "#10b981";
+                }
+                setStatus(`File loaded: ${file.name}`,"success");
+            };
+            reader.onerror=()=>{
+                if($fileHint){
+                    $fileHint.textContent="Read failed.";
+                    $fileHint.style.color = "#ef4444";
+                }
+                setStatus("Read failed.","error");
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    if($btnResetContent){
+        $btnResetContent.addEventListener("click",()=>{
+            if($content)$content.value="";
+            if($remark)$remark.value="";
+            updateByteCount();
+            setStatus("Cleared.");
+        });
+    }
+
+    // Base64 编码
+    if ($btnBase64Encode) {
+        $btnBase64Encode.addEventListener("click", () => {
+            if (!$content) return;
+            const v = $content.value;
+            if (!v) {
+                setStatus("No content to encode.", "error");
+                return;
+            }
+            const encoded = base64EncodeUtf8(v);
+            if (encoded == null) {
+                setStatus("Base64 encode failed.", "error");
+                return;
+            }
+            $content.value = encoded;
+            updateByteCount();
+            setStatus("Base64 Encoded.", "success");
+        });
+    }
+
+    // Base64 解码
+    if ($btnBase64Decode) {
+        $btnBase64Decode.addEventListener("click", () => {
+            if (!$content) return;
+            const v = $content.value;
+            if (!v) {
+                setStatus("No content to decode.", "error");
+                return;
+            }
+            const decoded = base64DecodeUtf8(v);
+            if (decoded == null) {
+                setStatus("Base64 decode failed.", "error");
+                return;
+            }
+            $content.value = decoded;
+            updateByteCount();
+            setStatus("Base64 Decoded.", "success");
+
+            $btnBase64Decode.classList.add("decode-active");
+            setTimeout(() => {
+                $btnBase64Decode.classList.remove("decode-active");
+            }, 300);
+        });
+    }
+
+    const ttlText={
+        "10m":"Content expires in 10 Minutes.",
+        "1d":"Content expires in 1 Day.",
+        "7d":"Content expires in 7 Days.",
+        "30d":"Content expires in 30 Days.",
+        "forever":"Content never expires (unless manually deleted)."
+    };
+    function setTtl(key){
+        state.ttlKey=key;
+        if($ttlGroup){
+            $ttlGroup.querySelectorAll(".ttl-btn").forEach(b=>{
+                b.classList.toggle("active",b.dataset.ttl===key);
+            });
+        }
+        if($ttlHint)$ttlHint.textContent=ttlText[key]||ttlText["7d"];
+    }
+    setTtl("7d");
+    if($ttlGroup){
+        $ttlGroup.addEventListener("click",e=>{
+            const btn=e.target.closest(".ttl-btn");
+            if(!btn)return;
+            if(btn.disabled)return;
+            const key=btn.dataset.ttl;
+            if(!key)return;
+            setTtl(key);
+        });
+    }
+
+    function validateCustomSlug(){
+        state.customSlugError=false;
+        if(!$customId)return;
+        const val=$customId.value.trim();
+        if(!state.loggedIn){
+            if($advancedSection)$advancedSection.style.display="none";
+            return;
+        }else{
+            if($advancedSection)$advancedSection.style.display="";
+        }
+        if(!val){
+            if($customHint){
+                $customHint.textContent="A-Za-z0-9_- only. Leave empty for random.";
+                $customHint.classList.remove("hint-error","hint-success");
+                $customHint.style.color = "var(--text-tertiary)";
+            }
+            $customId.classList.remove("input-error");
+            return;
+        }
+        const ok=/^[A-Za-z0-9_-]+$/.test(val);
+        if(!ok){
+            state.customSlugError=true;
+            if($customHint){
+                $customHint.textContent="Invalid characters.";
+                $customHint.style.color = "#ef4444";
+            }
+            $customId.classList.add("input-error");
+        }else{
+            if($customHint){
+                $customHint.textContent="Available.";
+                $customHint.style.color = "#10b981";
+            }
+            $customId.classList.remove("input-error");
+        }
+    }
+    if($customId)$customId.addEventListener("input",validateCustomSlug);
+
+    function enterCreateMode(clear){
+        state.mode="create";
+        state.originalSlug=null;
+        if($submitBtn){
+            const span=$submitBtn.querySelector(".text");
+            if(span)span.textContent="Publish Paste";
+        }
+        if($btnHome)$btnHome.style.display="none";
+        if(clear){
+            if($content)$content.value="";
+            if($remark)$remark.value="";
+            if($customId)$customId.value="";
+            updateByteCount();
+            setStatus("");
+            if($resultBox)$resultBox.style.display="none";
+        }
+    }
+
+    if($btnHome){
+        $btnHome.addEventListener("click",()=>{
+            enterCreateMode(true);
+            history.replaceState(null,"",BASE_URL);
+            window.scrollTo({top:0,behavior:"smooth"});
+        });
+    }
+
+    function applyAuthUI(){
+        if($btnAuthLabel){
+            $btnAuthLabel.textContent = state.loggedIn ? (state.username || "User") : "Login";
+        }
+
+        if($advancedSection){
+            $advancedSection.style.display = state.loggedIn ? "block" : "none";
+        }
+
+        if ($ttlForeverBtn) {
+            if (state.loggedIn) {
+                $ttlForeverBtn.disabled = false;
+                $ttlForeverBtn.title = "";
+            } else {
+                $ttlForeverBtn.disabled = true;
+                $ttlForeverBtn.title = "Login Required";
+                if (state.ttlKey === "forever") {
+                    setTtl("7d");
+                }
+            }
+        }
+
+        validateCustomSlug();
+    }
+
+    function setLoggedIn(username){
+        state.loggedIn = true;
+        state.username = username || "User";
+        try { localStorage.setItem("pbx_username", state.username); } catch(_) {}
+
+        // 登录后默认改为 Never
+        setTtl("forever");
+
+        applyAuthUI();
+    }
+    function setLoggedOut(){
+        state.loggedIn=false;
+        state.username=null;
+        try{localStorage.removeItem("pbx_username");}catch(_){}
+        applyAuthUI();
+    }
+
+    async function initAuthFromServer(){
+        let saved=null;
+        try{saved=localStorage.getItem("pbx_username")||null;}catch(_){}
+        try{
+            const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
+            if(res.status===401){setLoggedOut();return;}
+            const data=await res.json().catch(()=>({}));
+            if(data&&data.ok){
+                setLoggedIn(saved||"User");
+            }else{
+                setLoggedOut();
+            }
+        }catch(_){
+            setLoggedOut();
+        }
+    }
+
+    function openAuthModal(){
+        if(!$authModal)return;
+        $authModal.style.display="flex";
+        setAuthTip("");
+        if($authUsername)$authUsername.focus();
+    }
+    function closeAuthModal(){
+        if(!$authModal)return;
+        $authModal.style.display="none";
+        if($authForm)$authForm.reset();
+        if($authRemember) $authRemember.checked = true;
+        setAuthTip("");
+    }
+    if($authCloseBtn)$authCloseBtn.addEventListener("click",closeAuthModal);
+    if($authModal){
+        $authModal.addEventListener("click",e=>{
+            if(e.target===$authModal)closeAuthModal();
+        });
+    }
+
+    function openUserCenter(){
+        if(!$userCenter)return;
+        $userCenter.style.display="flex";
+        loadUserPastes();
+    }
+    function closeUserCenter(){
+        if(!$userCenter)return;
+        $userCenter.style.display="none";
+    }
+    if($ucCloseBtn)$ucCloseBtn.addEventListener("click",closeUserCenter);
+    if($userCenter){
+        $userCenter.addEventListener("click",e=>{
+            if(e.target===$userCenter)closeUserCenter();
+        });
+    }
+
+    if($btnAuthOpen){
+        $btnAuthOpen.addEventListener("click",()=>{
+            if(state.loggedIn)openUserCenter();
+            else openAuthModal();
+        });
+    }
+
+    if($authForm){
+        $authForm.addEventListener("submit",async e=>{
+            e.preventDefault();
+            const u=$authUsername.value.trim();
+            const p=$authPassword.value;
+            const remember = $authRemember ? $authRemember.checked : true;
+
+            if(!u||!p){
+                setAuthTip("Username/Password required.","error");
+                return;
+            }
+            setAuthTip("Logging in...");
+            try{
+                const data=await postJSON(AUTH_BASE+"/login",{
+                    username:u,
+                    password:p,
+                    remember
+                });
+                setLoggedIn(data.username||u);
+                setAuthTip("Success.","success");
+                setTimeout(closeAuthModal,300);
+            }catch(err){
+                setAuthTip(err.message||"Failed.","error");
+            }
+        });
+    }
+    if($btnDoRegister){
+        $btnDoRegister.addEventListener("click",async ()=>{
+            const u=$authUsername.value.trim();
+            const p=$authPassword.value;
+            if(!u||!p){setAuthTip("Fill info first.","error");return;}
+            if(p.length<6){setAuthTip("Password too short.","error");return;}
+            setAuthTip("Registering...");
+            try{
+                await postJSON(AUTH_BASE+"/register",{username:u,password:p});
+                setAuthTip("Registered. Please login.","success");
+            }catch(err){
+                setAuthTip(err.message||"Failed.","error");
+            }
+        });
+    }
+
+    function formatDate(d){
+        if(!d)return"-";
+        const dt=new Date(d);
+        if(Number.isNaN(dt.getTime()))return"-";
+        const y=dt.getFullYear();
+        const m=String(dt.getMonth()+1).padStart(2,"0");
+        const da=String(dt.getDate()).padStart(2,"0");
+        return `${y}-${m}-${da}`;
+    }
+    function calcRemainDays(expires){
+        if(!expires)return null;
+        const t=new Date(expires).getTime();
+        if(Number.isNaN(t))return null;
+        const now=Date.now();
+        const diff=t-now;
+        const d=Math.ceil(diff/86400000);
+        return d;
+    }
+
+    // 订阅链接拼接
+    function buildSubLink(slug, clientKey) {
+        const base = `${location.origin}/autosub?id=${encodeURIComponent(slug)}`;
+        if (!clientKey || clientKey === "general") return base;
+        return `${base}&client=${encodeURIComponent(clientKey)}`;
+    }
+
+    // ===== 订阅选择面板逻辑 =====
+    let currentSubSlug = null;
+
+    function openSubClientMenu(slug) {
+        currentSubSlug = slug;
+        const overlay = document.getElementById("subClientOverlay");
+        if (overlay) {
+            overlay.style.display = "flex";
+            if (window.__subMenuSync) window.__subMenuSync();
+        }
+    }
+
+    function closeSubClientMenu() {
+        currentSubSlug = null;
+        const overlay = document.getElementById("subClientOverlay");
+        if (overlay) overlay.style.display = "none";
+    }
+
+    (function initSubClientMenu(){
+        const overlay = document.getElementById("subClientOverlay");
+        if (!overlay) return;
+
+        const closeBtn = document.getElementById("subMenuCloseBtn");
+        const input = document.getElementById("subLinkInput");
+        const copyBtn = document.getElementById("subLinkCopyBtn");
+        const pills = Array.from(overlay.querySelectorAll(".sub-ios-pill"));
+
+        let selected = "general";
+
+        function refresh(){
+            pills.forEach(btn=>{
+                const key = btn.getAttribute("data-client") || "general";
+                btn.classList.toggle("is-active", key === selected);
+            });
+            if (input) {
+                input.value = currentSubSlug ? buildSubLink(currentSubSlug, selected) : "";
+            }
+        }
+
+        function setSelected(key){
+            selected = key || "general";
+            refresh();
+        }
+
+        window.__subMenuSync = function(){
+            selected = "general";
+            refresh();
+        };
+
+        if (closeBtn) closeBtn.addEventListener("click", closeSubClientMenu);
+
+        overlay.addEventListener("click",(e)=>{
+            if (e.target === overlay) closeSubClientMenu();
+        });
+
+        pills.forEach(btn=>{
+            btn.addEventListener("click", (e)=>{
+                setSelected(btn.getAttribute("data-client") || "general");
+            });
+        });
+
+        if (copyBtn) copyBtn.addEventListener("click", async ()=>{
+            if (!currentSubSlug) return;
+            const url = buildSubLink(currentSubSlug, selected);
+
+            try{
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(url);
+                    setStatus("Link copied.", "success");
+                } else {
+                    window.prompt("Copy link:", url);
+                }
+            }catch(_){
+                window.prompt("Copy link:", url);
+            }
+            closeSubClientMenu();
+        });
+
+        document.addEventListener("keydown",(e)=>{
+            if (e.key === "Escape" && overlay.style.display !== "none") closeSubClientMenu();
+        });
+
+        refresh();
+    })();
+
+
+    async function loadUserPastes(){
+        if(!$ucEmpty||!$ucList)return;
+        $ucEmpty.style.display="block";
+        $ucEmpty.textContent="Loading records...";
+        $ucList.style.display="none";
+        $ucList.innerHTML="";
+        try{
+            const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
+            if(res.status===401){
+                $ucEmpty.textContent="Session expired.";
+                setLoggedOut();
+                return;
+            }
+            const data=await res.json().catch(()=>({}));
+            if(!data.ok){
+                $ucEmpty.textContent=data.error||"Failed to load.";
+                return;
+            }
+            const items=data.items||[];
+            if(!items.length){
+                $ucEmpty.textContent="No records found.";
+                return;
+            }
+
+            const valid=[];
+            // 并发获取详情
+            await Promise.all(items.map(async (item)=>{
+                const slug=item.slug||item.id;
+                if(!slug)return;
+                try{
+                    const u=new URL(`${API_BASE}/${encodeURIComponent(slug)}`);
+                    u.searchParams.set("manage","1");
+                    const r=await fetch(u.toString(),{credentials:"include"});
+                    if(!r.ok)return;
+                    const d=await r.json().catch(()=>null);
+                    if(!d||d.ok===false)return;
+                    const remain=calcRemainDays(d.expiresAt);
+                    if(remain!=null && remain<0)return; // 过期不显示
+
+                    d._nodeInfo = detectNodes(d.content || "");
+                    valid.push(d);
+                }catch(_){}
+            }));
+
+            if(!valid.length){
+                $ucEmpty.textContent="No active records.";
+                return;
+            }
+
+            valid.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+
+            $ucEmpty.style.display="none";
+            $ucList.style.display="flex";
+
+            valid.forEach(d=>{
+                const slug=d.slug;
+                if(!slug)return;
+                const remark=d.remark||"Untitled";
+                const expires=d.expiresAt||null;
+                const ttlKey=d.ttlKey||"";
+
+                const viewUrl=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
+                const remain=calcRemainDays(expires);
+
+                const nodeInfo = d._nodeInfo || detectNodes(d.content || "");
+                const hasNode = !!nodeInfo.isNode && nodeInfo.count > 0;
+                const nodeCount = nodeInfo.count || 0;
+
+                const row=document.createElement("div");
+                row.className="uc-item";
+                // 调整内部结构以匹配新 UI
+                row.innerHTML=`
+                    <div class="uc-item-top">
+                        <div class="uc-item-title">
+                            <span class="uc-remark-tag">${escapeHTML(remark)}</span>
+                            <span>${escapeHTML(slug)}</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                         <span class="uc-link-tag">Expires: ${!expires||ttlKey==="forever" ? "Never" : (remain + " days")}</span>
+                         <div class="uc-item-actions"></div>
+                    </div>
+                `;
+                const act=row.querySelector(".uc-item-actions");
+                const titleBox=row.querySelector(".uc-item-title");
+
+                if (hasNode && titleBox) {
+                    const subBtn=document.createElement("button");
+                    subBtn.type="button";
+                    subBtn.className="uc-sub-btn";
+                    subBtn.textContent = nodeCount > 0 ? `Sub(${nodeCount})` : "Sub";
+                    subBtn.addEventListener("click",(e)=>{
+                         e.stopPropagation();
+                         openSubClientMenu(slug);
+                    });
+                    titleBox.appendChild(subBtn);
+                }
+
+                const mkBtn = (label, cls, cb) => {
+                    const b = document.createElement("button");
+                    b.className = "btn-secondary " + cls;
+                    b.style.padding="2px 8px"; b.style.fontSize="11px";
+                    b.textContent = label;
+                    b.addEventListener("click", cb);
+                    return b;
+                };
+
+                act.appendChild(mkBtn("Edit", "", ()=>{ closeUserCenter(); enterEditMode(slug); }));
+                act.appendChild(mkBtn("Copy", "", async ()=>{ 
+                    try{ await navigator.clipboard.writeText(viewUrl); setStatus("Link copied.","success"); }
+                    catch(_){ setStatus("Copy failed.","error"); }
+                }));
+                act.appendChild(mkBtn("Open", "", ()=>{ window.open(viewUrl,"_blank"); }));
+                
+                const delBtn = mkBtn("Del", "", async ()=>{
+                    if(!confirm("Delete this paste?"))return;
+                    try{
+                        await postJSON(API_BASE,{action:"delete",slug});
+                        loadUserPastes();
+                    }catch(err){ alert(err.message); }
+                });
+                delBtn.style.color="#ef4444";
+                act.appendChild(delBtn);
+
+                $ucList.appendChild(row);
+            });
+        }catch(err){
+            $ucEmpty.style.display="block";
+            $ucEmpty.textContent="Error loading list.";
+        }
+    }
+
+    if($ucRefreshBtn)$ucRefreshBtn.addEventListener("click",loadUserPastes);
+    if($ucLogoutBtn){
+        $ucLogoutBtn.addEventListener("click",async ()=>{
+            try{await postJSON(AUTH_BASE+"/logout",{});}catch(_){}
+            setLoggedOut();
+            closeUserCenter();
+            enterCreateMode(true);
+            setStatus("Logged out.","success");
+        });
+    }
+
+    async function enterEditMode(slug){
+        state.mode="edit";
+        state.originalSlug=slug;
+        if($submitBtn){
+            const span=$submitBtn.querySelector(".text");
+            if(span)span.textContent="Update Paste";
+        }
+        if($btnHome)$btnHome.style.display="inline-flex";
+        setStatus("Loading...");
+        try{
+            const url=new URL(`${API_BASE}/${encodeURIComponent(slug)}`);
+            url.searchParams.set("manage","1");
+            const res=await fetch(url.toString(),{credentials:"include"});
+            const data=await res.json().catch(()=>({}));
+            if(!res.ok||data.ok===false){
+                throw new Error(data.error||"Not found.");
+            }
+            if($content)$content.value=data.content||"";
+            if($remark)$remark.value=data.remark||"";
+            if($customId){
+                $customId.value=data.slug||slug;
+                $customId.readOnly=false;
+            }
+            updateByteCount();
+            if(data.ttlKey)setTtl(data.ttlKey);
+            const urlClean=new URL(location.href);
+            urlClean.searchParams.set("id",slug);
+            history.replaceState(null,"",urlClean.toString());
+            setStatus("Edit Mode.","success");
+        }catch(err){
+            setStatus(err.message||"Load failed.","error");
+            enterCreateMode(false);
+        }
+    }
+
+    function showResultLink(slug){
+        if(!$resultBox||!$viewLinkText)return;
+        const url=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
+        $viewLinkText.textContent=url;
+        $resultBox.style.display="block";
+        if($btnManageFromResult){
+            $btnManageFromResult.style.display = state.loggedIn ? "inline-flex" : "none";
+        }
+    }
+
+    if($btnCopyView){
+        $btnCopyView.addEventListener("click",async ()=>{
+            const text=$viewLinkText&&$viewLinkText.textContent;
+            if(!text)return;
+            try{
+                await navigator.clipboard.writeText(text);
+                setStatus("Copied.","success");
+            }catch(_){
+                setStatus("Copy failed.","error");
+            }
+        });
+    }
+    if($btnOpenView){
+        $btnOpenView.addEventListener("click",()=>{
+            const text=$viewLinkText&&$viewLinkText.textContent;
+            if(!text)return;
+            window.open(text,"_blank","noopener");
+        });
+    }
+    if($btnManageFromResult){
+        $btnManageFromResult.addEventListener("click",()=>{
+            if(!state.loggedIn){
+                openAuthModal();
+                return;
+            }
+            openUserCenter();
+        });
+    }
+
+    if($form){
+        $form.addEventListener("submit",async e=>{
+            e.preventDefault();
+            const text=($content&&$content.value.trim())||"";
+            if(!text){setStatus("Content empty.","error");return;}
+            if(state.customSlugError){setStatus("Invalid slug.","error");return;}
+
+            let slug=null;
+            let newSlug=null;
+            if(state.mode==="edit"){
+                slug=state.originalSlug;
+                if($customId){
+                    const v=$customId.value.trim();
+                    if(v&&v!==slug)newSlug=v;
+                }
+            }else{
+                if(state.loggedIn&&$customId){
+                    const v=$customId.value.trim();
+                    if(v)slug=v;
+                }
+            }
+
+            const payload={
+                action:state.mode==="edit"?"update":"create",
+                content:text,
+                ttlKey:state.ttlKey,
+                remark:$remark?$remark.value.trim():""
+            };
+            if(slug)payload.slug=slug;
+            if(newSlug)payload.newSlug=newSlug;
+
+            state.isSubmitting=true;
+            if($submitBtn){
+                $submitBtn.disabled=true;
+                $submitBtn.classList.add("btn-disabled");
+                const span=$submitBtn.querySelector(".text");
+                if(span)span.textContent=state.mode==="edit"?"Saving...":"Uploading...";
+            }
+            setStatus("Submitting...");
+            try{
+                const data=await postJSON(API_BASE,payload);
+                const finalSlug=data.slug||newSlug||slug;
+                if(!finalSlug)throw new Error("Missing slug.");
+                showResultLink(finalSlug);
+
+                setStatus(state.mode==="edit"?"Updated.":"Uploaded.","success");
+                enterCreateMode(true);
+            }catch(err){
+                setStatus(err.message||"Failed.","error");
+            }finally{
+                state.isSubmitting=false;
+                if($submitBtn){
+                    $submitBtn.disabled=false;
+                    $submitBtn.classList.remove("btn-disabled");
+                    const span=$submitBtn.querySelector(".text");
+                    if(span)span.textContent=state.mode==="edit"?"Update Paste":"Publish Paste";
+                }
+            }
+        });
+    }
+
+    if($baseUrlText)$baseUrlText.textContent=VIEW_BASE+"/{id}";
+
+    document.addEventListener("keydown",e=>{
+        if(e.key==="Escape"){
+            const overlay = document.getElementById("subClientOverlay");
+            if(overlay && overlay.style.display==="flex"){
+                closeSubClientMenu();
+                return;
+            }
+            if($userCenter&&$userCenter.style.display==="flex")closeUserCenter();
+            else if($authModal&&$authModal.style.display==="flex")closeAuthModal();
+        }
+    });
+
+    (async function init(){
+        await initAuthFromServer();
+        applyAuthUI();
+    })();
+</script>
 </body>
 </html>
