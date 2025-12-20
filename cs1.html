@@ -2,9 +2,9 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Pastebox</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-
+    <title>Pastebox | Future</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
@@ -12,1935 +12,918 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Pastebox">
     <meta property="og:title" content="Pastebox">
-    <meta property="og:description" content="Paste text. Get URL. Move on.">
+    <meta property="og:description" content="极简，却不简单的云端剪贴板。">
     <meta property="og:image" content="https://save.aura.us.kg/Picture/Preview/YL10.png">
     <meta property="og:url" content="https://aura.us.kg/Paste">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Pastebox">
-    <meta name="twitter:description" content="Paste text. Get URL. Move on.">
-    <meta name="twitter:image" content="https://save.aura.us.kg/Picture/Preview/YL6.png">
 
     <style>
-        /* ============================
-           macOS / iOS Liquid Glass Design System
-           ============================ */
         :root {
-            /* Light Mode Palette */
-            --app-bg: #eef2f6;
-            --glass-base: rgba(255, 255, 255, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.6);
-            --glass-highlight: rgba(255, 255, 255, 0.8);
-            --surface-1: rgba(255, 255, 255, 0.5);
-            --surface-2: rgba(255, 255, 255, 0.7);
-            --surface-hover: rgba(255, 255, 255, 0.9);
-            
-            --text-primary: #1d1d1f;
-            --text-secondary: #86868b;
-            --text-tertiary: #a1a1a6;
-            
-            --accent-color: #007aff; /* iOS Blue */
-            --accent-gradient: linear-gradient(135deg, #007aff, #5856d6);
-            --accent-glow: rgba(0, 122, 255, 0.25);
-            --danger-color: #ff3b30;
-            --success-color: #34c759;
-            
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 12px 24px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.08);
-            --inner-glow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-            
+            --bg-color: #000000;
+            --glass-bg: rgba(20, 20, 20, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --primary: #0A84FF;
+            --primary-glow: rgba(10, 132, 255, 0.4);
+            --accent: #BF5AF2;
+            --text-main: #FFFFFF;
+            --text-sec: #86868B;
             --radius-lg: 24px;
             --radius-md: 16px;
             --radius-sm: 10px;
-            
             --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
-            --font-mono: "SF Mono", "JetBrains Mono", Menlo, monospace;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        body.theme-dark {
-            /* Dark Mode Palette - Deep Space Glass */
-            --app-bg: #000000;
-            --glass-base: rgba(30, 30, 30, 0.60);
-            --glass-border: rgba(255, 255, 255, 0.12);
-            --glass-highlight: rgba(255, 255, 255, 0.08);
-            --surface-1: rgba(60, 60, 60, 0.4);
-            --surface-2: rgba(80, 80, 80, 0.4);
-            --surface-hover: rgba(100, 100, 100, 0.5);
-            
-            --text-primary: #f5f5f7;
-            --text-secondary: #86868b;
-            --text-tertiary: #58585e;
-            
-            --accent-color: #0a84ff;
-            --accent-gradient: linear-gradient(135deg, #0a84ff, #5e5ce6);
-            --accent-glow: rgba(10, 132, 255, 0.3);
-            --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.4);
-            --shadow-lg: 0 25px 50px rgba(0, 0, 0, 0.6);
-            --inner-glow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+        * {
+            box-sizing: border-box;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        /* Animated Background */
         body {
             margin: 0;
-            min-height: 100vh;
+            padding: 0;
             font-family: var(--font-stack);
-            background: var(--app-bg);
-            color: var(--text-primary);
-            display: flex;
-            justify-content: center;
-            padding: 40px 20px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
             overflow-x: hidden;
-            transition: color 0.3s ease;
-        }
-        
-        /* Aurora Gradient Animation */
-        body::before {
-            content: '';
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at center, rgba(56, 189, 248, 0.15), transparent 40%),
-                        radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.15), transparent 40%),
-                        radial-gradient(circle at 20% 80%, rgba(236, 72, 153, 0.15), transparent 40%);
-            z-index: -1;
-            animation: auroraMove 20s infinite alternate linear;
-            pointer-events: none;
-        }
-        
-        @keyframes auroraMove {
-            0% { transform: rotate(0deg) scale(1); }
-            100% { transform: rotate(10deg) scale(1.1); }
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(10, 132, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(191, 90, 242, 0.15) 0%, transparent 40%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .shell {
+        /* 滚动条美化 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+
+        /* 顶部导航 */
+        header {
             width: 100%;
-            max-width: 820px;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ============================
-           Header
-           ============================ */
-        .header {
+            max-width: 1200px;
+            padding: 20px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-            padding: 0 8px;
+            z-index: 100;
         }
 
         .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-            cursor: default;
-        }
-
-        .brand-logo {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            overflow: hidden;
-            background: var(--surface-1);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--glass-border);
-            position: relative;
-        }
-        
-        .brand-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        .brand:hover .brand-logo img {
-            transform: scale(1.1);
-        }
-
-        .brand-text {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .brand-title {
-            font-size: 20px;
             font-weight: 700;
-            letter-spacing: -0.02em;
-            background: var(--text-primary);
+            font-size: 22px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #fff, #a1a1a6);
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent; 
-            /* Fallback */
-            color: var(--text-primary);
-        }
-        
-        /* Special Gradient Text for Light Mode Title */
-        body:not(.theme-dark) .brand-title {
-            background: linear-gradient(120deg, #1d1d1f, #434344);
-            -webkit-background-clip: text;
-        }
-
-        .brand-sub {
-            font-size: 13px;
-            color: var(--text-secondary);
-            font-weight: 400;
-            margin-top: 2px;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        /* Glass Button Base */
-        button {
-            font-family: var(--font-stack);
-            border: none;
-            outline: none;
+            -webkit-text-fill-color: transparent;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-            user-select: none;
-        }
-        
-        button:active {
-            transform: scale(0.94);
-        }
-
-        .pill-btn, .theme-toggle {
-            height: 36px;
-            padding: 0 16px;
-            border-radius: 99px;
-            background: var(--glass-base);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            color: var(--text-primary);
-            font-size: 13px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .pill-btn:hover, .theme-toggle:hover {
-            background: var(--surface-hover);
-            transform: translateY(-1px);
-        }
-
-        .icon-svg svg {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
-        }
-        
-        .theme-icon svg { width: 16px; height: 16px; fill: currentColor; }
-        body.theme-dark .theme-icon-sun { display: none; }
-        body.theme-dark .theme-icon-moon { display: block; }
-        body.theme-light .theme-icon-moon { display: none; }
-        
-        /* Primary Pill Button */
-        .pill-btn-primary {
-            background: var(--accent-gradient);
-            color: white;
-            border: none;
-            box-shadow: 0 4px 12px var(--accent-glow);
-        }
-        .pill-btn-primary:hover {
-            background: var(--accent-gradient);
-            filter: brightness(1.1);
-            box-shadow: 0 6px 16px var(--accent-glow);
-        }
-
-        /* ============================
-           Main Card (Glassmorphism)
-           ============================ */
-        .card {
-            background: var(--glass-base);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--shadow-md), var(--inner-glow);
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
             position: relative;
-            overflow: hidden;
         }
         
-        /* Subtle shine effect on top right */
-        .card::after {
-            content: '';
+        .brand::after {
+            content: 'BETA';
             position: absolute;
-            top: 0; right: 0; width: 300px; height: 300px;
-            background: radial-gradient(circle at top right, rgba(255,255,255,0.1), transparent 70%);
-            pointer-events: none;
-        }
-
-        .card-section {
-            background: var(--surface-1);
-            border-radius: var(--radius-md);
-            padding: 16px;
-            border: 1px solid var(--glass-border);
-            transition: background 0.2s;
-        }
-
-        .section-title {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-secondary);
-            font-weight: 700;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .section-title .tag {
-            display: none; /* Minimalist: hide tag text */
-        }
-        
-        /* Guide Text */
-        .section-text {
-            font-size: 13px;
-            line-height: 1.6;
-            color: var(--text-secondary);
-        }
-        
-        .section-text code {
-            font-family: var(--font-mono);
-            background: rgba(127,127,127,0.15);
+            top: -2px;
+            right: -32px;
+            font-size: 9px;
+            background: var(--glass-border);
             padding: 2px 6px;
-            border-radius: 4px;
-            color: var(--accent-color);
-        }
-        
-        .warning-label {
-            color: var(--danger-color);
-            font-weight: 600;
-        }
-
-        /* Inputs & Textareas */
-        .field { margin-bottom: 0; }
-        
-        .textarea-wrap { position: relative; }
-        
-        textarea {
-            width: 100%;
-            min-height: 240px;
-            border: 1px solid transparent;
-            background: var(--surface-2);
-            border-radius: var(--radius-md);
-            padding: 16px;
-            font-family: var(--font-mono);
-            font-size: 13px;
-            line-height: 1.5;
-            color: var(--text-primary);
-            resize: vertical;
-            outline: none;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-            transition: all 0.2s;
-        }
-        
-        textarea:focus {
-            background: var(--surface-hover);
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 4px var(--accent-glow);
-        }
-        
-        .line-counter {
-            position: absolute;
-            right: 12px;
-            bottom: 12px;
-            font-size: 10px;
-            color: var(--text-tertiary);
-            background: var(--glass-base);
-            backdrop-filter: blur(4px);
-            padding: 4px 8px;
             border-radius: 6px;
-            pointer-events: none;
-            border: 1px solid var(--glass-border);
+            color: var(--text-sec);
+            -webkit-text-fill-color: var(--text-sec);
         }
 
-        /* Info Bar (Bytes & Upload) */
-        .byte-count {
-            font-size: 12px;
-            color: var(--text-secondary);
+        .user-trigger {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
             display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 8px;
-        }
-        .byte-num { font-family: var(--font-mono); color: var(--text-primary); font-weight: 600; }
-        .node-info.active { color: var(--success-color); font-weight: 500; }
-
-        .upload-row {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 12px;
-            gap: 12px;
-        }
-
-        /* Buttons Small & Secondary */
-        .btn-secondary, .btn-reset, .upload-btn, .btn-danger {
-            height: 28px;
-            padding: 0 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
-            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-        
-        .upload-btn {
-            background: transparent;
-            border: 1px dashed var(--text-tertiary);
-            color: var(--text-secondary);
             cursor: pointer;
-        }
-        .upload-btn:hover {
-            border-style: solid;
-            border-color: var(--accent-color);
-            color: var(--accent-color);
-            background: var(--accent-glow);
-        }
-        
-        .btn-secondary {
-            background: var(--surface-1);
-            color: var(--text-primary);
+            transition: var(--transition);
             border: 1px solid var(--glass-border);
         }
-        .btn-secondary:hover {
-            background: var(--surface-hover);
-            border-color: var(--text-secondary);
-        }
-        
-        .btn-reset {
-            background: transparent;
-            color: var(--text-secondary);
-        }
-        .btn-reset:hover {
-            color: var(--text-primary);
-            background: var(--surface-1);
-        }
-        
-        .btn-danger {
-            background: rgba(255, 59, 48, 0.1);
-            color: var(--danger-color);
-            border: 1px solid transparent;
-        }
-        .btn-danger:hover {
-            background: rgba(255, 59, 48, 0.2);
+
+        .user-trigger:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.05);
         }
 
-        .base64-decode-btn.decode-active {
-            background: var(--text-primary);
-            color: var(--app-bg);
+        .user-trigger svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-main);
         }
 
-        /* ============================
-           TTL Segmented Control
-           ============================ */
-        .ttl-group {
-            background: var(--surface-2);
-            padding: 4px;
-            border-radius: 10px;
-            display: flex;
-            gap: 2px;
-            overflow-x: auto; /* for very small screens */
-        }
-        
-        .ttl-btn {
+        /* 主容器布局 */
+        main {
             flex: 1;
-            background: transparent;
-            color: var(--text-secondary);
-            font-size: 12px;
-            font-weight: 500;
-            padding: 6px 10px;
-            border-radius: 7px;
-            border: none;
-            white-space: nowrap;
-            transition: all 0.2s ease;
-        }
-        
-        .ttl-btn:hover:not(.active) {
-            color: var(--text-primary);
-        }
-        
-        .ttl-btn.active {
-            background: var(--glass-base);
-            color: var(--text-primary);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-            font-weight: 600;
-        }
-        
-        .ttl-hint {
-            font-size: 11px;
-            color: var(--text-tertiary);
-            margin-top: 8px;
-            margin-left: 4px;
+            width: 100%;
+            max-width: 1000px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            position: relative;
+            z-index: 10;
         }
 
-        /* Custom Link Inputs */
-        .field-row {
+        /* 玻璃卡片通用样式 */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        /* 编辑区域 */
+        .editor-container {
             display: flex;
+            flex-direction: column;
+            min-height: 50vh;
+            position: relative;
+        }
+
+        .editor-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+        .dot.red { background: #FF453A; }
+        .dot.yellow { background: #FFD60A; }
+        .dot.green { background: #32D74B; }
+
+        .editor-title {
+            margin-left: 12px;
+            font-size: 13px;
+            color: var(--text-sec);
+            font-weight: 500;
+        }
+
+        textarea#content {
+            flex: 1;
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 15px;
+            line-height: 1.6;
+            padding: 24px;
+            resize: none;
+        }
+
+        textarea#content::placeholder {
+            color: rgba(255,255,255,0.2);
+        }
+
+        /* 设置栏 */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 16px;
         }
-        .field-block { flex: 1; min-width: 0; }
-        
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            height: 38px;
-            background: var(--surface-2);
-            border: 1px solid transparent;
-            border-radius: 10px;
-            padding: 0 12px;
-            font-size: 13px;
-            color: var(--text-primary);
-            outline: none;
-            transition: all 0.2s;
-        }
-        
-        input[type="text"]:focus, input[type="password"]:focus {
-            background: var(--surface-hover);
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-        
-        .field-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
-        }
-        
-        .hint {
-            font-size: 11px;
-            color: var(--text-tertiary);
-            margin-top: 4px;
-        }
-        .hint-error { color: var(--danger-color); }
-        .hint-success { color: var(--success-color); }
-        .input-error { box-shadow: 0 0 0 1px var(--danger-color) !important; }
 
-        /* ============================
-           Action Area & Result
-           ============================ */
-        .action-row {
+        .setting-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 4px 16px;
+            display: flex;
+            align-items: center;
+            height: 56px;
+            transition: var(--transition);
+        }
+
+        .setting-item:focus-within {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .setting-item input, .setting-item select {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 14px;
+            font-family: var(--font-stack);
+            -webkit-appearance: none; /* 移除默认样式 */
+        }
+        
+        .setting-item select {
+            cursor: pointer;
+        }
+
+        /* 按钮组 */
+        .action-bar {
             display: flex;
             justify-content: flex-end;
+            gap: 16px;
             margin-top: 10px;
+            align-items: center;
+        }
+
+        .status-text {
+            margin-right: auto;
+            font-size: 13px;
+            padding-left: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .status-text.visible { opacity: 1; }
+        .status-text.error { color: #FF453A; }
+        .status-text.success { color: #32D74B; }
+
+        button {
+            border: none;
+            cursor: pointer;
+            font-family: var(--font-stack);
+            font-weight: 600;
+            font-size: 15px;
+            padding: 0 28px;
+            height: 48px;
+            border-radius: 24px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+            color: var(--text-main);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.15);
         }
 
         .btn-primary {
-            height: 40px;
-            padding: 0 24px;
-            border-radius: 99px;
-            background: var(--accent-gradient);
+            background: var(--primary);
             color: white;
-            font-weight: 600;
-            font-size: 14px;
-            box-shadow: 0 4px 14px var(--accent-glow);
-            border: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            box-shadow: 0 4px 20px var(--primary-glow);
         }
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px var(--accent-glow);
-            filter: brightness(1.05);
+            box-shadow: 0 8px 30px var(--primary-glow);
+            filter: brightness(1.1);
         }
-        .btn-primary.btn-disabled {
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
+            pointer-events: none;
         }
 
-        /* Result Box */
-        .result-box {
-            background: rgba(34, 197, 94, 0.1); /* Subtle green tint */
-            border: 1px solid rgba(34, 197, 94, 0.2);
-            border-radius: 12px;
-            padding: 16px;
-            margin-top: 16px;
-        }
-        
-        body.theme-dark .result-box {
-            background: rgba(34, 197, 94, 0.15);
-            border-color: rgba(34, 197, 94, 0.1);
-        }
-        
-        .result-label {
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--success-color);
-            font-weight: 700;
-            display: block;
-            margin-bottom: 4px;
-        }
-        
-        .result-link {
-            font-family: var(--font-mono);
-            font-size: 13px;
-            color: var(--text-primary);
-            word-break: break-all;
-            display: block;
-            margin-bottom: 12px;
-        }
-        
-        .status-msg {
-            font-size: 12px;
-            text-align: center;
-            margin-top: 10px;
-            min-height: 18px;
-        }
-        .status-msg.success { color: var(--success-color); }
-        .status-msg.error { color: var(--danger-color); }
-
-        /* Footer */
-        .footer-row {
-            margin-top: 10px;
-            padding-top: 16px;
-            border-top: 1px solid var(--glass-border);
-            display: flex;
-            justify-content: space-between;
-            color: var(--text-tertiary);
-            font-size: 11px;
-        }
-
-        /* ============================
-           Modals (Login & User Center)
-           ============================ */
-        .modal-backdrop, .uc-backdrop, .sub-menu-backdrop {
+        /* 模态框 (Modal) - iOS Sheet 风格 */
+        .modal-overlay {
             position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.2);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 100;
-            display: flex;
+            z-index: 1000;
+            display: none;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            animation: fadeIn 0.3s ease;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
-        
-        @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
-        @keyframes scaleIn { from{transform:scale(0.95);opacity:0;} to{transform:scale(1);opacity:1;} }
 
-        /* Auth Panel */
-        .auth-panel {
-            width: 320px;
-            background: var(--glass-base);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 24px;
-            box-shadow: var(--shadow-lg), var(--inner-glow);
-            animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #1C1C1E;
+            width: 100%;
+            max-width: 360px;
+            border-radius: 28px;
+            padding: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 20px;
         }
-        
-        .auth-panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
         }
-        .auth-panel-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
-        .auth-panel-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
-        
-        .auth-panel-close {
-            width: 28px; height: 28px;
-            border-radius: 50%;
-            background: var(--surface-1);
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            border: none;
-        }
-        .auth-panel-close:hover { background: var(--surface-hover); color: var(--text-primary); }
-        
-        .auth-panel-form input {
-            background: var(--surface-1);
-            border-radius: 12px;
-            height: 42px;
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
             margin-bottom: 8px;
         }
-        
-        .auth-panel #btnDoLogin {
-            width: 100%;
-            justify-content: center;
-            background: var(--success-color);
-            margin-top: 8px;
-            border-radius: 12px;
-        }
-        .auth-panel #btnDoLogin:hover { filter: brightness(1.1); }
 
-        /* User Center */
-        .uc-panel {
+        .input-group input {
             width: 100%;
+            height: 48px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 0 16px;
+            color: white;
+            font-size: 16px;
+            transition: 0.2s;
+        }
+        .input-group input:focus {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--primary);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .modal-footer button {
+            flex: 1;
+            height: 44px;
+            border-radius: 14px;
+            font-size: 15px;
+        }
+
+        /* 子客户端菜单 (Grid Layout) */
+        #subClientOverlay .modal-content {
             max-width: 600px;
-            max-height: 85vh;
-            background: var(--glass-base);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            box-shadow: var(--shadow-lg);
-            padding: 24px;
+            background: rgba(30,30,30,0.8);
+            backdrop-filter: blur(30px);
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 20px;
+            padding: 10px;
+        }
+
+        .app-item {
             display: flex;
             flex-direction: column;
-            animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        .uc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .uc-title-main { font-size: 18px; font-weight: 700; color: var(--text-primary); }
-        .uc-title-sub { font-size: 12px; color: var(--text-secondary); }
-        
-        .uc-body {
-            overflow-y: auto;
-            flex: 1;
-            padding-right: 4px;
-            /* Thin scrollbar for webkit */
-        }
-        .uc-body::-webkit-scrollbar { width: 4px; }
-        .uc-body::-webkit-scrollbar-thumb { background: var(--text-tertiary); border-radius: 4px; }
-        
-        .uc-list { display: flex; flex-direction: column; gap: 12px; }
-        
-        .uc-item {
-            background: var(--surface-1);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 16px;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
             transition: transform 0.2s;
+            text-decoration: none;
+            color: var(--text-main);
         }
-        .uc-item:hover { background: var(--surface-hover); }
-        
-        .uc-item-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        
-        .uc-remark-tag {
-            font-size: 13px; font-weight: 600; color: var(--text-primary);
-            display: block; margin-bottom: 2px;
-        }
-        .uc-slug-tag {
-            font-size: 11px; font-family: var(--font-mono); color: var(--text-tertiary);
-            background: var(--surface-2); padding: 2px 6px; border-radius: 4px;
-        }
-        .uc-item-meta { font-size: 11px; color: var(--text-tertiary); text-align: right; }
-        
-        .uc-link-tag { font-family: var(--font-mono); font-size: 11px; color: var(--accent-color); word-break: break-all; }
-        
-        .uc-item-actions {
-            margin-top: 12px;
-            display: flex;
-            gap: 8px;
-            border-top: 1px solid var(--glass-border);
-            padding-top: 10px;
-        }
-        
-        /* Subscription Button */
-        .uc-sub-btn {
-            background: var(--accent-glow);
-            color: var(--accent-color);
-            border: 1px solid transparent;
-            font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 99px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-left: 8px;
-        }
+        .app-item:hover { transform: scale(1.05); }
 
-        /* ============================
-           iOS Style Subscription Menu
-           ============================ */
-        .sub-menu.sub-ios {
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
-            width: 100%; max-width: 360px;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-            animation: scaleIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-        body.theme-dark .sub-menu.sub-ios {
-            background: rgba(30,30,30,0.85);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .sub-ios-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .sub-ios-title { font-size: 17px; font-weight: 600; color: var(--text-primary); }
-        .sub-ios-close { width: 30px; height: 30px; background: rgba(120,120,128,0.12); border-radius: 50%; color: var(--text-secondary); display:flex; align-items:center; justify-content:center; font-size: 20px; border:none;}
-        
-        .sub-ios-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-        }
-        
-        .sub-ios-pill {
-            height: 44px;
-            background: var(--surface-2);
-            border-radius: 12px;
-            color: var(--text-primary);
-            font-size: 13px;
-            font-weight: 500;
-            border: none;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .sub-ios-pill.is-active {
-            background: var(--accent-color);
-            color: white;
-            box-shadow: 0 4px 10px var(--accent-glow);
-        }
-        
-        /* Ripple effect */
-        .ios-ripple {
-            position: absolute; border-radius: 50%; background: rgba(255,255,255,0.3);
-            transform: scale(0); animation: ripple 0.6s linear; pointer-events: none;
-        }
-        @keyframes ripple { to { transform: scale(4); opacity: 0; } }
-        
-        .sub-ios-link {
-            background: var(--surface-1);
-            border-radius: 12px;
-            padding: 8px 12px;
+        .app-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #3a3a3c, #1c1c1e);
             display: flex;
             align-items: center;
-            margin-top: 16px;
-            border: 1px solid var(--glass-border);
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
         }
+        .app-icon.admin { background: linear-gradient(135deg, #FF9500, #FF3B30); }
+        .app-icon.cloud { background: linear-gradient(135deg, #5AC8FA, #007AFF); }
+        .app-icon.ai { background: linear-gradient(135deg, #AF52DE, #5856D6); }
         
-        .sub-ios-input { width: 100%; border:none; background:transparent; font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
-        
-        .sub-ios-copy {
-            width: 32px; height: 32px;
-            border-radius: 8px;
-            background: var(--surface-2);
-            color: var(--text-primary);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .sub-ios-copy:hover { background: var(--surface-hover); }
+        .app-name { font-size: 12px; font-weight: 500; opacity: 0.8; }
 
-        /* ============================
-           Mobile Adaptation
-           ============================ */
-        @media (max-width: 600px) {
-            body { padding: 20px 10px; }
-            .card { padding: 18px 14px; border-radius: 20px; }
-            .header { padding: 0 4px; }
-            .brand-title { font-size: 18px; }
-            .upload-row { flex-direction: column; align-items: stretch; }
-            .upload-btn { justify-content: center; width: 100%; padding: 10px; }
-            .byte-actions { display: flex; justify-content: space-between; margin-top: 8px; }
-            .field-row { flex-direction: column; gap: 10px; }
-            .auth-panel { width: 90%; }
+        /* 页脚 */
+        footer {
+            margin-top: auto;
+            padding: 30px;
+            font-size: 12px;
+            color: var(--text-sec);
+            text-align: center;
+        }
+        footer a { color: var(--text-sec); text-decoration: none; border-bottom: 1px dashed var(--text-sec); }
+
+        /* Loader Animation */
+        .spinner {
+            width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        button.loading .spinner { display: inline-block; }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            header { padding: 16px; }
+            main { padding: 16px; gap: 16px; }
+            .settings-grid { grid-template-columns: 1fr; }
+            .action-bar { flex-direction: column-reverse; width: 100%; gap: 12px; }
+            button { width: 100%; }
+            .status-text { width: 100%; text-align: center; margin-bottom: 8px; }
+            .editor-container { min-height: 40vh; }
         }
     </style>
 </head>
-<body class="theme-light">
-<div class="shell">
-    <header class="header">
-        <a href="/" class="brand">
-            <div class="brand-logo"><img id="brandIcon" alt="icon"></div>
-            <div class="brand-text">
-                <div class="brand-title">PasteBox</div>
-                <div class="brand-sub">Just paste it.</div>
-            </div>
-        </a>
-        <div class="header-actions">
-            <button type="button" class="theme-toggle" id="themeToggle" title="Toggle Theme">
-                <span class="theme-icon theme-icon-sun">
-                    <svg viewBox="0 0 20 20"><path d="M10 3.5a1 1 0 0 1-1-1V1.75a1 1 0 1 1 2 0V2.5a1 1 0 0 1-1 1zM10 18.25a1 1 0 0 1-1-1V16.5a1 1 0 1 1 2 0v.75a1 1 0 0 1-1 1zM4.22 5.03a1 1 0 0 1 1.41-1.41l.53.53a1 1 0 1 1-1.41 1.41l-.53-.53zM13.84 14.66a1 1 0 0 1 1.41-1.41l.53.53a1 1 0 1 1-1.41 1.41l-.53-.53zM1.75 11a1 1 0 0 1 0-2H2.5a1 1 0 1 1 0 2h-.75zM17.5 11a1 1 0 0 1 0-2h.75a1 1 0 0 1 0 2h-.75zM4.22 14.97l.53-.53a1 1 0 1 1 1.41 1.41l-.53.53a1 1 0 0 1-1.41-1.41zM13.84 5.34l.53-.53a1 1 0 1 1 1.41 1.41l-.53.53a1 1 0 0 1-1.41-1.41zM10 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg>
-                </span>
-                <span class="theme-icon theme-icon-moon">
-                    <svg viewBox="0 0 20 20"><path d="M15.25 11.1A5.5 5.5 0 0 1 8.9 4.75 5.5 5.5 0 1 0 15.25 11.1z"/></svg>
-                </span>
-            </button>
+<body>
 
-            <button type="button" class="pill-btn" id="btnHome" style="display:none;">
-                <span class="icon-svg">
-                    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                </span>
-                Home
-            </button>
-
-            <button type="button" class="pill-btn pill-btn-primary" id="btnAuthOpen">
-                <span id="btnAuthLabel">Log In</span>
-            </button>
+    <header>
+        <div class="brand" id="subClientTrigger">Pastebox</div>
+        <div class="user-trigger" id="userIconBtn">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </div>
     </header>
 
-    <main class="card" id="mainCard">
-        <section class="card-section">
-            <div class="section-title">
-                <span class="icon-svg"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg></span>
-                Quick Guide
+    <main>
+        <div class="glass-panel editor-container">
+            <div class="editor-header">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="editor-title" id="baseUrlText">New Paste</span>
             </div>
-            <div class="section-text">
-                Paste content below or import a file. Set an expiration date and get a shareable link.
-                <br>
-                <span class="warning-label">Notice:</span> Do not store sensitive data. This tool is for temporary sharing.
-            </div>
-        </section>
-
-        <div id="editorContainer">
-            <form id="pasteForm">
-                <div class="field">
-                    <div class="textarea-wrap">
-                        <textarea id="content" placeholder="Paste your code, logs, or text here..." required spellcheck="false"></textarea>
-                        <div class="line-counter" id="lineCounter">0 Lines</div>
-                    </div>
-                </div>
-
-                <div class="field">
-                    <div class="byte-count">
-                        <span class="icon-svg"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></span>
-                        <span class="byte-num" id="byteNum">0</span> bytes
-                        <span id="nodeInfo" class="node-info"></span>
-                    </div>
-
-                    <div class="upload-row">
-                        <label class="upload-btn" id="uploadBtn" for="fileInput">
-                            <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>
-                            <span id="uploadBtnText">Import File</span>
-                        </label>
-                        <input type="file" id="fileInput" accept="*" style="display:none;">
-
-                        <div class="byte-actions" style="display:flex; gap:8px;">
-                            <button type="button" class="btn-secondary" id="btnBase64Encode">
-                                <span>Base64 Encode</span>
-                            </button>
-                            <button type="button" class="btn-secondary base64-decode-btn" id="btnBase64Decode">
-                                <span>Base64 Decode</span>
-                            </button>
-                        </div>
-                    </div>
-                    <span class="hint" id="fileHint" style="display:block; margin-top:6px;">Supported text files. Content will replace the editor.</span>
-                </div>
-
-                <section class="card-section" style="margin-top:10px;">
-                    <div class="section-title">
-                        <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span>
-                        Expiration (TTL)
-                    </div>
-                    <div class="field">
-                        <div class="ttl-group" id="ttlGroup">
-                            <button type="button" class="ttl-btn" data-ttl="10m">10 Min</button>
-                            <button type="button" class="ttl-btn" data-ttl="1d">1 Day</button>
-                            <button type="button" class="ttl-btn active" data-ttl="7d">7 Days</button>
-                            <button type="button" class="ttl-btn" data-ttl="30d">30 Days</button>
-                            <button type="button" class="ttl-btn" data-ttl="forever" id="ttlForeverBtn">Never</button>
-                        </div>
-                        <div class="ttl-hint" id="ttlHint">Content expires in 7 days.</div>
-                    </div>
-                </section>
-
-                <section class="card-section" id="advancedSection" style="margin-top:10px;">
-                    <div class="section-title">
-                        <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></span>
-                        Custom Link
-                    </div>
-                    <div class="field-row">
-                        <div class="field-block">
-                            <div class="field-label">Custom Slug (Optional)</div>
-                            <input id="customId" type="text" placeholder="e.g. my-code-snippet">
-                            <div class="hint" id="customHint">Alphanumeric, underscores, hyphens only.</div>
-                        </div>
-                        <div class="field-block">
-                            <div class="field-label">Note / Remark</div>
-                            <input id="remark" type="text" placeholder="For your reference">
-                        </div>
-                    </div>
-                </section>
-
-                <div class="action-row" style="margin-top:24px; gap:12px;">
-                    <button type="button" class="btn-reset" id="btnResetContent">
-                        <span class="icon-svg"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg></span>
-                        Clear
-                    </button>
-                    <button type="submit" class="btn-primary" id="submitBtn">
-                        <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></span>
-                        <span class="text">Publish</span>
-                    </button>
-                </div>
-
-                <div class="field" id="resultBox" style="display:none;">
-                    <div class="result-box">
-                        <span class="result-label">Paste URL</span>
-                        <span class="result-link" id="viewLinkText"></span>
-                        <div style="display:flex; justify-content:flex-end; gap:8px;">
-                            <button type="button" class="btn-secondary" id="btnCopyView">Copy</button>
-                            <button type="button" class="btn-secondary" id="btnOpenView">Open</button>
-                            <button type="button" class="btn-secondary" id="btnManageFromResult" style="display:none;">Manage</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="statusMsg" class="status-msg"></div>
-            </form>
+            <textarea id="content" placeholder="在此输入文本或代码... (Input text or code here)" spellcheck="false"></textarea>
         </div>
 
-        <section class="footer-row">
-            <span>Entry: <span id="baseUrlText"></span></span>
-            <span>&copy; PasteBox by AurraLynn</span>
-        </section>
-    </main>
-</div>
+        <div class="settings-grid">
+            <div class="setting-item">
+                <input type="text" id="slug" placeholder="自定义 Slug (选填)" maxlength="20">
+            </div>
+            <div class="setting-item">
+                <input type="password" id="password" placeholder="访问密码 (选填)">
+            </div>
+            <div class="setting-item">
+                <select id="syntax">
+                    <option value="text">Plain Text</option>
+                    <option value="json">JSON</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python</option>
+                    <option value="html">HTML</option>
+                    <option value="css">CSS</option>
+                    <option value="golang">Go</option>
+                    <option value="java">Java</option>
+                    <option value="c">C</option>
+                    <option value="cpp">C++</option>
+                    <option value="csharp">C#</option>
+                    <option value="php">PHP</option>
+                    <option value="ruby">Ruby</option>
+                    <option value="rust">Rust</option>
+                    <option value="sql">SQL</option>
+                    <option value="shell">Shell/Bash</option>
+                    <option value="yaml">YAML</option>
+                    <option value="xml">XML</option>
+                    <option value="markdown">Markdown</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <select id="expiration">
+                    <option value="0">永久有效</option>
+                    <option value="60">1 分钟</option>
+                    <option value="600">10 分钟</option>
+                    <option value="3600">1 小时</option>
+                    <option value="86400">1 天</option>
+                    <option value="604800">1 周</option>
+                    <option value="2592000">1 个月</option>
+                    <option value="31536000">1 年</option>
+                </select>
+            </div>
+        </div>
 
-<div class="modal-backdrop" id="authModal" style="display:none;">
-    <div class="auth-panel">
-        <div class="auth-panel-header">
-            <div>
-                <div class="auth-panel-title">Welcome Back</div>
-                <div class="auth-panel-sub">Sign in to manage your pastes.</div>
-            </div>
-            <button type="button" class="auth-panel-close" id="authCloseBtn" aria-label="Close">&times;</button>
-        </div>
-        <form class="auth-panel-form" id="authForm">
-            <input id="authUsername" type="text" placeholder="Username" autocomplete="username">
-            <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
-            <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);margin:4px 0 12px;">
-                <input id="authRemember" type="checkbox" checked>
-                <span>Remember me</span>
-            </label>
-            <div style="display:flex; gap:10px;">
-                <button type="button" class="btn-secondary" style="flex:1" id="btnDoRegister">Sign Up</button>
-                <button type="submit" class="btn-primary" style="flex:1; justify-content:center;" id="btnDoLogin">Log In</button>
-            </div>
-        </form>
-        <div class="auth-panel-msg status-msg" id="authMsg"></div>
-    </div>
-</div>
-
-<div class="uc-backdrop" id="userCenter" style="display:none;">
-    <div class="uc-panel">
-        <div class="uc-header">
-            <div>
-                <div class="uc-title-main">Dashboard</div>
-                <div class="uc-title-sub" id="ucSubtitle">Manage your active pastes</div>
-            </div>
-            <div class="uc-actions" style="display:flex; gap:8px;">
-                <button type="button" class="btn-secondary" id="ucRefreshBtn">Refresh</button>
-                <button type="button" class="btn-danger" id="ucLogoutBtn">Log Out</button>
-                <button type="button" class="btn-secondary" id="ucCloseBtn">&times;</button>
-            </div>
-        </div>
-        <div class="uc-body">
-            <div class="uc-empty" id="ucEmpty">Loading records...</div>
-            <div class="uc-list" id="ucList" style="display:none;"></div>
-        </div>
-    </div>
-</div>
-
-<div class="sub-menu-backdrop" id="subClientOverlay" style="display:none;">
-    <div class="sub-menu sub-ios">
-        <div class="sub-ios-head">
-            <div class="sub-ios-title">Format</div>
-            <button type="button" class="sub-ios-close" id="subMenuCloseBtn">&times;</button>
-        </div>
-        <div class="sub-ios-grid" role="tablist">
-            <button type="button" class="sub-ios-pill is-active" data-client="general">General</button>
-            <button type="button" class="sub-ios-pill" data-client="base64">Base64/V2ray</button>
-            <button type="button" class="sub-ios-pill" data-client="clash">Clash</button>
-            <button type="button" class="sub-ios-pill" data-client="surge">Surge</button>
-        </div>
-        <div class="sub-ios-link">
-            <input id="subLinkInput" class="sub-ios-input" type="text" readonly value="" />
-            <button type="button" id="subLinkCopyBtn" class="sub-ios-copy">
-                <span class="icon-svg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></span>
+        <div class="action-bar">
+            <span id="statusMessage" class="status-text"></span>
+            <button class="btn-secondary" id="myPastesBtn" style="display:none;">我的列表</button>
+            <button class="btn-primary" id="submitBtn">
+                <span class="spinner"></span>
+                <span class="text">上传</span>
             </button>
         </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 <a href="https://aura.us.kg" target="_blank">Aura</a>. Design by Future.</p>
+    </footer>
+
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">账号认证</div>
+            <div class="input-group">
+                <input type="text" id="authUsername" placeholder="用户名" autocomplete="username">
+            </div>
+            <div class="input-group">
+                <input type="password" id="authPassword" placeholder="密码" autocomplete="current-password">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="switchAuthMode">切换至注册</button>
+                <button class="btn-primary" id="confirmAuth">登录</button>
+            </div>
+            <button class="btn-secondary" style="width:100%; background:transparent; color:var(--text-sec); font-size:12px;" onclick="closeAuthModal()">暂不登录，仅本地使用</button>
+        </div>
     </div>
-</div>
+
+    <div id="userCenter" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">用户中心</div>
+            <div style="text-align:center; margin:10px 0;">
+                <div style="font-size:14px; color:var(--text-sec);">当前用户</div>
+                <div id="ucUsername" style="font-size:18px; font-weight:600; margin-top:4px;">Guest</div>
+            </div>
+            <div class="modal-footer" style="flex-direction: column;">
+                <button class="btn-secondary" id="ucMyList">查看我的 Paste</button>
+                <button class="btn-secondary" id="ucLogout" style="color:#FF453A;">退出登录</button>
+                <button class="btn-secondary" onclick="closeUserCenter()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="subClientOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header" style="margin-bottom:20px;">App Library</div>
+            <div class="app-grid">
+                <a href="/" class="app-item">
+                    <div class="app-icon cloud">
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                    </div>
+                    <span class="app-name">Pastebox</span>
+                </a>
+                <a href="/Admin" class="app-item">
+                    <div class="app-icon admin">
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
+                    </div>
+                    <span class="app-name">Admin</span>
+                </a>
+                <a href="/Cloud" class="app-item">
+                    <div class="app-icon cloud">
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/></svg>
+                    </div>
+                    <span class="app-name">Cloud</span>
+                </a>
+                <a href="/Chat" class="app-item">
+                    <div class="app-icon ai">
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                    </div>
+                    <span class="app-name">AI Chat</span>
+                </a>
+            </div>
+            <button class="btn-secondary" style="margin-top:20px; width:100%;" onclick="closeSubClientMenu()">取消</button>
+        </div>
+    </div>
 
 <script>
-    /*
-      ========================================
-      PasteBox Logic (Unchanged Functionality)
-      ========================================
-    */
-    const THEME_KEY="lyn_paste_theme_v3";
-    const themeToggle=document.getElementById("themeToggle");
+    /* -------------------------------------------------------------------------- */
+    /* 逻辑保持不变                                */
+    /* -------------------------------------------------------------------------- */
+    const API_BASE = '/api/paste';
+    const AUTH_API = '/api/auth';
+    const VIEW_BASE = window.location.origin + '/Paste';
 
-    function applyTheme(t){
-        document.body.classList.remove("theme-light","theme-dark");
-        document.body.classList.add("theme-"+t);
-        // Visual polish for button icon logic handled in CSS
-        try{localStorage.setItem(THEME_KEY,t);}catch(_){}
-    }
+    const $content = document.getElementById('content');
+    const $slug = document.getElementById('slug');
+    const $password = document.getElementById('password');
+    const $syntax = document.getElementById('syntax');
+    const $expiration = document.getElementById('expiration');
+    const $submitBtn = document.getElementById('submitBtn');
+    const $status = document.getElementById('statusMessage');
+    const $myPastesBtn = document.getElementById('myPastesBtn');
+    const $baseUrlText = document.getElementById('baseUrlText');
 
-    (function(){
-        let t="light";
-        try{
-            const s=localStorage.getItem(THEME_KEY);
-            if(s==="dark"||s==="light")t=s;
-        }catch(_){}
-        applyTheme(t);
-    })();
+    // Modals
+    const $authModal = document.getElementById('authModal');
+    const $userCenter = document.getElementById('userCenter');
+    
+    // Auth inputs
+    const $authUsername = document.getElementById('authUsername');
+    const $authPassword = document.getElementById('authPassword');
+    const $confirmAuth = document.getElementById('confirmAuth');
+    const $switchAuthMode = document.getElementById('switchAuthMode');
+    
+    // User Center elements
+    const $ucUsername = document.getElementById('ucUsername');
+    const $ucLogout = document.getElementById('ucLogout');
+    const $ucMyList = document.getElementById('ucMyList');
 
-    themeToggle && themeToggle.addEventListener("click",()=>{
-        const cur=document.body.classList.contains("theme-dark")?"dark":"light";
-        applyTheme(cur==="dark"?"light":"dark");
-    });
-
-    (function(){
-        const ICONS=[];
-        for(let i=1;i<=10;i++)ICONS.push(`https://save.aura.us.kg/Picture/Preview/YL${i}.png`);
-        const img=document.getElementById("brandIcon");
-        if(img&&ICONS.length)img.src=ICONS[Math.floor(Math.random()*ICONS.length)];
-    })();
-
-    const BASE_URL=location.origin+"/Paste";
-    const VIEW_BASE=location.origin+"/api/paste";
-    const API_BASE=location.origin+"/api/paste";
-    const AUTH_BASE=location.origin+"/api/auth";
-    const qs=id=>document.getElementById(id);
-
-    const $content=qs("content");
-    const $byteNum=qs("byteNum");
-    const $lineCounter=qs("lineCounter");
-    const $nodeInfo=qs("nodeInfo");
-    const $ttlGroup=qs("ttlGroup");
-    const $ttlHint=qs("ttlHint");
-    const $form=qs("pasteForm");
-    const $submitBtn=qs("submitBtn");
-    const $resultBox=qs("resultBox");
-    const $viewLinkText=qs("viewLinkText");
-    const $btnCopyView=qs("btnCopyView");
-    const $btnOpenView=qs("btnOpenView");
-    const $btnManageFromResult=qs("btnManageFromResult");
-    const $statusMsg=qs("statusMsg");
-    const $baseUrlText=qs("baseUrlText");
-    const $advancedSection=qs("advancedSection");
-    const $ttlForeverBtn=qs("ttlForeverBtn");
-    const $customId=qs("customId");
-    const $customHint=qs("customHint");
-    const $remark=qs("remark");
-    const $fileInput=qs("fileInput");
-    const $fileHint=qs("fileHint");
-    const $uploadBtn=qs("uploadBtn");
-    const $btnResetContent=qs("btnResetContent");
-
-    const $btnBase64Encode = qs("btnBase64Encode");
-    const $btnBase64Decode = qs("btnBase64Decode");
-
-    const $btnHome=qs("btnHome");
-    const $btnAuthOpen=qs("btnAuthOpen");
-    const $btnAuthLabel=qs("btnAuthLabel");
-    const $authModal=qs("authModal");
-    const $authForm=qs("authForm");
-    const $authUsername=qs("authUsername");
-    const $authPassword=qs("authPassword");
-    const $authRemember=qs("authRemember");
-    const $btnDoLogin=qs("btnDoLogin");
-    const $btnDoRegister=qs("btnDoRegister");
-    const $authCloseBtn=qs("authCloseBtn");
-    const $authMsg=qs("authMsg");
-
-    const $userCenter=qs("userCenter");
-    const $ucEmpty=qs("ucEmpty");
-    const $ucList=qs("ucList");
-    const $ucRefreshBtn=qs("ucRefreshBtn");
-    const $ucLogoutBtn=qs("ucLogoutBtn");
-    const $ucCloseBtn=qs("ucCloseBtn");
-
-    if($baseUrlText)$baseUrlText.textContent=VIEW_BASE+"/{id}";
-
-    const state={
-        loggedIn:false,
-        username:null,
-        ttlKey:"7d",
-        customSlugError:false,
-        isSubmitting:false,
-        mode:"create",
-        originalSlug:null
+    const state = {
+        token: localStorage.getItem('paste_token') || null,
+        user: localStorage.getItem('paste_user') || null,
+        isRegistering: false,
+        mode: 'create', // create | edit
+        editId: null,
+        isSubmitting: false
     };
 
-    function escapeHTML(str){
-        if(!str) return "";
-        return String(str).replace(/[&<>"']/g,c=>({
-            "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
-        }[c]||c));
-    }
-
-    function setStatus(msg,type){
-        if(!$statusMsg)return;
-        $statusMsg.textContent=msg||"";
-        $statusMsg.classList.remove("success","error");
-        if(type)$statusMsg.classList.add(type);
-    }
-    function setAuthTip(msg,type){
-        if(!$authMsg)return;
-        $authMsg.textContent=msg||"";
-        $authMsg.classList.remove("success","error");
-        if(type)$authMsg.classList.add(type);
-    }
-
-    // Base64 logic
-    function base64EncodeUtf8(str) { try { return btoa(unescape(encodeURIComponent(str))); } catch (_) { return null; } }
-    function base64DecodeUtf8(str) { try { return decodeURIComponent(escape(atob(str))); } catch (_) { return null; } }
-
-    // Node detection
-    function detectNodes(raw) {
-        const text = (raw || "").trim();
-        if (!text) return { isNode:false, count:0, fromBase64:false };
-        const schemes = ["ss://","ssr://","vmess://","vless://","trojan://","hysteria://","hysteria2://","hy2://","tuic://","socks://","socks5://"];
-        function countIn(str) {
-            let count = 0;
-            str.split(/\r\n|\r|\n/).forEach(line => {
-                const s = line.trim();
-                if (!s) return;
-                for (const p of schemes) {
-                    if (s.startsWith(p)) { count++; break; }
-                }
-            });
-            return count;
-        }
-        let count = countIn(text);
-        if (count > 0) return { isNode:true, count, fromBase64:false };
-        const compact = text.replace(/\s+/g,"");
-        if (compact.length >= 16 && compact.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(compact)) {
-            const decoded = base64DecodeUtf8(compact);
-            if (decoded != null) {
-                const c2 = countIn(decoded);
-                if (c2 > 0) return { isNode:true, count:c2, fromBase64:true };
+    // UI Utilities
+    function setStatus(msg, type='info') {
+        $status.textContent = msg;
+        $status.className = 'status-text ' + type + ' visible';
+        setTimeout(() => {
+            if ($status.className.includes(type)) {
+               // $status.classList.remove('visible'); // Optional: auto hide
             }
-        }
-        return { isNode:false, count:0, fromBase64:false };
+        }, 5000);
     }
 
-    async function postJSON(url,body){
-        const res=await fetch(url,{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            credentials:"include",
-            body:JSON.stringify(body||{})
+    function showResultLink(slug) {
+        const url = `${VIEW_BASE}/${slug}`;
+        $content.value = url;
+        // 自动选中
+        $content.focus();
+        $content.select();
+        // 尝试复制
+        navigator.clipboard.writeText(url).then(()=>{
+            setStatus(`链接已生成并复制: ${url}`, 'success');
+        }).catch(()=>{
+            setStatus(`链接已生成: ${url}`, 'success');
         });
-        const data=await res.json().catch(()=>({}));
-        if(!res.ok||data.ok===false){
-            throw new Error(data.error||`Request Failed（${res.status}）`);
-        }
-        return data;
     }
 
-    function updateByteCount(){
-        if(!$content||!$byteNum)return;
-        let len=0;
-        try{len=new TextEncoder().encode($content.value).length;}
-        catch(_){len=$content.value.length;}
-        $byteNum.textContent=len;
-        if($lineCounter){
-            const v=$content.value||"";
-            const lines=v ? v.split(/\r\n|\r|\n/).length : 0;
-            $lineCounter.textContent = lines+" Lines";
-        }
-        if ($nodeInfo) {
-            const info = detectNodes($content.value || "");
-            if (info.isNode && info.count > 0) {
-                $nodeInfo.textContent = `(${info.count} nodes detected)`;
-                $nodeInfo.classList.add("active");
+    function resetForm() {
+        $content.value = '';
+        $slug.value = '';
+        $password.value = '';
+        $syntax.value = 'text';
+        $expiration.value = '0';
+        // 重置按钮文字
+        const span = $submitBtn.querySelector('.text');
+        if(span) span.textContent = '上传';
+    }
+
+    // Modal Controls
+    function openAuthModal() {
+        $authModal.classList.add('active');
+        $authUsername.focus();
+    }
+    function closeAuthModal() {
+        $authModal.classList.remove('active');
+    }
+    function openUserCenter() {
+        $ucUsername.textContent = state.user || 'Guest';
+        $userCenter.classList.add('active');
+    }
+    function closeUserCenter() {
+        $userCenter.classList.remove('active');
+    }
+
+    // Sub Client Menu
+    const $subClientTrigger = document.getElementById('subClientTrigger');
+    const $subClientOverlay = document.getElementById('subClientOverlay');
+
+    if($subClientTrigger && $subClientOverlay){
+        $subClientTrigger.addEventListener('click', ()=>{
+            $subClientOverlay.classList.add('active');
+        });
+        $subClientOverlay.addEventListener('click', (e)=>{
+            if(e.target === $subClientOverlay) closeSubClientMenu();
+        });
+    }
+    function closeSubClientMenu(){
+        if($subClientOverlay) $subClientOverlay.classList.remove('active');
+    }
+
+    // Auth Logic
+    async function postJSON(url, data, token=null) {
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || json.message || 'Request failed');
+        return json;
+    }
+
+    async function initAuthFromServer() {
+        if (!state.token) return;
+        try {
+            const res = await fetch(AUTH_API, {
+                headers: { 'Authorization': `Bearer ${state.token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                state.user = data.username;
+                localStorage.setItem('paste_user', state.user);
+                applyAuthUI();
             } else {
-                $nodeInfo.textContent = "";
-                $nodeInfo.classList.remove("active");
+                logout();
             }
-        }
-    }
-    if($content){
-        updateByteCount();
-        $content.addEventListener("input",updateByteCount);
-    }
-
-    if($uploadBtn&&$fileInput){
-        $uploadBtn.addEventListener("click",e=>{ e.preventDefault(); $fileInput.click(); });
-        $fileInput.addEventListener("change",()=>{
-            const file=$fileInput.files&&$fileInput.files[0];
-            if(!file)return;
-            const reader=new FileReader();
-            reader.onload=()=>{
-                if($content){ $content.value=reader.result||""; updateByteCount(); }
-                if($fileHint){
-                    $fileHint.textContent=`Loaded: ${file.name} (${file.size} bytes)`;
-                    $fileHint.classList.remove("hint-error"); $fileHint.classList.add("hint-success");
-                }
-                setStatus(`File loaded: ${file.name}`,"success");
-            };
-            reader.onerror=()=>{
-                if($fileHint){
-                    $fileHint.textContent="File read failed. Please ensure it is text.";
-                    $fileHint.classList.add("hint-error");
-                }
-                setStatus("Read failed.","error");
-            };
-            reader.readAsText(file);
-        });
-    }
-
-    if($btnResetContent){
-        $btnResetContent.addEventListener("click",()=>{
-            if($content)$content.value="";
-            if($remark)$remark.value="";
-            updateByteCount();
-            setStatus("Content cleared.");
-        });
-    }
-
-    if ($btnBase64Encode) {
-        $btnBase64Encode.addEventListener("click", () => {
-            if (!$content) return;
-            const v = $content.value;
-            if (!v) { setStatus("No content to encode.", "error"); return; }
-            const encoded = base64EncodeUtf8(v);
-            if (encoded == null) { setStatus("Encoding failed. Unsupported chars.", "error"); return; }
-            $content.value = encoded;
-            updateByteCount();
-            setStatus("Encoded to Base64.", "success");
-        });
-    }
-
-    if ($btnBase64Decode) {
-        $btnBase64Decode.addEventListener("click", () => {
-            if (!$content) return;
-            const v = $content.value;
-            if (!v) { setStatus("No content to decode.", "error"); return; }
-            const decoded = base64DecodeUtf8(v);
-            if (decoded == null) { setStatus("Decoding failed. Invalid Base64.", "error"); return; }
-            $content.value = decoded;
-            updateByteCount();
-            setStatus("Decoded from Base64.", "success");
-            $btnBase64Decode.classList.add("decode-active");
-            setTimeout(() => { $btnBase64Decode.classList.remove("decode-active"); }, 300);
-        });
-    }
-
-    const ttlText={ "10m":"Expires in 10 minutes.", "1d":"Expires in 1 day.", "7d":"Expires in 7 days.", "30d":"Expires in 30 days.", "forever":"Never expires." };
-    function setTtl(key){
-        state.ttlKey=key;
-        if($ttlGroup){
-            $ttlGroup.querySelectorAll(".ttl-btn").forEach(b=>{
-                b.classList.toggle("active",b.dataset.ttl===key);
-            });
-        }
-        if($ttlHint)$ttlHint.textContent=ttlText[key]||ttlText["7d"];
-    }
-    setTtl("7d");
-    if($ttlGroup){
-        $ttlGroup.addEventListener("click",e=>{
-            const btn=e.target.closest(".ttl-btn");
-            if(!btn||btn.disabled)return;
-            const key=btn.dataset.ttl;
-            if(key) setTtl(key);
-        });
-    }
-
-    function validateCustomSlug(){
-        state.customSlugError=false;
-        if(!$customId)return;
-        const val=$customId.value.trim();
-        if(!state.loggedIn){
-            if($advancedSection)$advancedSection.style.display="none";
-            return;
-        }else{
-            if($advancedSection)$advancedSection.style.display="";
-        }
-        if(!val){
-            if($customHint){
-                $customHint.textContent="Leave empty for random ID.";
-                $customHint.classList.remove("hint-error","hint-success");
-            }
-            $customId.classList.remove("input-error");
-            return;
-        }
-        const ok=/^[A-Za-z0-9_-]+$/.test(val);
-        if(!ok){
-            state.customSlugError=true;
-            if($customHint){
-                $customHint.textContent="Alphanumeric, underscores, hyphens only.";
-                $customHint.classList.add("hint-error");
-                $customHint.classList.remove("hint-success");
-            }
-            $customId.classList.add("input-error");
-        }else{
-            if($customHint){
-                $customHint.textContent="Valid slug.";
-                $customHint.classList.remove("hint-error");
-                $customHint.classList.add("hint-success");
-            }
-            $customId.classList.remove("input-error");
-        }
-    }
-    if($customId)$customId.addEventListener("input",validateCustomSlug);
-
-    function enterCreateMode(clear){
-        state.mode="create";
-        state.originalSlug=null;
-        if($submitBtn){
-            const span=$submitBtn.querySelector(".text");
-            if(span)span.textContent="Publish";
-        }
-        if($btnHome)$btnHome.style.display="none";
-        if(clear){
-            if($content)$content.value="";
-            if($remark)$remark.value="";
-            if($customId)$customId.value="";
-            updateByteCount();
-            setStatus("");
-            if($resultBox)$resultBox.style.display="none";
+        } catch (e) {
+            console.error(e);
         }
     }
 
-    if($btnHome){
-        $btnHome.addEventListener("click",()=>{
-            enterCreateMode(true);
-            history.replaceState(null,"",BASE_URL);
-            window.scrollTo({top:0,behavior:"smooth"});
-        });
+    function applyAuthUI() {
+        if (state.token && state.user) {
+            $myPastesBtn.style.display = 'inline-flex';
+        } else {
+            $myPastesBtn.style.display = 'none';
+        }
     }
 
-    function applyAuthUI(){
-        if($btnAuthLabel){
-            $btnAuthLabel.textContent = state.loggedIn ? (state.username || "User") : "Log In";
-        }
-        if($advancedSection){
-            $advancedSection.style.display = state.loggedIn ? "" : "none";
-        }
-        if ($ttlForeverBtn) {
-            if (state.loggedIn) {
-                $ttlForeverBtn.disabled = false;
-            } else {
-                $ttlForeverBtn.disabled = true;
-                if (state.ttlKey === "forever") setTtl("7d");
-            }
-        }
-        validateCustomSlug();
-    }
-
-    function setLoggedIn(username){
-        state.loggedIn = true;
-        state.username = username || "User";
-        try { localStorage.setItem("pbx_username", state.username); } catch(_) {}
-        setTtl("forever");
+    function logout() {
+        state.token = null;
+        state.user = null;
+        localStorage.removeItem('paste_token');
+        localStorage.removeItem('paste_user');
         applyAuthUI();
-    }
-    function setLoggedOut(){
-        state.loggedIn=false;
-        state.username=null;
-        try{localStorage.removeItem("pbx_username");}catch(_){}
-        applyAuthUI();
+        closeUserCenter();
+        setStatus('已退出登录', 'info');
     }
 
-    async function initAuthFromServer(){
-        let saved=null;
-        try{saved=localStorage.getItem("pbx_username")||null;}catch(_){}
-        try{
-            const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
-            if(res.status===401){setLoggedOut();return;}
-            const data=await res.json().catch(()=>({}));
-            if(data&&data.ok){
-                setLoggedIn(saved||"User");
-            }else{
-                setLoggedOut();
-            }
-        }catch(_){
-            setLoggedOut();
-        }
-    }
+    if ($confirmAuth) {
+        $confirmAuth.addEventListener('click', async () => {
+            const username = $authUsername.value.trim();
+            const password = $authPassword.value.trim();
+            if (!username || !password) return setStatus('请输入用户名和密码', 'error');
 
-    function openAuthModal(){
-        if(!$authModal)return;
-        $authModal.style.display="flex";
-        setAuthTip("");
-        if($authUsername)$authUsername.focus();
-    }
-    function closeAuthModal(){
-        if(!$authModal)return;
-        $authModal.style.display="none";
-        if($authForm)$authForm.reset();
-        if($authRemember) $authRemember.checked = true;
-        setAuthTip("");
-    }
-    if($authCloseBtn)$authCloseBtn.addEventListener("click",closeAuthModal);
-    if($authModal){
-        $authModal.addEventListener("click",e=>{
-            if(e.target===$authModal)closeAuthModal();
-        });
-    }
-
-    function openUserCenter(){
-        if(!$userCenter)return;
-        $userCenter.style.display="flex";
-        loadUserPastes();
-    }
-    function closeUserCenter(){
-        if(!$userCenter)return;
-        $userCenter.style.display="none";
-    }
-    if($ucCloseBtn)$ucCloseBtn.addEventListener("click",closeUserCenter);
-    if($userCenter){
-        $userCenter.addEventListener("click",e=>{
-            if(e.target===$userCenter)closeUserCenter();
-        });
-    }
-
-    if($btnAuthOpen){
-        $btnAuthOpen.addEventListener("click",()=>{
-            if(state.loggedIn)openUserCenter();
-            else openAuthModal();
-        });
-    }
-
-    if($authForm){
-        $authForm.addEventListener("submit",async e=>{
-            e.preventDefault();
-            const u=$authUsername.value.trim();
-            const p=$authPassword.value;
-            const remember = $authRemember ? $authRemember.checked : true;
-            if(!u||!p){ setAuthTip("Missing username or password.","error"); return; }
-            setAuthTip("Logging in...");
-            try{
-                const data=await postJSON(AUTH_BASE+"/login",{username:u,password:p,remember});
-                setLoggedIn(data.username||u);
-                setAuthTip("Success.","success");
-                setTimeout(closeAuthModal,300);
-            }catch(err){
-                setAuthTip(err.message||"Login failed.","error");
-            }
-        });
-    }
-    if($btnDoRegister){
-        $btnDoRegister.addEventListener("click",async ()=>{
-            const u=$authUsername.value.trim();
-            const p=$authPassword.value;
-            if(!u||!p){setAuthTip("Please enter username and password.","error");return;}
-            if(p.length<6){setAuthTip("Password too short (min 6).","error");return;}
-            setAuthTip("Registering...");
-            try{
-                await postJSON(AUTH_BASE+"/register",{username:u,password:p});
-                setAuthTip("Registered. Please login.","success");
-            }catch(err){
-                setAuthTip(err.message||"Registration failed.","error");
-            }
-        });
-    }
-
-    function formatDate(d){
-        if(!d)return"-";
-        const dt=new Date(d);
-        if(Number.isNaN(dt.getTime()))return"-";
-        return dt.toISOString().slice(0,16).replace('T',' ');
-    }
-    function calcRemainDays(expires){
-        if(!expires)return null;
-        const t=new Date(expires).getTime();
-        if(Number.isNaN(t))return null;
-        return Math.ceil((t-Date.now())/86400000);
-    }
-
-    function buildSubLink(slug, clientKey) {
-        const base = `${location.origin}/autosub?id=${encodeURIComponent(slug)}`;
-        if (!clientKey || clientKey === "general") return base;
-        return `${base}&client=${encodeURIComponent(clientKey)}`;
-    }
-
-    let currentSubSlug = null;
-    function openSubClientMenu(slug) {
-        currentSubSlug = slug;
-        const overlay = document.getElementById("subClientOverlay");
-        if (overlay) {
-            overlay.style.display = "flex";
-            if (window.__subMenuSync) window.__subMenuSync();
-        }
-    }
-    function closeSubClientMenu() {
-        currentSubSlug = null;
-        const overlay = document.getElementById("subClientOverlay");
-        if (overlay) overlay.style.display = "none";
-    }
-
-    (function initSubClientMenu(){
-        const overlay = document.getElementById("subClientOverlay");
-        if (!overlay) return;
-        const closeBtn = document.getElementById("subMenuCloseBtn");
-        const input = document.getElementById("subLinkInput");
-        const copyBtn = document.getElementById("subLinkCopyBtn");
-        const pills = Array.from(overlay.querySelectorAll(".sub-ios-pill"));
-        let selected = "general";
-
-        function refresh(){
-            pills.forEach(btn=>{
-                const key = btn.getAttribute("data-client") || "general";
-                btn.classList.toggle("is-active", key === selected);
-            });
-            if (input) {
-                input.value = currentSubSlug ? buildSubLink(currentSubSlug, selected) : "";
-            }
-        }
-        function setSelected(key){ selected = key || "general"; refresh(); }
-        window.__subMenuSync = function(){ selected = "general"; refresh(); };
-
-        if (closeBtn) closeBtn.addEventListener("click", closeSubClientMenu);
-        overlay.addEventListener("click",(e)=>{ if (e.target === overlay) closeSubClientMenu(); });
-
-        pills.forEach(btn=>{
-            btn.addEventListener("click", (e)=>{
-                try{
-                    const r = btn.getBoundingClientRect();
-                    const ripple = document.createElement("span");
-                    ripple.className = "ios-ripple";
-                    ripple.style.left = ((e?.clientX ?? (r.left + r.width/2)) - r.left) + "px";
-                    ripple.style.top  = ((e?.clientY ?? (r.top + r.height/2)) - r.top) + "px";
-                    btn.appendChild(ripple);
-                    ripple.addEventListener("animationend", ()=> ripple.remove(), { once:true });
-                }catch(_){}
-                setSelected(btn.getAttribute("data-client") || "general");
-            });
-        });
-
-        if (copyBtn) copyBtn.addEventListener("click", async ()=>{
-            if (!currentSubSlug) return;
-            const url = buildSubLink(currentSubSlug, selected);
-            try{
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    await navigator.clipboard.writeText(url);
-                    setStatus("Subscription link copied.", "success");
+            const endpoint = state.isRegistering ? '/register' : '/login';
+            try {
+                const data = await postJSON(AUTH_API + endpoint, { username, password });
+                if (state.isRegistering) {
+                    setStatus('注册成功，请登录', 'success');
+                    state.isRegistering = false;
+                    $switchAuthMode.textContent = '切换至注册';
+                    $confirmAuth.textContent = '登录';
                 } else {
-                    window.prompt("Copy link:", url);
+                    state.token = data.token;
+                    state.user = username;
+                    localStorage.setItem('paste_token', state.token);
+                    localStorage.setItem('paste_user', state.user);
+                    setStatus('登录成功', 'success');
+                    closeAuthModal();
+                    applyAuthUI();
                 }
-            }catch(_){ window.prompt("Copy link:", url); }
-            closeSubClientMenu();
+            } catch (err) {
+                alert(err.message);
+            }
         });
-        document.addEventListener("keydown",(e)=>{
-            if (e.key === "Escape" && overlay.style.display !== "none") closeSubClientMenu();
+    }
+
+    if ($switchAuthMode) {
+        $switchAuthMode.addEventListener('click', () => {
+            state.isRegistering = !state.isRegistering;
+            $switchAuthMode.textContent = state.isRegistering ? '切换至登录' : '切换至注册';
+            $confirmAuth.textContent = state.isRegistering ? '注册' : '登录';
         });
-        refresh();
-    })();
+    }
 
+    document.getElementById('userIconBtn').addEventListener('click', () => {
+        if (state.token) openUserCenter();
+        else openAuthModal();
+    });
 
-    async function loadUserPastes(){
-        if(!$ucEmpty||!$ucList)return;
-        $ucEmpty.style.display="";
-        $ucEmpty.textContent="Loading records...";
-        $ucList.style.display="none";
-        $ucList.innerHTML="";
-        try{
-            const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
-            if(res.status===401){
-                $ucEmpty.textContent="Session expired. Please login.";
-                setLoggedOut();
+    if ($ucLogout) $ucLogout.addEventListener('click', logout);
+
+    if ($ucMyList) {
+        $ucMyList.addEventListener('click', () => {
+            window.location.href = VIEW_BASE + '/my'; 
+        });
+    }
+    if ($myPastesBtn) {
+        $myPastesBtn.addEventListener('click', () => {
+            window.location.href = VIEW_BASE + '/my';
+        });
+    }
+
+    // URL Params Handling (Edit Mode)
+    function enterEditMode(id) {
+        state.mode = 'edit';
+        state.editId = id;
+        const span = $submitBtn.querySelector('.text');
+        if(span) span.textContent = '更新';
+        $baseUrlText.textContent = `Editing: ${id}`;
+        
+        // 加载内容
+        fetch(`${API_BASE}/${id}?raw=true`)
+            .then(r => {
+                if(!r.ok) throw new Error("无法加载原 Paste");
+                return r.text();
+            })
+            .then(text => {
+                $content.value = text;
+            })
+            .catch(err => setStatus(err.message, 'error'));
+    }
+
+    function enterCreateMode(clear=false) {
+        state.mode = 'create';
+        state.editId = null;
+        const span = $submitBtn.querySelector('.text');
+        if(span) span.textContent = '上传';
+        $baseUrlText.textContent = 'New Paste';
+        if(clear) resetForm();
+    }
+
+    // Check URL query
+    const urlParams = new URLSearchParams(window.location.search);
+    const editSlug = urlParams.get('edit');
+    if (editSlug) {
+        enterEditMode(editSlug);
+    }
+
+    // Submit Logic
+    if ($submitBtn) {
+        $submitBtn.addEventListener('click', async () => {
+            if (state.isSubmitting) return;
+            
+            const content = $content.value;
+            if (!content.trim()) {
+                setStatus("内容不能为空", "error");
                 return;
             }
-            const data=await res.json().catch(()=>({}));
-            if(!data.ok){ $ucEmpty.textContent=data.error||"Load failed."; return; }
-            const items=data.items||[];
-            if(!items.length){ $ucEmpty.textContent="No records found."; return; }
 
-            const valid=[];
-            await Promise.all(items.map(async (item)=>{
-                const slug=item.slug||item.id;
-                if(!slug)return;
-                try{
-                    const u=new URL(`${API_BASE}/${encodeURIComponent(slug)}`);
-                    u.searchParams.set("manage","1");
-                    const r=await fetch(u.toString(),{credentials:"include"});
-                    if(!r.ok)return;
-                    const d=await r.json().catch(()=>null);
-                    if(!d||d.ok===false)return;
-                    const remain=calcRemainDays(d.expiresAt);
-                    if(remain!=null && remain<0)return;
-                    d._nodeInfo = detectNodes(d.content || "");
-                    valid.push(d);
-                }catch(_){}
-            }));
-
-            if(!valid.length){
-                $ucEmpty.style.display="";
-                $ucEmpty.textContent="No valid records (expired/deleted).";
+            // 如果当前在显示结果链接，点击按钮应该是“创建新的”
+            if (state.mode === 'create' && content.startsWith(VIEW_BASE)) {
+                enterCreateMode(true);
                 return;
             }
 
-            valid.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+            state.isSubmitting = true;
+            $submitBtn.disabled = true;
+            $submitBtn.classList.add('loading');
+            $submitBtn.classList.add('btn-disabled');
 
-            $ucEmpty.style.display="none";
-            $ucList.style.display="flex";
-
-            valid.forEach(d=>{
-                const slug=d.slug;
-                if(!slug)return;
-                const remark=d.remark||"(No remark)";
-                const expires=d.expiresAt||null;
-                const ttlKey=d.ttlKey||"";
-                const viewUrl=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
-                const remain=calcRemainDays(expires);
-                const nodeInfo = d._nodeInfo || detectNodes(d.content || "");
-                const hasNode = !!nodeInfo.isNode && nodeInfo.count > 0;
-                const nodeCount = nodeInfo.count || 0;
-
-                const row=document.createElement("div");
-                row.className="uc-item";
-                row.innerHTML=`
-                    <div class="uc-item-top">
-                        <div style="flex:1">
-                            <span class="uc-remark-tag">${escapeHTML(remark)}</span>
-                            <span class="uc-slug-tag">${escapeHTML(slug)}</span>
-                        </div>
-                        <div class="uc-item-meta"></div>
-                    </div>
-                    <div>
-                        <span class="uc-link-tag">${escapeHTML(viewUrl)}</span>
-                    </div>
-                    <div class="uc-item-actions"></div>
-                `;
-                const meta=row.querySelector(".uc-item-meta");
-                const act=row.querySelector(".uc-item-actions");
-                const topDiv=row.querySelector(".uc-item-top > div");
-
-                let metaText="";
-                if(!expires || ttlKey==="forever"){
-                    metaText=`Never Expire`;
-                }else{
-                    if(remain!=null && remain>=0){
-                        metaText=`${remain} days left`;
-                    } else {
-                        metaText = "Expired";
-                    }
-                }
-                meta.textContent=metaText;
-
-                if (hasNode && topDiv) {
-                    const subBtn=document.createElement("button");
-                    subBtn.type="button";
-                    subBtn.className="uc-sub-btn";
-                    subBtn.textContent = nodeCount > 0 ? `SUB (${nodeCount})` : "SUB";
-                    subBtn.addEventListener("click",()=>openSubClientMenu(slug));
-                    topDiv.appendChild(subBtn);
-                }
-
-                const btnEdit=document.createElement("button");
-                btnEdit.type="button";
-                btnEdit.className="btn-secondary";
-                btnEdit.textContent = "Edit";
-                btnEdit.addEventListener("click",()=>{
-                    closeUserCenter();
-                    enterEditMode(slug);
-                });
-
-                const btnCopy=document.createElement("button");
-                btnCopy.type="button";
-                btnCopy.className="btn-secondary";
-                btnCopy.textContent = "Copy";
-                btnCopy.addEventListener("click",async ()=>{
-                    try{
-                        await navigator.clipboard.writeText(viewUrl);
-                        setStatus("Copied.","success");
-                    }catch(_){ setStatus("Copy failed.","error"); }
-                });
-
-                const btnOpen=document.createElement("button");
-                btnOpen.type="button";
-                btnOpen.className="btn-secondary";
-                btnOpen.textContent = "Open";
-                btnOpen.addEventListener("click",()=>{window.open(viewUrl,"_blank","noopener");});
-
-                const btnDel=document.createElement("button");
-                btnDel.type="button";
-                btnDel.className="btn-danger";
-                btnDel.textContent = "Del";
-                btnDel.addEventListener("click",async ()=>{
-                    if(!confirm("Delete this paste?"))return;
-                    try{
-                        await postJSON(API_BASE,{action:"delete",slug});
-                        loadUserPastes();
-                        setStatus("Deleted.","success");
-                    }catch(err){
-                        setStatus(err.message||"Delete failed.","error");
-                    }
-                });
-
-                act.appendChild(btnEdit);
-                act.appendChild(btnCopy);
-                act.appendChild(btnOpen);
-                act.appendChild(btnDel);
-
-                $ucList.appendChild(row);
-            });
-        }catch(err){
-            $ucEmpty.style.display="";
-            $ucEmpty.textContent=err.message||"Load failed.";
-        }
-    }
-
-    if($ucRefreshBtn)$ucRefreshBtn.addEventListener("click",loadUserPastes);
-    if($ucLogoutBtn){
-        $ucLogoutBtn.addEventListener("click",async ()=>{
-            try{await postJSON(AUTH_BASE+"/logout",{});}catch(_){}
-            setLoggedOut();
-            closeUserCenter();
-            enterCreateMode(true);
-            setStatus("Logged out.","success");
-        });
-    }
-
-    async function enterEditMode(slug){
-        state.mode="edit";
-        state.originalSlug=slug;
-        if($submitBtn){
-            const span=$submitBtn.querySelector(".text");
-            if(span)span.textContent="Update";
-        }
-        if($btnHome)$btnHome.style.display="inline-flex";
-        setStatus("Loading content...");
-        try{
-            const url=new URL(`${API_BASE}/${encodeURIComponent(slug)}`);
-            url.searchParams.set("manage","1");
-            const res=await fetch(url.toString(),{credentials:"include"});
-            const data=await res.json().catch(()=>({}));
-            if(!res.ok||data.ok===false){ throw new Error(data.error||"Content not found."); }
-            if($content)$content.value=data.content||"";
-            if($remark)$remark.value=data.remark||"";
-            if($customId){
-                $customId.value=data.slug||slug;
-                $customId.readOnly=false;
-            }
-            updateByteCount();
-            if(data.ttlKey)setTtl(data.ttlKey);
-            const urlClean=new URL(location.href);
-            urlClean.searchParams.set("id",slug);
-            history.replaceState(null,"",urlClean.toString());
-            setStatus("Edit mode enabled.","success");
-        }catch(err){
-            setStatus(err.message||"Load failed.","error");
-            enterCreateMode(false);
-        }
-    }
-
-    function showResultLink(slug){
-        if(!$resultBox||!$viewLinkText)return;
-        const url=`${VIEW_BASE}/${encodeURIComponent(slug)}`;
-        $viewLinkText.textContent=url;
-        $resultBox.style.display="block";
-        if($btnManageFromResult){
-            $btnManageFromResult.style.display = state.loggedIn ? "inline-flex" : "none";
-        }
-    }
-
-    if($btnCopyView){
-        $btnCopyView.addEventListener("click",async ()=>{
-            const text=$viewLinkText&&$viewLinkText.textContent;
-            if(!text)return;
-            try{
-                await navigator.clipboard.writeText(text);
-                setStatus("Link copied.","success");
-            }catch(_){ setStatus("Copy failed.","error"); }
-        });
-    }
-    if($btnOpenView){
-        $btnOpenView.addEventListener("click",()=>{
-            const text=$viewLinkText&&$viewLinkText.textContent;
-            if(!text)return;
-            window.open(text,"_blank","noopener");
-        });
-    }
-    if($btnManageFromResult){
-        $btnManageFromResult.addEventListener("click",()=>{
-            if(!state.loggedIn){ openAuthModal(); return; }
-            openUserCenter();
-        });
-    }
-
-    if($form){
-        $form.addEventListener("submit",async e=>{
-            e.preventDefault();
-            const text=($content&&$content.value.trim())||"";
-            if(!text){setStatus("Content cannot be empty.","error");return;}
-            if(state.customSlugError){setStatus("Invalid custom slug.","error");return;}
-
-            let slug=null;
-            let newSlug=null;
-            if(state.mode==="edit"){
-                slug=state.originalSlug;
-                if($customId){
-                    const v=$customId.value.trim();
-                    if(v&&v!==slug)newSlug=v;
-                }
-            }else{
-                if(state.loggedIn&&$customId){
-                    const v=$customId.value.trim();
-                    if(v)slug=v;
-                }
-            }
-
-            const payload={
-                action:state.mode==="edit"?"update":"create",
-                content:text,
-                ttlKey:state.ttlKey,
-                remark:$remark?$remark.value.trim():""
+            const payload = {
+                content,
+                syntax: $syntax.value,
+                expiration: parseInt($expiration.value)
             };
-            if(slug)payload.slug=slug;
-            if(newSlug)payload.newSlug=newSlug;
+            
+            const newSlug = $slug.value.trim();
+            if (newSlug) payload.customSlug = newSlug;
+            
+            const pwd = $password.value.trim();
+            if (pwd) payload.password = pwd;
 
-            state.isSubmitting=true;
-            if($submitBtn){
-                $submitBtn.disabled=true;
-                $submitBtn.classList.add("btn-disabled");
-                const span=$submitBtn.querySelector(".text");
-                if(span)span.textContent=state.mode==="edit"?"Saving...":"Uploading...";
+            // Edit payload
+            if (state.mode === 'edit' && state.editId) {
+                payload.editSlug = state.editId; 
+                // 注意：通常API需要区分 create 和 update，这里假设后端逻辑支持
+                // 如果后端是同一个 endpoint，通常需要传递标识
             }
-            setStatus("Submitting...");
-            try{
-                const data=await postJSON(API_BASE,payload);
-                const finalSlug=data.slug||newSlug||slug;
-                if(!finalSlug)throw new Error("Missing slug in response.");
+
+            try {
+                const data = await postJSON(API_BASE, payload, state.token);
+                const finalSlug = data.slug || newSlug || data.id; // fallback
+                if (!finalSlug) throw new Error("返回数据缺少 slug。");
+                
                 showResultLink(finalSlug);
 
-                setStatus(state.mode==="edit"?"Updated.":"Uploaded.","success");
-                enterCreateMode(true);
-            }catch(err){
-                setStatus(err.message||"Failed.","error");
-            }finally{
-                state.isSubmitting=false;
-                if($submitBtn){
-                    $submitBtn.disabled=false;
-                    $submitBtn.classList.remove("btn-disabled");
-                    const span=$submitBtn.querySelector(".text");
-                    if(span)span.textContent=state.mode==="edit"?"Update":"Publish";
-                }
+                setStatus(state.mode === "edit" ? "更新成功" : "上传完成", "success");
+                
+                // 成功后重置为 Create 模式准备下一次
+                state.mode = 'create';
+                state.editId = null;
+                const span = $submitBtn.querySelector('.text');
+                if(span) span.textContent = '创建新 Paste';
+
+            } catch (err) {
+                setStatus(err.message || "操作失败", "error");
+            } finally {
+                state.isSubmitting = false;
+                $submitBtn.disabled = false;
+                $submitBtn.classList.remove('loading');
+                $submitBtn.classList.remove('btn-disabled');
+                // 按钮文字保持（如果是显示了链接，用户再次点击会重置）
             }
         });
     }
 
-    document.addEventListener("keydown",e=>{
-        if(e.key==="Escape"){
+    if($baseUrlText) $baseUrlText.textContent = "New Paste";
+
+    // ESC to close modals
+    document.addEventListener("keydown", e => {
+        if (e.key === "Escape") {
             const overlay = document.getElementById("subClientOverlay");
-            if(overlay && overlay.style.display==="flex"){ closeSubClientMenu(); return; }
-            if($userCenter&&$userCenter.style.display==="flex")closeUserCenter();
-            else if($authModal&&$authModal.style.display==="flex")closeAuthModal();
+            if (overlay && overlay.classList.contains('active')) {
+                closeSubClientMenu();
+                return;
+            }
+            if ($userCenter && $userCenter.classList.contains('active')) closeUserCenter();
+            else if ($authModal && $authModal.classList.contains('active')) closeAuthModal();
         }
     });
 
-    (async function init(){
+    (async function init() {
         await initAuthFromServer();
         applyAuthUI();
     })();
