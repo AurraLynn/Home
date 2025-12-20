@@ -2,523 +2,613 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Pastebox Pro</title>
+    <title>Pastebox</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
 
-    <!-- 字体引入：Inter & JetBrains Mono -->
+    <!-- 引入高级字体 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            /* --- 核心变量 --- */
-            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-            --font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            /* --- 核心变量系统 --- */
+            --font-main: 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
 
-            /* 亮色模式 (Light) - 高级灰调 */
-            --bg-app: #f2f2f7; /* iOS 系统灰 */
-            --bg-card: rgba(255, 255, 255, 0.85);
-            --bg-glass: rgba(255, 255, 255, 0.6);
-            --border-glass: rgba(255, 255, 255, 0.4);
-            --border-subtle: rgba(0, 0, 0, 0.06);
+            /* 亮色模式 (Light Mode) - 陶瓷白与高级灰 */
+            --bg-body: #f5f5f7;
+            --bg-glass: rgba(255, 255, 255, 0.75);
+            --bg-card: #ffffff;
+            --bg-input: #f2f2f7;
             
-            --txt-primary: #1d1d1f;
-            --txt-secondary: #86868b;
-            --txt-placeholder: #aeaeb2;
+            --border-light: rgba(0, 0, 0, 0.04);
+            --border-focus: rgba(0, 0, 0, 0.1);
+            
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --text-placeholder: #bfbfbf;
 
-            --accent: #007aff; /* iOS Blue */
-            --accent-glow: rgba(0, 122, 255, 0.25);
+            --accent: #007aff; /* iOS 蓝 */
+            --accent-gradient: linear-gradient(135deg, #007aff, #005ecb);
+            --accent-sub: #5856d6; /* 订阅按钮专用紫 */
+            --accent-sub-gradient: linear-gradient(135deg, #5856d6, #4644b9);
+
             --danger: #ff3b30;
             --success: #34c759;
-            
-            --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
-            --shadow-inner: inset 0 1px 1px rgba(255, 255, 255, 0.8);
-            
-            --radius-box: 24px;
-            --radius-sm: 12px;
+
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-lg: 0 12px 32px rgba(0,0,0,0.08);
+            --shadow-float: 0 20px 50px rgba(0,0,0,0.12);
+
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 10px;
         }
 
         body.theme-dark {
-            /* 暗色模式 (Dark) - 深邃黑金 */
-            --bg-app: #000000;
-            --bg-card: rgba(28, 28, 30, 0.75);
-            --bg-glass: rgba(44, 44, 46, 0.6);
-            --border-glass: rgba(255, 255, 255, 0.1);
-            --border-subtle: rgba(255, 255, 255, 0.08);
+            /* 暗色模式 (Dark Mode) - 黑曜石质感 */
+            --bg-body: #050505;
+            --bg-glass: rgba(30, 30, 30, 0.7);
+            --bg-card: #1c1c1e;
+            --bg-input: #2c2c2e;
 
-            --txt-primary: #f5f5f7;
-            --txt-secondary: #86868b;
-            --txt-placeholder: #48484a;
+            --border-light: rgba(255, 255, 255, 0.08);
+            --border-focus: rgba(255, 255, 255, 0.15);
+
+            --text-primary: #f5f5f7;
+            --text-secondary: #98989d;
+            --text-placeholder: #58585a;
 
             --accent: #0a84ff;
-            --accent-glow: rgba(10, 132, 255, 0.3);
-            
-            --shadow-card: 0 20px 50px -15px rgba(0, 0, 0, 0.7);
-            --shadow-inner: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            --accent-gradient: linear-gradient(135deg, #0a84ff, #0060df);
+            --accent-sub: #5e5ce6;
+            --accent-sub-gradient: linear-gradient(135deg, #5e5ce6, #4745a8);
+
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+            --shadow-lg: 0 12px 32px rgba(0,0,0,0.5);
         }
 
+        /* 基础重置 */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; /* 防止 Body 滚动，交给内部容器 */ }
+
         body {
-            margin: 0; padding: 0;
-            font-family: var(--font-sans);
-            background-color: var(--bg-app);
-            color: var(--txt-primary);
-            min-height: 100vh;
-            display: flex; justify-content: center;
-            transition: background 0.5s ease;
-            overflow-x: hidden;
-            /* 背景流光 */
+            font-family: var(--font-main);
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            transition: background 0.4s ease;
+            /* 极光流体背景 */
             background-image: 
-                radial-gradient(at 0% 0%, rgba(var(--accent), 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(255, 59, 48, 0.08) 0px, transparent 50%);
-            background-attachment: fixed;
+                radial-gradient(circle at 10% 10%, rgba(0, 122, 255, 0.06), transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(88, 86, 214, 0.06), transparent 40%);
+            display: flex;
+            flex-direction: column;
         }
 
-        /* 顶部模糊导航栏 */
+        /* ----- 顶部导航 ----- */
         .navbar {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 50;
-            height: 64px;
-            padding: 0 max(20px, env(safe-area-inset-left));
-            display: flex; align-items: center; justify-content: space-between;
-            background: rgba(var(--bg-card), 0.01); /* 几乎透明 */
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border-bottom: 0.5px solid var(--border-subtle);
-        }
-        
-        .brand {
-            display: flex; align-items: center; gap: 10px;
-            font-weight: 700; font-size: 18px; letter-spacing: -0.02em;
-        }
-        .brand-icon {
-            width: 32px; height: 32px; border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            object-fit: cover;
-        }
-
-        .nav-tools { display: flex; gap: 8px; align-items: center; }
-
-        /* 通用按钮系统 */
-        .btn {
-            border: none; cursor: pointer;
-            font-family: var(--font-sans); font-size: 13px; font-weight: 600;
-            height: 36px; padding: 0 16px; border-radius: 99em;
-            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-            position: relative; overflow: hidden;
-        }
-        .btn:active { transform: scale(0.96); }
-        
-        .btn-icon { width: 36px; padding: 0; border-radius: 50%; }
-
-        /* 玻璃态按钮 */
-        .btn-glass {
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
-            color: var(--txt-primary);
-            box-shadow: var(--shadow-inner);
-        }
-        .btn-glass:hover { background: var(--bg-card); border-color: var(--txt-secondary); }
-
-        /* 主色按钮 */
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-            box-shadow: 0 8px 20px -6px var(--accent-glow);
-        }
-        .btn-primary:hover { filter: brightness(1.1); box-shadow: 0 12px 24px -4px var(--accent-glow); }
-        .btn-primary.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
-
-        /* 幽灵按钮 */
-        .btn-ghost { background: transparent; color: var(--txt-secondary); }
-        .btn-ghost:hover { color: var(--txt-primary); background: rgba(128,128,128,0.1); }
-
-        /* 布局容器 */
-        .app-shell {
-            width: 100%; max-width: 1100px;
-            margin-top: 80px; margin-bottom: 40px;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: 1fr 340px; /* 左侧编辑器，右侧工具栏 */
-            gap: 24px;
-            align-items: start;
-        }
-
-        /* 卡片容器系统 */
-        .bento-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-            border: 1px solid var(--border-glass);
-            border-radius: var(--radius-box);
-            box-shadow: var(--shadow-card);
-            overflow: hidden;
-            display: flex; flex-direction: column;
-            transition: transform 0.3s ease;
-        }
-
-        /* 左侧：主编辑器 */
-        .editor-zone {
-            min-height: 70vh;
-            position: relative;
-        }
-        .editor-textarea {
-            width: 100%; height: 100%;
-            border: none; background: transparent;
-            padding: 24px 24px 60px; /* 底部留白给状态栏 */
-            font-family: var(--font-mono);
-            font-size: 14px; line-height: 1.6;
-            color: var(--txt-primary);
-            resize: none;
-        }
-        .editor-textarea::placeholder { color: var(--txt-placeholder); }
-        
-        .editor-status-bar {
-            position: absolute; bottom: 0; left: 0; right: 0;
-            height: 48px;
+            flex-shrink: 0;
+            height: 60px;
             padding: 0 24px;
             display: flex; align-items: center; justify-content: space-between;
-            border-top: 1px solid var(--border-subtle);
-            background: rgba(var(--bg-card), 0.5);
-            font-size: 12px; color: var(--txt-secondary);
-            font-family: var(--font-mono);
-            pointer-events: none; /* 让鼠标穿透点击下面的东西 */
+            z-index: 50;
         }
-        .editor-status-bar * { pointer-events: auto; } /* 恢复子元素交互 */
+        .brand {
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 700; font-size: 18px; letter-spacing: -0.5px;
+            color: var(--text-primary);
+        }
+        .brand-icon {
+            width: 28px; height: 28px; border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .nav-actions { display: flex; gap: 10px; align-items: center; }
 
-        .status-pill {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 4px 10px; border-radius: 6px;
-            background: rgba(128,128,128,0.08);
+        /* ----- 核心布局 (Bento Grid) ----- */
+        .app-container {
+            flex: 1;
+            width: 100%; max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px 20px 30px;
+            display: grid;
+            grid-template-columns: 1fr 340px; /* 左边编辑器，右边工具栏 */
+            gap: 20px;
+            height: calc(100vh - 60px); /* 减去导航栏高度 */
+            min-height: 0; /* 允许 Flex 子项收缩 */
         }
-        .node-indicator {
-            color: var(--success); background: rgba(52, 199, 89, 0.15);
-            font-weight: 600; display: none;
-        }
-        .node-indicator.active { display: inline-flex; }
 
-        /* 右侧：控制面板 */
-        .sidebar {
-            display: flex; flex-direction: column; gap: 20px;
+        /* 通用卡片样式 */
+        .glass-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* 左侧编辑器 (自适应高度修复) */
+        .editor-zone {
+            display: flex; flex-direction: column;
+            position: relative;
+            height: 100%; /* 填满父容器 */
+            box-shadow: var(--shadow-lg);
         }
         
-        .panel-header {
-            font-size: 12px; font-weight: 700; color: var(--txt-secondary);
-            text-transform: uppercase; letter-spacing: 0.1em;
+        /* 文本域修复：撑满剩余空间，并允许滚动 */
+        .editor-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* 防止外层溢出 */
+        }
+        
+        textarea {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: transparent;
+            padding: 24px;
+            font-family: var(--font-code);
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            resize: none;
+            overflow-y: auto; /* 内部滚动 */
+        }
+        textarea::placeholder { color: var(--text-placeholder); }
+
+        /* 编辑器底部状态栏 */
+        .editor-footer {
+            flex-shrink: 0;
+            height: 48px;
+            padding: 0 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-top: 1px solid var(--border-light);
+            background: rgba(255,255,255,0.02);
+            font-size: 12px; color: var(--text-secondary);
+        }
+        .stats-group { display: flex; gap: 12px; align-items: center; font-family: var(--font-code); }
+        
+        /* 节点检测高亮标签 */
+        .node-tag {
+            display: none; align-items: center; gap: 4px;
+            padding: 4px 10px; border-radius: 99px;
+            background: rgba(52, 199, 89, 0.12); color: var(--success);
+            font-weight: 600; font-size: 11px;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .node-tag.active { display: inline-flex; }
+        .node-dot { width: 6px; height: 6px; background: currentColor; border-radius: 50%; }
+
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* 右侧侧边栏 */
+        .sidebar {
+            display: flex; flex-direction: column; gap: 16px;
+            overflow-y: auto; /* 允许侧边栏在小屏下滚动 */
+            padding-bottom: 20px;
+        }
+
+        .panel-label {
+            font-size: 12px; font-weight: 700; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 0.05em;
             margin-bottom: 8px; margin-left: 4px;
         }
 
-        /* 选项组（Segmented Control） */
-        .seg-control {
-            background: rgba(128,128,128,0.1);
-            padding: 4px; border-radius: 14px;
-            display: flex; gap: 2px;
+        /* 按钮重构 */
+        .btn {
+            border: none; cursor: pointer;
+            font-family: var(--font-main); font-size: 13px; font-weight: 600;
+            height: 40px; padding: 0 16px; border-radius: 12px;
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative; overflow: hidden;
+            user-select: none;
         }
-        .seg-btn {
-            flex: 1; border: none; background: transparent;
-            padding: 8px 0; font-size: 12px; font-weight: 600;
-            color: var(--txt-secondary); border-radius: 10px;
-            cursor: pointer; transition: 0.2s;
-        }
-        .seg-btn.active {
-            background: var(--bg-card);
-            color: var(--txt-primary);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .seg-btn[disabled] { opacity: 0.3; cursor: not-allowed; }
+        .btn:active { transform: scale(0.96); }
+        .btn-icon-only { width: 40px; padding: 0; border-radius: 50%; }
 
-        /* 功能网格 */
-        .tools-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        /* 玻璃按钮 */
+        .btn-glass {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            color: var(--text-primary);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
+        .btn-glass:hover { border-color: var(--text-secondary); transform: translateY(-1px); }
+
+        /* 幽灵按钮 */
+        .btn-ghost { background: transparent; color: var(--text-secondary); height: 32px; }
+        .btn-ghost:hover { background: var(--bg-input); color: var(--text-primary); }
+
+        /* 主操作按钮 (发布) */
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25), inset 0 1px 0 rgba(255,255,255,0.2);
+            font-size: 14px;
+        }
+        .btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0, 122, 255, 0.35), inset 0 1px 0 rgba(255,255,255,0.2); }
+        .btn-primary[disabled] { opacity: 0.6; cursor: not-allowed; transform: none; filter: grayscale(1); }
+
+        /* 工具网格 */
+        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .tool-card {
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
-            padding: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 14px;
             display: flex; flex-direction: column; align-items: center; gap: 8px;
             cursor: pointer; transition: 0.2s;
         }
-        .tool-card:hover { transform: translateY(-2px); border-color: var(--accent); }
-        .tool-icon { width: 24px; height: 24px; color: var(--txt-primary); }
-        .tool-label { font-size: 11px; font-weight: 500; color: var(--txt-secondary); }
+        .tool-card:hover { border-color: var(--accent); background: rgba(0, 122, 255, 0.03); }
+        .tool-icon { width: 22px; height: 22px; color: var(--text-primary); }
+        .tool-text { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+
+        /* 有效期选择器 */
+        .ttl-selector {
+            background: var(--bg-input);
+            padding: 4px; border-radius: 14px;
+            display: flex; gap: 2px;
+        }
+        .ttl-option {
+            flex: 1; border: none; background: transparent;
+            padding: 8px 0; font-size: 12px; font-weight: 600;
+            color: var(--text-secondary); border-radius: 10px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .ttl-option.active {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .ttl-option[disabled] { opacity: 0.3; cursor: not-allowed; }
 
         /* 输入框 */
-        .input-box {
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
-            padding: 0 12px; height: 44px;
+        .input-group {
+            background: var(--bg-input);
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 0 14px; height: 44px;
             display: flex; align-items: center;
             transition: 0.2s;
         }
-        .input-box:focus-within {
+        .input-group:focus-within {
+            background: var(--bg-card);
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-            background: var(--bg-card);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
         }
-        .input-real {
+        .input-field {
             width: 100%; border: none; background: transparent;
-            color: var(--txt-primary); font-size: 13px; font-weight: 500;
+            color: var(--text-primary); font-size: 13px;
         }
-        .input-real::placeholder { color: var(--txt-placeholder); }
 
-        /* 结果面板 */
-        .result-zone {
+        /* 结果展示卡片 */
+        .result-card {
             display: none; /* JS Toggle */
-            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid var(--success);
+            background: linear-gradient(to bottom, rgba(52, 199, 89, 0.05), transparent);
         }
-        .result-link {
-            font-family: var(--font-mono); font-size: 12px;
-            word-break: break-all;
-            padding: 12px; background: rgba(var(--accent), 0.1);
-            color: var(--accent); border-radius: 8px;
-            margin-bottom: 12px; text-align: center;
-        }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* 底部信息 */
-        .footer {
-            grid-column: 1 / -1;
-            text-align: center; font-size: 11px; color: var(--txt-secondary); opacity: 0.6;
-            padding: 20px 0;
+        .result-url {
+            font-family: var(--font-code); font-size: 12px;
+            background: var(--bg-input); padding: 12px;
+            border-radius: 8px; color: var(--text-primary);
+            word-break: break-all; margin-bottom: 12px;
+            border: 1px dashed var(--border-focus);
         }
 
-        /* 隐藏原生 */
-        #fileInput { display: none; }
-        
-        /* 弹窗 (Modal) */
-        .modal-mask {
+        /* ----- 弹窗系统 (PC居中 / 移动端抽屉) ----- */
+        .modal-overlay {
             position: fixed; inset: 0; z-index: 100;
-            background: rgba(0,0,0,0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
             display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: 0.3s;
+            opacity: 0; pointer-events: none; transition: 0.3s ease;
         }
-        .modal-mask.show { opacity: 1; pointer-events: auto; }
+        .modal-overlay.show { opacity: 1; pointer-events: auto; }
         
-        .modal-panel {
-            width: 90%; max-width: 400px;
+        .modal-container {
             background: var(--bg-card);
-            border: 1px solid var(--border-glass);
-            border-radius: 28px;
-            padding: 24px;
-            box-shadow: var(--shadow-card);
-            transform: scale(0.9); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .modal-mask.show .modal-panel { transform: scale(1); }
-        
-        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-title { font-size: 20px; font-weight: 700; }
-        .modal-close {
-            width: 32px; height: 32px; border-radius: 50%; background: rgba(128,128,128,0.1);
-            display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; color: var(--txt-secondary);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-float);
+            transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
-        /* 移动端适配 */
-        @media (max-width: 860px) {
-            .app-shell {
-                grid-template-columns: 1fr;
-                margin-top: 70px; gap: 16px;
+        /* PC 端样式: 居中弹窗 */
+        @media (min-width: 769px) {
+            .modal-container {
+                border-radius: 24px;
+                width: 440px; max-width: 90%;
+                transform: scale(0.95);
             }
-            .sidebar { order: 2; } /* 编辑器在下? 不，通常编辑器在上 */
-            .editor-zone { min-height: 400px; }
-            .tools-grid { grid-template-columns: repeat(4, 1fr); }
-            .tool-card { padding: 8px; gap: 4px; }
-            .tool-label { font-size: 9px; }
-            .seg-btn { padding: 6px 0; }
+            .modal-overlay.show .modal-container { transform: scale(1); }
+            
+            /* 用户中心特别宽一点 */
+            .modal-container.wide { width: 600px; }
         }
+
+        /* 移动端样式: 底部抽屉 (Bottom Sheet) */
+        @media (max-width: 768px) {
+            .modal-overlay { align-items: flex-end; }
+            .modal-container {
+                width: 100%; border-radius: 24px 24px 0 0;
+                transform: translateY(100%);
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+                border-bottom: none;
+            }
+            .modal-overlay.show .modal-container { transform: translateY(0); }
+        }
+
+        .modal-header {
+            padding: 20px 24px 0;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-title { font-size: 18px; font-weight: 700; }
+        .modal-close {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: var(--bg-input); border: none; cursor: pointer;
+            color: var(--text-secondary); display: flex; align-items: center; justify-content: center;
+        }
+        .modal-body { padding: 0 24px 24px; }
+
+        /* 订阅面板样式优化 */
+        .sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .sub-option {
+            border: 1px solid var(--border-light); background: var(--bg-input);
+            padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 600;
+            color: var(--text-secondary); cursor: pointer; transition: 0.2s;
+        }
+        .sub-option:hover { background: var(--bg-card); }
+        /* 选中状态 */
+        .sub-option.active {
+            background: var(--text-primary); color: var(--bg-card); border-color: var(--text-primary);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* 用户中心列表项 */
+        .uc-item {
+            background: var(--bg-input); border-radius: 12px; padding: 14px;
+            margin-bottom: 10px; border: 1px solid transparent; transition: 0.2s;
+        }
+        .uc-item:hover { background: var(--bg-card); border-color: var(--border-focus); box-shadow: var(--shadow-sm); }
         
-        /* SVG 图标定义 */
+        /* 醒目的订阅按钮 */
+        .btn-sub-action {
+            background: var(--accent-sub-gradient);
+            color: white; padding: 4px 12px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(88, 86, 214, 0.3);
+            text-transform: uppercase;
+        }
+        .btn-sub-action:hover { transform: scale(1.05); box-shadow: 0 6px 14px rgba(88, 86, 214, 0.4); }
+
+        /* 移动端适配调整 */
+        @media (max-width: 860px) {
+            .app-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr auto;
+                height: auto; min-height: calc(100vh - 60px);
+                gap: 16px;
+            }
+            .editor-zone { min-height: 50vh; }
+            .sidebar { padding-bottom: 40px; }
+            .tools-grid { grid-template-columns: repeat(4, 1fr); }
+            .tool-card { padding: 10px 4px; gap: 6px; }
+            .tool-text { font-size: 10px; }
+        }
+
+        /* Footer */
+        .footer { text-align: center; padding: 20px; font-size: 11px; color: var(--text-secondary); opacity: 0.6; }
+
+        /* SVG */
         .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     </style>
 </head>
 <body class="theme-light">
 
-    <!-- 导航栏 -->
+    <!-- 顶部导航 -->
     <nav class="navbar">
         <div class="brand">
             <img id="brandIcon" class="brand-icon" alt="Logo">
             <span>PasteBox</span>
         </div>
-        <div class="nav-tools">
-            <button type="button" class="btn btn-icon btn-glass" id="themeToggle">
-                <!-- Sun -->
+        <div class="nav-actions">
+            <button type="button" class="btn btn-icon-only btn-glass" id="themeToggle" title="切换主题">
                 <svg class="icon" id="iconSun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                <!-- Moon -->
                 <svg class="icon" id="iconMoon" viewBox="0 0 24 24" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             </button>
             <button type="button" class="btn btn-glass" id="btnAuthOpen">
-                <span id="btnAuthLabel">Login</span>
+                <svg class="icon" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span id="btnAuthLabel">登录</span>
             </button>
         </div>
     </nav>
 
-    <!-- 主布局 -->
-    <main class="app-shell">
+    <!-- 主体布局 -->
+    <main class="app-container">
         <form id="pasteForm" style="display:contents">
             
-            <!-- 左侧：沉浸式编辑器 -->
-            <div class="bento-card editor-zone">
-                <textarea id="content" class="editor-textarea" placeholder="在这里粘贴代码或文本..." spellcheck="false" required></textarea>
+            <!-- 左侧：编辑器区域 (自适应填充) -->
+            <div class="glass-card editor-zone">
+                <div class="editor-wrapper">
+                    <textarea id="content" placeholder="在此粘贴代码或文本..." spellcheck="false" required></textarea>
+                </div>
                 
-                <div class="editor-status-bar">
-                    <div style="display:flex; gap:8px;">
-                        <span class="status-pill" id="lineCounter">0 Lines</span>
-                        <span class="status-pill"><span id="byteNum">0</span> Bytes</span>
-                        <span class="status-pill node-indicator" id="nodeInfo">Node</span>
+                <div class="editor-footer">
+                    <div class="stats-group">
+                        <span id="lineCounter">0 行</span>
+                        <span style="opacity:0.3">|</span>
+                        <span><span id="byteNum">0</span> 字节</span>
+                        <div class="node-tag" id="nodeInfo">
+                            <span class="node-dot"></span>
+                            <span>检测到节点</span>
+                        </div>
                     </div>
-                    <!-- Home 按钮仅在编辑模式显示 -->
-                    <button type="button" class="btn btn-glass" id="btnHome" style="height:32px; font-size:12px; display:none;">Close Edit</button>
+                    <button type="button" class="btn btn-ghost" id="btnHome" style="display:none; font-size:12px;">退出编辑</button>
                 </div>
             </div>
 
-            <!-- 右侧：控制中心 -->
+            <!-- 右侧：侧边栏工具 -->
             <div class="sidebar">
                 
-                <!-- 快捷工具网格 -->
+                <!-- 快捷操作 -->
                 <div>
-                    <div class="panel-header">Quick Actions</div>
+                    <div class="panel-label">快捷工具</div>
                     <div class="tools-grid">
                         <label class="tool-card" id="uploadBtn" for="fileInput">
                             <svg class="icon tool-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                            <span class="tool-label">Import</span>
+                            <span class="tool-text">导入文件</span>
                             <input type="file" id="fileInput">
                         </label>
                         <div class="tool-card" id="btnResetContent">
                             <svg class="icon tool-icon" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                            <span class="tool-label">Clear</span>
+                            <span class="tool-text">清空内容</span>
                         </div>
                         <div class="tool-card" id="btnBase64Encode">
                             <svg class="icon tool-icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                            <span class="tool-label">Encode</span>
+                            <span class="tool-text">Base64 编码</span>
                         </div>
                         <div class="tool-card" id="btnBase64Decode">
                             <svg class="icon tool-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-                            <span class="tool-label">Decode</span>
+                            <span class="tool-text">Base64 解码</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- 有效期设置 -->
-                <div class="bento-card" style="padding:16px;">
-                    <div class="panel-header">Expiration (TTL)</div>
-                    <div class="seg-control" id="ttlGroup">
-                        <button type="button" class="seg-btn" data-ttl="10m">10m</button>
-                        <button type="button" class="seg-btn" data-ttl="1d">1d</button>
-                        <button type="button" class="seg-btn active" data-ttl="7d">7d</button>
-                        <button type="button" class="seg-btn" data-ttl="30d">30d</button>
-                        <button type="button" class="seg-btn" data-ttl="forever" id="ttlForeverBtn" disabled>∞</button>
+                <div class="glass-card" style="padding:16px;">
+                    <div class="panel-label" style="margin-left:0; margin-bottom:10px;">有效期设置</div>
+                    <div class="ttl-selector" id="ttlGroup">
+                        <button type="button" class="ttl-option" data-ttl="10m">10分</button>
+                        <button type="button" class="ttl-option" data-ttl="1d">1天</button>
+                        <button type="button" class="ttl-option active" data-ttl="7d">7天</button>
+                        <button type="button" class="ttl-option" data-ttl="30d">30天</button>
+                        <button type="button" class="ttl-option" data-ttl="forever" id="ttlForeverBtn" disabled>∞</button>
                     </div>
-                    <div id="ttlHint" style="font-size:10px; color:var(--txt-secondary); margin-top:8px; text-align:right;">Expires in 7 days</div>
+                    <div id="ttlHint" style="text-align:right; font-size:11px; color:var(--text-secondary); margin-top:8px;">内容将在 7 天后过期</div>
                 </div>
 
                 <!-- 高级设置 -->
                 <div id="advancedSection" style="display:none; flex-direction:column; gap:12px;">
-                    <div class="panel-header">Advanced</div>
-                    <div class="input-box">
-                        <input type="text" id="customId" class="input-real" placeholder="Custom URL Slug (Optional)">
+                    <div class="panel-label">高级选项</div>
+                    <div class="input-group">
+                        <input type="text" id="customId" class="input-field" placeholder="自定义 URL 尾缀 (可选)">
                     </div>
-                    <div class="input-box">
-                        <input type="text" id="remark" class="input-real" placeholder="Add a remark...">
+                    <div class="input-group">
+                        <input type="text" id="remark" class="input-field" placeholder="添加备注信息...">
                     </div>
-                    <div id="customHint" style="font-size:10px; color:var(--txt-secondary);">Login to customize URL</div>
+                    <div id="customHint" style="font-size:11px; color:var(--text-secondary);">登录后可使用自定义链接</div>
                 </div>
 
                 <!-- 提交按钮 -->
-                <button type="submit" class="btn btn-primary" id="submitBtn" style="height:48px; width:100%; font-size:15px; margin-top:10px;">
-                    <span class="text">Publish Paste</span>
+                <button type="submit" class="btn btn-primary" id="submitBtn" style="height:48px; width:100%; font-size:15px; margin-top:8px;">
+                    <span class="text">发布内容</span>
                 </button>
-                <div id="statusMsg" style="font-size:12px; text-align:center; min-height:20px;"></div>
+                <div id="statusMsg" style="text-align:center; font-size:12px; min-height:20px; color:var(--text-secondary)"></div>
 
-                <!-- 结果展示 -->
-                <div id="resultBox" class="bento-card result-zone" style="padding:16px;">
-                    <div class="panel-header" style="color:var(--success)">Published Successfully</div>
-                    <div class="result-link" id="viewLinkText">...</div>
-                    <div style="display:flex; gap:8px;">
-                        <button type="button" class="btn btn-glass" style="flex:1" id="btnCopyView">Copy</button>
-                        <button type="button" class="btn btn-glass" style="flex:1" id="btnOpenView">Open</button>
+                <!-- 结果面板 -->
+                <div id="resultBox" class="glass-card result-card" style="padding:20px;">
+                    <div style="font-size:14px; font-weight:700; color:var(--success); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                        <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> 发布成功
                     </div>
-                    <button type="button" class="btn btn-ghost" id="btnManageFromResult" style="width:100%; margin-top:8px; display:none;">Manage in Dashboard</button>
+                    <div class="result-url" id="viewLinkText">...</div>
+                    <div style="display:flex; gap:10px;">
+                        <button type="button" class="btn btn-glass" style="flex:1" id="btnCopyView">复制链接</button>
+                        <button type="button" class="btn btn-glass" style="flex:1" id="btnOpenView">打开</button>
+                    </div>
+                    <button type="button" class="btn btn-ghost" id="btnManageFromResult" style="width:100%; margin-top:10px; display:none;">前往管理</button>
+                </div>
+
+                <div class="footer">
+                    <span id="baseUrlText"></span> • PasteBox
                 </div>
             </div>
-
         </form>
-
-        <footer class="footer">
-            <span id="baseUrlText"></span> • Designed by Aura
-        </footer>
     </main>
 
-    <!-- 登录弹窗 -->
-    <div class="modal-mask" id="authModal">
-        <div class="modal-panel">
-            <div class="modal-head">
-                <span class="modal-title">Welcome</span>
+    <!-- 登录/注册弹窗 -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <span class="modal-title">账号登录</span>
                 <button class="modal-close" id="authCloseBtn">×</button>
             </div>
-            <form id="authForm" style="display:flex; flex-direction:column; gap:16px;">
-                <div class="input-box">
-                    <input id="authUsername" class="input-real" type="text" placeholder="Username" autocomplete="username">
-                </div>
-                <div class="input-box">
-                    <input id="authPassword" class="input-real" type="password" placeholder="Password" autocomplete="current-password">
-                </div>
-                <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--txt-secondary);">
-                    <input id="authRemember" type="checkbox" checked> Keep me logged in
-                </label>
-                <div id="authMsg" style="font-size:12px; text-align:center;"></div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-                    <button type="button" class="btn btn-glass" id="btnDoRegister">Sign Up</button>
-                    <button type="submit" class="btn btn-primary" id="btnDoLogin">Log In</button>
-                </div>
-            </form>
+            <div class="modal-body">
+                <form id="authForm" style="display:flex; flex-direction:column; gap:16px;">
+                    <div class="input-group">
+                        <input id="authUsername" class="input-field" type="text" placeholder="用户名" autocomplete="username">
+                    </div>
+                    <div class="input-group">
+                        <input id="authPassword" class="input-field" type="password" placeholder="密码" autocomplete="current-password">
+                    </div>
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-secondary);">
+                        <input id="authRemember" type="checkbox" checked> 保持登录状态
+                    </label>
+                    <div id="authMsg" style="text-align:center; font-size:12px; min-height:16px;"></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                        <button type="button" class="btn btn-glass" id="btnDoRegister">注册</button>
+                        <button type="submit" class="btn btn-primary" id="btnDoLogin">登录</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-    <!-- 用户中心 (全屏卡片) -->
-    <div class="modal-mask" id="userCenter">
-        <div class="modal-panel" style="max-width:600px; height:80vh; display:flex; flex-direction:column;">
-            <div class="modal-head">
-                <span class="modal-title">My Pastes</span>
+    <!-- 用户中心弹窗 -->
+    <div class="modal-overlay" id="userCenter">
+        <div class="modal-container wide">
+            <div class="modal-header">
+                <span class="modal-title">我的内容</span>
                 <div style="display:flex; gap:8px;">
-                    <button class="btn btn-glass btn-icon" id="ucRefreshBtn"><svg class="icon" viewBox="0 0 24 24" style="width:16px;"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button>
+                    <button class="btn btn-glass btn-icon-only" id="ucRefreshBtn" title="刷新">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                    </button>
                     <button class="modal-close" id="ucCloseBtn">×</button>
                 </div>
             </div>
-            
-            <div class="uc-list" id="ucList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">
-                <!-- JS Fill -->
+            <div class="modal-body" style="height:60vh; display:flex; flex-direction:column;">
+                <div id="ucList" style="flex:1; overflow-y:auto; padding-right:4px;">
+                    <!-- 列表内容由 JS 生成 -->
+                </div>
+                <div id="ucEmpty" style="text-align:center; padding:40px; color:var(--text-secondary);">加载中...</div>
+                
+                <button class="btn btn-ghost" id="ucLogoutBtn" style="margin-top:16px; width:100%; color:var(--danger);">退出登录</button>
             </div>
-            <div id="ucEmpty" style="text-align:center; padding:40px; color:var(--txt-secondary); font-size:13px;">Loading...</div>
-            
-            <button class="btn btn-ghost" id="ucLogoutBtn" style="margin-top:16px; color:var(--danger); width:100%;">Log Out</button>
         </div>
     </div>
 
-    <!-- 订阅客户端选择 (底部滑出) -->
-    <div class="modal-mask" id="subClientOverlay" style="align-items:flex-end;">
-        <div class="modal-panel" style="width:100%; border-radius:24px 24px 0 0; margin:0; max-width:600px;">
-            <div class="modal-head">
-                <span class="modal-title">Subscribe Format</span>
+    <!-- 订阅客户端选择 (自适应: PC居中 / Mobile底部) -->
+    <div class="modal-overlay" id="subClientOverlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <span class="modal-title">选择订阅格式</span>
                 <button class="modal-close" id="subMenuCloseBtn">×</button>
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:20px;">
-                <button class="btn btn-glass" data-client="general" style="justify-content:center">General</button>
-                <button class="btn btn-glass" data-client="base64" style="justify-content:center">Base64</button>
-                <button class="btn btn-glass" data-client="clash" style="justify-content:center">Clash</button>
-                <button class="btn btn-glass" data-client="surge" style="justify-content:center">Surge</button>
-            </div>
-            <div class="input-box">
-                <input id="subLinkInput" class="input-real" readonly>
-                <button id="subLinkCopyBtn" style="border:none; background:none; color:var(--accent); font-weight:600; font-size:13px; cursor:pointer;">Copy</button>
+            <div class="modal-body">
+                <div class="sub-grid">
+                    <button class="sub-option active" data-client="general">通用格式</button>
+                    <button class="sub-option" data-client="base64">Base64</button>
+                    <button class="sub-option" data-client="clash">Clash</button>
+                    <button class="sub-option" data-client="surge">Surge</button>
+                </div>
+                <div class="input-group">
+                    <input id="subLinkInput" class="input-field" readonly>
+                    <button id="subLinkCopyBtn" style="border:none; background:none; color:var(--accent); font-weight:700; cursor:pointer; padding:0 8px;">复制</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 核心 JS 逻辑 (完全保留) -->
+    <!-- 逻辑脚本 (保持原样，仅适配 ID) -->
     <script>
-    const THEME_KEY="lyn_paste_theme_v4";
+    const THEME_KEY="lyn_paste_theme_v5";
     const themeToggle=document.getElementById("themeToggle");
     const iconSun=document.getElementById("iconSun");
     const iconMoon=document.getElementById("iconMoon");
@@ -635,12 +725,12 @@
     function setStatus(msg,type){
         if(!$statusMsg)return;
         $statusMsg.textContent=msg||"";
-        $statusMsg.style.color = type==="error" ? "var(--danger)" : (type==="success" ? "var(--success)" : "var(--txt-secondary)");
+        $statusMsg.style.color = type==="error" ? "var(--danger)" : (type==="success" ? "var(--success)" : "var(--text-secondary)");
     }
     function setAuthTip(msg,type){
         if(!$authMsg)return;
         $authMsg.textContent=msg||"";
-        $authMsg.style.color = type==="error" ? "var(--danger)" : (type==="success" ? "var(--success)" : "var(--txt-secondary)");
+        $authMsg.style.color = type==="error" ? "var(--danger)" : (type==="success" ? "var(--success)" : "var(--text-secondary)");
     }
 
     function base64EncodeUtf8(str) { try { return btoa(unescape(encodeURIComponent(str))); } catch (_) { return null; } }
@@ -682,7 +772,7 @@
             body:JSON.stringify(body||{})
         });
         const data=await res.json().catch(()=>({}));
-        if(!res.ok||data.ok===false) throw new Error(data.error||`Error (${res.status})`);
+        if(!res.ok||data.ok===false) throw new Error(data.error||`请求错误 (${res.status})`);
         return data;
     }
 
@@ -695,12 +785,12 @@
         if($lineCounter){
             const v=$content.value||"";
             const lines=v ? v.split(/\r\n|\r|\n/).length : 0;
-            $lineCounter.textContent = lines+" Lines";
+            $lineCounter.textContent = lines+" 行";
         }
         if ($nodeInfo) {
             const info = detectNodes($content.value || "");
             if (info.isNode && info.count > 0) {
-                $nodeInfo.textContent = `${info.count} Nodes`;
+                $nodeInfo.innerHTML = `<span class="node-dot"></span><span>${info.count} 个节点</span>`;
                 $nodeInfo.classList.add("active");
             } else {
                 $nodeInfo.classList.remove("active");
@@ -719,9 +809,9 @@
             const reader=new FileReader();
             reader.onload=()=>{
                 if($content){ $content.value=reader.result||""; updateByteCount(); }
-                setStatus(`Loaded: ${file.name}`,"success");
+                setStatus(`已加载文件: ${file.name}`,"success");
             };
-            reader.onerror=()=>{ setStatus("Read failed.","error"); };
+            reader.onerror=()=>{ setStatus("文件读取失败","error"); };
             reader.readAsText(file);
         });
     }
@@ -731,7 +821,7 @@
             if($content)$content.value="";
             if($remark)$remark.value="";
             updateByteCount();
-            setStatus("Cleared.");
+            setStatus("内容已清空");
         });
     }
 
@@ -739,12 +829,12 @@
         $btnBase64Encode.addEventListener("click", () => {
             if (!$content) return;
             const v = $content.value;
-            if (!v) { setStatus("Empty content.", "error"); return; }
+            if (!v) { setStatus("内容为空，无法编码", "error"); return; }
             const encoded = base64EncodeUtf8(v);
-            if (encoded == null) { setStatus("Encode failed.", "error"); return; }
+            if (encoded == null) { setStatus("编码失败", "error"); return; }
             $content.value = encoded;
             updateByteCount();
-            setStatus("Encoded.", "success");
+            setStatus("Base64 编码成功", "success");
         });
     }
 
@@ -752,29 +842,29 @@
         $btnBase64Decode.addEventListener("click", () => {
             if (!$content) return;
             const v = $content.value;
-            if (!v) { setStatus("Empty content.", "error"); return; }
+            if (!v) { setStatus("内容为空，无法解码", "error"); return; }
             const decoded = base64DecodeUtf8(v);
-            if (decoded == null) { setStatus("Decode failed.", "error"); return; }
+            if (decoded == null) { setStatus("解码失败，格式不正确", "error"); return; }
             $content.value = decoded;
             updateByteCount();
-            setStatus("Decoded.", "success");
+            setStatus("Base64 解码成功", "success");
         });
     }
 
-    const ttlText={ "10m":"10 Minutes", "1d":"1 Day", "7d":"7 Days", "30d":"30 Days", "forever":"Never" };
+    const ttlText={ "10m":"10 分钟", "1d":"1 天", "7d":"7 天", "30d":"30 天", "forever":"永久有效" };
     function setTtl(key){
         state.ttlKey=key;
         if($ttlGroup){
-            $ttlGroup.querySelectorAll(".seg-btn").forEach(b=>{
+            $ttlGroup.querySelectorAll(".ttl-option").forEach(b=>{
                 b.classList.toggle("active",b.dataset.ttl===key);
             });
         }
-        if($ttlHint)$ttlHint.textContent=`Expires in ${ttlText[key]||"7 Days"}`;
+        if($ttlHint)$ttlHint.textContent=`内容将在 ${ttlText[key]||"7 天"} 后过期`;
     }
     setTtl("7d");
     if($ttlGroup){
         $ttlGroup.addEventListener("click",e=>{
-            const btn=e.target.closest(".seg-btn");
+            const btn=e.target.closest(".ttl-option");
             if(!btn || btn.disabled)return;
             const key=btn.dataset.ttl;
             if(key) setTtl(key);
@@ -795,23 +885,23 @@
         
         if(!val){
             if($customHint){
-                $customHint.textContent="Leave empty for random ID.";
-                $customHint.style.color="var(--txt-secondary)";
+                $customHint.textContent="留空自动生成随机 ID";
+                $customHint.style.color="var(--text-secondary)";
             }
-            $customId.parentElement.style.borderColor="var(--border-subtle)";
+            $customId.parentElement.style.borderColor="transparent";
             return;
         }
         const ok=/^[A-Za-z0-9_-]+$/.test(val);
         if(!ok){
             state.customSlugError=true;
             if($customHint){
-                $customHint.textContent="Invalid characters.";
+                $customHint.textContent="仅支持字母、数字、- 和 _";
                 $customHint.style.color="var(--danger)";
             }
             $customId.parentElement.style.borderColor="var(--danger)";
         }else{
             if($customHint){
-                $customHint.textContent="Valid.";
+                $customHint.textContent="自定义 ID 可用";
                 $customHint.style.color="var(--success)";
             }
             $customId.parentElement.style.borderColor="var(--success)";
@@ -822,7 +912,7 @@
     function enterCreateMode(clear){
         state.mode="create";
         state.originalSlug=null;
-        if($submitBtn) $submitBtn.querySelector(".text").textContent="Publish Paste";
+        if($submitBtn) $submitBtn.querySelector(".text").textContent="发布内容";
         if($btnHome)$btnHome.style.display="none";
         if(clear){
             if($content)$content.value="";
@@ -843,7 +933,7 @@
     }
 
     function applyAuthUI(){
-        if($btnAuthLabel) $btnAuthLabel.textContent = state.loggedIn ? (state.username || "User") : "Login";
+        if($btnAuthLabel) $btnAuthLabel.textContent = state.loggedIn ? (state.username || "用户") : "登录";
         if($advancedSection) $advancedSection.style.display = state.loggedIn ? "flex" : "none";
         if ($ttlForeverBtn) {
             if (state.loggedIn) {
@@ -858,7 +948,7 @@
 
     function setLoggedIn(username){
         state.loggedIn = true;
-        state.username = username || "User";
+        state.username = username || "用户";
         try { localStorage.setItem("pbx_username", state.username); } catch(_) {}
         setTtl("forever");
         applyAuthUI();
@@ -877,7 +967,7 @@
             const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
             if(res.status===401){setLoggedOut();return;}
             const data=await res.json().catch(()=>({}));
-            if(data&&data.ok) setLoggedIn(saved||"User");
+            if(data&&data.ok) setLoggedIn(saved||"用户");
             else setLoggedOut();
         }catch(_){ setLoggedOut(); }
     }
@@ -904,24 +994,24 @@
             e.preventDefault();
             const u=$authUsername.value.trim();
             const p=$authPassword.value;
-            if(!u||!p){ setAuthTip("Missing credentials.","error"); return; }
-            setAuthTip("Authenticating...");
+            if(!u||!p){ setAuthTip("请填写完整信息","error"); return; }
+            setAuthTip("正在登录...");
             try{
                 const data=await postJSON(AUTH_BASE+"/login",{ username:u, password:p, remember: $authRemember ? $authRemember.checked : true });
                 setLoggedIn(data.username||u);
-                setAuthTip("Success","success");
+                setAuthTip("登录成功","success");
                 setTimeout(closeAuthModal,500);
-            }catch(err){ setAuthTip(err.message||"Failed","error"); }
+            }catch(err){ setAuthTip(err.message||"登录失败","error"); }
         });
     }
     if($btnDoRegister){
         $btnDoRegister.addEventListener("click",async ()=>{
             const u=$authUsername.value.trim();
             const p=$authPassword.value;
-            if(!u||!p){ setAuthTip("Credentials required.","error"); return; }
+            if(!u||!p){ setAuthTip("请先填写账号密码","error"); return; }
             try{
                 await postJSON(AUTH_BASE+"/register",{username:u,password:p});
-                setAuthTip("Registered. Please login.","success");
+                setAuthTip("注册成功，请登录","success");
             }catch(err){ setAuthTip(err.message,"error"); }
         });
     }
@@ -966,11 +1056,9 @@
             pills.forEach(btn=>{
                 const key = btn.getAttribute("data-client");
                 if(key===selected){
-                    btn.style.background="var(--txt-primary)";
-                    btn.style.color="var(--bg-app)";
+                    btn.classList.add("active");
                 }else{
-                    btn.style.background="var(--bg-glass)";
-                    btn.style.color="var(--txt-primary)";
+                    btn.classList.remove("active");
                 }
             });
             if (input) input.value = currentSubSlug ? buildSubLink(currentSubSlug, selected) : "";
@@ -986,7 +1074,7 @@
         document.getElementById("subLinkCopyBtn").addEventListener("click", async ()=>{
             if(input && input.value) {
                 await navigator.clipboard.writeText(input.value);
-                setStatus("Link copied!","success");
+                setStatus("订阅链接已复制","success");
             }
             closeSubClientMenu();
         });
@@ -994,14 +1082,14 @@
 
     async function loadUserPastes(){
         if(!$ucEmpty||!$ucList)return;
-        $ucEmpty.style.display=""; $ucEmpty.textContent="Loading..."; $ucList.innerHTML="";
+        $ucEmpty.style.display=""; $ucEmpty.textContent="加载中..."; $ucList.innerHTML="";
         try{
             const res=await fetch(location.origin+"/api/me/pastes",{credentials:"include"});
             if(res.status===401){ setLoggedOut(); return; }
             const data=await res.json().catch(()=>({}));
             if(!data.ok) throw new Error(data.error);
             const items=data.items||[];
-            if(!items.length) { $ucEmpty.textContent="No pastes."; return; }
+            if(!items.length) { $ucEmpty.textContent="暂无记录"; return; }
 
             const valid=[];
             await Promise.all(items.map(async (item)=>{
@@ -1023,32 +1111,29 @@
             
             valid.forEach(d=>{
                 const row = document.createElement("div");
-                row.style.background="var(--bg-glass)";
-                row.style.padding="12px";
-                row.style.borderRadius="12px";
-                row.style.border="1px solid var(--border-subtle)";
+                row.className = "uc-item";
                 
                 const hasNode = d._nodeInfo.isNode && d._nodeInfo.count>0;
                 
                 row.innerHTML = `
-                    <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:4px;">
-                        <span>${escapeHTML(d.remark||"Untitled")}</span>
-                        <span style="font-family:var(--font-mono);opacity:0.6">/${escapeHTML(d.slug)}</span>
+                    <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:6px;align-items:center;">
+                        <span>${escapeHTML(d.remark||"无标题")}</span>
+                        ${hasNode ? `<button class="btn btn-sub-action" onclick="openSubClientMenu('${d.slug}')">订阅 (${d._nodeInfo.count})</button>` : ''}
                     </div>
-                    <div style="font-size:11px;color:var(--txt-secondary);margin-bottom:8px;">${d.ttlKey==="forever"?"Never expires": "Expires soon"}</div>
+                    <div style="font-family:var(--font-code);font-size:11px;color:var(--text-secondary);margin-bottom:8px;">/${escapeHTML(d.slug)} · ${d.ttlKey==="forever"?"永久有效": "即将过期"}</div>
                     <div style="display:flex;gap:8px;">
-                        ${hasNode?`<button class="btn btn-glass" style="height:28px;padding:0 10px;font-size:11px;" onclick="openSubClientMenu('${d.slug}')">Sub</button>`:''}
-                        <button class="btn btn-glass" style="height:28px;padding:0 10px;font-size:11px;" onclick="closeUserCenter();enterEditMode('${d.slug}')">Edit</button>
-                        <button class="btn btn-glass" style="height:28px;padding:0 10px;font-size:11px;color:var(--danger);" onclick="deletePaste('${d.slug}')">Del</button>
+                        <button class="btn btn-glass" style="height:32px;font-size:12px;flex:1;" onclick="closeUserCenter();enterEditMode('${d.slug}')">编辑</button>
+                        <button class="btn btn-glass" style="height:32px;font-size:12px;flex:1;" onclick="navigator.clipboard.writeText('${VIEW_BASE}/${d.slug}').then(()=>alert('已复制'))">复制</button>
+                        <button class="btn btn-glass" style="height:32px;font-size:12px;color:var(--danger);" onclick="deletePaste('${d.slug}')">删除</button>
                     </div>
                 `;
                 $ucList.appendChild(row);
             });
-        }catch(e){ $ucEmpty.textContent="Load failed."; }
+        }catch(e){ $ucEmpty.textContent="加载失败"; }
     }
     
     window.deletePaste = async (slug) => {
-        if(!confirm("Delete?"))return;
+        if(!confirm("确定删除吗？"))return;
         try{ await postJSON(API_BASE,{action:"delete",slug}); loadUserPastes(); } catch(_){}
     };
 
@@ -1060,9 +1145,9 @@
 
     async function enterEditMode(slug){
         state.mode="edit"; state.originalSlug=slug;
-        if($submitBtn) $submitBtn.querySelector(".text").textContent="Update";
+        if($submitBtn) $submitBtn.querySelector(".text").textContent="更新内容";
         if($btnHome) $btnHome.style.display="inline-flex";
-        setStatus("Loading...");
+        setStatus("加载内容中...");
         try{
             const url=new URL(`${API_BASE}/${encodeURIComponent(slug)}`);
             url.searchParams.set("manage","1");
@@ -1075,8 +1160,8 @@
             updateByteCount();
             if(data.ttlKey) setTtl(data.ttlKey);
             history.replaceState(null,"",`?id=${slug}`);
-            setStatus("Edit Mode","success");
-        }catch(_){ setStatus("Error","error"); enterCreateMode(false); }
+            setStatus("进入编辑模式","success");
+        }catch(_){ setStatus("加载失败","error"); enterCreateMode(false); }
     }
 
     function showResultLink(slug){
@@ -1086,7 +1171,7 @@
         if($btnManageFromResult) $btnManageFromResult.style.display=state.loggedIn?"block":"none";
     }
 
-    if($btnCopyView) $btnCopyView.addEventListener("click",()=>{ navigator.clipboard.writeText($viewLinkText.textContent); setStatus("Copied!","success"); });
+    if($btnCopyView) $btnCopyView.addEventListener("click",()=>{ navigator.clipboard.writeText($viewLinkText.textContent); setStatus("链接已复制","success"); });
     if($btnOpenView) $btnOpenView.addEventListener("click",()=>{ window.open($viewLinkText.textContent); });
     if($btnManageFromResult) $btnManageFromResult.addEventListener("click",()=>{ if(!state.loggedIn)openAuthModal(); else openUserCenter(); });
 
@@ -1096,7 +1181,7 @@
             const text=$content.value.trim();
             if(!text)return;
             state.isSubmitting=true;
-            if($submitBtn) $submitBtn.querySelector(".text").textContent="Processing...";
+            if($submitBtn) $submitBtn.querySelector(".text").textContent="提交中...";
             try{
                 const p={action:state.mode==="edit"?"update":"create", content:text, ttlKey:state.ttlKey, remark:$remark.value.trim()};
                 if(state.mode==="edit") p.slug=state.originalSlug;
@@ -1105,12 +1190,12 @@
 
                 const data=await postJSON(API_BASE,p);
                 showResultLink(data.slug||p.slug);
-                setStatus("Success","success");
+                setStatus("发布成功","success");
                 enterCreateMode(true);
-            }catch(e){ setStatus("Failed","error"); }
+            }catch(e){ setStatus("发布失败","error"); }
             finally{
                 state.isSubmitting=false;
-                if($submitBtn) $submitBtn.querySelector(".text").textContent=state.mode==="edit"?"Update":"Publish Paste";
+                if($submitBtn) $submitBtn.querySelector(".text").textContent=state.mode==="edit"?"更新内容":"发布内容";
             }
         });
     }
