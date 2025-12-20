@@ -3,44 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <title>Pastebox Pro</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --font-ui: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
             --font-code: 'JetBrains Mono', monospace;
 
-            /* 亮色模式 (Light) - 高对比度优化 */
-            --bg-body: #f0f2f5;
-            --bg-glass: rgba(255, 255, 255, 0.8);
-            --bg-glass-heavy: #ffffff;
+            /* 亮色模式 (Light) */
+            --bg-body: #f5f7fa;
+            --bg-glass: rgba(255, 255, 255, 0.85);
             --bg-panel: #ffffff;
-            --bg-input: #eef0f2; /* 加深一点输入框背景 */
+            --bg-input: #f2f4f6;
             
-            --border-subtle: rgba(0, 0, 0, 0.08);
-            --border-active: rgba(0, 0, 0, 0.15);
+            --border-line: rgba(0, 0, 0, 0.06);
+            --border-hover: rgba(0, 0, 0, 0.12);
             
-            --text-main: #111827;
+            --text-main: #1f2937;
             --text-sub: #6b7280;
             --text-muted: #9ca3af;
 
-            /* 选中状态高亮 */
+            /* 选中状态 */
             --bg-selected: #ffffff;
-            --shadow-selected: 0 2px 5px rgba(0,0,0,0.12);
-            --text-selected: #000000;
+            --shadow-selected: 0 2px 4px rgba(0,0,0,0.08);
+            --text-selected: #111827;
 
-            --accent: #007aff;
-            --accent-grad: linear-gradient(135deg, #007aff, #0062cc);
+            --accent: #0070f3; /* Vercel Blue */
+            --accent-hover: #0060df;
             --danger: #ef4444;
             --success: #10b981;
             
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-float: 0 10px 30px rgba(0,0,0,0.1);
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-float: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
             --radius-box: 16px;
             --radius-btn: 8px;
@@ -49,293 +49,281 @@
         body.theme-dark {
             /* 暗色模式 (Dark) */
             --bg-body: #000000;
-            --bg-glass: rgba(30, 30, 30, 0.7);
-            --bg-glass-heavy: #1c1c1e;
-            --bg-panel: #1c1c1e;
-            --bg-input: #2c2c2e;
+            --bg-glass: rgba(28, 28, 28, 0.8);
+            --bg-panel: #111111;
+            --bg-input: #222222;
 
-            --border-subtle: rgba(255, 255, 255, 0.1);
-            --border-active: rgba(255, 255, 255, 0.2);
+            --border-line: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
 
-            --text-main: #f5f5f7;
-            --text-sub: #98989d;
-            --text-muted: #636366;
+            --text-main: #ededed;
+            --text-sub: #a1a1aa;
+            --text-muted: #52525b;
 
-            --bg-selected: #636366;
-            --shadow-selected: 0 2px 8px rgba(0,0,0,0.2);
+            --bg-selected: #333333;
+            --shadow-selected: 0 2px 4px rgba(0,0,0,0.4);
             --text-selected: #ffffff;
 
-            --accent: #0a84ff;
-            --accent-grad: linear-gradient(135deg, #0a84ff, #007aff);
+            --accent: #3291ff;
+            --accent-hover: #0070f3;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
+        html, body { margin: 0; padding: 0; }
 
         body {
             font-family: var(--font-ui);
             background-color: var(--bg-body);
             color: var(--text-main);
             transition: background 0.3s ease;
-            background-image: 
-                radial-gradient(circle at 0% 0%, rgba(0, 122, 255, 0.08), transparent 40%),
-                radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.08), transparent 40%);
             display: flex; flex-direction: column;
+            min-height: 100vh;
+            overflow-y: auto; /* 允许页面滚动 */
+            /* 细微噪点背景 */
+            background-image: radial-gradient(#0070f3 0.5px, transparent 0.5px), radial-gradient(#0070f3 0.5px, var(--bg-body) 0.5px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            background-attachment: fixed;
         }
+        
+        /* 隐藏背景噪点 (浅色) */
+        body.theme-light { background-image: none; } 
 
         /* 顶部导航 */
         .navbar {
-            flex-shrink: 0; height: 56px; width: 100%;
+            width: 100%; height: 60px;
             padding: 0 24px;
             display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid var(--border-subtle);
-            background: rgba(var(--bg-panel), 0.5);
-            backdrop-filter: blur(10px);
-            z-index: 50;
+            background: rgba(var(--bg-panel), 0.8);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-line);
+            position: sticky; top: 0; z-index: 50;
         }
-        .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; color: var(--text-main); letter-spacing: -0.02em; }
-        .brand img { width: 24px; height: 24px; border-radius: 6px; }
+        .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; color: var(--text-main); letter-spacing: -0.02em; }
+        .brand img { width: 28px; height: 28px; border-radius: 6px; box-shadow: var(--shadow-sm); }
         .nav-actions { display: flex; gap: 10px; align-items: center; }
 
-        /* 主布局 - 撑满屏幕 */
+        /* 主容器 */
         .app-layout {
-            flex: 1; width: 100%; max-width: 1400px; margin: 0 auto;
-            padding: 16px 24px 24px; /* 增加边距 */
+            width: 100%; max-width: 1100px; margin: 30px auto 60px;
+            padding: 0 20px;
             display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 20px;
-            height: calc(100vh - 56px); /* 减去导航高度 */
-            min-height: 0; /* 允许 Flex 子元素收缩 */
+            grid-template-columns: 1fr 320px; /* 左侧编辑器，右侧工具栏 */
+            gap: 24px;
+            align-items: start; /* 顶部对齐，不拉伸 */
         }
 
-        /* 玻璃面板 */
-        .glass-panel {
-            background: var(--bg-glass);
-            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-            border: 1px solid var(--border-subtle);
+        /* 卡片容器 */
+        .card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-line);
             border-radius: var(--radius-box);
             box-shadow: var(--shadow-sm);
-            display: flex; flex-direction: column;
             overflow: hidden;
-            transition: border-color 0.2s;
+            display: flex; flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        /* 左侧编辑器 - 撑满高度 */
+        /* 左侧编辑器 */
         .editor-area {
+            height: 450px; /* 固定一个舒适的高度，不再全屏 */
             position: relative;
             background: var(--bg-panel);
-            box-shadow: var(--shadow-float);
-            height: 100%; /* 强制撑满 */
+            display: flex; flex-direction: column;
         }
-        .editor-scroller {
-            flex: 1; display: flex; flex-direction: column; overflow: hidden;
-        }
+        
         textarea {
             flex: 1; width: 100%; border: none; background: transparent;
             padding: 24px; font-family: var(--font-code);
             font-size: 14px; line-height: 1.6; color: var(--text-main);
             resize: none; overflow-y: auto;
         }
-        textarea::placeholder { color: var(--text-muted); opacity: 0.7; }
-
-        /* 滚动条美化 */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.2); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(128,128,128,0.4); }
+        textarea::placeholder { color: var(--text-muted); opacity: 0.8; }
 
         .editor-bar {
-            flex-shrink: 0; height: 40px;
-            padding: 0 16px;
+            height: 44px; padding: 0 16px;
             display: flex; align-items: center; justify-content: space-between;
-            border-top: 1px solid var(--border-subtle);
-            background: rgba(128,128,128,0.02);
+            border-top: 1px solid var(--border-line);
+            background: var(--bg-input);
             font-size: 12px; color: var(--text-sub);
             font-family: var(--font-code);
         }
         .node-badge {
-            display: none; align-items: center; gap: 4px; padding: 2px 8px;
-            background: rgba(16, 185, 129, 0.15); color: var(--success);
-            border-radius: 6px; font-weight: 600; font-size: 11px;
+            display: none; align-items: center; gap: 6px; padding: 2px 8px;
+            background: rgba(16, 185, 129, 0.1); color: var(--success);
+            border-radius: 6px; font-weight: 600;
         }
         .node-badge.active { display: inline-flex; }
 
         /* 右侧侧边栏 */
-        .sidebar {
-            display: flex; flex-direction: column; gap: 16px;
-            overflow-y: auto; padding: 2px;
-        }
+        .sidebar { display: flex; flex-direction: column; gap: 20px; }
 
-        .label-sm {
-            font-size: 12px; font-weight: 700; color: var(--text-sub);
-            text-transform: uppercase; letter-spacing: 0.5px;
-            margin: 0 0 8px 4px;
+        .label {
+            font-size: 12px; font-weight: 600; color: var(--text-sub);
+            margin-bottom: 8px; margin-left: 2px;
         }
 
         /* 按钮系统 */
         .btn {
             border: none; cursor: pointer; user-select: none;
             font-family: var(--font-ui); font-size: 13px; font-weight: 500;
-            height: 34px; padding: 0 14px;
+            height: 36px; padding: 0 14px;
             border-radius: var(--radius-btn);
             display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            transition: all 0.15s ease-out;
+            transition: all 0.15s ease;
             position: relative;
         }
-        .btn:active { transform: scale(0.97); opacity: 0.9; }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
 
-        /* 玻璃按钮 - 增强对比度 */
-        .btn-glass {
-            background: rgba(128, 128, 128, 0.08); /* 加深背景 */
+        /* 次要按钮 */
+        .btn-secondary {
+            background: var(--bg-input);
             color: var(--text-main);
-            border: 1px solid transparent;
+            border: 1px solid var(--border-line);
         }
-        .btn-glass:hover { background: rgba(128, 128, 128, 0.15); } /* Hover 更明显 */
-        .btn-glass.icon-only { width: 34px; padding: 0; border-radius: 50%; }
+        .btn-secondary:hover { background: var(--border-hover); border-color: var(--border-hover); }
+        .btn-secondary.icon-only { width: 36px; padding: 0; border-radius: 8px; }
 
-        /* 主操作按钮 */
+        /* 主要按钮 */
         .btn-primary {
-            background: var(--accent-grad);
-            color: white; font-weight: 600;
-            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+            background: var(--accent);
+            color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0, 122, 255, 0.35); }
+        .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 4px 8px rgba(0,0,0,0.15); transform: translateY(-1px); }
         .btn-primary[disabled] { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; filter: grayscale(1); }
 
         /* 幽灵按钮 */
-        .btn-ghost { background: transparent; color: var(--text-sub); height: 28px; padding: 0 8px; }
-        .btn-ghost:hover { color: var(--text-main); background: rgba(128,128,128,0.1); }
+        .btn-ghost { background: transparent; color: var(--text-sub); height: 32px; font-size: 12px; }
+        .btn-ghost:hover { color: var(--text-main); background: var(--bg-input); }
 
-        /* 工具卡片 */
-        .tools-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .tool-card {
+        /* 工具网格 */
+        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .tool-btn {
             background: var(--bg-panel);
-            border: 1px solid var(--border-subtle);
-            border-radius: 12px;
+            border: 1px solid var(--border-line);
+            border-radius: 10px;
             padding: 12px;
             display: flex; flex-direction: column; align-items: center; gap: 6px;
             cursor: pointer; transition: 0.2s;
         }
-        .tool-card:hover { border-color: var(--accent); background: rgba(0,122,255,0.04); transform: translateY(-1px); }
+        .tool-btn:hover { border-color: var(--accent); background: var(--bg-input); transform: translateY(-1px); }
         .tool-icon { width: 20px; height: 20px; color: var(--text-main); opacity: 0.8; }
-        .tool-text { font-size: 12px; color: var(--text-sub); }
+        .tool-text { font-size: 12px; color: var(--text-sub); font-weight: 500; }
 
-        /* 选项切换器 - 增强选中可视性 */
-        .seg-control {
+        /* 分段控制器 */
+        .seg-group {
             background: var(--bg-input);
-            padding: 4px; border-radius: 12px;
-            display: flex; border: 1px solid var(--border-subtle);
+            padding: 4px; border-radius: 10px;
+            display: flex; gap: 2px;
         }
-        .seg-btn {
+        .seg-item {
             flex: 1; border: none; background: transparent;
             padding: 6px 0; font-size: 12px; font-weight: 500;
-            color: var(--text-sub); border-radius: 8px;
+            color: var(--text-sub); border-radius: 7px;
             cursor: pointer; transition: all 0.2s;
         }
-        .seg-btn:hover { color: var(--text-main); }
-        .seg-btn.active {
-            background: var(--bg-selected); 
-            color: var(--text-selected);
-            box-shadow: var(--shadow-selected); 
-            font-weight: 600;
+        .seg-item:hover { color: var(--text-main); }
+        .seg-item.active {
+            background: var(--bg-selected); color: var(--text-selected);
+            box-shadow: var(--shadow-selected); font-weight: 600;
         }
 
         /* 输入框 */
-        .input-box {
+        .input-wrapper {
             background: var(--bg-input);
             border: 1px solid transparent;
             border-radius: 10px;
-            height: 36px; padding: 0 12px;
+            height: 38px; padding: 0 12px;
             display: flex; align-items: center;
-            transition: 0.2s; font-size: 13px;
+            transition: 0.2s;
         }
-        .input-box:focus-within { background: var(--bg-panel); border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,122,255,0.15); }
-        .input-field { width: 100%; border: none; background: transparent; color: var(--text-main); font-size: 13px; }
+        .input-wrapper:focus-within { background: var(--bg-panel); border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.15); }
+        .input-real { width: 100%; border: none; background: transparent; color: var(--text-main); font-size: 13px; }
 
-        /* 结果面板 */
-        .result-panel {
+        /* 结果框 */
+        .result-box {
             display: none; padding: 16px;
-            background: linear-gradient(to bottom, rgba(16, 185, 129, 0.08), transparent);
+            background: rgba(16, 185, 129, 0.05);
             border: 1px solid rgba(16, 185, 129, 0.2);
         }
-        .result-url {
-            font-family: var(--font-code); font-size: 12px;
-            background: var(--bg-panel); padding: 10px;
+        .result-link {
+            font-family: var(--font-code); font-size: 13px;
+            background: var(--bg-panel); padding: 10px 12px;
             border-radius: 8px; color: var(--text-main);
-            word-break: break-all; margin-bottom: 10px;
-            border: 1px dashed var(--border-active);
+            word-break: break-all; margin-bottom: 12px;
+            border: 1px solid var(--border-line);
         }
-
-        /* Footer */
-        .footer { text-align: center; font-size: 11px; color: var(--text-muted); padding: 10px; opacity: 0.8; }
 
         /* 弹窗系统 */
         .modal-mask {
             position: fixed; inset: 0; z-index: 100;
-            background: rgba(0,0,0,0.4); backdrop-filter: blur(6px);
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
             display: flex; align-items: center; justify-content: center;
             opacity: 0; pointer-events: none; transition: 0.2s ease;
         }
         .modal-mask.show { opacity: 1; pointer-events: auto; }
         
         .modal-box {
-            background: var(--bg-panel); width: 400px; max-width: 92%;
-            border-radius: 20px; box-shadow: var(--shadow-float);
-            border: 1px solid var(--border-subtle);
+            background: var(--bg-panel); width: 420px; max-width: 92%;
+            border-radius: 16px; box-shadow: var(--shadow-float);
+            border: 1px solid var(--border-line);
             transform: scale(0.96); transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex; flex-direction: column; overflow: hidden;
         }
         .modal-mask.show .modal-box { transform: scale(1); }
 
+        /* 用户中心头部修复 */
         .modal-head {
-            padding: 16px 20px; border-bottom: 1px solid var(--border-subtle);
+            height: 56px; padding: 0 20px;
             display: flex; justify-content: space-between; align-items: center;
-            background: rgba(128,128,128,0.02);
+            border-bottom: 1px solid var(--border-line);
+            background: var(--bg-panel);
         }
         .modal-title { font-size: 15px; font-weight: 600; color: var(--text-main); }
-        .modal-close {
-            width: 28px; height: 28px; border-radius: 50%;
-            background: var(--bg-input); border: none; cursor: pointer;
+        
+        /* 统一的弹窗操作按钮 */
+        .modal-actions { display: flex; gap: 8px; }
+        .btn-modal-action {
+            width: 32px; height: 32px; border-radius: 6px;
+            border: 1px solid transparent; background: var(--bg-input);
             color: var(--text-sub); display: flex; align-items: center; justify-content: center;
-            transition: 0.2s;
+            cursor: pointer; transition: 0.2s;
         }
-        .modal-close:hover { background: rgba(128,128,128,0.15); color: var(--text-main); }
+        .btn-modal-action:hover { background: var(--border-hover); color: var(--text-main); }
+        
         .modal-body { padding: 20px; }
 
-        /* 用户中心 */
+        /* 用户中心列表 */
         .uc-item {
-            background: var(--bg-input); border-radius: 12px; padding: 14px;
-            margin-bottom: 10px; border: 1px solid transparent; transition: 0.2s;
-            display: flex; flex-direction: column; gap: 8px;
+            background: var(--bg-input); border-radius: 10px; padding: 12px;
+            margin-bottom: 8px; border: 1px solid transparent; transition: 0.2s;
+            display: flex; flex-direction: column; gap: 6px;
         }
-        .uc-item:hover { background: var(--bg-panel); border-color: var(--border-active); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .uc-item:hover { background: var(--bg-panel); border-color: var(--accent); box-shadow: var(--shadow-sm); }
+        .uc-top { display: flex; justify-content: space-between; align-items: center; }
+        .uc-title { font-weight: 600; font-size: 13px; color: var(--text-main); }
+        .uc-meta { font-family: var(--font-code); font-size: 11px; color: var(--text-muted); }
         
-        .uc-sub-pill {
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            color: #fff; border: none;
-            padding: 4px 12px; border-radius: 99px;
-            font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
-            box-shadow: 0 3px 8px rgba(99, 102, 241, 0.3);
-            cursor: pointer; transition: transform 0.2s;
-            text-transform: uppercase;
+        /* 退出登录按钮修复 */
+        .btn-logout {
+            margin-top: 12px; width: 100%; height: 36px;
+            background: transparent; border: 1px solid var(--border-line);
+            color: var(--danger); font-size: 13px; font-weight: 500;
+            border-radius: 8px; cursor: pointer; transition: 0.2s;
         }
-        .uc-sub-pill:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .btn-logout:hover { background: rgba(239, 68, 68, 0.05); border-color: var(--danger); }
 
         /* 移动端适配 */
         @media (max-width: 768px) {
-            .navbar { padding: 0 16px; }
             .app-layout {
-                height: auto; min-height: calc(100vh - 56px);
-                padding: 16px;
-                grid-template-columns: 1fr; grid-template-rows: 1fr auto;
-                display: flex; flex-direction: column;
+                margin: 20px auto; padding: 0 16px;
+                grid-template-columns: 1fr; gap: 20px;
             }
-            .editor-area { min-height: 500px; flex: 1; }
-            .sidebar { flex-shrink: 0; }
+            .editor-area { height: 400px; } /* 移动端高度略减 */
             
-            /* 底部抽屉 */
             .modal-mask { align-items: flex-end; }
-            .modal-box { width: 100%; border-radius: 20px 20px 0 0; margin: 0; max-width: 100%; transform: translateY(100%); }
+            .modal-box { width: 100%; max-width: 100%; border-radius: 20px 20px 0 0; margin: 0; transform: translateY(100%); }
             .modal-mask.show .modal-box { transform: translateY(0); }
         }
 
@@ -349,109 +337,107 @@
     <nav class="navbar">
         <div class="brand">
             <img id="brandIcon" alt="Logo">
-            <span>PasteBox</span>
+            <span>Pastebox</span>
         </div>
         <div class="nav-actions">
-            <button type="button" class="btn btn-glass icon-only" id="themeToggle" title="切换主题">
+            <button type="button" class="btn-secondary icon-only" id="themeToggle" title="切换主题">
                 <svg class="icon" id="iconSun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                 <svg class="icon" id="iconMoon" viewBox="0 0 24 24" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             </button>
-            <button type="button" class="btn btn-glass" id="btnAuthOpen">登录</button>
+            <button type="button" class="btn-secondary" id="btnAuthOpen">登录</button>
         </div>
     </nav>
 
-    <!-- 主布局 -->
+    <!-- 主布局 (自然滚动) -->
     <main class="app-layout">
         <form id="pasteForm" style="display:contents">
             
-            <!-- 编辑器：自动撑满高度，不再被限制 -->
-            <div class="glass-panel editor-area">
+            <!-- 编辑器 -->
+            <div class="card editor-area">
                 <div class="editor-scroller">
-                    <textarea id="content" placeholder="在此输入代码、日志或文本..." spellcheck="false" required></textarea>
+                    <textarea id="content" placeholder="输入文本、代码或日志..." spellcheck="false" required></textarea>
                 </div>
                 <div class="editor-bar">
                     <div style="display:flex; gap:12px; align-items:center;">
                         <span id="lineCounter">0 行</span>
                         <span style="opacity:0.3">|</span>
                         <span><span id="byteNum">0</span> 字节</span>
-                        <div class="node-badge" id="nodeInfo">节点</div>
+                        <div class="node-badge" id="nodeInfo">
+                            <span>检测到节点</span>
+                        </div>
                     </div>
-                    <button type="button" class="btn-ghost" id="btnHome" style="display:none;">退出编辑</button>
+                    <button type="button" class="btn-ghost" id="btnHome" style="display:none;">退出</button>
                 </div>
             </div>
 
             <!-- 侧边栏 -->
             <div class="sidebar">
                 
-                <!-- 工具箱 -->
+                <!-- 工具 -->
                 <div>
-                    <div class="label-sm">工具箱</div>
-                    <div class="tools-row">
-                        <label class="tool-card" id="uploadBtn" for="fileInput">
+                    <div class="label">工具箱</div>
+                    <div class="tools-grid">
+                        <label class="tool-btn" id="uploadBtn" for="fileInput">
                             <svg class="icon tool-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                             <span class="tool-text">导入文件</span>
                             <input type="file" id="fileInput">
                         </label>
-                        <div class="tool-card" id="btnResetContent">
+                        <div class="tool-btn" id="btnResetContent">
                             <svg class="icon tool-icon" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                            <span class="tool-text">清空</span>
+                            <span class="tool-text">清空内容</span>
                         </div>
-                        <div class="tool-card" id="btnBase64Encode">
+                        <div class="tool-btn" id="btnBase64Encode">
                             <svg class="icon tool-icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
                             <span class="tool-text">Base64编码</span>
                         </div>
-                        <div class="tool-card" id="btnBase64Decode">
+                        <div class="tool-btn" id="btnBase64Decode">
                             <svg class="icon tool-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
                             <span class="tool-text">Base64解码</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- 有效期设置 -->
-                <div class="glass-panel" style="padding:16px;">
-                    <div class="label-sm" style="margin-bottom:8px;">过期时间</div>
-                    <div class="seg-control" id="ttlGroup">
-                        <button type="button" class="seg-btn" data-ttl="10m">10分</button>
-                        <button type="button" class="seg-btn" data-ttl="1d">1天</button>
-                        <button type="button" class="seg-btn active" data-ttl="7d">7天</button>
-                        <button type="button" class="seg-btn" data-ttl="30d">30天</button>
-                        <button type="button" class="seg-btn" data-ttl="forever" id="ttlForeverBtn" disabled>∞</button>
+                <!-- 设置 -->
+                <div class="card" style="padding:16px;">
+                    <div class="label" style="margin-bottom:10px;">有效期</div>
+                    <div class="seg-group" id="ttlGroup">
+                        <button type="button" class="seg-item" data-ttl="10m">10分</button>
+                        <button type="button" class="seg-item" data-ttl="1d">1天</button>
+                        <button type="button" class="seg-item active" data-ttl="7d">7天</button>
+                        <button type="button" class="seg-item" data-ttl="30d">30天</button>
+                        <button type="button" class="seg-item" data-ttl="forever" id="ttlForeverBtn" disabled>∞</button>
                     </div>
-                    <div id="ttlHint" style="font-size:11px; color:var(--text-sub); text-align:right; margin-top:8px;">7 天后过期</div>
+                    <div id="ttlHint" style="font-size:11px; color:var(--text-sub); text-align:right; margin-top:8px;">内容在 7 天后过期</div>
                 </div>
 
-                <!-- 高级选项 -->
+                <!-- 高级 -->
                 <div id="advancedSection" style="display:none; flex-direction:column; gap:10px;">
-                    <div class="label-sm">高级</div>
-                    <div class="input-box">
-                        <input type="text" id="customId" class="input-field" placeholder="自定义链接尾缀">
+                    <div class="label">高级</div>
+                    <div class="input-wrapper">
+                        <input type="text" id="customId" class="input-real" placeholder="自定义链接尾缀">
                     </div>
-                    <div class="input-box">
-                        <input type="text" id="remark" class="input-field" placeholder="备注信息">
+                    <div class="input-wrapper">
+                        <input type="text" id="remark" class="input-real" placeholder="备注信息">
                     </div>
                 </div>
 
-                <!-- 提交按钮 -->
-                <div style="margin-top:8px;">
+                <!-- 提交 -->
+                <div style="margin-top:4px;">
                     <button type="submit" class="btn btn-primary" id="submitBtn" style="width:100%; height:40px;">
                         <span class="text">发布内容</span>
                     </button>
                     <div id="statusMsg" style="text-align:center; font-size:12px; margin-top:8px; min-height:16px; color:var(--text-sub);"></div>
                 </div>
 
-                <!-- 结果面板 -->
-                <div id="resultBox" class="glass-panel result-panel">
+                <!-- 结果 -->
+                <div id="resultBox" class="card result-box">
                     <div style="font-size:13px; font-weight:700; color:var(--success); margin-bottom:10px;">发布成功</div>
-                    <div class="result-url" id="viewLinkText">...</div>
+                    <div class="result-link" id="viewLinkText">...</div>
                     <div style="display:flex; gap:10px;">
-                        <button type="button" class="btn btn-glass" style="flex:1" id="btnCopyView">复制</button>
-                        <button type="button" class="btn btn-glass" style="flex:1" id="btnOpenView">打开</button>
+                        <button type="button" class="btn-secondary" style="flex:1" id="btnCopyView">复制</button>
+                        <button type="button" class="btn-secondary" style="flex:1" id="btnOpenView">打开</button>
                     </div>
-                    <button type="button" class="btn-ghost" id="btnManageFromResult" style="width:100%; margin-top:8px; display:none;">管理</button>
-                </div>
-
-                <div class="footer">
-                    <span id="baseUrlText"></span> • PasteBox
+                    <button type="button" class="btn-ghost" id="btnManageFromResult" style="width:100%; margin-top:8px; display:none;">前往管理</button>
                 </div>
             </div>
         </form>
@@ -461,46 +447,50 @@
     <div class="modal-mask" id="authModal">
         <div class="modal-box">
             <div class="modal-head">
-                <span class="modal-title">账号登录</span>
-                <button class="modal-close" id="authCloseBtn">×</button>
+                <span class="modal-title">登录</span>
+                <button class="modal-actions btn-modal-action" id="authCloseBtn">
+                    <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </div>
             <div class="modal-body">
                 <form id="authForm" style="display:flex; flex-direction:column; gap:12px;">
-                    <div class="input-box">
-                        <input id="authUsername" class="input-field" type="text" placeholder="用户名" autocomplete="username">
+                    <div class="input-wrapper">
+                        <input id="authUsername" class="input-real" type="text" placeholder="用户名" autocomplete="username">
                     </div>
-                    <div class="input-box">
-                        <input id="authPassword" class="input-field" type="password" placeholder="密码" autocomplete="current-password">
+                    <div class="input-wrapper">
+                        <input id="authPassword" class="input-real" type="password" placeholder="密码" autocomplete="current-password">
                     </div>
-                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-sub);">
+                    <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-sub);">
                         <input id="authRemember" type="checkbox" checked> 保持登录
                     </label>
                     <div id="authMsg" style="text-align:center; font-size:12px; min-height:16px;"></div>
                     <div style="display:flex; gap:12px;">
-                        <button type="button" class="btn btn-glass" style="flex:1" id="btnDoRegister">注册</button>
-                        <button type="submit" class="btn btn-primary" style="flex:1" id="btnDoLogin">登录</button>
+                        <button type="button" class="btn-secondary" style="flex:1" id="btnDoRegister">注册</button>
+                        <button type="submit" class="btn-primary" style="flex:1" id="btnDoLogin">登录</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- 弹窗：用户中心 -->
+    <!-- 弹窗：用户中心 (尺寸修复与样式统一) -->
     <div class="modal-mask" id="userCenter">
-        <div class="modal-box" style="width:460px;">
+        <div class="modal-box">
             <div class="modal-head">
                 <span class="modal-title">我的内容</span>
-                <div style="display:flex; gap:8px;">
-                    <button class="btn btn-glass icon-only" id="ucRefreshBtn" title="刷新">
+                <div class="modal-actions">
+                    <button class="btn-modal-action" id="ucRefreshBtn" title="刷新">
                         <svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
                     </button>
-                    <button class="modal-close" id="ucCloseBtn">×</button>
+                    <button class="btn-modal-action" id="ucCloseBtn" title="关闭">
+                        <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
                 </div>
             </div>
             <div class="modal-body" style="height:60vh; display:flex; flex-direction:column;">
                 <div id="ucList" style="flex:1; overflow-y:auto; padding-right:4px;"></div>
                 <div id="ucEmpty" style="text-align:center; padding:40px; color:var(--text-sub); font-size:13px;">暂无记录</div>
-                <button class="btn-ghost" id="ucLogoutBtn" style="margin-top:12px; width:100%; color:var(--danger);">退出登录</button>
+                <button class="btn-logout" id="ucLogoutBtn">退出登录</button>
             </div>
         </div>
     </div>
@@ -510,17 +500,19 @@
         <div class="modal-box">
             <div class="modal-head">
                 <span class="modal-title">订阅格式</span>
-                <button class="modal-close" id="subMenuCloseBtn">×</button>
+                <button class="modal-actions btn-modal-action" id="subMenuCloseBtn">
+                    <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </div>
             <div class="modal-body">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:16px;">
-                    <button class="btn btn-glass active" data-client="general">通用</button>
-                    <button class="btn btn-glass" data-client="base64">Base64</button>
-                    <button class="btn btn-glass" data-client="clash">Clash</button>
-                    <button class="btn btn-glass" data-client="surge">Surge</button>
+                    <button class="btn-secondary active" data-client="general">通用</button>
+                    <button class="btn-secondary" data-client="base64">Base64</button>
+                    <button class="btn-secondary" data-client="clash">Clash</button>
+                    <button class="btn-secondary" data-client="surge">Surge</button>
                 </div>
-                <div class="input-box">
-                    <input id="subLinkInput" class="input-field" readonly>
+                <div class="input-wrapper">
+                    <input id="subLinkInput" class="input-real" readonly>
                     <button id="subLinkCopyBtn" style="border:none; background:none; color:var(--accent); font-weight:600; font-size:12px; cursor:pointer;">复制</button>
                 </div>
             </div>
@@ -529,7 +521,7 @@
 
     <!-- 逻辑脚本 -->
     <script>
-    const THEME_KEY="lyn_paste_theme_v8";
+    const THEME_KEY="lyn_paste_theme_v9";
     const themeToggle=document.getElementById("themeToggle");
     const iconSun=document.getElementById("iconSun");
     const iconMoon=document.getElementById("iconMoon");
@@ -727,7 +719,7 @@
     function setTtl(key){
         state.ttlKey=key;
         if($ttlGroup){
-            $ttlGroup.querySelectorAll(".seg-btn").forEach(b=>{
+            $ttlGroup.querySelectorAll(".seg-item").forEach(b=>{
                 b.classList.toggle("active",b.dataset.ttl===key);
             });
         }
@@ -736,7 +728,7 @@
     setTtl("7d");
     if($ttlGroup){
         $ttlGroup.addEventListener("click",e=>{
-            const btn=e.target.closest(".seg-btn");
+            const btn=e.target.closest(".seg-item");
             if(!btn || btn.disabled)return;
             const key=btn.dataset.ttl;
             if(key) setTtl(key);
@@ -906,15 +898,15 @@
                 const row = document.createElement("div"); row.className = "uc-item";
                 const hasNode = d._nodeInfo.isNode && d._nodeInfo.count>0;
                 row.innerHTML = `
-                    <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;">
-                        <span>${escapeHTML(d.remark||"无标题")}</span>
-                        ${hasNode ? `<button class="uc-sub-pill" onclick="openSubClientMenu('${d.slug}')">订阅</button>` : ''}
+                    <div class="uc-top">
+                        <span class="uc-title">${escapeHTML(d.remark||"无标题")}</span>
+                        ${hasNode ? `<button class="btn-secondary" style="font-size:11px;padding:2px 8px;height:24px;" onclick="openSubClientMenu('${d.slug}')">订阅</button>` : ''}
                     </div>
-                    <div style="font-family:var(--font-code);font-size:11px;color:var(--text-sub);">/${escapeHTML(d.slug)} · ${d.ttlKey==="forever"?"永久": "临时"}</div>
+                    <div class="uc-meta">/${escapeHTML(d.slug)} · ${d.ttlKey==="forever"?"永久": "临时"}</div>
                     <div style="display:flex;gap:6px;margin-top:4px;">
-                        <button class="btn btn-glass" style="height:28px;font-size:11px;flex:1;" onclick="closeUserCenter();enterEditMode('${d.slug}')">编辑</button>
-                        <button class="btn btn-glass" style="height:28px;font-size:11px;flex:1;" onclick="navigator.clipboard.writeText('${VIEW_BASE}/${d.slug}').then(()=>alert('已复制'))">复制</button>
-                        <button class="btn btn-glass" style="height:28px;font-size:11px;color:var(--danger);" onclick="deletePaste('${d.slug}')">删除</button>
+                        <button class="btn-secondary" style="height:28px;font-size:11px;flex:1;" onclick="closeUserCenter();enterEditMode('${d.slug}')">编辑</button>
+                        <button class="btn-secondary" style="height:28px;font-size:11px;flex:1;" onclick="navigator.clipboard.writeText('${VIEW_BASE}/${d.slug}').then(()=>alert('已复制'))">复制</button>
+                        <button class="btn-secondary" style="height:28px;font-size:11px;color:var(--danger);" onclick="deletePaste('${d.slug}')">删除</button>
                     </div>
                 `;
                 $ucList.appendChild(row);
