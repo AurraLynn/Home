@@ -169,6 +169,17 @@
         }
         .btn-danger-pill:hover { background: rgba(255, 59, 48, 0.15); }
 
+        /* 退出按钮：不使用毛玻璃/模糊遮罩 */
+        #ucLogoutBtn{
+            backdrop-filter:none !important;
+            -webkit-backdrop-filter:none !important;
+            background: transparent !important;
+            border: 1px solid rgba(255,59,48,0.25) !important;
+            box-shadow:none !important;
+        }
+        #ucLogoutBtn:hover{ background: rgba(255,59,48,0.08) !important; }
+
+
         .btn-ghost { background: transparent; color: var(--txt-secondary); height: 32px; font-size: 12px; }
         .btn-ghost:hover { color: var(--txt-primary); background: rgba(128,128,128,0.05); }
 
@@ -208,7 +219,7 @@
 
             border: none;
             background: transparent;
-            padding: 24px 24px 60px;
+            padding: 44px 24px 24px;
 
             font-family: var(--font-mono);
             font-size: 14px;
@@ -218,7 +229,7 @@
         .editor-textarea::placeholder { color: var(--txt-placeholder); }
         
         .editor-status-bar {
-            position: absolute; bottom: 12px; right: 12px;
+            position: absolute; bottom: 12px; left: 12px;
             pointer-events: none; display: flex; gap: 6px; z-index: 20;
         }
         .editor-status-bar > * { pointer-events: auto; }
@@ -226,8 +237,8 @@
         .status-pill {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 4px 10px; border-radius: 8px;
-            background: rgba(255,255,255,0.4); backdrop-filter: blur(4px);
-            border: 1px solid rgba(255,255,255,0.3);
+            background: transparent; backdrop-filter: none;
+            border: 1px solid rgba(255,255,255,0.18);
             font-size: 11px; font-weight: 500; color: var(--txt-secondary);
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
@@ -236,6 +247,21 @@
             font-weight: 600; display: none; border-color: rgba(52, 199, 89, 0.2);
         }
         .node-indicator.active { display: inline-flex; }
+
+        /* 识别信息悬浮在输入框上方（不占底部） */
+        #nodeInfo{
+            position:absolute;
+            top:14px;
+            right:14px;
+            z-index:30;
+            pointer-events:none;
+            background: rgba(0,0,0,0.0);
+            border: none;
+            padding: 0;
+        }
+        body.theme-light #nodeInfo{ color: var(--success); }
+        body.theme-dark #nodeInfo{ color: var(--success); }
+
 
         /* 右侧：控制面板 */
         .sidebar {
@@ -411,6 +437,10 @@
         .brand-subtitle{ margin-top:4px; font-size:11px; opacity:.6; font-weight:500; }
         .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;}
         .icon-copy, .icon-logout{ width:18px; height:18px; display:block; }
+        /* 使用自带彩色 SVG 图标时，限制尺寸 */
+        #subLinkCopyBtn svg, .uc-list button svg{ width:18px; height:18px; }
+        #subLinkCopyBtn{ padding:0; }
+
 
 
 
@@ -570,7 +600,7 @@
             <div class="uc-list" id="ucList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-bottom:0;"></div>
             <div id="ucEmpty" style="text-align:center; padding:40px; color:var(--txt-secondary); font-size:13px;">加载中...</div>
             
-            <button class="btn btn-danger-pill" id="ucLogoutBtn" style="width:auto; margin:40px auto 0; display:flex; align-items:center; justify-content:center; gap:10px;" title="退出登录"><svg class="icon icon-logout" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l1.41-1.41L8.83 13H21v-2H8.83l2.58-2.59L10 7l-7 7 7 7z"/><path d="M3 3h10v2H3v14h10v2H3c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2z"/></svg><span class="sr-only">退出登录</span></button>
+            <button class="btn btn-danger-pill" id="ucLogoutBtn" style="width:auto; margin:40px auto 0; display:flex; align-items:center; justify-content:center; gap:10px;" title="退出登录"><svg t="1766506255337" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="49291" width="200" height="200"><path d="M297.612549 208.865882h671.104837v753.024837H297.612549z" fill="#B3F995" p-id="49292"></path><path d="M443.499085 755.551373c22.103007 22.119739 57.959739 22.119739 80.062745 0l211.275294-211.275295c17.869804-17.869804 17.869804-46.849673 0-64.719477L523.56183 268.298039c-22.119739-22.103007-57.959739-22.103007-80.079477 0-22.086275 22.086275-22.119739 57.859346-0.08366 79.995817l106.482614 106.900915H58.026667c-31.339085 0-56.738301 25.399216-56.738301 56.738301 0 31.339085 25.399216 56.738301 56.738301 56.738301h491.888104l-106.499346 106.900915c-22.036078 22.103007-22.002614 57.89281 0.08366 79.979085zM909.034248 1.32183H114.764967C51.785621 1.32183 1.288366 52.387974 1.288366 114.781699v170.19817c0 31.339085 25.399216 56.738301 56.738301 56.738301 31.339085 0 56.738301-25.399216 56.7383-56.738301V114.781699h794.269281v794.269281H114.764967V738.85281c0-31.339085-25.399216-56.738301-56.7383-56.7383-31.339085 0-56.738301 25.399216-56.738301 56.7383V909.05098c0 62.410458 50.497255 113.459869 113.459869 113.45987h794.269281c62.410458 0 113.459869-51.066144 113.45987-113.45987V114.781699C1022.494118 52.387974 971.427974 1.32183 909.034248 1.32183z m0 0" fill="#00B38A" p-id="49293"></path></svg><span class="sr-only">退出登录</span></button>
         </div>
     </div>
 
@@ -591,8 +621,8 @@
             
             <div class="input-group-row">
                 <input id="subLinkInput" readonly>
-                <button id="subLinkCopyBtn">
-                    <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <button id="subLinkCopyBtn" aria-label="复制订阅链接" title="复制">
+                    <svg t="1766505606233" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15662" width="200" height="200"><path d="M715.6224 910.0288H356.096c-55.3984 0-100.3008-44.9024-100.3008-100.3008V452.8128c0-55.3984 44.9024-100.3008 100.3008-100.3008h359.5776c55.3984 0 100.3008 44.9024 100.3008 100.3008v356.9152c-0.0512 55.3984-44.9536 100.3008-100.352 100.3008z" fill="#56E5BE" p-id="15663"></path><path d="M729.1904 910.0288H416.3072c-47.9232 0-86.7328-38.8608-86.7328-86.7328v-310.5792c0-47.9232 38.8608-86.7328 86.7328-86.7328h312.8832c47.9232 0 86.7328 38.8608 86.7328 86.7328v310.5792c0 47.872-38.8608 86.7328-86.7328 86.7328z" fill="#50DDB8" p-id="15664"></path><path d="M727.6544 910.0288H466.2784c-36.0448 0-65.2288-29.184-65.2288-65.2288v-282.4704c0-36.0448 29.184-65.2288 65.2288-65.2288h284.416c36.0448 0 65.2288 29.184 65.2288 65.2288v259.4304c0 48.7424-39.5264 88.2688-88.2688 88.2688z" fill="#42D3AD" p-id="15665"></path><path d="M763.5456 107.5712H410.0096c-81.2544 0-147.5072 65.536-148.6336 146.5856-79.1552 3.2256-142.5408 68.608-142.5408 148.5312v359.5776c0 81.9712 66.7136 148.6848 148.6848 148.6848h353.536c81.2544 0 147.5072-65.536 148.6336-146.5856 79.1552-3.2256 142.5408-68.608 142.5408-148.5312V256.256c0-81.9712-66.6624-148.6848-148.6848-148.6848z m-55.1936 654.6944c0 48.128-39.168 87.2448-87.2448 87.2448H267.52c-48.128 0-87.2448-39.168-87.2448-87.2448V402.6368c0-48.128 39.168-87.2448 87.2448-87.2448h353.536c48.128 0 87.2448 39.168 87.2448 87.2448v359.6288z m142.4384-146.432c0 46.0288-35.84 83.712-81.0496 86.9376V402.6368c0-81.9712-66.7136-148.6848-148.6848-148.6848H322.8672c1.2288-47.0528 39.7824-84.9408 87.1424-84.9408h353.5872c48.128 0 87.2448 39.168 87.2448 87.2448v359.5776z" fill="#2E3138" p-id="15666"></path></svg>
                 </button>
             </div>
         </div>
@@ -1208,7 +1238,7 @@
                     <div class="input-group-row" style="margin-bottom:12px; height:32px;">
                         <input value="${link}" readonly onclick="this.select()">
                         <button onclick=\"copyText('${link}','链接已复制')\" style="height:32px; width:36px;">
-                            <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            <svg t="1766505606233" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15662" width="200" height="200"><path d="M715.6224 910.0288H356.096c-55.3984 0-100.3008-44.9024-100.3008-100.3008V452.8128c0-55.3984 44.9024-100.3008 100.3008-100.3008h359.5776c55.3984 0 100.3008 44.9024 100.3008 100.3008v356.9152c-0.0512 55.3984-44.9536 100.3008-100.352 100.3008z" fill="#56E5BE" p-id="15663"></path><path d="M729.1904 910.0288H416.3072c-47.9232 0-86.7328-38.8608-86.7328-86.7328v-310.5792c0-47.9232 38.8608-86.7328 86.7328-86.7328h312.8832c47.9232 0 86.7328 38.8608 86.7328 86.7328v310.5792c0 47.872-38.8608 86.7328-86.7328 86.7328z" fill="#50DDB8" p-id="15664"></path><path d="M727.6544 910.0288H466.2784c-36.0448 0-65.2288-29.184-65.2288-65.2288v-282.4704c0-36.0448 29.184-65.2288 65.2288-65.2288h284.416c36.0448 0 65.2288 29.184 65.2288 65.2288v259.4304c0 48.7424-39.5264 88.2688-88.2688 88.2688z" fill="#42D3AD" p-id="15665"></path><path d="M763.5456 107.5712H410.0096c-81.2544 0-147.5072 65.536-148.6336 146.5856-79.1552 3.2256-142.5408 68.608-142.5408 148.5312v359.5776c0 81.9712 66.7136 148.6848 148.6848 148.6848h353.536c81.2544 0 147.5072-65.536 148.6336-146.5856 79.1552-3.2256 142.5408-68.608 142.5408-148.5312V256.256c0-81.9712-66.6624-148.6848-148.6848-148.6848z m-55.1936 654.6944c0 48.128-39.168 87.2448-87.2448 87.2448H267.52c-48.128 0-87.2448-39.168-87.2448-87.2448V402.6368c0-48.128 39.168-87.2448 87.2448-87.2448h353.536c48.128 0 87.2448 39.168 87.2448 87.2448v359.6288z m142.4384-146.432c0 46.0288-35.84 83.712-81.0496 86.9376V402.6368c0-81.9712-66.7136-148.6848-148.6848-148.6848H322.8672c1.2288-47.0528 39.7824-84.9408 87.1424-84.9408h353.5872c48.128 0 87.2448 39.168 87.2448 87.2448v359.5776z" fill="#2E3138" p-id="15666"></path></svg>
                         </button>
                     </div>
 
