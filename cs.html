@@ -88,6 +88,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         
         body {
+            overflow: auto;
             margin: 0; padding: 0;
             font-family: var(--font-sans);
             background-color: var(--bg-app);
@@ -182,15 +183,25 @@
 
         /* 左侧：主编辑器 */
         .editor-zone {
-            height: 100%; min-height: clamp(320px, 62vh, 760px);
-            position: relative; display: flex; flex-direction: column;
+            /* 让编辑区随内容自然增长，避免被 flex 固定高度卡死（否则 resize 不生效） */
+            height: auto;
+            min-height: clamp(320px, 62vh, 760px);
+            position: relative;
+            display: block;
         }
         
         .editor-textarea {
             width: 100%;
-            flex: 1;
+            /* 不要用 flex:1，否则会被父容器高度锁死，拖拽 resize 看起来“无效” */
+            flex: none;
+
+            /* 自适应大 + 仍允许手动拖拽更大 */
+            min-height: clamp(320px, 62vh, 760px);
+            height: clamp(320px, 62vh, 760px);
             resize: vertical;          /* 允许用户拖拽变高 */
-            overflow-y: auto;
+            max-height: none;          /* 允许拖拽超过初始高度 */
+
+            overflow: auto;
             overflow-wrap: anywhere;   /* 长串内容也自动换行，不会“看不到” */
             word-break: break-word;
             white-space: pre-wrap;
@@ -394,6 +405,15 @@
         .toast.success{ border-color: rgba(52,199,89,0.35); }
         .toast.error{ border-color: rgba(255,59,48,0.35); }
 
+        .brand { display:flex; align-items:center; gap:12px; }
+        .brand-text{ display:flex; flex-direction:column; line-height:1.1; }
+        .brand-title{ font-weight:700; font-size:15px; letter-spacing:.2px; }
+        .brand-subtitle{ margin-top:4px; font-size:11px; opacity:.6; font-weight:500; }
+        .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;}
+        .icon-copy, .icon-logout{ width:18px; height:18px; display:block; }
+
+
+
     </style>
 </head>
 <body class="theme-light">
@@ -405,7 +425,10 @@
         <header class="header-section">
             <div class="brand">
                 <img id="brandIcon" class="brand-icon" alt="Logo">
-                <span>PasteBox</span>
+                <div class="brand-text">
+                    <div class="brand-title">PasteBox</div>
+                    <div class="brand-subtitle">Paste once, retrieve anywhere.</div>
+                </div>
             </div>
             <div class="header-tools">
                 <button type="button" class="btn btn-icon btn-glass" id="themeToggle" title="切换主题">
@@ -544,10 +567,10 @@
                 </div>
             </div>
             
-            <div class="uc-list" id="ucList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-bottom: 20px;"></div>
+            <div class="uc-list" id="ucList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-bottom:0;"></div>
             <div id="ucEmpty" style="text-align:center; padding:40px; color:var(--txt-secondary); font-size:13px;">加载中...</div>
             
-            <button class="btn btn-danger-pill" id="ucLogoutBtn" style="width:auto; margin:40px auto 0;">退出登录</button>
+            <button class="btn btn-danger-pill" id="ucLogoutBtn" style="width:auto; margin:40px auto 0; display:flex; align-items:center; justify-content:center; gap:10px;" title="退出登录"><svg class="icon icon-logout" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l1.41-1.41L8.83 13H21v-2H8.83l2.58-2.59L10 7l-7 7 7 7z"/><path d="M3 3h10v2H3v14h10v2H3c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2z"/></svg><span class="sr-only">退出登录</span></button>
         </div>
     </div>
 
