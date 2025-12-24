@@ -187,21 +187,21 @@
         
         /* 
          * =========================================
-         * [修改] 编辑器样式增强
-         * 1. resize: vertical -> 允许拖拽高度
-         * 2. white-space: pre-wrap -> 自动换行
-         * 3. word-break: break-all -> 强制长字符串(如Base64)换行
+         * [编辑器样式]
+         * 1. 自适应: flex:1 撑满剩余空间
+         * 2. 自由放大: resize: vertical
+         * 3. 自动换行: white-space: pre-wrap
          * =========================================
          */
         .editor-textarea {
             width: 100%; flex: 1; 
-            resize: vertical; /* 允许用户垂直拖动大小 */
+            resize: vertical; /* 允许用户拖拽高度 */
             overflow-y: auto;
             border: none; background: transparent; padding: 24px 24px 60px;
             font-family: var(--font-mono); font-size: 14px; line-height: 1.6; color: var(--txt-primary);
             
             white-space: pre-wrap; /* 自动换行 */
-            word-break: break-all; /* 强制切断长单词 */
+            word-break: break-all; /* 强制长字符换行 */
         }
         .editor-textarea::placeholder { color: var(--txt-placeholder); }
         
@@ -357,7 +357,7 @@
 
         /* 
          * =========================================
-         * [新增] 顶部 Toast 弹窗样式
+         * [Toast 提示]
          * =========================================
          */
         .toast-box {
@@ -390,6 +390,28 @@
             80% { opacity: 1; transform: translate(-50%, 0); }
             100% { opacity: 0; transform: translate(-50%, -20px); }
         }
+
+        /*
+         * =========================================
+         * [新增] 个人中心列表样式 (隐藏滚动条)
+         * =========================================
+         */
+        .uc-list {
+            flex: 1; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            padding-bottom: 20px;
+            
+            /* 兼容性写法: 隐藏滚动条 */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;     /* Firefox */
+        }
+        .uc-list::-webkit-scrollbar {
+            display: none;             /* Chrome, Safari, Opera */
+        }
+
     </style>
 </head>
 <body class="theme-light">
@@ -527,7 +549,7 @@
         </div>
     </div>
 
-    <!-- 用户中心 -->
+    <!-- 用户中心 (Personal Center) -->
     <div class="modal-mask" id="userCenter">
         <div class="modal-panel" style="max-width:600px; height:80vh; display:flex; flex-direction:column;">
             <div class="modal-head">
@@ -540,7 +562,8 @@
                 </div>
             </div>
             
-            <div class="uc-list" id="ucList" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-bottom: 20px;"></div>
+            <!-- 使用 class="uc-list" 应用隐藏滚动条样式 -->
+            <div class="uc-list" id="ucList"></div>
             <div id="ucEmpty" style="text-align:center; padding:40px; color:var(--txt-secondary); font-size:13px;">加载中...</div>
             
             <button class="btn btn-danger-pill" id="ucLogoutBtn" style="width:auto; margin:40px auto 0;">退出登录</button>
