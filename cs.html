@@ -118,8 +118,12 @@
             grid-template-columns: 1fr 340px; 
             gap: 24px;
             
-            /* [修复] 这里原本是 stretch，导致高度被锁定。改为 start 后，输入框可以自由拉伸 */
-            align-items: flex-start; 
+            /* 
+             * [关键修改]
+             * 改回 stretch 以保证默认等高对齐。
+             * 输入框的可拖拽性将通过 .editor-zone 的 height: auto 实现。
+             */
+            align-items: stretch; 
         }
 
         /* 头部 */
@@ -195,28 +199,34 @@
             backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
             border: 1px solid var(--border-glass); border-radius: var(--radius-box);
             box-shadow: var(--shadow-card); 
-            /* 注意：不设置 height 100%，让它跟随内容撑开 */
             display: flex; flex-direction: column; transition: transform 0.3s ease;
         }
 
         /* 左侧：主编辑器 */
         .editor-zone {
-            min-height: 480px; /* 最小高度 */
+            min-height: 480px; 
             position: relative; display: flex; flex-direction: column;
-            /* 高度自适应 */
+            /* 
+             * [关键] height: auto + 父级 stretch
+             * 这样初始高度会和右侧拉齐。
+             * 当手动拖拽 textarea 时，auto 会允许高度增加，撑开父级 grid。
+             */
             height: auto; 
         }
         
         .editor-textarea {
-            width: 100%; flex: 1; 
-            resize: vertical; /* 允许垂直拖拽 */
+            width: 100%; 
+            /* 
+             * [关键] 使用 flex: 1 撑满剩余空间，但要允许 height 变化
+             * 配合 resize: vertical
+             */
+            flex: 1;
+            resize: vertical; 
             overflow-y: auto;
             border: none; background: transparent; padding: 24px 24px 60px;
             font-family: var(--font-mono); font-size: 14px; line-height: 1.6; color: var(--txt-primary);
             white-space: pre-wrap; word-break: break-all;
-            
-            /* 关键：给一个最小高度，防止拖没了 */
-            min-height: 400px;
+            min-height: 200px; /* 防止拖太小 */
         }
         .editor-textarea::placeholder { color: var(--txt-placeholder); }
         
@@ -335,9 +345,9 @@
         .modal-mask.show { opacity: 1; pointer-events: auto; }
         
         /* 
-         * [修复] 弹窗高度自适应
-         * 改为 height: auto, max-height: 85vh
-         * 这样内容少的时候弹窗就小，没有空背景
+         * [修复] 个人中心尺寸与布局
+         * 1. 恢复 height: 80vh
+         * 2. 使用 Flex column 布局，使中间内容自适应
          */
         .modal-panel {
             width: 90%; max-width: 400px;
@@ -346,7 +356,7 @@
             transform: scale(0.9); transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             
             display: flex; flex-direction: column;
-            height: auto; max-height: 85vh; 
+            height: 80vh; 
         }
         .modal-mask.show .modal-panel { transform: scale(1); }
         
@@ -410,15 +420,14 @@
 
         /* 列表容器 */
         .uc-list {
-            /* 允许内容滚动，但限制最大高度 */
+            /* 填满剩余空间，并允许滚动 */
+            flex: 1; 
             overflow-y: auto; 
             display: flex; flex-direction: column; gap: 10px; 
             
-            /* 不再强制撑满，而是有多少显示多少，最多占 60vh */
-            flex: 0 1 auto;
-            max-height: 60vh;
+            /* 确保列表内容不被遮挡，添加底部内边距 */
+            padding-bottom: 20px; 
             
-            padding-bottom: 10px;
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
@@ -555,7 +564,7 @@
         </div>
     </div>
 
-    <!-- 用户中心 (自适应高度) -->
+    <!-- 用户中心 (固定高度 80vh, flex 布局) -->
     <div class="modal-mask" id="userCenter">
         <div class="modal-panel">
             <div class="modal-head">
@@ -571,8 +580,8 @@
             <div class="uc-list" id="ucList"></div>
             <div id="ucEmpty" style="text-align:center; padding:40px; color:var(--txt-secondary); font-size:13px;">加载中...</div>
             
-            <!-- 退出登录按钮紧跟内容 -->
-            <div style="margin-top:20px;">
+            <!-- 退出登录按钮 (Flex 底部固定，无背景) -->
+            <div style="margin-top:auto; padding-top:20px; flex-shrink:0;">
                 <button class="btn btn-liquid-glass" id="ucLogoutBtn">退出登录</button>
             </div>
         </div>
@@ -580,7 +589,7 @@
 
     <!-- 订阅客户端选择 -->
     <div class="modal-mask" id="subClientOverlay">
-        <div class="modal-panel" style="width:100%; max-width:500px;">
+        <div class="modal-panel" style="width:100%; max-width:500px; height:auto;">
             <div class="modal-head">
                 <span class="modal-title">选择客户端格式</span>
                 <button class="btn-circle" id="subMenuCloseBtn">×</button>
