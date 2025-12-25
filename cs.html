@@ -162,28 +162,6 @@
         .modal-title-stack{ display:flex; flex-direction:column; gap:2px; }
         .modal-subtitle{ font-size: 12px; font-weight: 600; color: var(--txt-secondary); letter-spacing: 0.02em; }
 
-        /* 用户中心：退出登录悬浮按钮（仅图标） */
-        .uc-logout-fab{
-            position: absolute;
-            left: 50%;
-            bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
-            transform: translateX(-50%);
-            width: 52px;
-            height: 52px;
-            border-radius: 18px;
-            border: 1px solid rgba(218,46,46,0.25);
-            background: rgba(218,46,46,0.10);
-            backdrop-filter: blur(18px) saturate(160%);
-            -webkit-backdrop-filter: blur(18px) saturate(160%);
-            display: grid;
-            place-items: center;
-            cursor: pointer;
-            transition: transform .18s ease, background .18s ease;
-        }
-        .uc-logout-fab:hover{ background: rgba(218,46,46,0.14); transform: translateX(-50%) translateY(-1px); }
-        .uc-logout-fab:active{ transform: translateX(-50%) scale(0.96); }
-        .uc-logout-fab svg{ width: 22px; height: 22px; }
-
         /* 动态流体背景 */
         body::before, body::after {
             content: ''; position: fixed; width: 80vw; height: 80vw;
@@ -788,22 +766,47 @@ button.copy-btn:hover{
 
 /* Publish/Update button: soft green liquid glass (override existing) */
 #submitBtn{
-  background: rgba(120, 210, 170, 0.22) !important;
-  border: 1px solid rgba(120, 210, 170, 0.35) !important;
+  background: rgba(120, 210, 170, 0.30) !important;
+  border: 1px solid rgba(120, 210, 170, 0.40) !important;
   color: rgba(14, 74, 49, 0.95) !important;
   box-shadow: none !important;
 }
 #submitBtn:hover{
-  background: rgba(120, 210, 170, 0.32) !important;
+  background: rgba(120, 210, 170, 0.38) !important;
   box-shadow: none !important;
 }
 @media (prefers-color-scheme: dark){
   #submitBtn{
-    background: rgba(90, 190, 150, 0.22) !important;
+    background: rgba(90, 190, 150, 0.30) !important;
     border-color: rgba(120, 210, 170, 0.28) !important;
     color: rgba(190, 255, 228, 0.92) !important;
   }
 }
+
+/* ===== Final Fix: Copy buttons (all) have NO hover square / NO animation ===== */
+.copy-btn, .copy-btn:hover, .copy-btn:active, .copy-btn:focus,
+.uc-copy-btn, .uc-copy-btn:hover, .uc-copy-btn:active, .uc-copy-btn:focus,
+.copy-icon-btn, .copy-icon-btn:hover, .copy-icon-btn:active, .copy-icon-btn:focus,
+#btnCopyView, #btnCopyView:hover, #btnCopyView:active, #btnCopyView:focus,
+#subLinkCopyBtn, #subLinkCopyBtn:hover, #subLinkCopyBtn:active, #subLinkCopyBtn:focus {
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+  outline: none !important;
+  transform: none !important;
+}
+
+.copy-btn:hover svg,
+.uc-copy-btn:hover svg,
+.copy-icon-btn:hover svg,
+#btnCopyView:hover svg,
+#subLinkCopyBtn:hover svg {
+  transform: none !important;
+}
+
+/* keep other input-group-row hover, but never for copy-only icon buttons */
+.input-group-row button.copy-icon-btn:hover { background: transparent !important; }
+
 </style>
 </head>
 <body class="theme-light">
@@ -912,7 +915,18 @@ button.copy-btn:hover{
 
                     <div id="statusMsg" style="font-size:12px; text-align:center; min-height:20px; color:var(--txt-secondary);"></div>
                     <button type="submit" class="btn btn-primary" id="submitBtn" style="height:48px; width:100%; font-size:15px;">
-                        <span class="text">发布内容</span>
+                        <span class="submit-ico" id="icoPublish"><svg t="1766639843751" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true">
+  <path d="M585.5744 595.5584m-298.1888 0a298.1888 298.1888 0 1 0 596.3776 0 298.1888 298.1888 0 1 0-596.3776 0Z" fill="#F5384A"></path>
+  <path d="M827.5968 528.6912a357.376 357.376 0 0 0 11.3152-90.368 298.1376 298.1376 0 1 0-493.568 333.7728 351.7952 351.7952 0 0 0 45.568 15.0528 358.8096 358.8096 0 0 0 436.6848-258.4576z" fill="#F54F5C"></path>
+  <path d="M585.5744 297.3696a298.3424 298.3424 0 0 0-291.84 359.3216c7.0144 2.2528 14.08 4.4032 21.2992 6.2464a358.4 358.4 0 0 0 445.7472-308.5824 296.6016 296.6016 0 0 0-175.2064-56.9856z" fill="#F66C73"></path>
+  <path d="M291.84 543.6416a358.912 358.912 0 0 0 375.9616-234.6496A298.0864 298.0864 0 0 0 291.84 543.6416z" fill="#F78989"></path>
+  <path d="M814.08 438.0672a299.1104 299.1104 0 0 0-593.92 0 206.5408 206.5408 0 0 0 34.6112 410.2144h76.1856a30.72 30.72 0 0 0 0-61.44H254.9248a145.1008 145.1008 0 0 1-8.7552-289.9456 35.84 35.84 0 0 0 33.5872-33.8944 237.6704 237.6704 0 0 1 474.7264 0 35.84 35.84 0 0 0 33.5872 33.8944 145.1008 145.1008 0 0 1-8.7552 289.9456h-71.68a30.72 30.72 0 1 0 0 61.44h71.68A206.5408 206.5408 0 0 0 814.08 438.0672z" fill="#444444"></path>
+  <path d="M536.576 528.896a30.72 30.72 0 0 0-42.752 0.6656l-107.1104 106.8032a30.72 30.72 0 0 0 43.4176 43.52l57.856-57.7536v221.9008a30.72 30.72 0 0 0 61.44 0v-218.624l58.5216 55.0912a30.72 30.72 0 0 0 42.1376-44.7488z" fill="#444444"></path>
+</svg></span><span class="submit-ico" id="icoUpdate" style="display:none;"><svg t="1766639895521" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true">
+  <path d="M649.5232 827.0848c-225.2288 0-407.8592-182.5792-407.8592-407.8592 0-107.5712 41.728-205.3632 109.7728-278.272-145.408 62.3616-247.296 206.7456-247.296 374.9888 0 225.2288 182.6304 407.8592 407.8592 407.8592 117.6576 0 223.6416-49.8688 298.0864-129.5872-49.3056 21.1456-103.5776 32.8704-160.5632 32.8704z" fill="#ffa115"></path>
+  <path d="M919.8592 485.2736c-16.9472 0-30.72 13.7728-30.72 30.72 0 207.9744-169.1648 377.1392-377.1392 377.1392s-377.1392-169.1648-377.1392-377.1392S304.0256 138.8544 512 138.8544c108.032 0 209.7152 46.1312 280.7808 125.3888h-116.0704c-16.9472 0-30.72 13.7728-30.72 30.72s13.7728 30.72 30.72 30.72h188.2624c16.9472 0 30.72-13.7728 30.72-30.72V100.1472c0-16.9472-13.7728-30.72-30.72-30.72s-30.72 13.7728-30.72 30.72v118.272A438.17984 438.17984 0 0 0 512 77.3632c-241.8176 0-438.5792 196.7616-438.5792 438.5792s196.7616 438.5792 438.5792 438.5792 438.5792-196.7616 438.5792-438.5792c0-16.9472-13.7728-30.6688-30.72-30.6688z" fill="#474A54"></path>
+  <path d="M501.76 350.1056v160.7168H289.0752c-16.9472 0-30.72 13.7728-30.72 30.72s13.7728 30.72 30.72 30.72H532.48c16.9472 0 30.72-13.7728 30.72-30.72V350.1056c0-16.9472-13.7728-30.72-30.72-30.72s-30.72 13.7728-30.72 30.72z" fill="#474A54"></path>
+</svg></span><span class="text">发布内容</span>
                     </button>
                 </div>
             </div>
@@ -967,22 +981,16 @@ button.copy-btn:hover{
                     <button class="btn-circle" id="ucRefreshBtn" title="刷新列表">
                         <svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
                     </button>
+                    <button class="btn-circle" id="ucLogoutBtn" title="退出登录" aria-label="退出登录">
+<svg t="1766639717837" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="29733" width="18" height="18" aria-hidden="true"><path d="M318.821304 553.031359a374.889 314.998507 90 1 0 629.997014 0 374.889 314.998507 90 1 0-629.997014 0Z" fill="#FFC700" p-id="29734"></path><path d="M510.725734 1019.412643c-69.32006 0-135.072175-13.507218-190.885017-39.247387-0.509706-0.254853-0.764559-0.509706-1.274266-0.509706-57.087108-22.681931-109.332006-57.087108-155.205575-102.196117-42.305625-42.050772-78.749627-92.511697-108.05774-150.363365C16.310602 634.839223 7.900448 530.094574 31.856645 432.740667v-0.509706c8.155301-36.698855 25.740169-73.652563 39.757093-101.941265 13.507218-26.759582 34.914883-57.087108 63.71329-90.218019 28.543554-33.130911 60.655052-57.341961 87.414635-73.907416l0.509706-0.509706c8.155301-5.351916 15.800896-8.155301 23.191637-8.155302h4.842211c10.958686 3.058238 20.1334 8.410154 23.44649 13.252365 1.019413 1.529119 2.038825 2.803385 3.313091 4.07765 5.60677 5.60677 7.390742 12.487805 5.60677 20.388253-3.058238 11.978099-8.665007 22.172225-14.016924 25.740169-107.802887 71.613738-177.122947 194.962668-172.53559 322.644102 0 57.596814 10.703833 110.096565 31.856645 155.970134 23.191638 50.460926 50.970632 89.963166 89.45346 128.445993 39.247387 38.73768 84.356396 68.045794 130.994524 84.866103 51.225485 21.917372 105.509209 33.130911 161.067198 33.130911 56.067695 0 110.351419-11.213539 161.831757-33.385764l0.509706-0.254853c55.557989-24.97561 96.844201-51.990045 129.720259-84.356397 37.463415-37.208561 67.536088-80.533599 89.708313-128.445993 21.152812-45.873569 31.856645-98.628173 31.856645-156.734694 0-59.380786-16.310602-125.897461-44.854156-182.474863l-0.254853-0.764559c-17.330015-31.856645-38.992534-61.164759-64.222997-87.159781-12.487805-12.742658-25.995022-24.97561-39.757093-35.934296-5.861623-4.84221-11.978099-8.919861-18.094574-12.742658-7.135889-4.587357-18.859134-8.919861-23.191638-13.507217-6.881035-7.390742-10.194126-16.820309-9.174714-27.014435 1.019413-11.213539 7.135889-21.152812 16.565456-27.778995 5.60677-3.822797 11.978099-5.861623 19.36884-5.861623 6.371329 0 13.252364 1.529119 20.388253 4.587357 11.468392 4.84221 27.269288 12.487805 36.444002 19.623694 30.582379 23.701344 59.890493 53.774017 86.904927 89.198606 21.407666 28.033848 48.167247 64.987556 64.222997 104.234943 8.155301 19.878547 14.781483 41.795918 20.897959 69.065206 7.900448 34.914883 16.310602 75.436536 16.310602 114.683923 0 66.516675-13.252364 128.445993-39.502239 184.003982l-0.509707 1.019412c-24.720757 57.087108-60.655052 107.293181-107.038327 148.834246l-0.76456 0.76456c-41.286212 41.031359-96.334495 77.220508-154.695868 102.196117-63.968143 20.897959-128.700846 31.601792-192.414137 31.601792z m-12.997511-508.432056c-22.427078 0-40.776506-18.094574-40.776506-40.266799v-430.701842c0-21.917372 18.349428-40.011946 41.031359-40.011946 22.427078 0 40.776506 18.094574 40.776506 40.266799v430.701842c-0.254853 21.917372-18.604281 40.011946-41.031359 40.011946z" fill="#333333" p-id="29735"></path></svg>
+</button>
                     <button class="btn-circle" id="ucCloseBtn">×</button>
                 </div>
             </div>
             
             <div class="uc-list" id="ucList" style="flex:1; overflow:auto; display:flex; flex-direction:column; gap:10px; padding: 0 0 90px;"></div>
             <div id="ucEmpty" style="text-align:center; padding:40px; color:var(--txt-secondary); font-size:13px;">加载中...</div>
-
-            <!-- 仅保留悬浮图标按钮（底部不再额外铺一层背景） -->
-            <button class="uc-logout-fab" id="ucLogoutBtn" title="退出登录" aria-label="退出登录">
-<svg t="1766636642948" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="12314" width="18" height="18" aria-hidden="true">
-  <path d="M155.30496 813.88032a356.69504 139.94496 0 1 0 713.39008 0 356.69504 139.94496 0 1 0-713.39008 0Z" fill="#E04040" p-id="12315"></path>
-  <path d="M512 0c30.72 0 51.2 23.04 51.2 57.6v345.6C563.2 437.76 542.72 460.8 512 460.8s-51.2-23.04-51.2-57.6v-345.6C460.8 23.04 481.28 0 512 0z" fill="#E04040" p-id="12316"></path>
-  <path d="M512 1024C230.4 1024 0 793.6 0 512c0-158.72 71.68-302.08 194.56-399.36 20.48-15.36 56.32-15.36 71.68 10.24 15.36 20.48 10.24 51.2-10.24 66.56-97.28 81.92-153.6 199.68-153.6 322.56 0 225.28 184.32 409.6 409.6 409.6s409.6-184.32 409.6-409.6c0-128-56.32-240.64-153.6-322.56-20.48-15.36-25.6-51.2-10.24-71.68s51.2-25.6 71.68-10.24c122.88 102.4 194.56 245.76 194.56 404.48 0 281.6-230.4 512-512 512z" p-id="12317"></path>
-</svg>
-</button>
-        </div>
+</div>
     </div>
 
     <!-- 订阅客户端选择 -->
@@ -1002,7 +1010,7 @@ button.copy-btn:hover{
             
             <div class="input-group-row">
                 <input id="subLinkInput" readonly>
-                <button id="subLinkCopyBtn">
+                <button id="subLinkCopyBtn" class="copy-icon-btn" title="Copy">
                     <svg t="1766635118544" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true">
   <path d="M96.1 575.7a32.2 32.1 0 1 0 64.4 0 32.2 32.1 0 1 0-64.4 0Z" fill="#d81e06"></path>
   <path d="M742.1 450.7l-269.5-2.1c-14.3-0.1-26 13.8-26 31s11.7 31.3 26 31.4l269.5 2.1c14.3 0.1 26-13.8 26-31s-11.7-31.3-26-31.4zM742.1 577.7l-269.5-2.1c-14.3-0.1-26 13.8-26 31s11.7 31.3 26 31.4l269.5 2.1c14.3 0.2 26-13.8 26-31s-11.7-31.3-26-31.4z" fill="#d81e06"></path>
@@ -1391,10 +1399,19 @@ function setStatus(msg,type){
     }
     if($customId)$customId.addEventListener("input",validateCustomSlug);
 
-    function enterCreateMode(clear){
+    function toggleSubmitIcon(mode){
+  const p=document.getElementById('icoPublish');
+  const u=document.getElementById('icoUpdate');
+  if(!p||!u) return;
+  if(mode==='edit'){ p.style.display='none'; u.style.display='inline-flex'; }
+  else { p.style.display='inline-flex'; u.style.display='none'; }
+}
+
+function enterCreateMode(clear){
         state.mode="create";
         state.originalSlug=null;
         if($submitBtn) $submitBtn.querySelector(".text").textContent="发布内容";
+        toggleSubmitIcon("create");
         if($btnHome)$btnHome.style.display="none";
         if(clear){
             if($content)$content.value="";
@@ -1618,7 +1635,7 @@ function setStatus(msg,type){
                     <!-- 链接展示框 -->
                     <div class="input-group-row" style="margin-bottom:12px; height:32px;">
                         <input value="${link}" readonly onclick="this.select()">
-                        <button onclick="copyTextToClipboard('${link}','链接已复制')" style="height:32px; width:36px; box-shadow:none;">
+                        <button class="copy-icon-btn" onclick="copyTextToClipboard('${link}','链接已复制')" style="height:32px; width:36px; box-shadow:none;">
                             <svg t="1766635118544" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true">
   <path d="M96.1 575.7a32.2 32.1 0 1 0 64.4 0 32.2 32.1 0 1 0-64.4 0Z" fill="#d81e06"></path>
   <path d="M742.1 450.7l-269.5-2.1c-14.3-0.1-26 13.8-26 31s11.7 31.3 26 31.4l269.5 2.1c14.3 0.1 26-13.8 26-31s-11.7-31.3-26-31.4zM742.1 577.7l-269.5-2.1c-14.3-0.1-26 13.8-26 31s11.7 31.3 26 31.4l269.5 2.1c14.3 0.2 26-13.8 26-31s-11.7-31.3-26-31.4z" fill="#d81e06"></path>
@@ -1661,6 +1678,7 @@ function setStatus(msg,type){
     async function enterEditMode(slug){
         state.mode="edit"; state.originalSlug=slug;
         if($submitBtn) $submitBtn.querySelector(".text").textContent="更新内容";
+        toggleSubmitIcon("edit");
         if($btnHome) $btnHome.style.display="inline-flex";
         setStatus("加载中...");
         try{
@@ -1744,24 +1762,6 @@ function setStatus(msg,type){
       if (dt) { btn.setAttribute('title', dt); return; }
     }
   });
-})();
-</script>
-<script>
-(function(){
-  const refresh = document.getElementById('ucRefreshBtn');
-  const logout = document.getElementById('ucLogoutBtn');
-  if (refresh && logout && refresh.parentElement){
-    // Move logout right after refresh
-    const p = refresh.parentElement;
-    if (logout.parentElement !== p) p.appendChild(logout);
-    refresh.insertAdjacentElement('afterend', logout);
-
-    // Match classes/styles
-    logout.className = refresh.className;
-    logout.style.width = refresh.offsetWidth ? refresh.offsetWidth + 'px' : '';
-    logout.style.height = refresh.offsetHeight ? refresh.offsetHeight + 'px' : '';
-    logout.style.borderRadius = getComputedStyle(refresh).borderRadius;
-  }
 })();
 </script>
 </body>
