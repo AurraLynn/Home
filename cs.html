@@ -20,6 +20,7 @@
     <meta name="twitter:description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
     <meta name="twitter:image" content="https://save.aura.us.kg/Picture/Preview/YL6.png">
 
+
     <!-- 字体引入 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -97,6 +98,92 @@
             position: relative;
         }
 
+        /* ===== 顶部轻提示（Toast / 1.5s 自动消失） ===== */
+        #toastHost{
+            position: fixed;
+            top: calc(env(safe-area-inset-top, 0px) + 14px);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .toast{
+            pointer-events: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            backdrop-filter: blur(24px) saturate(170%);
+            -webkit-backdrop-filter: blur(24px) saturate(170%);
+            box-shadow: var(--shadow-card);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--txt-primary);
+            opacity: 0;
+            transform: translateY(-8px) scale(0.98);
+            animation: toastIn 160ms ease-out forwards;
+        }
+        .toast[data-type="success"]{ color: var(--success); }
+        .toast[data-type="error"]{ color: var(--danger); }
+        @keyframes toastIn{
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes toastOut{
+            to { opacity: 0; transform: translateY(-8px) scale(0.98); }
+        }
+
+        /* ===== 滚动条美化（输入框 + 个人中心列表） ===== */
+        .editor-textarea{
+            scrollbar-width: thin;
+            scrollbar-color: rgba(120,120,130,0.35) transparent;
+        }
+        .editor-textarea::-webkit-scrollbar{ width: 10px; }
+        .editor-textarea::-webkit-scrollbar-track{ background: transparent; }
+        .editor-textarea::-webkit-scrollbar-thumb{
+            background: rgba(120,120,130,0.25);
+            border-radius: 999px;
+            border: 3px solid transparent;
+            background-clip: content-box;
+        }
+        .editor-textarea:hover::-webkit-scrollbar-thumb{ background: rgba(120,120,130,0.35); border: 3px solid transparent; background-clip: content-box; }
+
+        .uc-list{
+            scrollbar-width: none;
+        }
+        .uc-list::-webkit-scrollbar{ width: 0; height: 0; }
+
+        /* 用户中心标题（主/副标题） */
+        .modal-title-stack{ display:flex; flex-direction:column; gap:2px; }
+        .modal-subtitle{ font-size: 12px; font-weight: 600; color: var(--txt-secondary); letter-spacing: 0.02em; }
+
+        /* 用户中心：退出登录悬浮按钮（仅图标） */
+        .uc-logout-fab{
+            position: absolute;
+            left: 50%;
+            bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+            transform: translateX(-50%);
+            width: 52px;
+            height: 52px;
+            border-radius: 18px;
+            border: 1px solid rgba(218,46,46,0.25);
+            background: rgba(218,46,46,0.10);
+            backdrop-filter: blur(18px) saturate(160%);
+            -webkit-backdrop-filter: blur(18px) saturate(160%);
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: transform .18s ease, background .18s ease;
+        }
+        .uc-logout-fab:hover{ background: rgba(218,46,46,0.14); transform: translateX(-50%) translateY(-1px); }
+        .uc-logout-fab:active{ transform: translateX(-50%) scale(0.96); }
+        .uc-logout-fab svg{ width: 22px; height: 22px; }
+
         /* 动态流体背景 */
         body::before, body::after {
             content: ''; position: fixed; width: 80vw; height: 80vw;
@@ -117,12 +204,7 @@
             display: grid;
             grid-template-columns: 1fr 340px; 
             gap: 24px;
-            
-            /* 
-             * [关键修复] align-items: stretch 
-             * 保证输入框和侧边栏默认等高。
-             */
-            align-items: stretch; 
+            align-items: stretch; /* 左右等高 */
         }
 
         /* 头部 */
@@ -166,28 +248,11 @@
         .btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
         .btn-primary.disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); transform: none; }
 
-        /* 液态玻璃按钮样式 */
-        .btn-liquid-glass {
-            height: 50px; width: 100%; border-radius: 20px;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05), inset 0 0 10px rgba(255, 255, 255, 0.2);
-            color: var(--danger); font-weight: 600; font-size: 14px; letter-spacing: 0.02em;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); cursor: pointer;
+        .btn-danger-pill {
+            background: rgba(255, 59, 48, 0.1); color: var(--danger);
+            border: 1px solid rgba(255, 59, 48, 0.2); height: 44px; padding: 0 32px;
         }
-        .btn-liquid-glass:hover {
-            background: rgba(255, 255, 255, 0.25);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1), inset 0 0 20px rgba(255, 255, 255, 0.4);
-            transform: translateY(-2px); border-color: rgba(255, 255, 255, 0.6);
-        }
-        .btn-liquid-glass:active { transform: scale(0.98); background: rgba(255, 255, 255, 0.1); }
-        body.theme-dark .btn-liquid-glass {
-            background: rgba(255, 59, 48, 0.1); border-color: rgba(255, 59, 48, 0.2); color: #ff453a;
-        }
-        body.theme-dark .btn-liquid-glass:hover {
-            background: rgba(255, 59, 48, 0.2); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        }
+        .btn-danger-pill:hover { background: rgba(255, 59, 48, 0.15); }
 
         .btn-ghost { background: transparent; color: var(--txt-secondary); height: 32px; font-size: 12px; }
         .btn-ghost:hover { color: var(--txt-primary); background: rgba(128,128,128,0.05); }
@@ -197,34 +262,20 @@
             background: var(--bg-card);
             backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
             border: 1px solid var(--border-glass); border-radius: var(--radius-box);
-            box-shadow: var(--shadow-card); 
+            box-shadow: var(--shadow-card); overflow: hidden;
             display: flex; flex-direction: column; transition: transform 0.3s ease;
         }
 
-        /* 
-         * [关键修复] 左侧编辑器区域
-         * min-height: 100% -> 确保默认占满 Grid 这一行的高度
-         * height: auto -> 允许被内部 textarea 撑开
-         */
+        /* 左侧：主编辑器 */
         .editor-zone {
-            min-height: 100%; 
-            height: auto; 
-            position: relative; 
-            display: flex; 
-            flex-direction: column;
+            height: 100%; min-height: 480px; 
+            position: relative; display: flex; flex-direction: column;
         }
         
         .editor-textarea {
-            width: 100%; 
-            /* flex: 1 撑满剩余空间 */
-            flex: 1; 
-            resize: vertical; 
-            overflow-y: auto;
+            width: 100%; flex: 1; resize: vertical; overflow-y: auto;
             border: none; background: transparent; padding: 24px 24px 60px;
             font-family: var(--font-mono); font-size: 14px; line-height: 1.6; color: var(--txt-primary);
-            white-space: pre-wrap; word-break: break-all;
-            /* 最小高度，保证不被拖没 */
-            min-height: 400px;
         }
         .editor-textarea::placeholder { color: var(--txt-placeholder); }
         
@@ -342,23 +393,15 @@
         }
         .modal-mask.show { opacity: 1; pointer-events: auto; }
         
-        /* 
-         * [修复] 个人中心尺寸
-         * 恢复高度 80vh
-         */
         .modal-panel {
             width: 90%; max-width: 400px;
             background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: 28px;
             padding: 24px; box-shadow: 0 40px 80px -20px rgba(0,0,0,0.15);
             transform: scale(0.9); transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            
-            display: flex; flex-direction: column;
-            height: 80vh; 
-            position: relative;
         }
         .modal-mask.show .modal-panel { transform: scale(1); }
         
-        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-title { font-size: 20px; font-weight: 700; }
         
         .btn-circle {
@@ -385,74 +428,13 @@
         }
         
         .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-        .toast-box {
-            position: fixed;
-            top: 30px; 
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 99em;
-            font-size: 13px;
-            font-weight: 500;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            z-index: 9999;
-            pointer-events: none;
-            opacity: 0;
-            animation: toastFade 1.5s forwards ease-in-out;
-        }
-        body.theme-dark .toast-box {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-        }
-        @keyframes toastFade {
-            0% { opacity: 0; transform: translate(-50%, -20px); }
-            15% { opacity: 1; transform: translate(-50%, 0); }
-            80% { opacity: 1; transform: translate(-50%, 0); }
-            100% { opacity: 0; transform: translate(-50%, -20px); }
-        }
-
-        /* 
-         * [修复] 个人中心底部遮挡问题
-         * 1. 列表高度填满
-         * 2. 底部增加 padding，留出按钮位置
-         */
-        .uc-list {
-            flex: 1; 
-            overflow-y: auto; 
-            display: flex; flex-direction: column; gap: 10px; 
-            padding-bottom: 100px; /* 关键：留出底部空间 */
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        .uc-list::-webkit-scrollbar { display: none; }
-
-        /* 
-         * [修复] 底部按钮悬浮
-         * background: transparent -> 底部透明
-         * position: absolute -> 固定在容器底部
-         */
-        .logout-wrapper {
-            position: absolute; 
-            bottom: 0; left: 0; right: 0;
-            padding: 24px;
-            background: transparent;
-            pointer-events: none; /* 让点击穿透空白区域 */
-        }
-        .logout-wrapper > button {
-            pointer-events: auto; /* 恢复按钮点击 */
-        }
-
     </style>
 </head>
 <body class="theme-light">
 
     <!-- 主布局 -->
     <main class="app-shell">
+        
         <!-- 头部 -->
         <header class="header-section">
             <div class="brand">
@@ -471,8 +453,10 @@
         </header>
 
         <form id="pasteForm" style="display:contents">
+            
             <div class="bento-card editor-zone" id="editorZone">
                 <textarea id="content" class="editor-textarea" placeholder="在这里粘贴代码或文本..." spellcheck="false" required></textarea>
+                
                 <div class="editor-status-bar">
                     <span class="status-pill" id="lineCounter">0 行</span>
                     <span class="status-pill"><span id="byteNum">0</span> 字符</span>
@@ -482,6 +466,7 @@
             </div>
 
             <div class="sidebar">
+                
                 <div class="sidebar-content">
                     <div>
                         <div class="panel-header">快捷操作</div>
@@ -545,12 +530,17 @@
                     </button>
                 </div>
             </div>
+
         </form>
 
+        <!-- 底部一言 -->
         <footer class="footer">
             <div id="hitokotoText">Loading Hitokoto...</div>
         </footer>
     </main>
+
+    <!-- 顶部轻提示容器（不阻挡操作） -->
+    <div id="toastHost" aria-live="polite" aria-atomic="true"></div>
 
     <!-- 登录弹窗 -->
     <div class="modal-mask" id="authModal">
@@ -580,9 +570,12 @@
 
     <!-- 用户中心 -->
     <div class="modal-mask" id="userCenter">
-        <div class="modal-panel">
+        <div class="modal-panel" style="max-width:600px; height:80vh; display:flex; flex-direction:column; position:relative;">
             <div class="modal-head">
-                <span class="modal-title">🗒️Manage / Paste</span>
+                <div class="modal-title-stack">
+                    <span class="modal-title">🗒️Manage / Paste</span>
+                    <span class="modal-subtitle">Organize · Copy · Subscribe</span>
+                </div>
                 <div style="display:flex; gap:12px;">
                     <button class="btn-circle" id="ucRefreshBtn" title="刷新列表">
                         <svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -591,33 +584,35 @@
                 </div>
             </div>
             
-            <div class="uc-list" id="ucList"></div>
+            <div class="uc-list" id="ucList" style="flex:1; overflow:auto; display:flex; flex-direction:column; gap:10px; padding: 0 0 90px;"></div>
             <div id="ucEmpty" style="text-align:center; padding:40px; color:var(--txt-secondary); font-size:13px;">加载中...</div>
-            
-            <!-- 退出登录按钮 (使用 absolute 定位悬浮，透明背景) -->
-            <div class="logout-wrapper">
-                <button class="btn btn-liquid-glass" id="ucLogoutBtn">退出登录</button>
-            </div>
+
+            <!-- 仅保留悬浮图标按钮（底部不再额外铺一层背景） -->
+            <button class="uc-logout-fab" id="ucLogoutBtn" title="退出登录" aria-label="退出登录">
+                <svg t="1766624798388" class="icon" viewBox="0 0 1029 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M833.274285 632.230723a195.853747 195.853747 0 0 0-195.853747 195.853747 195.853747 195.853747 0 0 0 195.853747 195.853746 195.853747 195.853747 0 0 0 195.853747-195.853746 195.853747 195.853747 0 0 0-195.853747-195.853747z m116.894413 82.295644v46.708338a11.615301 11.615301 0 0 1-11.615301 9.947146 11.553518 11.553518 0 0 1-11.553518-9.947146v-46.708338h-186.77157v227.239773h186.77157v-45.534452a11.615301 11.615301 0 0 1 11.738868-11.368167 11.615301 11.615301 0 0 1 11.738869 11.368167v46.955473a6.178352 6.178352 0 0 1 0 0.679618v0.741402a22.550983 22.550983 0 0 1-6.610837 13.098106 23.663087 23.663087 0 0 1-16.557982 6.67262H738.004103a23.910221 23.910221 0 0 1-14.210209-6.549053 22.365633 22.365633 0 0 1-6.796187-16.063714v-227.17799a22.550983 22.550983 0 0 1 6.796187-16.063714 23.848437 23.848437 0 0 1 16.557982-6.67262h186.956921a23.601303 23.601303 0 0 1 16.557982 6.67262 22.427416 22.427416 0 0 1 6.857971 16.063714z m-130.610354 125.420538a11.862435 11.862435 0 0 1-11.862435-11.615301 11.986002 11.986002 0 0 1 12.356704-12.356704h89.462531l-38.800048-38.800048a11.924219 11.924219 0 0 1 0-16.928683 11.862435 11.862435 0 0 1 16.805116 0l59.126826 59.126825a11.986002 11.986002 0 0 1 0 16.8669l-59.126826 59.188608a11.924219 11.924219 0 0 1-8.402558 3.521661 11.924219 11.924219 0 0 1-8.402558-3.521661 11.924219 11.924219 0 0 1 0-16.928683l38.800048-38.800048h-89.709666z" fill="#DA2E2E"></path><path d="M203.576686 263.815615a263.630264 263.630264 0 1 0 527.260529 0 263.630264 263.630264 0 1 0-527.260529 0Z" fill="#DA2E2E"></path><path d="M562.724267 837.784482a263.012429 263.012429 0 0 1 224.274164-260.170388 465.847713 465.847713 0 0 0-319.482563-126.223724A467.515868 467.515868 0 0 0 0 918.906239a478.019066 478.019066 0 0 0 3.892362 60.609629h600.288644a261.714975 261.714975 0 0 1-41.456739-141.731386z" fill="#DA2E2E"></path></svg>
+            </button>
         </div>
     </div>
 
     <!-- 订阅客户端选择 -->
     <div class="modal-mask" id="subClientOverlay">
-        <div class="modal-panel" style="width:100%; max-width:500px; height:auto;">
+        <div class="modal-panel" style="width:100%; max-width:500px;">
             <div class="modal-head">
                 <span class="modal-title">选择客户端格式</span>
                 <button class="btn-circle" id="subMenuCloseBtn">×</button>
             </div>
+            
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:20px;">
                 <button class="btn btn-glass" data-client="general" style="justify-content:center">通用格式</button>
                 <button class="btn btn-glass" data-client="base64" style="justify-content:center">Base64</button>
                 <button class="btn btn-glass" data-client="clash" style="justify-content:center">Clash</button>
                 <button class="btn btn-glass" data-client="surge" style="justify-content:center">Surge</button>
             </div>
+            
             <div class="input-group-row">
                 <input id="subLinkInput" readonly>
                 <button id="subLinkCopyBtn">
-                    <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    <svg t="1766624533292" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" style="width:18px;height:18px;"><path d="M610.87695313 512h197.75390624c55.37109375 0 98.87695313 43.50585938 98.87695313 98.87695313v197.75390624c0 55.37109375-43.50585938 98.87695313-98.87695313 98.87695313h-197.75390624c-55.37109375 0-98.87695313-43.50585938-98.87695313-98.87695313v-197.75390624c0-55.37109375 43.50585938-98.87695313 98.87695313-98.87695313z" fill="#ef6a6a"></path><path d="M294.47070312 630.65234375c11.86523438 0 19.77539063 7.91015625 19.77539063 19.77539063s-7.91015625 19.77539063-19.77539062 19.77539062h-79.10156251C159.99804687 670.203125 116.4921875 626.69726563 116.4921875 571.32617188v-355.95703126C116.4921875 159.99804687 159.99804687 116.4921875 215.36914062 116.4921875h355.95703126C626.69726563 116.4921875 670.203125 159.99804687 670.203125 215.36914062v79.10156251c0 11.86523438-7.91015625 19.77539063-19.77539063 19.77539062s-19.77539063-7.91015625-19.77539062-19.77539062v-79.1015625c0-31.640625-27.68554688-59.32617188-59.32617188-59.32617188h-355.95703124C183.72851562 156.04296875 156.04296875 183.72851562 156.04296875 215.36914062v355.95703126c0 31.640625 27.68554688 59.32617188 59.32617188 59.32617187h79.10156249z m158.20312501-237.3046875C421.03320312 393.34765625 393.34765625 421.03320312 393.34765625 452.67382812v355.95703126c0 31.640625 27.68554688 59.32617188 59.32617188 59.32617187h355.95703124c31.640625 0 59.32617188-27.68554688 59.32617188-59.32617188v-355.95703124c0-31.640625-27.68554688-59.32617188-59.32617187-59.32617188h-355.95703126z m-1e-8-39.55078125h355.95703126C864.00195313 353.796875 907.5078125 397.30273437 907.5078125 452.67382812v355.95703126c0 55.37109375-43.50585938 98.87695313-98.87695313 98.87695312h-355.95703124C397.30273437 907.5078125 353.796875 864.00195313 353.796875 808.63085938v-355.95703126C353.796875 397.30273437 397.30273437 353.796875 452.67382812 353.796875z" fill="#512c56"></path></svg>
                 </button>
             </div>
         </div>
@@ -753,25 +748,61 @@
         }[c]||c));
     }
 
-    /* Toast */
-    function showToast(msg) {
-        const div = document.createElement('div');
-        div.className = 'toast-box';
-        div.textContent = msg;
-        document.body.appendChild(div);
-        setTimeout(() => {
-            if(div && div.parentNode) div.parentNode.removeChild(div);
-        }, 1500); 
+    
+    function showToast(message, type="info", duration=1500){
+        const host = document.getElementById("toastHost");
+        if(!host || !message) return;
+        const el = document.createElement("div");
+        el.className = "toast";
+        el.dataset.type = type;
+        el.textContent = message;
+        host.appendChild(el);
+
+        const delay = Math.max(300, duration|0);
+        setTimeout(()=>{
+            el.style.animation = "toastOut 160ms ease-in forwards";
+            setTimeout(()=>{ el.remove(); }, 180);
+        }, delay);
+
+        // 最多保留 3 条，避免刷屏
+        while(host.children.length > 3){
+            host.removeChild(host.firstElementChild);
+        }
     }
-    function setStatus(msg, type){
-        if(!msg) return;
-        showToast(msg);
-        if($statusMsg) $statusMsg.textContent = ""; 
+
+    async function copyTextToClipboard(text, okMsg="已复制"){
+        try{
+            await navigator.clipboard.writeText(text);
+            showToast(okMsg, "success", 1500);
+            return true;
+        }catch(e){
+            try{
+                const ta=document.createElement("textarea");
+                ta.value=text; ta.style.position="fixed"; ta.style.left="-9999px";
+                document.body.appendChild(ta);
+                ta.select(); document.execCommand("copy");
+                ta.remove();
+                showToast(okMsg, "success", 1500);
+                return true;
+            }catch(_){
+                showToast("复制失败", "error", 1500);
+                return false;
+            }
+        }
     }
-    function setAuthTip(msg, type){
-        if(!msg) return;
-        showToast(msg);
-        if($authMsg) $authMsg.textContent = "";
+function setStatus(msg,type){
+        if($statusMsg){
+            $statusMsg.textContent=msg||"";
+            $statusMsg.style.color = type==="error" ? "var(--danger)" : (type==="success" ? "var(--success)" : "var(--txt-secondary)");
+        }
+        if(msg) showToast(msg, type==="error"?"error":(type==="success"?"success":"info"), 1500);
+    }
+    function setAuthTip(msg,type){
+        if($authMsg){
+            $authMsg.textContent=msg||"";
+            $authMsg.style.color = type==="error" ? "var(--danger)" : (type==="success" ? "var(--success)" : "var(--txt-secondary)");
+        }
+        if(msg) showToast(msg, type==="error"?"error":(type==="success"?"success":"info"), 1500);
     }
 
     function base64EncodeUtf8(str) { try { return btoa(unescape(encodeURIComponent(str))); } catch (_) { return null; } }
@@ -1178,6 +1209,8 @@
                 
                 const hasNode = d._nodeInfo.isNode && d._nodeInfo.count>0;
                 const link = `${VIEW_BASE}/${d.slug}`;
+                
+                // 计算过期文本
                 const expireText = getExpireText(d.ttlKey, d.createdAt || Date.now());
 
                 row.innerHTML = `
@@ -1187,16 +1220,19 @@
                     </div>
                     <div style="font-size:11px;color:var(--txt-secondary);margin-bottom:12px;">${expireText}</div>
                     
+                    <!-- 链接展示框 -->
                     <div class="input-group-row" style="margin-bottom:12px; height:32px;">
                         <input value="${link}" readonly onclick="this.select()">
-                        <button onclick="navigator.clipboard.writeText('${link}');this.style.color='var(--success)'" style="height:32px; width:36px;">
-                            <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        <button onclick="copyTextToClipboard('${link}','链接已复制')" style="height:32px; width:36px; box-shadow:none;">
+                            <svg t="1766624533292" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" style="width:18px;height:18px;"><path d="M610.87695313 512h197.75390624c55.37109375 0 98.87695313 43.50585938 98.87695313 98.87695313v197.75390624c0 55.37109375-43.50585938 98.87695313-98.87695313 98.87695313h-197.75390624c-55.37109375 0-98.87695313-43.50585938-98.87695313-98.87695313v-197.75390624c0-55.37109375 43.50585938-98.87695313 98.87695313-98.87695313z" fill="#ef6a6a"></path><path d="M294.47070312 630.65234375c11.86523438 0 19.77539063 7.91015625 19.77539063 19.77539063s-7.91015625 19.77539063-19.77539062 19.77539062h-79.10156251C159.99804687 670.203125 116.4921875 626.69726563 116.4921875 571.32617188v-355.95703126C116.4921875 159.99804687 159.99804687 116.4921875 215.36914062 116.4921875h355.95703126C626.69726563 116.4921875 670.203125 159.99804687 670.203125 215.36914062v79.10156251c0 11.86523438-7.91015625 19.77539063-19.77539063 19.77539062s-19.77539063-7.91015625-19.77539062-19.77539062v-79.1015625c0-31.640625-27.68554688-59.32617188-59.32617188-59.32617188h-355.95703124C183.72851562 156.04296875 156.04296875 183.72851562 156.04296875 215.36914062v355.95703126c0 31.640625 27.68554688 59.32617188 59.32617188 59.32617187h79.10156249z m158.20312501-237.3046875C421.03320312 393.34765625 393.34765625 421.03320312 393.34765625 452.67382812v355.95703126c0 31.640625 27.68554688 59.32617188 59.32617188 59.32617187h355.95703124c31.640625 0 59.32617188-27.68554688 59.32617188-59.32617188v-355.95703124c0-31.640625-27.68554688-59.32617188-59.32617187-59.32617188h-355.95703126z m-1e-8-39.55078125h355.95703126C864.00195313 353.796875 907.5078125 397.30273437 907.5078125 452.67382812v355.95703126c0 55.37109375-43.50585938 98.87695313-98.87695313 98.87695312h-355.95703124C397.30273437 907.5078125 353.796875 864.00195313 353.796875 808.63085938v-355.95703126C353.796875 397.30273437 397.30273437 353.796875 452.67382812 353.796875z" fill="#512c56"></path></svg>
                         </button>
                     </div>
 
                     <div style="display:flex;gap:10px;">
                         ${hasNode?`<button class="btn btn-primary" style="height:32px;padding:0 14px;font-size:12px;" onclick="openSubClientMenu('${d.slug}')">订阅</button>`:''}
+                        
                         <button class="btn btn-glass" style="height:32px;padding:0 14px;font-size:12px;" onclick="closeUserCenter();enterEditMode('${d.slug}')">编辑</button>
+                        
                         <button class="btn btn-glass" style="height:32px;padding:0 14px;font-size:12px;color:var(--danger);" onclick="deletePaste('${d.slug}')">删除</button>
                     </div>
                 `;
@@ -1206,13 +1242,20 @@
     }
     
     window.deletePaste = async (slug) => {
-        if(!confirm("确认删除?"))return;
-        try{ await postJSON(API_BASE,{action:"delete",slug}); loadUserPastes(); } catch(_){}
+        if(!confirm("确认删除?")) return;
+        try{
+            await postJSON(API_BASE,{action:"delete",slug});
+            showToast("已删除", "success", 1500);
+            loadUserPastes();
+        }catch(_){
+            showToast("删除失败", "error", 1500);
+        }
     };
 
     if($ucRefreshBtn)$ucRefreshBtn.addEventListener("click",loadUserPastes);
     if($ucLogoutBtn)$ucLogoutBtn.addEventListener("click",async ()=>{
         try{await postJSON(AUTH_BASE+"/logout",{});}catch(_){}
+        showToast("已退出登录","success",1500);
         setLoggedOut(); closeUserCenter(); enterCreateMode(true);
     });
 
@@ -1243,7 +1286,7 @@
         $resultBox.style.display="block";
     }
 
-    if($btnCopyView) $btnCopyView.addEventListener("click",()=>{ navigator.clipboard.writeText($viewLinkText.textContent); setStatus("已复制","success"); });
+    if($btnCopyView) $btnCopyView.addEventListener("click",async ()=>{ await copyTextToClipboard($viewLinkText.textContent, "已复制"); });
     if($btnOpenView) $btnOpenView.addEventListener("click",()=>{ window.open($viewLinkText.textContent); });
 
     if($form){
