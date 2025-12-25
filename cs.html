@@ -883,6 +883,27 @@ button.copy-btn:hover{
   }
 }
 
+
+/* ===== User Center expire coloring by remaining time ===== */
+.uc-expire{
+  font-size: 11px;
+  margin-bottom: 12px;
+  font-weight: 500;
+  color: var(--txt-secondary);
+}
+.uc-expire[data-level="ok"]{ color: var(--txt-secondary); }
+.uc-expire[data-level="warn"]{ color: #e5533d; }
+.uc-expire[data-level="urgent"]{ color: #d81e06; }
+.uc-expire[data-level="expired"]{ color: rgba(120,120,130,0.75); text-decoration: line-through; }
+.uc-expire[data-level="forever"]{ color: rgba(52,199,89,0.95); }
+
+@media (prefers-color-scheme: dark){
+  .uc-expire[data-level="warn"]{ color: #ff6b5e; }
+  .uc-expire[data-level="urgent"]{ color: #ff4d4f; }
+  .uc-expire[data-level="expired"]{ color: rgba(152,152,157,0.75); }
+  .uc-expire[data-level="forever"]{ color: rgba(52,199,89,0.95); }
+}
+
 </style>
 </head>
 <body class="theme-light">
@@ -1400,18 +1421,58 @@ function setStatus(msg,type){
     }
 
     const ttlMap = { "10m": 10*60*1000, "1d": 24*3600*1000, "7d": 7*24*3600*1000, "30d": 30*24*3600*1000 };
-    function getExpireText(key, startTime) {
-        if(key === "forever") return "永久有效";
+    function formatRemain(ms){
+        if(!isFinite(ms)) return "";
+        if(ms <= 0) return "已过期";
+        const sec = Math.floor(ms/1000);
+        const min = Math.floor(sec/60);
+        const hr  = Math.floor(min/60);
+        const day = Math.floor(hr/24);
+        if(day >= 1) return `剩余 ${day} 天`;
+        if(hr  >= 1) return `剩余 ${hr} 小时`;
+        if(min >= 1) return `剩余 ${min} 分钟`;
+        return "剩余 <1 分钟";
+    }
+
+    function getExpireMeta(key, startTime, now = Date.now()){
+        if(key === "forever"){
+            return { level: "forever", remainingMs: Infinity, expireAt: null, text: "永久有效" };
+        }
         const ms = ttlMap[key];
-        if(!ms) return "未知";
-        const date = new Date(startTime + ms);
+        if(!ms) return { level: "warn", remainingMs: NaN, expireAt: null, text: "未知有效期" };
+        const expireAt = startTime + ms;
+        const remainingMs = expireAt - now;
+
+        const date = new Date(expireAt);
         const y = date.getFullYear();
         const m = (date.getMonth()+1).toString().padStart(2,'0');
         const d = date.getDate().toString().padStart(2,'0');
         const h = date.getHours().toString().padStart(2,'0');
         const min = date.getMinutes().toString().padStart(2,'0');
-        return `${y}-${m}-${d} ${h}:${min} 过期`;
+        const dateStr = `${y}-${m}-${d} ${h}:${min} 过期`;
+
+        let level = "ok";
+        if(remainingMs <= 0){
+            level = "expired";
+        }else if(remainingMs <= 24*3600*1000){
+            level = "urgent";
+        }else if(remainingMs <= 72*3600*1000){
+            level = "warn";
+        }else{
+            level = "ok";
+        }
+
+        const remainStr = formatRemain(remainingMs);
+        const text = remainStr ? `${dateStr} · ${remainStr}` : dateStr;
+
+        return { level, remainingMs, expireAt, text };
     }
+
+    function getExpireText(key, startTime) {
+        const meta = getExpireMeta(key, startTime);
+        return meta.text;
+    }
+
 
     function setTtl(key){
         state.ttlKey=key;
@@ -1695,14 +1756,14 @@ function enterCreateMode(clear){
                 const link = `${VIEW_BASE}/${d.slug}`;
                 
                 // 计算过期文本
-                const expireText = getExpireText(d.ttlKey, d.createdAt || Date.now());
+                const expireMeta = getExpireMeta(d.ttlKey, d.createdAt || Date.now());
 
                 row.innerHTML = `
                     <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:6px;">
                         <span>${escapeHTML(d.remark||"无标题")}</span>
                         <span style="font-family:var(--font-mono);opacity:0.6;font-size:12px;">/${escapeHTML(d.slug)}</span>
                     </div>
-                    <div style="font-size:11px;color:var(--txt-secondary);margin-bottom:12px;">${expireText}</div>
+                    <div class="uc-expire" data-level="${expireMeta.level}">${expireMeta.text}</div>
                     
                     <!-- 链接展示框 -->
                     <div class="input-group-row" style="margin-bottom:12px; height:32px;">
