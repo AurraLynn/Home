@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
 
-    <!-- Open Graph / WeChat / Telegram 预览 -->
+    
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Pastebox">
     <meta property="og:title" content="Pastebox">
@@ -14,25 +14,24 @@
     <meta property="og:image" content="https://save.aura.us.kg/Picture/Preview/YL10.png">
     <meta property="og:url" content="https://aura.us.kg/Paste">
 
-    <!-- Twitter 卡片 -->
+    
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Pastebox">
     <meta name="twitter:description" content="只是一个喜欢在互联网上瞎折腾的人罢了。">
     <meta name="twitter:image" content="https://save.aura.us.kg/Picture/Preview/YL6.png">
 
 
-    <!-- 字体引入 -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-    <style>
-        :root {
-            /* --- 核心变量 --- */
+    <style>:root {
+            
             --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
             --font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-            /* 亮色模式 (Light) */
+            
             --bg-app: #f0f4f8; 
             --bg-card: rgba(255, 255, 255, 0.65);
             --bg-glass: rgba(255, 255, 255, 0.45);
@@ -62,7 +61,7 @@
         }
 
         body.theme-dark {
-            /* 暗色模式 (Dark) */
+            
             --bg-app: #050505;
             --bg-card: rgba(30, 30, 35, 0.6);
             --bg-glass: rgba(50, 50, 55, 0.4);
@@ -98,7 +97,7 @@
             position: relative;
         }
 
-        /* ===== 顶部轻提示（Toast / 1.5s 自动消失） ===== */
+        
         #toastHost{
             position: fixed;
             top: calc(env(safe-area-inset-top, 0px) + 14px);
@@ -138,7 +137,7 @@
             to { opacity: 0; transform: translateY(-8px) scale(0.98); }
         }
 
-        /* ===== 滚动条美化（输入框 + 个人中心列表） ===== */
+        
         .editor-textarea{
             scrollbar-width: thin;
             scrollbar-color: rgba(120,120,130,0.35) transparent;
@@ -158,11 +157,11 @@
         }
         .uc-list::-webkit-scrollbar{ width: 0; height: 0; }
 
-        /* 用户中心标题（主/副标题） */
+        
         .modal-title-stack{ display:flex; flex-direction:column; gap:2px; }
         .modal-subtitle{ font-size: 12px; font-weight: 600; color: var(--txt-secondary); letter-spacing: 0.02em; }
 
-        /* 动态流体背景 */
+        
         body::before, body::after {
             content: ''; position: fixed; width: 80vw; height: 80vw;
             border-radius: 50%; filter: blur(80px); opacity: 0.5; z-index: -1;
@@ -175,17 +174,17 @@
             100% { transform: translate(10%, 10%) scale(1.1) rotate(10deg); }
         }
 
-        /* 布局容器 */
+        
         .app-shell {
             width: 100%; max-width: 1100px;
             margin: 40px 20px 60px;
             display: grid;
             grid-template-columns: 1fr 340px; 
             gap: 24px;
-            align-items: stretch; /* 左右等高 */
+            align-items: stretch; 
         }
 
-        /* 头部 */
+        
         .header-section {
             grid-column: 1 / -1;
             display: flex; align-items: center; justify-content: space-between;
@@ -202,7 +201,7 @@
         }
         .header-tools { display: flex; gap: 12px; align-items: center; }
 
-        /* 按钮系统 */
+        
         .btn {
             border: none; cursor: pointer;
             font-family: var(--font-sans); font-size: 14px; font-weight: 600;
@@ -235,7 +234,7 @@
         .btn-ghost { background: transparent; color: var(--txt-secondary); height: 32px; font-size: 12px; }
         .btn-ghost:hover { color: var(--txt-primary); background: rgba(128,128,128,0.05); }
 
-        /* 卡片容器 */
+        
         .bento-card {
             background: var(--bg-card);
             backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
@@ -244,7 +243,7 @@
             display: flex; flex-direction: column; transition: transform 0.3s ease;
         }
 
-        /* 左侧：主编辑器 */
+        
         .editor-zone {
             height: 100%; min-height: 480px; 
             position: relative; display: flex; flex-direction: column;
@@ -277,7 +276,7 @@
         }
         .node-indicator.active { display: inline-flex; }
 
-        /* 右侧：控制面板 */
+        
         .sidebar {
             display: flex; flex-direction: column; gap: 20px;
             justify-content: space-between;
@@ -318,7 +317,7 @@
         .tool-icon { width: 22px; height: 22px; opacity: 0.8; }
         .tool-label { font-size: 12px; color: var(--txt-secondary); }
 
-        /* 左右并排输入组 (链接显示) */
+        
         .input-group-row {
             display: flex; align-items: center; gap: 0;
             background: var(--bg-glass); border: 1px solid var(--border-subtle);
@@ -362,7 +361,7 @@
 
         #fileInput { display: none; }
         
-        /* 弹窗 (Modal) */
+        
         .modal-mask {
             position: fixed; inset: 0; z-index: 100;
             background: rgba(0,0,0,0.2); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
@@ -407,7 +406,7 @@
         
         .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     
-/* ===== Copy button: remove square hover shadow ===== */
+
 .copy-btn,
 .copy-btn:hover,
 .copy-btn:active,
@@ -424,7 +423,6 @@
   transform: scale(1.08);
 }
 
-/* ===== Header subtitle styles ===== */
 .brand {
   display: flex;
   flex-direction: column;
@@ -441,14 +439,11 @@
   font-weight: 700;
 }
 
-/* Hide textarea resize handle corner */
 textarea{ resize:none !important; }
 textarea::-webkit-resizer{ display:none; }
 
-
-/* ===== tighten home subtitle spacing (force) ===== */
 .brand{ row-gap: 2px !important; }
-/* ===== ULTRA TIGHT header spacing (final) ===== */
+
 .brand{
   display:flex !important;
   flex-direction:column !important;
@@ -461,7 +456,6 @@ textarea::-webkit-resizer{ display:none; }
   line-height:1.1 !important;
 }
 
-/* ===== Definitive header typography (final) ===== */
 .brand{
   display:flex;
   align-items:flex-start;
@@ -489,8 +483,6 @@ textarea::-webkit-resizer{ display:none; }
   margin-top:-2px;
 }
 
-
-/* ===== Brand title redesign ===== */
 .brand-title{ align-items:center !important; }
 .brand-text-group{ gap:0 !important; }
 
@@ -517,8 +509,6 @@ textarea::-webkit-resizer{ display:none; }
   .brand-subtext{ color: rgba(235,240,255,.60) !important; }
 }
 
-
-/* ===== Brand title style refinement (smaller & neutral) ===== */
 .brand-text{
   font-size:24px !important;
   font-weight:700 !important;
@@ -542,8 +532,6 @@ textarea::-webkit-resizer{ display:none; }
   .brand-subtext{ color:#9aa0a6 !important; }
 }
 
-
-/* ===== Copy icon button: no hover shadow / no square background ===== */
 .copy-btn, .copy-btn:hover, .copy-btn:focus, .copy-btn:active,
 button.copy-btn, button.copy-btn:hover,
 .paste-row .copy-btn, .paste-row .copy-btn:hover,
@@ -557,8 +545,6 @@ button[id*="Copy"], button[id*="Copy"]:hover {
   .copy-btn:hover{ background: rgba(255,255,255,0.06) !important; }
 }
 
-
-/* ===== UC copy button: kill square hover (hard) ===== */
 #userCenterModal .copy-btn,
 #userCenterModal .copy-btn:hover,
 #userCenterModal .copy-btn:active,
@@ -604,11 +590,8 @@ button.copy-btn:hover{
   .paste-modal .copy-btn:hover{ background: rgba(255,255,255,0.06) !important; }
 }
 
-/* note icon sizing */
 .note-icon{ width:18px; height:18px; flex: 0 0 auto; }
 
-
-/* ===== Fix: User Center copy buttons should NOT show square shadow/background ===== */
 #btnCopyView,
 #subLinkCopyBtn,
 #btnCopyView:hover,
@@ -625,20 +608,17 @@ button.copy-btn:hover{
   outline: none !important;
 }
 
-/* kill any hover overlay square from pseudo elements */
 #btnCopyView::before, #btnCopyView::after,
 #subLinkCopyBtn::before, #subLinkCopyBtn::after{
   content: none !important;
   display: none !important;
 }
 
-/* also ensure icon itself has no drop shadow */
 #btnCopyView svg, #subLinkCopyBtn svg{
   filter: none !important;
   box-shadow: none !important;
 }
 
-/* ===== Fix: Make title SVG (note icon) at least as large as the title ===== */
 .modal-title-stack .note-icon,
 .modal-title-stack svg.icon.note-icon{
   width: 22px !important;
@@ -648,8 +628,6 @@ button.copy-btn:hover{
   align-items: center !important;
 }
 
-
-/* ===== User Center publish result copy button: match subscribe copy (no glass square) ===== */
 .uc-copy-btn{
   background: transparent !important;
   border: none !important;
@@ -674,7 +652,6 @@ button.copy-btn:hover{
 .uc-copy-btn::before,
 .uc-copy-btn::after{ content:none !important; display:none !important; }
 
-/* ===== Submit (发布/更新) button: smaller, half width, iOS26 liquid glass ===== */
 #submitBtn{
   width: 50% !important;
   max-width: 260px;
@@ -698,8 +675,6 @@ button.copy-btn:hover{
   }
 }
 
-
-/* ===== FIX v8: UC copy buttons must ignore generic button styles (no square hover) ===== */
 .uc-copy-btn{
   width: auto !important;
   height: 40px !important;
@@ -720,7 +695,6 @@ button.copy-btn:hover{
 .uc-copy-btn::before,
 .uc-copy-btn::after{ content: none !important; display: none !important; }
 
-/* In case any parent applies drop-shadow */
 .user-center-modal .uc-copy-btn,
 #userCenterModal .uc-copy-btn,
 #btnCopyView, #subLinkCopyBtn{
@@ -732,9 +706,6 @@ button.copy-btn:hover{
   content:none !important; display:none !important;
 }
 
-/* ===== v9 Hard Fixes ===== */
-
-/* UC copy button must not stretch (avoid full-width hover square) */
 #btnCopyView.uc-copy-btn{
   flex: 0 0 auto !important;
   width: 40px !important;
@@ -747,7 +718,6 @@ button.copy-btn:hover{
   filter: none !important;
 }
 
-/* kill any hover background from generic button:hover */
 #btnCopyView.uc-copy-btn:hover{
   background: rgba(0,0,0,0.04) !important;
   border-radius: 10px !important;
@@ -758,13 +728,11 @@ button.copy-btn:hover{
   #btnCopyView.uc-copy-btn:hover{ background: rgba(255,255,255,0.06) !important; }
 }
 
-/* absolutely disable pseudo-element overlays */
 #btnCopyView::before,#btnCopyView::after{
   content: none !important;
   display: none !important;
 }
 
-/* Publish/Update button: soft green liquid glass (override existing) */
 #submitBtn{
   background: rgba(120, 210, 170, 0.30) !important;
   border: 1px solid rgba(120, 210, 170, 0.40) !important;
@@ -783,7 +751,6 @@ button.copy-btn:hover{
   }
 }
 
-/* ===== Final Fix: Copy buttons (all) have NO hover square / NO animation ===== */
 .copy-btn, .copy-btn:hover, .copy-btn:active, .copy-btn:focus,
 .uc-copy-btn, .uc-copy-btn:hover, .uc-copy-btn:active, .uc-copy-btn:focus,
 .copy-icon-btn, .copy-icon-btn:hover, .copy-icon-btn:active, .copy-icon-btn:focus,
@@ -804,11 +771,8 @@ button.copy-btn:hover{
   transform: none !important;
 }
 
-/* keep other input-group-row hover, but never for copy-only icon buttons */
 .input-group-row button.copy-icon-btn:hover { background: transparent !important; }
 
-
-/* ===== FINAL Submit / Update Button (darker +30% longer) ===== */
 #submitBtn{
   width: 65% !important;
   max-width: 360px;
@@ -836,23 +800,18 @@ button.copy-btn:hover{
   }
 }
 
-
-/* ===== TTL & Expire warning (red) ===== */
 :root{ --warn-red:#d81e06; --warn-red-dark:#ff4d4f; }
 
-/* 发布区：过期提示文字 */
 #ttlHint{
   color: var(--warn-red) !important;
   font-weight: 600;
 }
 
-/* 过期时间分段按钮：选中/悬停文案红色 */
 #ttlGroup .seg-btn.active,
 #ttlGroup .seg-btn:hover{
   color: var(--warn-red) !important;
 }
 
-/* 个人中心：过期时间/剩余时间（多兜底，避免模板变化） */
 #userCenter [class*="expire"],
 #userCenter [id*="expire"],
 #userCenter [data-expire],
@@ -863,7 +822,6 @@ button.copy-btn:hover{
   font-weight: 600;
 }
 
-/* 发布/更新按钮里的 svg 稍微大一点点 */
 #submitBtn .submit-ico svg{
   width: 20px !important;
   height: 20px !important;
@@ -883,8 +841,6 @@ button.copy-btn:hover{
   }
 }
 
-
-/* ===== User Center expire coloring by remaining time ===== */
 .uc-expire{
   font-size: 11px;
   margin-bottom: 12px;
@@ -893,25 +849,22 @@ button.copy-btn:hover{
 }
 .uc-expire[data-level="ok"]{ color: var(--txt-secondary); }
 .uc-expire[data-level="warn"]{ color: #e5533d; }
-.uc-expire[data-level="urgent"]{ color: #d81e06; }
-.uc-expire[data-level="expired"]{ color: rgba(120,120,130,0.75); text-decoration: line-through; }
+.uc-expire[data-level="urgent"]{ color: #d84a3a; }
 .uc-expire[data-level="forever"]{ color: rgba(52,199,89,0.95); }
 
 @media (prefers-color-scheme: dark){
   .uc-expire[data-level="warn"]{ color: #ff6b5e; }
-  .uc-expire[data-level="urgent"]{ color: #ff4d4f; }
-  .uc-expire[data-level="expired"]{ color: rgba(152,152,157,0.75); }
-  .uc-expire[data-level="forever"]{ color: rgba(52,199,89,0.95); }
-}
-
-</style>
+  .uc-expire[data-level="urgent"]{ color: #ff5a5f; }
+  
+.uc-expire[data-level="forever"]{ color: rgba(52,199,89,0.95); }
+}</style>
 </head>
 <body class="theme-light">
 
-    <!-- 主布局 -->
+    
     <main class="app-shell">
         
-        <!-- 头部 -->
+        
         <header class="header-section">
             <div class="brand">
   <div class="brand-title">
@@ -1026,16 +979,16 @@ button.copy-btn:hover{
 
         </form>
 
-        <!-- 底部一言 -->
+        
         <footer class="footer">
             <div id="hitokotoText">Loading Hitokoto...</div>
         </footer>
     </main>
 
-    <!-- 顶部轻提示容器（不阻挡操作） -->
+    
     <div id="toastHost" aria-live="polite" aria-atomic="true"></div>
 
-    <!-- 登录弹窗 -->
+    
     <div class="modal-mask" id="authModal">
         <div class="modal-panel">
             <div class="modal-head">
@@ -1061,7 +1014,7 @@ button.copy-btn:hover{
         </div>
     </div>
 
-    <!-- 用户中心 -->
+    
     <div class="modal-mask" id="userCenter">
         <div class="modal-panel" style="max-width:600px; height:80vh; display:flex; flex-direction:column; position:relative;">
             <div class="modal-head">
@@ -1090,7 +1043,7 @@ button.copy-btn:hover{
 </div>
     </div>
 
-    <!-- 订阅客户端选择 -->
+    
     <div class="modal-mask" id="subClientOverlay">
         <div class="modal-panel" style="width:100%; max-width:500px;">
             <div class="modal-head">
@@ -1114,9 +1067,8 @@ button.copy-btn:hover{
         </div>
     </div>
 
-    <!-- 核心 JS 逻辑 -->
-    <script>
-    const THEME_KEY="lyn_paste_theme_v4";
+    
+    <script>const THEME_KEY="lyn_paste_theme_v4";
     const themeToggle=document.getElementById("themeToggle");
     const iconSun=document.getElementById("iconSun");
     const iconMoon=document.getElementById("iconMoon");
@@ -1223,7 +1175,7 @@ button.copy-btn:hover{
         document.body.style.overflow = lock ? 'hidden' : '';
     }
 
-    /* 一言 API 调用 */
+    
     (function fetchHitokoto(){
         const el = document.getElementById("hitokotoText");
         if(!el) return;
@@ -1260,7 +1212,6 @@ button.copy-btn:hover{
             setTimeout(()=>{ el.remove(); }, 180);
         }, delay);
 
-        // 最多保留 3 条，避免刷屏
         while(host.children.length > 3){
             host.removeChild(host.firstElementChild);
         }
@@ -1423,7 +1374,7 @@ function setStatus(msg,type){
     const ttlMap = { "10m": 10*60*1000, "1d": 24*3600*1000, "7d": 7*24*3600*1000, "30d": 30*24*3600*1000 };
     function formatRemain(ms){
         if(!isFinite(ms)) return "";
-        if(ms <= 0) return "已过期";
+        if(ms <= 0) return "剩余 <1 分钟";
         const sec = Math.floor(ms/1000);
         const min = Math.floor(sec/60);
         const hr  = Math.floor(min/60);
@@ -1452,9 +1403,7 @@ function setStatus(msg,type){
         const dateStr = `${y}-${m}-${d} ${h}:${min} 过期`;
 
         let level = "ok";
-        if(remainingMs <= 0){
-            level = "expired";
-        }else if(remainingMs <= 24*3600*1000){
+        if(remainingMs <= 24*3600*1000){
             level = "urgent";
         }else if(remainingMs <= 72*3600*1000){
             level = "warn";
@@ -1473,7 +1422,6 @@ function setStatus(msg,type){
         return meta.text;
     }
 
-
     function setTtl(key){
         state.ttlKey=key;
         if($ttlGroup){
@@ -1485,7 +1433,6 @@ function setStatus(msg,type){
         if (key === "forever") {
             text = "永久有效";
         } else {
-            // 当前时间加时长演示
             const ms = ttlMap[key] || 0;
             const date = new Date(Date.now() + ms);
             const m = (date.getMonth()+1).toString().padStart(2,'0');
@@ -1755,7 +1702,6 @@ function enterCreateMode(clear){
                 const hasNode = d._nodeInfo.isNode && d._nodeInfo.count>0;
                 const link = `${VIEW_BASE}/${d.slug}`;
                 
-                // 计算过期文本
                 const expireMeta = getExpireMeta(d.ttlKey, d.createdAt || Date.now());
 
                 row.innerHTML = `
@@ -1765,7 +1711,7 @@ function enterCreateMode(clear){
                     </div>
                     <div class="uc-expire" data-level="${expireMeta.level}">${expireMeta.text}</div>
                     
-                    <!-- 链接展示框 -->
+                    
                     <div class="input-group-row" style="margin-bottom:12px; height:32px;">
                         <input value="${link}" readonly onclick="this.select()">
                         <button class="copy-icon-btn" onclick="copyTextToClipboard('${link}','链接已复制')" style="height:32px; width:36px; box-shadow:none;">
@@ -1860,12 +1806,9 @@ function enterCreateMode(clear){
         });
     }
 
-    (async function init(){ await initAuthFromServer(); applyAuthUI(); })();
-    </script>
-<script>
-(function(){
+    (async function init(){ await initAuthFromServer(); applyAuthUI(); })();</script>
+<script>(function(){
   const map = {
-    // top bar
     themeBtn: "Toggle theme",
     loginBtn: "Login",
     ucRefreshBtn: "Refresh",
@@ -1886,12 +1829,10 @@ function enterCreateMode(clear){
       const txt = (btn.textContent || "").trim().replace(/\s+/g,' ');
       if (txt && txt.length<=24) { btn.setAttribute('title', txt); return; }
 
-      // icon-only: try data-tip/data-title
       const dt = btn.getAttribute('data-tip') || btn.getAttribute('data-title');
       if (dt) { btn.setAttribute('title', dt); return; }
     }
   });
-})();
-</script>
+})();</script>
 </body>
 </html>
