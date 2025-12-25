@@ -828,10 +828,18 @@ button.copy-btn:hover{
 }
 
 .uc-expire{
-  font-size: 11px;
-  margin-bottom: 12px;
+  font-size: 11.5px;
+  line-height: 1.4;
   font-weight: 500;
-  color: var(--txt-secondary);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-align: right;
+  min-width: 110px; /* aligns as a column */
+}
+.uc-expire-wrap{
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom: 12px;
 }
 .uc-expire[data-level="ok"]{ color: var(--txt-secondary); }
 .uc-expire[data-level="warn"]{ color: #e5533d; }
@@ -1694,7 +1702,7 @@ function enterCreateMode(clear){
                         <span>${escapeHTML(d.remark||"无标题")}</span>
                         <span style="font-family:var(--font-mono);opacity:0.6;font-size:12px;">/${escapeHTML(d.slug)}</span>
                     </div>
-                    <div class="uc-expire" data-level="${expireMeta.level}">${expireMeta.text}</div>
+                    <div class="uc-expire-wrap"><div class="uc-expire" data-level="${expireMeta.level}">${expireMeta.text}</div></div>
                     
                     
                     <div class="input-group-row" style="margin-bottom:12px; height:32px;">
