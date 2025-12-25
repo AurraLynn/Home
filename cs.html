@@ -578,6 +578,56 @@ button[id*="Copy"], button[id*="Copy"]:hover {
 @media (prefers-color-scheme: dark){
   .copy-btn:hover{ background: rgba(255,255,255,0.06) !important; }
 }
+
+
+/* ===== UC copy button: kill square hover (hard) ===== */
+#userCenterModal .copy-btn,
+#userCenterModal .copy-btn:hover,
+#userCenterModal .copy-btn:active,
+#userCenterModal .copy-btn:focus,
+.user-center .copy-btn,
+.user-center .copy-btn:hover,
+.user-center .copy-btn:active,
+.user-center .copy-btn:focus,
+#manageModal .copy-btn,
+#manageModal .copy-btn:hover,
+.paste-modal .copy-btn,
+.paste-modal .copy-btn:hover,
+button.copy-btn,
+button.copy-btn:hover{
+  box-shadow: none !important;
+  filter: none !important;
+  outline: none !important;
+}
+
+#userCenterModal .copy-btn::before,
+#userCenterModal .copy-btn::after,
+.user-center .copy-btn::before,
+.user-center .copy-btn::after,
+#manageModal .copy-btn::before,
+#manageModal .copy-btn::after,
+.paste-modal .copy-btn::before,
+.paste-modal .copy-btn::after{
+  content: none !important;
+  display: none !important;
+}
+
+#userCenterModal .copy-btn:hover,
+.user-center .copy-btn:hover,
+#manageModal .copy-btn:hover,
+.paste-modal .copy-btn:hover{
+  background: rgba(0,0,0,0.04) !important;
+  border-radius: 10px !important;
+}
+@media (prefers-color-scheme: dark){
+  #userCenterModal .copy-btn:hover,
+  .user-center .copy-btn:hover,
+  #manageModal .copy-btn:hover,
+  .paste-modal .copy-btn:hover{ background: rgba(255,255,255,0.06) !important; }
+}
+
+/* note icon sizing */
+.note-icon{ width:18px; height:18px; flex: 0 0 auto; }
 </style>
 </head>
 <body class="theme-light">
@@ -733,7 +783,9 @@ button[id*="Copy"], button[id*="Copy"]:hover {
         <div class="modal-panel" style="max-width:600px; height:80vh; display:flex; flex-direction:column; position:relative;">
             <div class="modal-head">
                 <div class="modal-title-stack">
-                    <span class="modal-title">🗒️Manage / Paste</span>
+                    <span class="modal-title"><svg t="1766635572771" class="icon note-icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true">
+  <path d="M778.24 61.44a122.88 122.88 0 0 1 122.88 122.88v655.36a122.88 122.88 0 0 1-122.88 122.88H245.76a122.88 122.88 0 0 1-122.88-122.88V184.32a122.88 122.88 0 0 1 122.88-122.88h532.48z m0 61.44H245.76a61.44 61.44 0 0 0-61.3376 57.83552L184.32 184.32v655.36a61.44 61.44 0 0 0 57.83552 61.3376L245.76 901.12h532.48a61.44 61.44 0 0 0 61.3376-57.83552L839.68 839.68V184.32a61.44 61.44 0 0 0-57.83552-61.3376L778.24 122.88zM563.2 532.48a30.72 30.72 0 0 1 0 61.44h-266.24a30.72 30.72 0 0 1 0-61.44h266.24z m163.84-225.28a30.72 30.72 0 0 1 0 61.44h-430.08a30.72 30.72 0 0 1 0-61.44h430.08z" fill="#131415"></path>
+</svg>Manage / Paste</span>
                     <span class="modal-subtitle">Organize · Copy · Subscribe</span>
                 </div>
                 <div style="display:flex; gap:12px;">
