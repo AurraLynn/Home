@@ -428,7 +428,51 @@
         }
         
         .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    </style>
+    
+/* ===== Copy button: remove square hover shadow ===== */
+.copy-btn,
+.copy-btn:hover,
+.copy-btn:active,
+.copy-btn:focus,
+#subLinkCopyBtn,
+#subLinkCopyBtn:hover,
+#btnCopyView,
+#btnCopyView:hover {
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.copy-btn:hover svg {
+  transform: scale(1.08);
+}
+
+/* ===== Header subtitle styles ===== */
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-text {
+  font-weight: 700;
+}
+
+.brand-subtitle {
+  margin-left: 44px;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--txt-secondary);
+}
+
+</style>
 </head>
 <body class="theme-light">
 
@@ -438,9 +482,12 @@
         <!-- 头部 -->
         <header class="header-section">
             <div class="brand">
-                <img id="brandIcon" class="brand-icon" alt="Logo">
-                <span>PasteBox</span>
-            </div>
+  <div class="brand-title">
+    <img id="brandIcon" class="brand-icon" alt="Logo">
+    <span class="brand-text">PasteBox</span>
+  </div>
+  <div class="brand-subtitle">A clean and fast paste toolkit</div>
+</div>
             <div class="header-tools">
                 <button type="button" class="btn btn-icon btn-glass" id="themeToggle" title="切换主题">
                     <svg class="icon" id="iconSun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -612,7 +659,10 @@
             <div class="input-group-row">
                 <input id="subLinkInput" readonly>
                 <button id="subLinkCopyBtn">
-                    <svg t="1766624533292" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" style="width:18px;height:18px;"><path d="M610.87695313 512h197.75390624c55.37109375 0 98.87695313 43.50585938 98.87695313 98.87695313v197.75390624c0 55.37109375-43.50585938 98.87695313-98.87695313 98.87695313h-197.75390624c-55.37109375 0-98.87695313-43.50585938-98.87695313-98.87695313v-197.75390624c0-55.37109375 43.50585938-98.87695313 98.87695313-98.87695313z" fill="#ef6a6a"></path><path d="M294.47070312 630.65234375c11.86523438 0 19.77539063 7.91015625 19.77539063 19.77539063s-7.91015625 19.77539063-19.77539062 19.77539062h-79.10156251C159.99804687 670.203125 116.4921875 626.69726563 116.4921875 571.32617188v-355.95703126C116.4921875 159.99804687 159.99804687 116.4921875 215.36914062 116.4921875h355.95703126C626.69726563 116.4921875 670.203125 159.99804687 670.203125 215.36914062v79.10156251c0 11.86523438-7.91015625 19.77539063-19.77539063 19.77539062s-19.77539063-7.91015625-19.77539062-19.77539062v-79.1015625c0-31.640625-27.68554688-59.32617188-59.32617188-59.32617188h-355.95703124C183.72851562 156.04296875 156.04296875 183.72851562 156.04296875 215.36914062v355.95703126c0 31.640625 27.68554688 59.32617188 59.32617188 59.32617187h79.10156249z m158.20312501-237.3046875C421.03320312 393.34765625 393.34765625 421.03320312 393.34765625 452.67382812v355.95703126c0 31.640625 27.68554688 59.32617188 59.32617188 59.32617187h355.95703124c31.640625 0 59.32617188-27.68554688 59.32617188-59.32617188v-355.95703124c0-31.640625-27.68554688-59.32617188-59.32617187-59.32617188h-355.95703126z m-1e-8-39.55078125h355.95703126C864.00195313 353.796875 907.5078125 397.30273437 907.5078125 452.67382812v355.95703126c0 55.37109375-43.50585938 98.87695313-98.87695313 98.87695312h-355.95703124C397.30273437 907.5078125 353.796875 864.00195313 353.796875 808.63085938v-355.95703126C353.796875 397.30273437 397.30273437 353.796875 452.67382812 353.796875z" fill="#512c56"></path></svg>
+                    <svg viewBox="0 0 1024 1024" width="18" height="18" aria-hidden="true">
+  <path d="M640 512h256c71.68 0 128 56.32 128 128v256c0 71.68-56.32 128-128 128h-256c-71.68 0-128-56.32-128-128v-256c0-71.68 56.32-128 128-128z" fill="#5AC8FA"></path>
+  <path d="M230.4 665.6c15.36 0 25.6 10.24 25.6 25.6s-10.24 25.6-25.6 25.6h-102.4C56.32 716.8 0 660.48 0 588.8v-460.8C0 56.32 56.32 0 128 0h460.8C660.48 0 716.8 56.32 716.8 128v102.4c0 15.36-10.24 25.6-25.6 25.6s-25.6-10.24-25.6-25.6v-102.4c0-40.96-35.84-76.8-76.8-76.8h-460.8C87.04 51.2 51.2 87.04 51.2 128v460.8c0 40.96 35.84 76.8 76.8 76.8h102.4z"></path>
+</svg>
                 </button>
             </div>
         </div>
