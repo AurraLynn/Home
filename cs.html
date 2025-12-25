@@ -669,6 +669,56 @@ button.copy-btn:hover{
 .modal-title-stack{
   align-items: center !important;
 }
+
+
+/* ===== User Center publish result copy button: match subscribe copy (no glass square) ===== */
+.uc-copy-btn{
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  outline: none !important;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.uc-copy-btn:hover{
+  box-shadow: none !important;
+  background: rgba(0,0,0,0.04) !important;
+}
+@media (prefers-color-scheme: dark){
+  .uc-copy-btn:hover{ background: rgba(255,255,255,0.06) !important; }
+}
+.uc-copy-btn::before,
+.uc-copy-btn::after{ content:none !important; display:none !important; }
+
+/* ===== Submit (发布/更新) button: smaller, half width, iOS26 liquid glass ===== */
+#submitBtn{
+  width: 50% !important;
+  max-width: 260px;
+  height: 42px !important;
+  font-size: 13px !important;
+  align-self: center;
+  border-radius: 999px !important;
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  background: rgba(255,255,255,0.58) !important;
+  border: 1px solid rgba(255,255,255,0.45) !important;
+  color: var(--txt-primary) !important;
+  box-shadow: 0 8px 26px rgba(0,0,0,0.10);
+}
+#submitBtn:hover{ transform: translateY(-1px); }
+@media (prefers-color-scheme: dark){
+  #submitBtn{
+    background: rgba(20,20,22,0.55) !important;
+    border: 1px solid rgba(255,255,255,0.14) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+}
 </style>
 </head>
 <body class="theme-light">
@@ -766,7 +816,7 @@ button.copy-btn:hover{
                         <div class="panel-header" style="color:var(--success)">发布成功</div>
                         <div class="result-link" id="viewLinkText">...</div>
                         <div style="display:flex; gap:8px;">
-                            <button type="button" class="btn btn-glass" style="flex:1" id="btnCopyView">复制<svg t="1766635118544" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true">
+                            <button type="button" class="uc-copy-btn" style="flex:1" id="btnCopyView">复制<svg t="1766635118544" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true">
   <path d="M96.1 575.7a32.2 32.1 0 1 0 64.4 0 32.2 32.1 0 1 0-64.4 0Z" fill="#d81e06"></path>
   <path d="M742.1 450.7l-269.5-2.1c-14.3-0.1-26 13.8-26 31s11.7 31.3 26 31.4l269.5 2.1c14.3 0.1 26-13.8 26-31s-11.7-31.3-26-31.4zM742.1 577.7l-269.5-2.1c-14.3-0.1-26 13.8-26 31s11.7 31.3 26 31.4l269.5 2.1c14.3 0.2 26-13.8 26-31s-11.7-31.3-26-31.4z" fill="#d81e06"></path>
   <path d="M736.1 63.9H417c-70.4 0-128 57.6-128 128h-64.9c-70.4 0-128 57.6-128 128v128c-0.1 17.7 14.4 32 32.2 32 17.8 0 32.2-14.4 32.2-32.1V320c0-35.2 28.8-64 64-64H289v447.8c0 70.4 57.6 128 128 128h255.1c-0.1 35.2-28.8 63.8-64 63.8H224.5c-35.2 0-64-28.8-64-64V703.5c0-17.7-14.4-32.1-32.2-32.1-17.8 0-32.3 14.4-32.3 32.1v128.3c0 70.4 57.6 128 128 128h384.1c70.4 0 128-57.6 128-128h65c70.4 0 128-57.6 128-128V255.9l-193-192z m0.1 63.4l127.7 128.3H800c-35.2 0-64-28.8-64-64v-64.3h0.2z m64 641H416.1c-35.2 0-64-28.8-64-64v-513c0-35.2 28.8-64 64-64H671V191c0 70.4 57.6 128 128 128h65.2v385.3c0 35.2-28.8 64-64 64z" fill="#d81e06"></path>
@@ -840,11 +890,13 @@ button.copy-btn:hover{
             <div id="ucEmpty" style="text-align:center; padding:40px; color:var(--txt-secondary); font-size:13px;">加载中...</div>
 
             <!-- 仅保留悬浮图标按钮（底部不再额外铺一层背景） -->
-            <button class="uc-logout-fab" id="ucLogoutBtn" title="退出登录" aria-label="退出登录"><svg t="1766628432832" class="icon" viewBox="0 0 1024 1024" width="18" height="18" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <button class="uc-logout-fab" id="ucLogoutBtn" title="退出登录" aria-label="退出登录">
+<svg t="1766636642948" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true">
   <path d="M155.30496 813.88032a356.69504 139.94496 0 1 0 713.39008 0 356.69504 139.94496 0 1 0-713.39008 0Z" fill="#E04040"></path>
   <path d="M512 0c30.72 0 51.2 23.04 51.2 57.6v345.6C563.2 437.76 542.72 460.8 512 460.8s-51.2-23.04-51.2-57.6v-345.6C460.8 23.04 481.28 0 512 0z" fill="#E04040"></path>
   <path d="M512 1024C230.4 1024 0 793.6 0 512c0-158.72 71.68-302.08 194.56-399.36 20.48-15.36 56.32-15.36 71.68 10.24 15.36 20.48 10.24 51.2-10.24 66.56-97.28 81.92-153.6 199.68-153.6 322.56 0 225.28 184.32 409.6 409.6 409.6s409.6-184.32 409.6-409.6c0-128-56.32-240.64-153.6-322.56-20.48-15.36-25.6-51.2-10.24-71.68s51.2-25.6 71.68-10.24c122.88 102.4 194.56 245.76 194.56 404.48 0 281.6-230.4 512-512 512z"></path>
-</svg></button>
+</svg>
+</button>
         </div>
     </div>
 
