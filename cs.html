@@ -753,6 +753,57 @@ button.copy-btn:hover{
 #subLinkCopyBtn::before,#subLinkCopyBtn::after{
   content:none !important; display:none !important;
 }
+
+/* ===== v9 Hard Fixes ===== */
+
+/* UC copy button must not stretch (avoid full-width hover square) */
+#btnCopyView.uc-copy-btn{
+  flex: 0 0 auto !important;
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  border-left: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* kill any hover background from generic button:hover */
+#btnCopyView.uc-copy-btn:hover{
+  background: rgba(0,0,0,0.04) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+@media (prefers-color-scheme: dark){
+  #btnCopyView.uc-copy-btn:hover{ background: rgba(255,255,255,0.06) !important; }
+}
+
+/* absolutely disable pseudo-element overlays */
+#btnCopyView::before,#btnCopyView::after{
+  content: none !important;
+  display: none !important;
+}
+
+/* Publish/Update button: soft green liquid glass (override existing) */
+#submitBtn{
+  background: rgba(120, 210, 170, 0.22) !important;
+  border: 1px solid rgba(120, 210, 170, 0.35) !important;
+  color: rgba(14, 74, 49, 0.95) !important;
+  box-shadow: none !important;
+}
+#submitBtn:hover{
+  background: rgba(120, 210, 170, 0.32) !important;
+  box-shadow: none !important;
+}
+@media (prefers-color-scheme: dark){
+  #submitBtn{
+    background: rgba(90, 190, 150, 0.22) !important;
+    border-color: rgba(120, 210, 170, 0.28) !important;
+    color: rgba(190, 255, 228, 0.92) !important;
+  }
+}
 </style>
 </head>
 <body class="theme-light">
@@ -850,7 +901,7 @@ button.copy-btn:hover{
                         <div class="panel-header" style="color:var(--success)">发布成功</div>
                         <div class="result-link" id="viewLinkText">...</div>
                         <div style="display:flex; gap:8px;">
-                            <button type="button" class="uc-copy-btn" style="flex:1" id="btnCopyView">复制<svg t="1766635118544" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true">
+                            <button type="button" class="uc-copy-btn" id="btnCopyView">复制<svg t="1766635118544" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true">
   <path d="M96.1 575.7a32.2 32.1 0 1 0 64.4 0 32.2 32.1 0 1 0-64.4 0Z" fill="#d81e06"></path>
   <path d="M742.1 450.7l-269.5-2.1c-14.3-0.1-26 13.8-26 31s11.7 31.3 26 31.4l269.5 2.1c14.3 0.1 26-13.8 26-31s-11.7-31.3-26-31.4zM742.1 577.7l-269.5-2.1c-14.3-0.1-26 13.8-26 31s11.7 31.3 26 31.4l269.5 2.1c14.3 0.2 26-13.8 26-31s-11.7-31.3-26-31.4z" fill="#d81e06"></path>
   <path d="M736.1 63.9H417c-70.4 0-128 57.6-128 128h-64.9c-70.4 0-128 57.6-128 128v128c-0.1 17.7 14.4 32 32.2 32 17.8 0 32.2-14.4 32.2-32.1V320c0-35.2 28.8-64 64-64H289v447.8c0 70.4 57.6 128 128 128h255.1c-0.1 35.2-28.8 63.8-64 63.8H224.5c-35.2 0-64-28.8-64-64V703.5c0-17.7-14.4-32.1-32.2-32.1-17.8 0-32.3 14.4-32.3 32.1v128.3c0 70.4 57.6 128 128 128h384.1c70.4 0 128-57.6 128-128h65c70.4 0 128-57.6 128-128V255.9l-193-192z m0.1 63.4l127.7 128.3H800c-35.2 0-64-28.8-64-64v-64.3h0.2z m64 641H416.1c-35.2 0-64-28.8-64-64v-513c0-35.2 28.8-64 64-64H671V191c0 70.4 57.6 128 128 128h65.2v385.3c0 35.2-28.8 64-64 64z" fill="#d81e06"></path>
