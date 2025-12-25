@@ -17,7 +17,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -25,9 +25,9 @@
             --font-mono: 'JetBrains Mono', monospace;
 
             /* Light Theme Colors */
-            --bg-app: #f2f5f8; 
-            --bg-card: rgba(255, 255, 255, 0.75);
-            --bg-glass: rgba(255, 255, 255, 0.55);
+            --bg-app: #f4f6f9;
+            --bg-card: rgba(255, 255, 255, 0.72);
+            --bg-glass: rgba(255, 255, 255, 0.5);
             --border-glass: rgba(255, 255, 255, 0.6);
             --border-subtle: rgba(0, 0, 0, 0.06);
             
@@ -38,21 +38,22 @@
             --accent: #007aff;
             --accent-glow: rgba(0, 122, 255, 0.25);
             
-            /* Status Colors */
             --danger: #ff3b30;
             --warn: #ff9500;
             --success: #34c759;
             --neutral: #86868b;
             
-            /* Shadows */
+            /* Premium Shadows & Highlights */
             --shadow-card: 
-                0 1px 2px rgba(0, 0, 0, 0.04), 
-                0 6px 16px rgba(0, 0, 0, 0.06),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+                0 2px 4px rgba(0, 0, 0, 0.02), 
+                0 8px 24px rgba(0, 0, 0, 0.04),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8); /* Inner Highlight */
+            
             --shadow-float: 
-                0 12px 32px rgba(0, 0, 0, 0.1),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.4);
-            --shadow-inner: inset 0 1px 2px rgba(255, 255, 255, 0.8);
+                0 16px 40px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
+            --shadow-inner: inset 0 1px 2px rgba(0, 0, 0, 0.03);
             
             --radius-box: 24px;
             --radius-sm: 14px;
@@ -62,10 +63,10 @@
         }
 
         body.theme-dark {
-            --bg-app: #050505;
+            --bg-app: #09090a;
             --bg-card: rgba(28, 28, 30, 0.7);
             --bg-glass: rgba(44, 44, 46, 0.45);
-            --border-glass: rgba(255, 255, 255, 0.12);
+            --border-glass: rgba(255, 255, 255, 0.1);
             --border-subtle: rgba(255, 255, 255, 0.08);
 
             --txt-primary: #f5f5f7;
@@ -81,12 +82,14 @@
             --neutral: #8e8e93;
 
             --shadow-card: 
-                0 8px 32px -8px rgba(0, 0, 0, 0.6),
-                inset 0 1px 0 rgba(255, 255, 255, 0.08);
-            --shadow-float: 
-                0 16px 48px rgba(0, 0, 0, 0.7),
+                0 8px 32px -8px rgba(0, 0, 0, 0.5),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            --shadow-inner: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            
+            --shadow-float: 
+                0 20px 50px rgba(0, 0, 0, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+            --shadow-inner: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 
             --blob-1: #1a2a6c;
             --blob-2: #b21f1f;
@@ -106,18 +109,32 @@
             transition: background-color 0.3s ease;
         }
 
-        /* Background Animation */
-        body::before, body::after {
-            content: ''; position: fixed; width: 80vw; height: 80vw;
-            border-radius: 50%; filter: blur(90px); opacity: 0.45; z-index: -1;
-            animation: blobFloat 25s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        /* 1. 磨砂噪点质感 (Noise Texture) - Premium Touch */
+        body::before {
+            content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
         }
-        body::before { background: var(--blob-1); top: -20%; left: -20%; }
-        body::after { background: var(--blob-2); bottom: -20%; right: -20%; animation-delay: -10s; }
-        @keyframes blobFloat {
-            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
-            100% { transform: translate(10%, 10%) scale(1.1) rotate(10deg); }
+
+        /* 2. 背景微网格 + 光斑 (Subtle Grid & Blobs) */
+        body::after {
+            content: ''; position: fixed; inset: 0; z-index: -1;
+            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+            background-image: 
+                radial-gradient(circle at 10% 10%, var(--blob-1), transparent 45%), 
+                radial-gradient(circle at 90% 90%, var(--blob-2), transparent 45%),
+                linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+            animation: bgBreath 20s infinite alternate ease-in-out;
         }
+        body.theme-dark::after {
+            background-image: 
+                radial-gradient(circle at 10% 10%, var(--blob-1), transparent 45%), 
+                radial-gradient(circle at 90% 90%, var(--blob-2), transparent 45%),
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+        }
+        @keyframes bgBreath { 0% { transform: scale(1); } 100% { transform: scale(1.02); } }
 
         /* Layout */
         .app-shell {
@@ -127,6 +144,7 @@
             grid-template-columns: 1fr 340px; 
             gap: 24px;
             align-items: stretch; 
+            z-index: 1; /* Above background */
         }
 
         /* Header */
@@ -137,24 +155,28 @@
         }
         .brand { display: flex; align-items: center; gap: 14px; }
         .brand-icon {
-            width: 44px; height: 44px; border-radius: 14px;
+            width: 46px; height: 46px; border-radius: 14px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08); object-fit: cover;
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .brand:hover .brand-icon { transform: scale(1.05) rotate(3deg); }
         
         .brand-text-group { display: flex; flex-direction: column; justify-content: center; }
+        
+        /* 3. Logo 渐变 (Gradient Logo) */
         .brand-text {
-            font-size: 24px; font-weight: 750; letter-spacing: -0.02em;
+            font-size: 26px; font-weight: 800; letter-spacing: -0.02em;
             line-height: 1.05; color: var(--txt-primary);
+            background: linear-gradient(135deg, var(--txt-primary) 30%, var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         .brand-subtext {
-            font-size: 13px; font-weight: 500; letter-spacing: 0em;
+            font-size: 13px; font-weight: 500; letter-spacing: 0.01em;
             color: var(--txt-secondary); margin-top: 2px;
         }
         .header-tools { display: flex; gap: 12px; align-items: center; }
 
-        /* Buttons */
+        /* Buttons (Base) */
         .btn {
             border: none; cursor: pointer;
             font-family: var(--font-sans); font-size: 14px; font-weight: 600;
@@ -163,23 +185,23 @@
             transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); 
             position: relative; overflow: hidden; white-space: nowrap; user-select: none;
         }
-        .btn:active { transform: scale(0.94); }
+        .btn:active { transform: scale(0.96); }
         .btn-icon { width: 40px; padding: 0; border-radius: 50%; }
 
         .btn-glass {
             background: var(--bg-glass); border: 1px solid var(--border-glass); color: var(--txt-primary);
-            box-shadow: var(--shadow-inner); backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-inner); backdrop-filter: blur(12px);
         }
         .btn-glass:hover { 
             background: var(--bg-card); border-color: var(--border-glass);
             transform: translateY(-1px); 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05), var(--shadow-inner);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06), var(--shadow-inner);
         }
 
         .btn-primary {
             background: var(--accent); color: white;
-            box-shadow: 0 4px 12px -2px var(--accent-glow); 
-            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 12px -3px var(--accent-glow); 
+            border: 1px solid rgba(255,255,255,0.15);
         }
         .btn-primary:hover { 
             background: color-mix(in srgb, var(--accent), white 10%);
@@ -187,7 +209,7 @@
             box-shadow: 0 8px 20px -4px var(--accent-glow);
         }
 
-        /* Submit Button */
+        /* Submit Button (Custom Green + 4. 流光特效) */
         #submitBtn {
             width: 70%; max-width: 360px; height: 50px; align-self: center;
             font-size: 15px; font-weight: 600; border-radius: 999px;
@@ -195,7 +217,16 @@
             border: 1px solid rgba(52, 199, 89, 0.3);
             color: #2da84e;
             backdrop-filter: blur(20px);
+            position: relative;
         }
+        #submitBtn::after {
+            content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transform: skewX(-20deg);
+            animation: btnSheen 6s infinite; pointer-events: none;
+        }
+        @keyframes btnSheen { 0% { left: -100%; } 15% { left: 200%; } 100% { left: 200%; } }
+        
         #submitBtn:hover { 
             background: rgba(52, 199, 89, 0.25); color: #248a3d;
             transform: translateY(-1px);
@@ -216,7 +247,6 @@
         }
         .btn-circle:hover { background: var(--bg-card); transform: rotate(90deg); color: var(--txt-primary); }
 
-        /* Utility Copy Button */
         .copy-icon-btn, .uc-copy-btn {
             background: transparent; border: none; padding: 0; margin: 0;
             display: inline-flex; align-items: center; justify-content: center;
@@ -225,16 +255,16 @@
         .copy-icon-btn:hover { background: rgba(128,128,128,0.1); border-radius: 8px; transform: scale(1.1); }
         .copy-icon-btn:active { transform: scale(0.9); }
 
-        /* Cards & Editor */
+        /* Bento Cards & Editor */
         .bento-card {
             background: var(--bg-card);
-            backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
+            backdrop-filter: blur(40px) saturate(180%);
             border: 1px solid var(--border-glass); border-radius: var(--radius-box);
             box-shadow: var(--shadow-card); overflow: hidden;
             display: flex; flex-direction: column; transition: transform 0.3s ease;
         }
         
-        /* Drag & Drop Visuals */
+        /* 5. Drag & Drop Visuals */
         .editor-zone { height: 100%; min-height: 480px; position: relative; transition: all 0.2s ease; }
         .editor-zone.drag-over {
             background: rgba(var(--accent), 0.05);
@@ -285,7 +315,7 @@
         }
         .node-indicator.active { display: inline-flex; }
 
-        /* Sidebar */
+        /* Sidebar Tools */
         .sidebar { display: flex; flex-direction: column; gap: 24px; justify-content: space-between; }
         .sidebar-content { display: flex; flex-direction: column; gap: 24px; }
 
@@ -304,7 +334,8 @@
             color: var(--txt-primary); font-weight: 500;
         }
         .tool-card:hover { 
-            transform: translateY(-3px); border-color: var(--accent); background: var(--bg-card);
+            transform: translateY(-3px) scale(1.02); 
+            border-color: var(--accent); background: var(--bg-card);
             box-shadow: 0 8px 16px -4px rgba(0,0,0,0.05), var(--shadow-inner);
         }
         .tool-icon { width: 22px; height: 22px; opacity: 0.85; transition: 0.2s; }
@@ -332,7 +363,7 @@
             margin-top: 10px; text-align: right; transition: color 0.3s;
         }
 
-        /* Inputs */
+        /* 6. Inputs (Glow Effect) */
         .input-box {
             background: var(--bg-glass); border: 1px solid var(--border-subtle);
             border-radius: var(--radius-sm); padding: 0 12px; height: 44px;
@@ -641,7 +672,9 @@
                 <input id="subLinkInput" readonly>
                 <button id="subLinkCopyBtn" class="copy-icon-btn" title="复制" style="width:40px;height:36px;">
                     <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M715.6224 910.0288H356.096c-55.3984 0-100.3008-44.9024-100.3008-100.3008V452.8128c0-55.3984 44.9024-100.3008 100.3008-100.3008h359.5776c55.3984 0 100.3008 44.9024 100.3008 100.3008v356.9152c-0.0512 55.3984-44.9536 100.3008-100.352 100.3008z" fill="#56E5BE"></path><path d="M729.1904 910.0288H416.3072c-47.9232 0-86.7328-38.8608-86.7328-86.7328v-310.5792c0-47.9232 38.8608-86.7328 86.7328-86.7328h312.8832c47.9232 0 86.7328 38.8608 86.7328 86.7328v310.5792c0 47.872-38.8608 86.7328-86.7328 86.7328z" fill="#50DDB8"></path><path d="M727.6544 910.0288H466.2784c-36.0448 0-65.2288-29.184-65.2288-65.2288v-282.4704c0-36.0448 29.184-65.2288 65.2288-65.2288h284.416c36.0448 0 65.2288 29.184 65.2288 65.2288v259.4304c0 48.7424-39.5264 88.2688-88.2688 88.2688z" fill="#42D3AD"></path><path d="M763.5456 107.5712H410.0096c-81.2544 0-147.5072 65.536-148.6336 146.5856-79.1552 3.2256-142.5408 68.608-142.5408 148.5312v359.5776c0 81.9712 66.7136 148.6848 148.6848 148.6848h353.536c81.2544 0 147.5072-65.536 148.6336-146.5856 79.1552-3.2256 142.5408-68.608 142.5408-148.5312V256.256c0-81.9712-66.6624-148.6848-148.6848-148.6848z m-55.1936 654.6944c0 48.128-39.168 87.2448-87.2448 87.2448H267.52c-48.128 0-87.2448-39.168-87.2448-87.2448V402.6368c0-48.128 39.168-87.2448 87.2448-87.2448h353.536c48.128 0 87.2448 39.168 87.2448 87.2448v359.6288z m142.4384-146.432c0 46.0288-35.84 83.712-81.0496 86.9376V402.6368c0-81.9712-66.7136-148.6848-148.6848-148.6848H322.8672c1.2288-47.0528 39.7824-84.9408 87.1424-84.9408h353.5872c48.128 0 87.2448 39.168 87.2448 87.2448v359.5776z" fill="#2E3138"></path></svg>
-                </button>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
