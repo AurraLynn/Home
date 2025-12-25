@@ -812,15 +812,6 @@ button.copy-btn:hover{
   color: var(--warn-red) !important;
 }
 
-#userCenter [class*="expire"],
-#userCenter [id*="expire"],
-#userCenter [data-expire],
-#userCenter [data-expire-time],
-#userCenter [data-expireAt],
-#userCenter [data-expire-at]{
-  color: var(--warn-red) !important;
-  font-weight: 600;
-}
 
 #submitBtn .submit-ico svg{
   width: 20px !important;
@@ -830,15 +821,10 @@ button.copy-btn:hover{
 @media (prefers-color-scheme: dark){
   #ttlHint,
   #ttlGroup .seg-btn.active,
-  #ttlGroup .seg-btn:hover,
-  #userCenter [class*="expire"],
-  #userCenter [id*="expire"],
-  #userCenter [data-expire],
-  #userCenter [data-expire-time],
-  #userCenter [data-expireAt],
-  #userCenter [data-expire-at]{
+  #ttlGroup .seg-btn:hover{
     color: var(--warn-red-dark) !important;
   }
+}
 }
 
 .uc-expire{
@@ -855,8 +841,7 @@ button.copy-btn:hover{
 @media (prefers-color-scheme: dark){
   .uc-expire[data-level="warn"]{ color: #ff6b5e; }
   .uc-expire[data-level="urgent"]{ color: #ff5a5f; }
-  
-.uc-expire[data-level="forever"]{ color: rgba(52,199,89,0.95); }
+  .uc-expire[data-level="forever"]{ color: rgba(52,199,89,0.98); }
 }</style>
 </head>
 <body class="theme-light">
