@@ -24,10 +24,10 @@
             --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
 
-            /* Light Theme */
+            /* Light Theme Colors */
             --bg-app: #f2f5f8; 
             --bg-card: rgba(255, 255, 255, 0.75);
-            --bg-glass: rgba(255, 255, 255, 0.5);
+            --bg-glass: rgba(255, 255, 255, 0.55);
             --border-glass: rgba(255, 255, 255, 0.6);
             --border-subtle: rgba(0, 0, 0, 0.06);
             
@@ -38,18 +38,19 @@
             --accent: #007aff;
             --accent-glow: rgba(0, 122, 255, 0.25);
             
+            /* Status Colors */
             --danger: #ff3b30;
             --warn: #ff9500;
             --success: #34c759;
             --neutral: #86868b;
             
-            /* Premium Shadows */
+            /* Shadows */
             --shadow-card: 
                 0 1px 2px rgba(0, 0, 0, 0.04), 
-                0 4px 16px rgba(0, 0, 0, 0.06),
+                0 6px 16px rgba(0, 0, 0, 0.06),
                 inset 0 0 0 1px rgba(255, 255, 255, 0.6);
             --shadow-float: 
-                0 8px 32px rgba(0, 0, 0, 0.08),
+                0 12px 32px rgba(0, 0, 0, 0.1),
                 inset 0 0 0 1px rgba(255, 255, 255, 0.4);
             --shadow-inner: inset 0 1px 2px rgba(255, 255, 255, 0.8);
             
@@ -61,9 +62,9 @@
         }
 
         body.theme-dark {
-            --bg-app: #0d0d0d;
-            --bg-card: rgba(28, 28, 30, 0.65);
-            --bg-glass: rgba(44, 44, 46, 0.4);
+            --bg-app: #050505;
+            --bg-card: rgba(28, 28, 30, 0.7);
+            --bg-glass: rgba(44, 44, 46, 0.45);
             --border-glass: rgba(255, 255, 255, 0.12);
             --border-subtle: rgba(255, 255, 255, 0.08);
 
@@ -105,7 +106,7 @@
             transition: background-color 0.3s ease;
         }
 
-        /* Background Blobs */
+        /* Background Animation */
         body::before, body::after {
             content: ''; position: fixed; width: 80vw; height: 80vw;
             border-radius: 50%; filter: blur(90px); opacity: 0.45; z-index: -1;
@@ -186,7 +187,7 @@
             box-shadow: 0 8px 20px -4px var(--accent-glow);
         }
 
-        /* Custom Green Submit Button */
+        /* Submit Button */
         #submitBtn {
             width: 70%; max-width: 360px; height: 50px; align-self: center;
             font-size: 15px; font-weight: 600; border-radius: 999px;
@@ -224,7 +225,7 @@
         .copy-icon-btn:hover { background: rgba(128,128,128,0.1); border-radius: 8px; transform: scale(1.1); }
         .copy-icon-btn:active { transform: scale(0.9); }
 
-        /* Bento Cards & Editor */
+        /* Cards & Editor */
         .bento-card {
             background: var(--bg-card);
             backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
@@ -284,7 +285,7 @@
         }
         .node-indicator.active { display: inline-flex; }
 
-        /* Sidebar Tools */
+        /* Sidebar */
         .sidebar { display: flex; flex-direction: column; gap: 24px; justify-content: space-between; }
         .sidebar-content { display: flex; flex-direction: column; gap: 24px; }
 
@@ -331,7 +332,7 @@
             margin-top: 10px; text-align: right; transition: color 0.3s;
         }
 
-        /* Inputs (Glow) */
+        /* Inputs */
         .input-box {
             background: var(--bg-glass); border: 1px solid var(--border-subtle);
             border-radius: var(--radius-sm); padding: 0 12px; height: 44px;
@@ -640,6 +641,440 @@
                 <input id="subLinkInput" readonly>
                 <button id="subLinkCopyBtn" class="copy-icon-btn" title="复制" style="width:40px;height:36px;">
                     <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M715.6224 910.0288H356.096c-55.3984 0-100.3008-44.9024-100.3008-100.3008V452.8128c0-55.3984 44.9024-100.3008 100.3008-100.3008h359.5776c55.3984 0 100.3008 44.9024 100.3008 100.3008v356.9152c-0.0512 55.3984-44.9536 100.3008-100.352 100.3008z" fill="#56E5BE"></path><path d="M729.1904 910.0288H416.3072c-47.9232 0-86.7328-38.8608-86.7328-86.7328v-310.5792c0-47.9232 38.8608-86.7328 86.7328-86.7328h312.8832c47.9232 0 86.7328 38.8608 86.7328 86.7328v310.5792c0 47.872-38.8608 86.7328-86.7328 86.7328z" fill="#50DDB8"></path><path d="M727.6544 910.0288H466.2784c-36.0448 0-65.2288-29.184-65.2288-65.2288v-282.4704c0-36.0448 29.184-65.2288 65.2288-65.2288h284.416c36.0448 0 65.2288 29.184 65.2288 65.2288v259.4304c0 48.7424-39.5264 88.2688-88.2688 88.2688z" fill="#42D3AD"></path><path d="M763.5456 107.5712H410.0096c-81.2544 0-147.5072 65.536-148.6336 146.5856-79.1552 3.2256-142.5408 68.608-142.5408 148.5312v359.5776c0 81.9712 66.7136 148.6848 148.6848 148.6848h353.536c81.2544 0 147.5072-65.536 148.6336-146.5856 79.1552-3.2256 142.5408-68.608 142.5408-148.5312V256.256c0-81.9712-66.6624-148.6848-148.6848-148.6848z m-55.1936 654.6944c0 48.128-39.168 87.2448-87.2448 87.2448H267.52c-48.128 0-87.2448-39.168-87.2448-87.2448V402.6368c0-48.128 39.168-87.2448 87.2448-87.2448h353.536c48.128 0 87.2448 39.168 87.2448 87.2448v359.6288z m142.4384-146.432c0 46.0288-35.84 83.712-81.0496 86.9376V402.6368c0-81.9712-66.7136-148.6848-148.6848-148.6848H322.8672c1.2288-47.0528 39.7824-84.9408 87.1424-84.9408h353.5872c48.128 0 87.2448 39.168 87.2448 87.2448v359.5776z" fill="#2E3138"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const THEME_KEY = "lyn_paste_theme_v4";
+    const API_BASE = location.origin + "/api/paste";
+    const AUTH_BASE = location.origin + "/api/auth";
+    const VIEW_BASE = location.origin + "/Paste";
+    const qs = id => document.getElementById(id);
+
+    // Elements
+    const el = {
+        themeToggle: qs("themeToggle"), iconSun: qs("iconSun"), iconMoon: qs("iconMoon"),
+        brandIcon: qs("brandIcon"), content: qs("content"), byteNum: qs("byteNum"),
+        lineCounter: qs("lineCounter"), nodeInfo: qs("nodeInfo"), editorZone: qs("editorZone"),
+        submitBtn: qs("submitBtn"), resultBox: qs("resultBox"), viewLinkText: qs("viewLinkText"),
+        btnCopyView: qs("btnCopyView"), btnOpenView: qs("btnOpenView"), statusMsg: qs("statusMsg"),
+        advancedSection: qs("advancedSection"), ttlForeverBtn: qs("ttlForeverBtn"),
+        customId: qs("customId"), remark: qs("remark"), fileInput: qs("fileInput"),
+        uploadBtn: qs("uploadBtn"), btnResetContent: qs("btnResetContent"),
+        btnBase64Encode: qs("btnBase64Encode"), btnBase64Decode: qs("btnBase64Decode"),
+        btnHome: qs("btnHome"), btnAuthOpen: qs("btnAuthOpen"), btnAuthLabel: qs("btnAuthLabel"),
+        authModal: qs("authModal"), authForm: qs("authForm"),
+        authUsername: qs("authUsername"), authPassword: qs("authPassword"), authRemember: qs("authRemember"),
+        btnDoLogin: qs("btnDoLogin"), btnDoRegister: qs("btnDoRegister"),
+        authCloseBtn: qs("authCloseBtn"), authMsg: qs("authMsg"),
+        userCenter: qs("userCenter"), ucEmpty: qs("ucEmpty"), ucList: qs("ucList"),
+        ucRefreshBtn: qs("ucRefreshBtn"), ucLogoutBtn: qs("ucLogoutBtn"), ucCloseBtn: qs("ucCloseBtn"),
+        ttlGroup: qs("ttlGroup"), ttlHint: qs("ttlHint"),
+        icoPublish: qs("icoPublish"), icoUpdate: qs("icoUpdate")
+    };
+
+    const state = {
+        loggedIn: false, username: null, ttlKey: "7d",
+        customSlugError: false, isSubmitting: false,
+        mode: "create", originalSlug: null
+    };
+
+    // --- Theme Logic ---
+    function applyTheme(t) {
+        document.body.classList.remove("theme-light", "theme-dark");
+        document.body.classList.add("theme-" + t);
+        if (el.iconSun && el.iconMoon) {
+            el.iconSun.classList.toggle("d-none", t === "dark");
+            el.iconMoon.classList.toggle("d-none", t !== "dark");
+        }
+        try { localStorage.setItem(THEME_KEY, t); } catch (_) {}
+    }
+
+    (function initTheme() {
+        let t = "light";
+        try {
+            const s = localStorage.getItem(THEME_KEY);
+            if (s === "dark" || s === "light") t = s;
+            else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) t = "dark";
+        } catch (_) {}
+        applyTheme(t);
+    })();
+
+    if (el.themeToggle) {
+        el.themeToggle.addEventListener("click", () => {
+            const cur = document.body.classList.contains("theme-dark") ? "dark" : "light";
+            applyTheme(cur === "dark" ? "light" : "dark");
+        });
+    }
+
+    // --- Random Icon ---
+    (function initIcon() {
+        if (!el.brandIcon) return;
+        const ICONS = Array.from({length: 10}, (_, i) => `https://save.aura.us.kg/Picture/Preview/YL${i+1}.png`);
+        el.brandIcon.src = ICONS[Math.floor(Math.random() * ICONS.length)];
+    })();
+
+    // --- Helpers ---
+    function toggleScrollLock(lock) { document.body.style.overflow = lock ? 'hidden' : ''; }
+    
+    function escapeHTML(str) {
+        if (!str) return "";
+        return String(str).replace(/[&<>"']/g, c => ({
+            "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+        }[c] || c));
+    }
+
+    function showToast(message, type = "info", duration = 1500) {
+        const host = document.getElementById("toastHost");
+        if (!host || !message) return;
+        const toast = document.createElement("div");
+        toast.className = "toast";
+        toast.dataset.type = type;
+        toast.textContent = message;
+        host.appendChild(toast);
+        setTimeout(() => {
+            toast.style.animation = "toastOut 0.3s cubic-bezier(0.2, 0.9, 0.2, 1) forwards";
+            setTimeout(() => toast.remove(), 300);
+        }, Math.max(300, duration | 0));
+        if (host.children.length > 3) host.removeChild(host.firstElementChild);
+    }
+
+    // Advanced Copy: Swaps icon temporarily + Toast
+    async function copyTextToClipboard(text, successMsg, btnElement) {
+        try {
+            await navigator.clipboard.writeText(text);
+            if (btnElement) {
+                const originalHTML = btnElement.innerHTML;
+                // SVG Checkmark
+                btnElement.innerHTML = `<svg class="icon" viewBox="0 0 24 24" style="color:var(--success)"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                setTimeout(() => btnElement.innerHTML = originalHTML, 1500);
+            }
+            // Always show toast
+            showToast(successMsg || "已复制", "success");
+        } catch (_) {
+            // Fallback
+            const ta = document.createElement("textarea");
+            ta.value = text; ta.style.cssText = "position:fixed;left:-9999px";
+            document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove();
+            showToast(successMsg || "已复制", "success");
+        }
+    }
+
+    function setStatus(msg, type) {
+        if (el.statusMsg) {
+            el.statusMsg.textContent = msg || "";
+            el.statusMsg.style.color = type === "error" ? "var(--danger)" : (type === "success" ? "var(--success)" : "var(--txt-secondary)");
+        }
+        if (msg) showToast(msg, type === "error" ? "error" : (type === "success" ? "success" : "info"));
+    }
+
+    function base64EncodeUtf8(str) { try { return btoa(unescape(encodeURIComponent(str))); } catch (_) { return null; } }
+    function base64DecodeUtf8(str) { try { return decodeURIComponent(escape(atob(str))); } catch (_) { return null; } }
+
+    async function postJSON(url, body) {
+        const res = await fetch(url, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            credentials: "include", body: JSON.stringify(body || {})
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.ok === false) throw new Error(data.error || `错误 (${res.status})`);
+        return data;
+    }
+
+    // --- Editor Logic (Drag & Drop + Counting) ---
+    function detectNodes(raw) {
+        const text = (raw || "").trim();
+        if (!text) return { isNode: false, count: 0 };
+        const schemes = ["ss://", "ssr://", "vmess://", "vless://", "trojan://", "hysteria://", "hysteria2://", "hy2://", "tuic://", "socks://", "socks5://"];
+        let count = 0;
+        text.split(/\r\n|\r|\n/).forEach(line => {
+            if (schemes.some(s => line.trim().startsWith(s))) count++;
+        });
+        if (count > 0) return { isNode: true, count };
+        
+        const compact = text.replace(/\s+/g, "");
+        if (compact.length >= 16 && compact.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(compact)) {
+            const decoded = base64DecodeUtf8(compact);
+            if (decoded) {
+                let c2 = 0;
+                decoded.split(/\r\n|\r|\n/).forEach(line => {
+                    if (schemes.some(s => line.trim().startsWith(s))) c2++;
+                });
+                if (c2 > 0) return { isNode: true, count: c2 };
+            }
+        }
+        return { isNode: false, count: 0 };
+    }
+
+    function updateByteCount() {
+        if (!el.content || !el.byteNum) return;
+        const val = el.content.value || "";
+        let len = 0;
+        try { len = new TextEncoder().encode(val).length; } catch (_) { len = val.length; }
+        el.byteNum.textContent = len;
+        if (el.lineCounter) el.lineCounter.textContent = (val ? val.split(/\r\n|\r|\n/).length : 0) + " 行";
+        
+        if (el.nodeInfo) {
+            const info = detectNodes(val);
+            if (info.isNode && info.count > 0) {
+                el.nodeInfo.textContent = `${info.count} 条代理`;
+                el.nodeInfo.classList.add("active");
+            } else {
+                el.nodeInfo.classList.remove("active");
+            }
+        }
+    }
+    if (el.content) el.content.addEventListener("input", updateByteCount);
+
+    // Drag & Drop
+    if (el.editorZone) {
+        el.editorZone.addEventListener("dragover", (e) => { e.preventDefault(); el.editorZone.classList.add("drag-over"); });
+        el.editorZone.addEventListener("dragleave", (e) => { e.preventDefault(); el.editorZone.classList.remove("drag-over"); });
+        el.editorZone.addEventListener("drop", (e) => {
+            e.preventDefault(); el.editorZone.classList.remove("drag-over");
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = () => { el.content.value = reader.result || ""; updateByteCount(); setStatus(`已加载: ${file.name}`, "success"); };
+                reader.readAsText(file);
+            }
+        });
+    }
+
+    if (el.fileInput) {
+        el.fileInput.addEventListener("change", () => {
+            const file = el.fileInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                el.content.value = reader.result || "";
+                updateByteCount();
+                setStatus(`已加载: ${file.name}`, "success");
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    if (el.btnResetContent) el.btnResetContent.addEventListener("click", () => {
+        el.content.value = ""; el.remark.value = ""; updateByteCount(); setStatus("已清空");
+    });
+
+    if (el.btnBase64Encode) el.btnBase64Encode.addEventListener("click", () => {
+        const v = el.content.value;
+        if (!v) return setStatus("内容为空", "error");
+        const enc = base64EncodeUtf8(v);
+        if (enc) { el.content.value = enc; updateByteCount(); setStatus("编码成功", "success"); }
+        else setStatus("编码失败", "error");
+    });
+
+    if (el.btnBase64Decode) el.btnBase64Decode.addEventListener("click", () => {
+        const v = el.content.value;
+        if (!v) return setStatus("内容为空", "error");
+        const dec = base64DecodeUtf8(v);
+        if (dec) { el.content.value = dec; updateByteCount(); setStatus("解码成功", "success"); }
+        else setStatus("解码失败", "error");
+    });
+
+    // --- TTL Logic ---
+    const ttlMap = { "10m": 600000, "1d": 86400000, "7d": 604800000, "30d": 2592000000 };
+    function setTtl(key) {
+        state.ttlKey = key;
+        if (el.ttlGroup) {
+            el.ttlGroup.querySelectorAll(".seg-btn").forEach(b => b.classList.toggle("active", b.dataset.ttl === key));
+        }
+        let text = "永久有效";
+        if (key !== "forever") {
+            const ms = ttlMap[key] || 0;
+            const date = new Date(Date.now() + ms);
+            const m = (date.getMonth()+1).toString().padStart(2,'0');
+            const d = date.getDate().toString().padStart(2,'0');
+            const h = date.getHours().toString().padStart(2,'0');
+            const min = date.getMinutes().toString().padStart(2,'0');
+            text = `${m}-${d} ${h}:${min} 过期`;
+        }
+        if (el.ttlHint) el.ttlHint.textContent = text;
+    }
+    setTtl("7d");
+    if (el.ttlGroup) el.ttlGroup.addEventListener("click", e => {
+        const btn = e.target.closest(".seg-btn");
+        if (btn && !btn.disabled) setTtl(btn.dataset.ttl);
+    });
+
+    function formatRemainDetailed(ms) {
+        if (!isFinite(ms)) return "";
+        if (ms <= 0) return "<1分钟";
+        const sec = Math.floor(ms/1000);
+        const min = Math.floor(sec/60);
+        const hr = Math.floor(min/60);
+        const day = Math.floor(hr/24);
+        
+        if (day >= 1) return `${day}天 ${hr%24}小时`;
+        if (hr >= 1) return `${hr}小时 ${min%60}分`;
+        return `${min}分钟`;
+    }
+
+    function getExpireMeta(key, startTime) {
+        if (key === "forever") return { level: "forever", text: "永久有效" };
+        const ms = ttlMap[key];
+        if (!ms) return { level: "warn", text: "未知有效期" };
+        const expireAt = startTime + ms;
+        const remain = expireAt - Date.now();
+        
+        let level = "ok";
+        if (remain <= 86400000) level = "urgent"; // 1 day
+        else if (remain <= 259200000) level = "warn"; // 3 days
+        
+        const date = new Date(expireAt);
+        const dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+        
+        return { level, text: `${dateStr} 过期 · ${formatRemainDetailed(remain)}` };
+    }
+
+    // --- Mode Logic ---
+    function validateCustomSlug() {
+        if (!el.customId) return;
+        const val = el.customId.value.trim();
+        el.advancedSection.classList.toggle("d-flex", state.loggedIn);
+        el.advancedSection.classList.toggle("d-none", !state.loggedIn);
+        
+        if (!val) { el.customId.parentElement.style.borderColor = ""; return; }
+        state.customSlugError = !/^[A-Za-z0-9_-]+$/.test(val);
+        el.customId.parentElement.style.borderColor = state.customSlugError ? "var(--danger)" : "var(--success)";
+    }
+    if (el.customId) el.customId.addEventListener("input", validateCustomSlug);
+
+    function enterCreateMode(clear) {
+        state.mode = "create"; state.originalSlug = null;
+        if (el.submitBtn) el.submitBtn.querySelector(".text").textContent = "发布内容";
+        if (el.icoPublish) el.icoPublish.classList.remove("d-none");
+        if (el.icoUpdate) el.icoUpdate.classList.add("d-none");
+        if (el.btnHome) el.btnHome.classList.add("d-none");
+        if (clear) {
+            el.content.value = ""; el.remark.value = ""; el.customId.value = "";
+            el.resultBox.style.display = "none";
+            updateByteCount(); setStatus("");
+        }
+    }
+
+    if (el.btnHome) el.btnHome.addEventListener("click", () => {
+        enterCreateMode(true);
+        history.replaceState(null, "", location.origin + "/Paste"); 
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    // --- Auth Logic ---
+    function applyAuthUI() {
+        if (el.btnAuthLabel) el.btnAuthLabel.textContent = state.loggedIn ? (state.username || "用户") : "登录";
+        if (el.advancedSection) {
+            el.advancedSection.classList.toggle("d-flex", state.loggedIn);
+            el.advancedSection.classList.toggle("d-none", !state.loggedIn);
+        }
+        if (el.ttlForeverBtn) {
+            el.ttlForeverBtn.disabled = !state.loggedIn;
+            if (!state.loggedIn && state.ttlKey === "forever") setTtl("7d");
+        }
+        validateCustomSlug();
+    }
+    function setLoggedIn(u) { state.loggedIn = true; state.username = u || "用户"; localStorage.setItem("pbx_username", state.username); applyAuthUI(); }
+    function setLoggedOut() { state.loggedIn = false; state.username = null; localStorage.removeItem("pbx_username"); applyAuthUI(); }
+
+    async function initAuthFromServer() {
+        const saved = localStorage.getItem("pbx_username");
+        try {
+            const res = await fetch(location.origin + "/api/me/pastes", { credentials: "include" });
+            if (res.status === 401) return setLoggedOut();
+            const data = await res.json();
+            if (data && data.ok) setLoggedIn(saved || "用户"); else setLoggedOut();
+        } catch (_) { setLoggedOut(); }
+    }
+
+    if (el.btnAuthOpen) el.btnAuthOpen.addEventListener("click", () => state.loggedIn ? openUserCenter() : (el.authModal.classList.add("show"), toggleScrollLock(true)));
+    if (el.authCloseBtn) el.authCloseBtn.addEventListener("click", () => (el.authModal.classList.remove("show"), toggleScrollLock(false)));
+    
+    if (el.authForm) el.authForm.addEventListener("submit", async e => {
+        e.preventDefault();
+        const u = el.authUsername.value.trim(), p = el.authPassword.value;
+        if (!u || !p) return setStatus("请输入账号密码", "error");
+        
+        el.authMsg.textContent = "正在登录...";
+        el.authMsg.style.color = "var(--txt-secondary)";
+        
+        try {
+            const data = await postJSON(AUTH_BASE + "/login", { username: u, password: p, remember: el.authRemember.checked });
+            setLoggedIn(data.username || u); setStatus("登录成功", "success");
+            setTimeout(() => (el.authModal.classList.remove("show"), toggleScrollLock(false)), 500);
+        } catch (err) { setStatus(err.message || "登录失败", "error"); el.authMsg.textContent = ""; }
+    });
+    
+    if (el.btnDoRegister) el.btnDoRegister.addEventListener("click", async () => {
+        const u = el.authUsername.value.trim(), p = el.authPassword.value;
+        if (!u || !p) return setStatus("请输入账号密码", "error");
+        
+        el.authMsg.textContent = "正在注册...";
+        el.authMsg.style.color = "var(--txt-secondary)";
+        
+        try { 
+            await postJSON(AUTH_BASE + "/register", { username: u, password: p }); 
+            setStatus("注册成功，请登录", "success"); 
+            el.authMsg.textContent = "";
+        } catch (err) { setStatus(err.message, "error"); el.authMsg.textContent = ""; }
+    });
+
+    // --- User Center ---
+    function openUserCenter() { el.userCenter.classList.add("show"); toggleScrollLock(true); loadUserPastes(); }
+    if (el.ucCloseBtn) el.ucCloseBtn.addEventListener("click", () => (el.userCenter.classList.remove("show"), toggleScrollLock(false)));
+    if (el.ucLogoutBtn) el.ucLogoutBtn.addEventListener("click", async () => {
+        try { await postJSON(AUTH_BASE + "/logout"); } catch (_) {}
+        setLoggedOut(); el.userCenter.classList.remove("show"); toggleScrollLock(false); enterCreateMode(true);
+        setStatus("已退出", "success");
+    });
+    if (el.ucRefreshBtn) el.ucRefreshBtn.addEventListener("click", loadUserPastes);
+
+    async function loadUserPastes() {
+        el.ucEmpty.style.display = "block"; el.ucEmpty.textContent = "加载中..."; el.ucList.innerHTML = "";
+        try {
+            const res = await fetch(location.origin + "/api/me/pastes", { credentials: "include" });
+            if (res.status === 401) { setLoggedOut(); return; }
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
+            const items = data.items || [];
+            if (!items.length) { el.ucEmpty.textContent = "暂无记录"; return; }
+
+            const valid = [];
+            await Promise.all(items.map(async item => {
+                try {
+                    const r = await fetch(`${API_BASE}/${encodeURIComponent(item.slug || item.id)}?manage=1`, { credentials: "include" });
+                    if (!r.ok) return;
+                    const d = await r.json();
+                    if (d.ok === false) return;
+                    d._nodeInfo = detectNodes(d.content);
+                    valid.push(d);
+                } catch (_) {}
+            }));
+            valid.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            
+            el.ucEmpty.style.display = "none";
+            valid.forEach(d => {
+                const row = document.createElement("div");
+                row.className = "uc-item";
+                const link = `${VIEW_BASE}/${d.slug}`;
+                const meta = getExpireMeta(d.ttlKey, d.createdAt || Date.now());
+                const hasNode = d._nodeInfo.isNode && d._nodeInfo.count > 0;
+
+                row.innerHTML = `
+                    <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:6px;">
+                        <span>${escapeHTML(d.remark || "无标题")}</span>
+                        <span style="font-family:var(--font-mono);opacity:0.6;font-size:12px;">/${escapeHTML(d.slug)}</span>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+                        <div class="uc-expire" data-level="${meta.level}">${meta.text}</div>
+                    </div>
+                    <div class="input-group-row" style="margin-bottom:12px; height:32px;">
+                        <input value="${link}" readonly onclick="this.select()">
+                        <button class="copy-icon-btn" data-link="${link}" style="height:32px; width:36px;">
+                            <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M715.6224 910.0288H356.096c-55.3984 0-100.3008-44.9024-100.3008-100.3008V452.8128c0-55.3984 44.9024-100.3008 100.3008-100.3008h359.5776c55.3984 0 100.3008 44.9024 100.3008 100.3008v356.9152c-0.0512 55.3984-44.9536 100.3008-100.352 100.3008z" fill="#56E5BE"></path><path d="M729.1904 910.0288H416.3072c-47.9232 0-86.7328-38.8608-86.7328-86.7328v-310.5792c0-47.9232 38.8608-86.7328 86.7328-86.7328h312.8832c47.9232 0 86.7328 38.8608 86.7328 86.7328v310.5792c0 47.872-38.8608 86.7328-86.7328 86.7328z" fill="#50DDB8"></path><path d="M727.6544 910.0288H466.2784c-36.0448 0-65.2288-29.184-65.2288-65.2288v-282.4704c0-36.0448 29.184-65.2288 65.2288-65.2288h284.416c36.0448 0 65.2288 29.184 65.2288 65.2288v259.4304c0 48.7424-39.5264 88.2688-88.2688 88.2688z" fill="#42D3AD"></path><path d="M763.5456 107.5712H410.0096c-81.2544 0-147.5072 65.536-148.6336 146.5856-79.1552 3.2256-142.5408 68.608-142.5408 148.5312v359.5776c0 81.9712 66.7136 148.6848 148.6848 148.6848h353.536c81.2544 0 147.5072-65.536 148.6336-146.5856 79.1552-3.2256 142.5408-68.608 142.5408-148.5312V256.256c0-81.9712-66.6624-148.6848-148.6848-148.6848z m-55.1936 654.6944c0 48.128-39.168 87.2448-87.2448 87.2448H267.52c-48.128 0-87.2448-39.168-87.2448-87.2448V402.6368c0-48.128 39.168-87.2448 87.2448-87.2448h353.536c48.128 0 87.2448 39.168 87.2448 87.2448v359.6288z m142.4384-146.432c0 46.0288-35.84 83.712-81.0496 86.9376V402.6368c0-81.9712-66.7136-148.6848-148.6848-148.6848H322.8672c1.2288-47.0528 39.7824-84.9408 87.1424-84.9408h353.5872c48.128 0 87.2448 39.168 87.2448 87.2448v359.5776z" fill="#2E3138"></path></svg>
                         </button>
                     </div>
                     <div style="display:flex;gap:10px;">
