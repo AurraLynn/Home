@@ -463,15 +463,106 @@
   font-weight: 700;
 }
 
-.brand-subtitle {
-  margin-left: 44px;
-  margin-top: 2px;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  color: var(--txt-secondary);
+/* Hide textarea resize handle corner */
+textarea{ resize:none !important; }
+textarea::-webkit-resizer{ display:none; }
+
+
+/* ===== tighten home subtitle spacing (force) ===== */
+.brand{ row-gap: 2px !important; }
+/* ===== ULTRA TIGHT header spacing (final) ===== */
+.brand{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:0 !important;
+  row-gap:0 !important;
 }
 
+.brand-title{
+  margin-bottom:0 !important;
+  line-height:1.1 !important;
+}
+
+/* ===== Definitive header typography (final) ===== */
+.brand{
+  display:flex;
+  align-items:flex-start;
+}
+.brand-title{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.brand-text-group{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.brand-text{
+  font-size:26px;
+  font-weight:700;
+  line-height:1.05;
+}
+.brand-subtext{
+  font-size:13px;
+  font-weight:500;
+  color:var(--txt-secondary);
+  line-height:1.05;
+  margin-top:-2px;
+}
+
+
+/* ===== Brand title redesign ===== */
+.brand-title{ align-items:center !important; }
+.brand-text-group{ gap:0 !important; }
+
+.brand-text{
+  font-size:30px !important;
+  font-weight:850 !important;
+  letter-spacing:-0.02em !important;
+  line-height:1.02 !important;
+  background: linear-gradient(135deg, rgba(40,120,255,.95), rgba(120,70,255,.95));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color: transparent !important;
+  text-shadow: 0 6px 22px rgba(40,120,255,.18);
+}
+
+.brand-subtext{
+  font-size:12px !important;
+  letter-spacing:0.04em !important;
+  text-transform: uppercase;
+  color: rgba(40,48,60,.62) !important;
+  margin-top: -1px !important;
+}
+@media (prefers-color-scheme: dark){
+  .brand-subtext{ color: rgba(235,240,255,.60) !important; }
+}
+
+
+/* ===== Brand title style refinement (smaller & neutral) ===== */
+.brand-text{
+  font-size:24px !important;
+  font-weight:700 !important;
+  letter-spacing:-0.01em !important;
+  line-height:1.05 !important;
+  background:none !important;
+  color: var(--txt-main, #111) !important;
+  text-shadow:none !important;
+}
+
+.brand-subtext{
+  font-size:12px !important;
+  font-weight:500 !important;
+  letter-spacing:0.02em !important;
+  text-transform:none !important;
+  color: var(--txt-secondary, #666) !important;
+  margin-top:1px !important;
+}
+@media (prefers-color-scheme: dark){
+  .brand-text{ color:#f5f6f7 !important; }
+  .brand-subtext{ color:#9aa0a6 !important; }
+}
 </style>
 </head>
 <body class="theme-light">
@@ -484,9 +575,12 @@
             <div class="brand">
   <div class="brand-title">
     <img id="brandIcon" class="brand-icon" alt="Logo">
-    <span class="brand-text">PasteBox</span>
+    <div class="brand-text-group">
+      <div class="brand-text">PasteBox</div>
+      <div class="brand-subtext">A clean and fast paste toolkit</div>
+    </div>
   </div>
-  <div class="brand-subtitle">A clean and fast paste toolkit</div>
+</div>
 </div>
             <div class="header-tools">
                 <button type="button" class="btn btn-icon btn-glass" id="themeToggle" title="切换主题">
@@ -566,7 +660,10 @@
                         <div class="panel-header" style="color:var(--success)">发布成功</div>
                         <div class="result-link" id="viewLinkText">...</div>
                         <div style="display:flex; gap:8px;">
-                            <button type="button" class="btn btn-glass" style="flex:1" id="btnCopyView">复制</button>
+                            <button type="button" class="btn btn-glass" style="flex:1" id="btnCopyView">复制<svg t="1766627876849" class="icon" viewBox="0 0 1024 1024" width="18" height="18" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <path d="M640 512h256c71.68 0 128 56.32 128 128v256c0 71.68-56.32 128-128 128h-256c-71.68 0-128-56.32-128-128v-256c0-71.68 56.32-128 128-128z" fill="#5AC8FA"></path>
+  <path d="M230.4 665.6c15.36 0 25.6 10.24 25.6 25.6s-10.24 25.6-25.6 25.6h-102.4C56.32 716.8 0 660.48 0 588.8v-460.8C0 56.32 56.32 0 128 0h460.8C660.48 0 716.8 56.32 716.8 128v102.4c0 15.36-10.24 25.6-25.6 25.6s-25.6-10.24-25.6-25.6v-102.4c0-40.96-35.84-76.8-76.8-76.8h-460.8C87.04 51.2 51.2 87.04 51.2 128v460.8c0 40.96 35.84 76.8 76.8 76.8h102.4z m204.8-307.2C394.24 358.4 358.4 394.24 358.4 435.2v460.8c0 40.96 35.84 76.8 76.8 76.8h460.8c40.96 0 76.8-35.84 76.8-76.8v-460.8c0-40.96-35.84-76.8-76.8-76.8h-460.8z m0-51.2h460.8C967.68 307.2 1024 363.52 1024 435.2v460.8c0 71.68-56.32 128-128 128h-460.8C363.52 1024 307.2 967.68 307.2 896v-460.8C307.2 363.52 363.52 307.2 435.2 307.2z"></path>
+</svg></button>
                             <button type="button" class="btn btn-glass" style="flex:1" id="btnOpenView">打开</button>
                         </div>
                     </div>
@@ -635,9 +732,11 @@
             <div id="ucEmpty" style="text-align:center; padding:40px; color:var(--txt-secondary); font-size:13px;">加载中...</div>
 
             <!-- 仅保留悬浮图标按钮（底部不再额外铺一层背景） -->
-            <button class="uc-logout-fab" id="ucLogoutBtn" title="退出登录" aria-label="退出登录">
-                <svg t="1766624798388" class="icon" viewBox="0 0 1029 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M833.274285 632.230723a195.853747 195.853747 0 0 0-195.853747 195.853747 195.853747 195.853747 0 0 0 195.853747 195.853746 195.853747 195.853747 0 0 0 195.853747-195.853746 195.853747 195.853747 0 0 0-195.853747-195.853747z m116.894413 82.295644v46.708338a11.615301 11.615301 0 0 1-11.615301 9.947146 11.553518 11.553518 0 0 1-11.553518-9.947146v-46.708338h-186.77157v227.239773h186.77157v-45.534452a11.615301 11.615301 0 0 1 11.738868-11.368167 11.615301 11.615301 0 0 1 11.738869 11.368167v46.955473a6.178352 6.178352 0 0 1 0 0.679618v0.741402a22.550983 22.550983 0 0 1-6.610837 13.098106 23.663087 23.663087 0 0 1-16.557982 6.67262H738.004103a23.910221 23.910221 0 0 1-14.210209-6.549053 22.365633 22.365633 0 0 1-6.796187-16.063714v-227.17799a22.550983 22.550983 0 0 1 6.796187-16.063714 23.848437 23.848437 0 0 1 16.557982-6.67262h186.956921a23.601303 23.601303 0 0 1 16.557982 6.67262 22.427416 22.427416 0 0 1 6.857971 16.063714z m-130.610354 125.420538a11.862435 11.862435 0 0 1-11.862435-11.615301 11.986002 11.986002 0 0 1 12.356704-12.356704h89.462531l-38.800048-38.800048a11.924219 11.924219 0 0 1 0-16.928683 11.862435 11.862435 0 0 1 16.805116 0l59.126826 59.126825a11.986002 11.986002 0 0 1 0 16.8669l-59.126826 59.188608a11.924219 11.924219 0 0 1-8.402558 3.521661 11.924219 11.924219 0 0 1-8.402558-3.521661 11.924219 11.924219 0 0 1 0-16.928683l38.800048-38.800048h-89.709666z" fill="#DA2E2E"></path><path d="M203.576686 263.815615a263.630264 263.630264 0 1 0 527.260529 0 263.630264 263.630264 0 1 0-527.260529 0Z" fill="#DA2E2E"></path><path d="M562.724267 837.784482a263.012429 263.012429 0 0 1 224.274164-260.170388 465.847713 465.847713 0 0 0-319.482563-126.223724A467.515868 467.515868 0 0 0 0 918.906239a478.019066 478.019066 0 0 0 3.892362 60.609629h600.288644a261.714975 261.714975 0 0 1-41.456739-141.731386z" fill="#DA2E2E"></path></svg>
-            </button>
+            <button class="uc-logout-fab" id="ucLogoutBtn" title="退出登录" aria-label="退出登录"><svg t="1766628432832" class="icon" viewBox="0 0 1024 1024" width="18" height="18" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <path d="M155.30496 813.88032a356.69504 139.94496 0 1 0 713.39008 0 356.69504 139.94496 0 1 0-713.39008 0Z" fill="#E04040"></path>
+  <path d="M512 0c30.72 0 51.2 23.04 51.2 57.6v345.6C563.2 437.76 542.72 460.8 512 460.8s-51.2-23.04-51.2-57.6v-345.6C460.8 23.04 481.28 0 512 0z" fill="#E04040"></path>
+  <path d="M512 1024C230.4 1024 0 793.6 0 512c0-158.72 71.68-302.08 194.56-399.36 20.48-15.36 56.32-15.36 71.68 10.24 15.36 20.48 10.24 51.2-10.24 66.56-97.28 81.92-153.6 199.68-153.6 322.56 0 225.28 184.32 409.6 409.6 409.6s409.6-184.32 409.6-409.6c0-128-56.32-240.64-153.6-322.56-20.48-15.36-25.6-51.2-10.24-71.68s51.2-25.6 71.68-10.24c122.88 102.4 194.56 245.76 194.56 404.48 0 281.6-230.4 512-512 512z"></path>
+</svg></button>
         </div>
     </div>
 
@@ -659,9 +758,9 @@
             <div class="input-group-row">
                 <input id="subLinkInput" readonly>
                 <button id="subLinkCopyBtn">
-                    <svg viewBox="0 0 1024 1024" width="18" height="18" aria-hidden="true">
+                    <svg t="1766627876849" class="icon" viewBox="0 0 1024 1024" width="18" height="18" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
   <path d="M640 512h256c71.68 0 128 56.32 128 128v256c0 71.68-56.32 128-128 128h-256c-71.68 0-128-56.32-128-128v-256c0-71.68 56.32-128 128-128z" fill="#5AC8FA"></path>
-  <path d="M230.4 665.6c15.36 0 25.6 10.24 25.6 25.6s-10.24 25.6-25.6 25.6h-102.4C56.32 716.8 0 660.48 0 588.8v-460.8C0 56.32 56.32 0 128 0h460.8C660.48 0 716.8 56.32 716.8 128v102.4c0 15.36-10.24 25.6-25.6 25.6s-25.6-10.24-25.6-25.6v-102.4c0-40.96-35.84-76.8-76.8-76.8h-460.8C87.04 51.2 51.2 87.04 51.2 128v460.8c0 40.96 35.84 76.8 76.8 76.8h102.4z"></path>
+  <path d="M230.4 665.6c15.36 0 25.6 10.24 25.6 25.6s-10.24 25.6-25.6 25.6h-102.4C56.32 716.8 0 660.48 0 588.8v-460.8C0 56.32 56.32 0 128 0h460.8C660.48 0 716.8 56.32 716.8 128v102.4c0 15.36-10.24 25.6-25.6 25.6s-25.6-10.24-25.6-25.6v-102.4c0-40.96-35.84-76.8-76.8-76.8h-460.8C87.04 51.2 51.2 87.04 51.2 128v460.8c0 40.96 35.84 76.8 76.8 76.8h102.4z m204.8-307.2C394.24 358.4 358.4 394.24 358.4 435.2v460.8c0 40.96 35.84 76.8 76.8 76.8h460.8c40.96 0 76.8-35.84 76.8-76.8v-460.8c0-40.96-35.84-76.8-76.8-76.8h-460.8z m0-51.2h460.8C967.68 307.2 1024 363.52 1024 435.2v460.8c0 71.68-56.32 128-128 128h-460.8C363.52 1024 307.2 967.68 307.2 896v-460.8C307.2 363.52 363.52 307.2 435.2 307.2z"></path>
 </svg>
                 </button>
             </div>
@@ -1274,7 +1373,10 @@ function setStatus(msg,type){
                     <div class="input-group-row" style="margin-bottom:12px; height:32px;">
                         <input value="${link}" readonly onclick="this.select()">
                         <button onclick="copyTextToClipboard('${link}','链接已复制')" style="height:32px; width:36px; box-shadow:none;">
-                            <svg t="1766624533292" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" style="width:18px;height:18px;"><path d="M610.87695313 512h197.75390624c55.37109375 0 98.87695313 43.50585938 98.87695313 98.87695313v197.75390624c0 55.37109375-43.50585938 98.87695313-98.87695313 98.87695313h-197.75390624c-55.37109375 0-98.87695313-43.50585938-98.87695313-98.87695313v-197.75390624c0-55.37109375 43.50585938-98.87695313 98.87695313-98.87695313z" fill="#ef6a6a"></path><path d="M294.47070312 630.65234375c11.86523438 0 19.77539063 7.91015625 19.77539063 19.77539063s-7.91015625 19.77539063-19.77539062 19.77539062h-79.10156251C159.99804687 670.203125 116.4921875 626.69726563 116.4921875 571.32617188v-355.95703126C116.4921875 159.99804687 159.99804687 116.4921875 215.36914062 116.4921875h355.95703126C626.69726563 116.4921875 670.203125 159.99804687 670.203125 215.36914062v79.10156251c0 11.86523438-7.91015625 19.77539063-19.77539063 19.77539062s-19.77539063-7.91015625-19.77539062-19.77539062v-79.1015625c0-31.640625-27.68554688-59.32617188-59.32617188-59.32617188h-355.95703124C183.72851562 156.04296875 156.04296875 183.72851562 156.04296875 215.36914062v355.95703126c0 31.640625 27.68554688 59.32617188 59.32617188 59.32617187h79.10156249z m158.20312501-237.3046875C421.03320312 393.34765625 393.34765625 421.03320312 393.34765625 452.67382812v355.95703126c0 31.640625 27.68554688 59.32617188 59.32617188 59.32617187h355.95703124c31.640625 0 59.32617188-27.68554688 59.32617188-59.32617188v-355.95703124c0-31.640625-27.68554688-59.32617188-59.32617187-59.32617188h-355.95703126z m-1e-8-39.55078125h355.95703126C864.00195313 353.796875 907.5078125 397.30273437 907.5078125 452.67382812v355.95703126c0 55.37109375-43.50585938 98.87695313-98.87695313 98.87695312h-355.95703124C397.30273437 907.5078125 353.796875 864.00195313 353.796875 808.63085938v-355.95703126C353.796875 397.30273437 397.30273437 353.796875 452.67382812 353.796875z" fill="#512c56"></path></svg>
+                            <svg t="1766627876849" class="icon" viewBox="0 0 1024 1024" width="18" height="18" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <path d="M640 512h256c71.68 0 128 56.32 128 128v256c0 71.68-56.32 128-128 128h-256c-71.68 0-128-56.32-128-128v-256c0-71.68 56.32-128 128-128z" fill="#5AC8FA"></path>
+  <path d="M230.4 665.6c15.36 0 25.6 10.24 25.6 25.6s-10.24 25.6-25.6 25.6h-102.4C56.32 716.8 0 660.48 0 588.8v-460.8C0 56.32 56.32 0 128 0h460.8C660.48 0 716.8 56.32 716.8 128v102.4c0 15.36-10.24 25.6-25.6 25.6s-25.6-10.24-25.6-25.6v-102.4c0-40.96-35.84-76.8-76.8-76.8h-460.8C87.04 51.2 51.2 87.04 51.2 128v460.8c0 40.96 35.84 76.8 76.8 76.8h102.4z m204.8-307.2C394.24 358.4 358.4 394.24 358.4 435.2v460.8c0 40.96 35.84 76.8 76.8 76.8h460.8c40.96 0 76.8-35.84 76.8-76.8v-460.8c0-40.96-35.84-76.8-76.8-76.8h-460.8z m0-51.2h460.8C967.68 307.2 1024 363.52 1024 435.2v460.8c0 71.68-56.32 128-128 128h-460.8C363.52 1024 307.2 967.68 307.2 896v-460.8C307.2 363.52 363.52 307.2 435.2 307.2z"></path>
+</svg>
                         </button>
                     </div>
 
@@ -1366,5 +1468,36 @@ function setStatus(msg,type){
 
     (async function init(){ await initAuthFromServer(); applyAuthUI(); })();
     </script>
+<script>
+(function(){
+  const map = {
+    // top bar
+    themeBtn: "Toggle theme",
+    loginBtn: "Login",
+    ucRefreshBtn: "Refresh",
+    ucLogoutBtn: "Logout",
+    ucCloseBtn: "Close",
+    subLinkCopyBtn: "Copy",
+    btnCopyView: "Copy",
+  };
+
+  document.querySelectorAll('button').forEach(btn=>{
+    if (!btn.getAttribute('title') || btn.getAttribute('title').trim()==="") {
+      const id = btn.id || "";
+      if (map[id]) { btn.setAttribute('title', map[id]); return; }
+
+      const aria = btn.getAttribute('aria-label');
+      if (aria) { btn.setAttribute('title', aria); return; }
+
+      const txt = (btn.textContent || "").trim().replace(/\s+/g,' ');
+      if (txt && txt.length<=24) { btn.setAttribute('title', txt); return; }
+
+      // icon-only: try data-tip/data-title
+      const dt = btn.getAttribute('data-tip') || btn.getAttribute('data-title');
+      if (dt) { btn.setAttribute('title', dt); return; }
+    }
+  });
+})();
+</script>
 </body>
 </html>
