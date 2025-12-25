@@ -719,6 +719,40 @@ button.copy-btn:hover{
     box-shadow: 0 10px 30px rgba(0,0,0,0.35);
   }
 }
+
+
+/* ===== FIX v8: UC copy buttons must ignore generic button styles (no square hover) ===== */
+.uc-copy-btn{
+  width: auto !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  border-left: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+.uc-copy-btn:hover{
+  background: rgba(0,0,0,0.04) !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+@media (prefers-color-scheme: dark){
+  .uc-copy-btn:hover{ background: rgba(255,255,255,0.06) !important; }
+}
+.uc-copy-btn::before,
+.uc-copy-btn::after{ content: none !important; display: none !important; }
+
+/* In case any parent applies drop-shadow */
+.user-center-modal .uc-copy-btn,
+#userCenterModal .uc-copy-btn,
+#btnCopyView, #subLinkCopyBtn{
+  box-shadow:none !important;
+  filter:none !important;
+}
+#btnCopyView::before,#btnCopyView::after,
+#subLinkCopyBtn::before,#subLinkCopyBtn::after{
+  content:none !important; display:none !important;
+}
 </style>
 </head>
 <body class="theme-light">
@@ -891,10 +925,10 @@ button.copy-btn:hover{
 
             <!-- 仅保留悬浮图标按钮（底部不再额外铺一层背景） -->
             <button class="uc-logout-fab" id="ucLogoutBtn" title="退出登录" aria-label="退出登录">
-<svg t="1766636642948" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" aria-hidden="true">
-  <path d="M155.30496 813.88032a356.69504 139.94496 0 1 0 713.39008 0 356.69504 139.94496 0 1 0-713.39008 0Z" fill="#E04040"></path>
-  <path d="M512 0c30.72 0 51.2 23.04 51.2 57.6v345.6C563.2 437.76 542.72 460.8 512 460.8s-51.2-23.04-51.2-57.6v-345.6C460.8 23.04 481.28 0 512 0z" fill="#E04040"></path>
-  <path d="M512 1024C230.4 1024 0 793.6 0 512c0-158.72 71.68-302.08 194.56-399.36 20.48-15.36 56.32-15.36 71.68 10.24 15.36 20.48 10.24 51.2-10.24 66.56-97.28 81.92-153.6 199.68-153.6 322.56 0 225.28 184.32 409.6 409.6 409.6s409.6-184.32 409.6-409.6c0-128-56.32-240.64-153.6-322.56-20.48-15.36-25.6-51.2-10.24-71.68s51.2-25.6 71.68-10.24c122.88 102.4 194.56 245.76 194.56 404.48 0 281.6-230.4 512-512 512z"></path>
+<svg t="1766636642948" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="12314" width="18" height="18" aria-hidden="true">
+  <path d="M155.30496 813.88032a356.69504 139.94496 0 1 0 713.39008 0 356.69504 139.94496 0 1 0-713.39008 0Z" fill="#E04040" p-id="12315"></path>
+  <path d="M512 0c30.72 0 51.2 23.04 51.2 57.6v345.6C563.2 437.76 542.72 460.8 512 460.8s-51.2-23.04-51.2-57.6v-345.6C460.8 23.04 481.28 0 512 0z" fill="#E04040" p-id="12316"></path>
+  <path d="M512 1024C230.4 1024 0 793.6 0 512c0-158.72 71.68-302.08 194.56-399.36 20.48-15.36 56.32-15.36 71.68 10.24 15.36 20.48 10.24 51.2-10.24 66.56-97.28 81.92-153.6 199.68-153.6 322.56 0 225.28 184.32 409.6 409.6 409.6s409.6-184.32 409.6-409.6c0-128-56.32-240.64-153.6-322.56-20.48-15.36-25.6-51.2-10.24-71.68s51.2-25.6 71.68-10.24c122.88 102.4 194.56 245.76 194.56 404.48 0 281.6-230.4 512-512 512z" p-id="12317"></path>
 </svg>
 </button>
         </div>
