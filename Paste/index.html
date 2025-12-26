@@ -895,7 +895,12 @@
         }
         if (el.ttlHint) el.ttlHint.textContent = text;
     }
-    setTtl("7d");
+if (state.loggedIn) {
+    setTtl("forever"); // 已登录默认永久
+} else {
+    setTtl("7d");      // 未登录默认7天
+}
+
     if (el.ttlGroup) el.ttlGroup.addEventListener("click", e => {
         const btn = e.target.closest(".seg-btn");
         if (btn && !btn.disabled) setTtl(btn.dataset.ttl);
