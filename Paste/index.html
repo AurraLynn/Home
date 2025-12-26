@@ -20,6 +20,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
+        /* =========================================
+           1. 全局变量与配色
+           ========================================= */
         :root {
             --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
@@ -96,6 +99,7 @@
             transition: background-color 0.3s ease;
         }
 
+        /* 核心修复：防止底层滚动 */
         body.scroll-locked {
             overflow: hidden !important;
             height: 100vh !important;
@@ -153,6 +157,7 @@
             transform: translateY(-1px); box-shadow: 0 8px 20px -4px var(--accent-glow);
         }
 
+        /* Submit Button (实心蓝) */
         #submitBtn {
             width: 70%; max-width: 360px; height: 50px; align-self: center;
             font-size: 15px; font-weight: 600; border-radius: 999px;
@@ -171,8 +176,6 @@
             font-size: 18px; cursor: pointer; transition: 0.2s; padding: 0;
         }
         .btn-circle:hover { background: var(--bg-card); transform: rotate(90deg); color: var(--txt-primary); }
-        /* 修复SVG颜色 */
-        .btn-circle svg { fill: currentColor; }
 
         .copy-icon-btn, .uc-copy-btn {
             background: transparent; border: none; padding: 0; margin: 0;
@@ -234,11 +237,11 @@
         .tool-card:hover .tool-icon { transform: scale(1.1); color: var(--accent); opacity: 1; }
         .tool-label { font-size: 12px; color: var(--txt-secondary); }
 
+        /* 有效期选择器：修复深色模式 */
         .seg-control {
             background: rgba(128,128,128,0.08); padding: 4px; border-radius: 14px;
             display: flex; gap: 4px; border: 1px solid var(--border-subtle);
         }
-        /* 深色模式优化 */
         body.theme-dark .seg-control { background: rgba(255,255,255,0.1); }
 
         .seg-btn {
@@ -489,11 +492,11 @@
             </div>
             <div style="display:flex; gap:12px;">
                 <button class="btn-circle" id="ucRefreshBtn" title="刷新列表" aria-label="刷新列表">
-                    <svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                    <svg t="1766770687735" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="36967" width="32" height="32"><path d="M761.173333 69.12a10.026667 10.026667 0 0 0-7.253333-8.32 10.666667 10.666667 0 0 0-10.88 2.56l-128 128a10.453333 10.453333 0 0 0-2.56 10.666667 10.026667 10.026667 0 0 0 8.106667 7.253333l155.52 29.013333h1.92a10.026667 10.026667 0 0 0 7.466666-3.2 10.24 10.24 0 0 0 2.986667-9.386666zM407.893333 816.213333a11.52 11.52 0 0 0-8.32-7.253333l-155.52-28.16a10.666667 10.666667 0 0 0-12.373333 12.373333l28.16 156.8a10.666667 10.666667 0 0 0 7.253333 8.32h3.2a10.026667 10.026667 0 0 0 7.466667-3.2l128-128a11.306667 11.306667 0 0 0 2.133333-10.88z" fill="#45D7B5" p-id="36968"></path><path d="M152.96 732.373333a32 32 0 0 1-28.373333-17.066666A437.76 437.76 0 0 1 715.306667 124.586667a32 32 0 0 1-29.866667 56.746666A373.333333 373.333333 0 0 0 181.333333 685.44a32.213333 32.213333 0 0 1-13.44 42.666667 33.493333 33.493333 0 0 1-14.933333 4.266666zM512 949.333333a440.106667 440.106667 0 0 1-203.306667-49.92 32 32 0 0 1 29.866667-56.746666A373.333333 373.333333 0 0 0 842.666667 338.56a32 32 0 0 1 56.746666-29.866667A437.76 437.76 0 0 1 512 949.333333z" fill="#F7B500" p-id="36969"></path><path d="M685.44 181.333333a32 32 0 0 0 29.866667-56.746666c-7.466667-3.84-14.933333-7.466667-22.613334-10.88l-48.853333 48.853333a405.333333 405.333333 0 0 1 41.6 18.773333zM338.56 842.666667a32 32 0 0 0-29.866667 56.746666l16.853334 8.106667 48.213333-48.853333a371.626667 371.626667 0 0 1-35.2-16z" fill="#429802" p-id="36970"></path></svg>
                 </button>
                 <button class="btn-circle" id="ucLogoutBtn" title="退出登录" aria-label="退出登录">
-                    <!-- 修复：还原为原来的退出图标 -->
-                    <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18" style="fill:currentColor"><path d="M288.998 738.284C346.186 794.396 424.552 829 511 829c120.81 0 225.836-67.581 279.335-167C814.365 617.344 828 566.264 828 512c0-8.414-0.328-16.751-0.972-25l-538.03 251.284z" fill="#d81e06"></path><path d="M511 859c-46.832 0-92.278-9.179-135.077-27.281-41.324-17.479-78.431-42.494-110.289-74.353-31.858-31.858-56.874-68.965-74.353-110.289C173.179 604.278 164 558.831 164 512c0-40.342 6.873-79.884 20.429-117.528 13.095-36.364 32.102-70.117 56.492-100.32 10.41-12.891 29.297-14.902 42.188-4.492 12.891 10.409 14.902 29.297 4.492 42.188C245.993 383.372 224 445.667 224 512c0 158.252 128.748 287 287 287s287-128.748 287-287c0-66.332-21.992-128.628-63.6-180.152-10.409-12.89-8.398-31.778 4.492-42.188 12.891-10.41 31.779-8.397 42.188 4.493 24.391 30.203 43.396 63.956 56.491 100.32C851.127 432.116 858 471.658 858 512c0 46.831-9.179 92.278-27.281 135.077-17.479 41.324-42.494 78.431-74.353 110.289s-68.965 56.874-110.289 74.353C603.278 849.821 557.831 859 511 859z" fill="#d81e06"></path><path d="M511 521c-16.5 0-30-13.5-30-30V183c0-16.5 13.5-30 30-30s30 13.5 30 30v308c0 16.5-13.5 30-30 30z" fill="#d81e06"></path></svg>
+                    <!-- 修复：去掉了 fill="#333333" 改为 currentColor -->
+                    <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18" style="fill:currentColor"><path d="M512 218.7c176.7 0 320 143.3 320 320s-143.3 320-320 320-320-143.3-320-320 143.3-320 320-320z" fill="#FFFB5C" p-id="48065"></path><path d="M512 992c-61.2 0-120.6-11.7-176.5-34.8-54-22.3-102.5-54.2-144.1-94.8-41.6-40.7-74.3-88.1-97.2-140.8C70.6 667 58.6 609 58.6 549.2c0-71.5 18-142.6 51.9-205.5 32.8-60.8 80.5-114.2 137.9-154.4 15.9-11.2 38.1-7.5 49.5 8 11.4 15.5 7.8 37.1-8.2 48.3-48.5 34-88.8 79.1-116.4 130.4-29 53.8-43.7 112.1-43.7 173.3 0 99.8 39.8 193.7 112 264.2C313.8 884.1 409.8 923 512 923c102.1 0 198.2-38.9 270.4-109.5 72.2-70.5 112-164.4 112-264.2 0-61.1-14.7-119.5-43.7-173.3-27.7-51.3-67.9-96.3-116.5-130.3-15.9-11.1-19.6-32.7-8.2-48.3s33.6-19.2 49.5-8c57.4 40.2 105.2 93.6 137.9 154.4 34 62.9 51.9 134 51.9 205.5 0 59.8-12 117.8-35.7 172.4-22.8 52.7-55.5 100.1-97.2 140.8-41.6 40.7-90.1 72.5-144.1 94.9C632.5 980.3 573.2 992 512 992z m10.6-480.6c-19.6 0-35.5-15.4-35.5-34.6V66.6c0-19.1 15.9-34.6 35.5-34.6s35.5 15.5 35.5 34.6v410.2c0 19.2-15.9 34.6-35.5 34.6z m0 0" fill="currentColor" p-id="48066"></path></svg>
                 </button>
                 <button class="btn-circle" id="ucCloseBtn" title="关闭" aria-label="关闭">×</button>
             </div>
@@ -590,6 +593,19 @@
             document.body.classList.add('scroll-locked');
             document.documentElement.style.overflow = 'hidden';
         } else {
+            // 只有当所有弹窗都关闭时才解锁
+            // 这里我们手动控制：只在确认要完全关闭时才传 false
+            const uc = document.getElementById("userCenter");
+            const sub = document.getElementById("subClientOverlay");
+            const auth = document.getElementById("authModal");
+            
+            // 只要有一个还开着，就不解锁
+            if ((uc && uc.classList.contains('show')) || 
+                (sub && sub.classList.contains('show')) ||
+                (auth && auth.classList.contains('show'))) {
+                return;
+            }
+            
             document.body.classList.remove('scroll-locked');
             document.documentElement.style.overflow = '';
         }
@@ -793,8 +809,15 @@
         } catch (_) { setLoggedOut(); }
     }
 
-    if (el.btnAuthOpen) el.btnAuthOpen.addEventListener("click", () => state.loggedIn ? openUserCenter() : (el.authModal.classList.add("show"), toggleScrollLock(true)));
-    if (el.authCloseBtn) el.authCloseBtn.addEventListener("click", () => (el.authModal.classList.remove("show"), toggleScrollLock(false)));
+    if (el.btnAuthOpen) el.btnAuthOpen.addEventListener("click", () => {
+        toggleScrollLock(true); // 打开弹窗前锁定
+        state.loggedIn ? openUserCenter() : el.authModal.classList.add("show");
+    });
+    
+    if (el.authCloseBtn) el.authCloseBtn.addEventListener("click", () => {
+        el.authModal.classList.remove("show");
+        toggleScrollLock(false);
+    });
 
     if (el.authForm) el.authForm.addEventListener("submit", async e => {
         e.preventDefault();
@@ -804,7 +827,7 @@
         try {
             const data = await postJSON(AUTH_BASE + "/login", { username: u, password: p, remember: el.authRemember.checked });
             setLoggedIn(data.username || u); setStatus("登录成功", "success");
-            setTimeout(() => (el.authModal.classList.remove("show"), toggleScrollLock(false)), 500);
+            setTimeout(() => { el.authModal.classList.remove("show"); toggleScrollLock(false); }, 500);
         } catch (err) { setStatus(err.message || "登录失败", "error"); el.authMsg.textContent = ""; }
     });
 
@@ -819,11 +842,22 @@
     });
 
     // --- 用户中心 ---
-    function openUserCenter() { el.userCenter.classList.add("show"); toggleScrollLock(true); loadUserPastes(); }
-    if (el.ucCloseBtn) el.ucCloseBtn.addEventListener("click", () => (el.userCenter.classList.remove("show"), toggleScrollLock(false)));
+    function openUserCenter() { 
+        el.userCenter.classList.add("show"); 
+        // 不需要在这里调用 toggleScrollLock，因为 btnAuthOpen 已经调用了
+        loadUserPastes(); 
+    }
+    if (el.ucCloseBtn) el.ucCloseBtn.addEventListener("click", () => {
+        el.userCenter.classList.remove("show");
+        toggleScrollLock(false); // 彻底关闭
+    });
+    
     if (el.ucLogoutBtn) el.ucLogoutBtn.addEventListener("click", async () => {
         try { await postJSON(AUTH_BASE + "/logout"); } catch (_) {}
-        setLoggedOut(); el.userCenter.classList.remove("show"); toggleScrollLock(false); enterCreateMode(true);
+        setLoggedOut(); 
+        el.userCenter.classList.remove("show"); 
+        toggleScrollLock(false); 
+        enterCreateMode(true);
         setStatus("已退出", "success");
     });
     if (el.ucRefreshBtn) el.ucRefreshBtn.addEventListener("click", loadUserPastes);
@@ -878,15 +912,11 @@
     async function checkItemContent(slug, rowElement) {
         try {
             const res = await fetch(`${API_BASE}/${encodeURIComponent(slug)}?manage=1`, { credentials: "include" });
-            
-            // 修复逻辑：如果是 404 (不存在) 或其他错误，直接移除该行
             if (!res.ok) {
-                rowElement.remove(); // 直接从界面上删掉
-                // 如果列表空了，显示暂无记录
+                rowElement.remove(); // 404 等错误直接移除
                 if(el.ucList.children.length === 0) el.ucEmpty.style.display = 'block';
                 return;
             }
-            
             const data = await res.json();
             const nodeInfo = detectNodes(data.content);
             if (nodeInfo.isNode && nodeInfo.count > 0) {
@@ -896,10 +926,7 @@
                     subBtn.style.animation = "toastIn 0.3s cubic-bezier(0.2, 0.9, 0.2, 1) forwards";
                 }
             }
-        } catch (_) {
-            // 如果连检测请求都发不出去，就移除吧，免得留着误导
-            rowElement.remove();
-        }
+        } catch (_) { rowElement.remove(); }
     }
 
     window.enterEditMode = async (slug) => {
@@ -947,12 +974,12 @@
         pills.forEach(b => b.onclick = () => { selected = b.dataset.client; update(); });
         
         overlay.classList.add("show");
-        toggleScrollLock(true); // 打开弹窗锁屏
+        toggleScrollLock(true); // 打开时锁定
         update();
         
         const closeSub = () => {
             overlay.classList.remove("show");
-            // 智能解锁：如果用户中心还开着，就不要解锁屏幕
+            // 智能解锁
             const uc = document.getElementById("userCenter");
             if (!uc || !uc.classList.contains("show")) {
                 toggleScrollLock(false);
