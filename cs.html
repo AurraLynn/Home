@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
     <link rel="icon" href="https://save.aura.us.kg/Picture/favicon.ico" type="image/x-icon">
 
+    <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Pastebox">
     <meta property="og:title" content="Pastebox">
@@ -13,28 +14,30 @@
     <meta property="og:image" content="https://save.aura.us.kg/Picture/Preview/YL10.png">
     <meta property="og:url" content="https://aura.us.kg/Paste">
 
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-   
-  <style>
+    <style>
         :root {
             --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
 
             /* Light Theme Colors */
-            --bg-app: #f2f5f8;
+            --bg-app: #f2f5f8; 
             --bg-card: rgba(255, 255, 255, 0.75);
             --bg-glass: rgba(255, 255, 255, 0.55);
             --border-glass: rgba(255, 255, 255, 0.6);
             --border-subtle: rgba(0, 0, 0, 0.06);
+            
             --txt-primary: #1d1d1f;
             --txt-secondary: #6e6e73;
             --txt-placeholder: #aeaeb2;
 
             --accent: #007aff;
             --accent-glow: rgba(0, 122, 255, 0.25);
+            
             /* Status Colors */
             --danger: #ff3b30;
             --warn: #ff9500;
@@ -64,6 +67,7 @@
             --bg-glass: rgba(44, 44, 46, 0.45);
             --border-glass: rgba(255, 255, 255, 0.12);
             --border-subtle: rgba(255, 255, 255, 0.08);
+
             --txt-primary: #f5f5f7;
             --txt-secondary: #98989d;
             --txt-placeholder: #58585e;
@@ -88,12 +92,10 @@
             --blob-2: #b21f1f;
         }
 
-        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             font-family: var(--font-sans);
             background-color: var(--bg-app);
             color: var(--txt-primary);
@@ -106,31 +108,25 @@
 
         /* Background Animation */
         body::before, body::after {
-            content: '';
-            position: fixed; width: 80vw; height: 80vw;
+            content: ''; position: fixed; width: 80vw; height: 80vw;
             border-radius: 50%; filter: blur(90px); opacity: 0.45; z-index: -1;
             animation: blobFloat 25s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
         }
-        body::before { background: var(--blob-1);
-            top: -20%; left: -20%; }
-        body::after { background: var(--blob-2); bottom: -20%; right: -20%;
-            animation-delay: -10s; }
+        body::before { background: var(--blob-1); top: -20%; left: -20%; }
+        body::after { background: var(--blob-2); bottom: -20%; right: -20%; animation-delay: -10s; }
         @keyframes blobFloat {
-            0% { transform: translate(0, 0) scale(1) rotate(0deg);
-            }
-            100% { transform: translate(10%, 10%) scale(1.1) rotate(10deg);
-            }
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            100% { transform: translate(10%, 10%) scale(1.1) rotate(10deg); }
         }
 
         /* Layout */
         .app-shell {
-            width: 100%;
-            max-width: 1100px;
+            width: 100%; max-width: 1100px;
             margin: 40px 20px 60px;
             display: grid;
             grid-template-columns: 1fr 340px; 
             gap: 24px;
-            align-items: stretch;
+            align-items: stretch; 
         }
 
         /* Header */
@@ -139,63 +135,49 @@
             display: flex; align-items: center; justify-content: space-between;
             margin-bottom: 12px; padding: 0 10px;
         }
-        .brand { display: flex; align-items: center; gap: 14px;
-        }
+        .brand { display: flex; align-items: center; gap: 14px; }
         .brand-icon {
-            width: 44px;
-            height: 44px; border-radius: 14px;
+            width: 44px; height: 44px; border-radius: 14px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08); object-fit: cover;
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .brand:hover .brand-icon { transform: scale(1.05) rotate(3deg);
-        }
+        .brand:hover .brand-icon { transform: scale(1.05) rotate(3deg); }
         
-        .brand-text-group { display: flex;
-        flex-direction: column; justify-content: center; }
+        .brand-text-group { display: flex; flex-direction: column; justify-content: center; }
         .brand-text {
-            font-size: 24px;
-            font-weight: 750; letter-spacing: -0.02em;
+            font-size: 24px; font-weight: 750; letter-spacing: -0.02em;
             line-height: 1.05; color: var(--txt-primary);
         }
         .brand-subtext {
-            font-size: 13px;
-            font-weight: 500; letter-spacing: 0em;
+            font-size: 13px; font-weight: 500; letter-spacing: 0em;
             color: var(--txt-secondary); margin-top: 2px;
         }
-        .header-tools { display: flex;
-            gap: 12px; align-items: center; }
+        .header-tools { display: flex; gap: 12px; align-items: center; }
 
         /* Buttons */
         .btn {
-            border: none;
-            cursor: pointer;
+            border: none; cursor: pointer;
             font-family: var(--font-sans); font-size: 14px; font-weight: 600;
             height: 40px; padding: 0 18px; border-radius: 99em;
-            display: inline-flex; align-items: center;
-            justify-content: center; gap: 6px;
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
             transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); 
             position: relative; overflow: hidden; white-space: nowrap; user-select: none;
         }
-        .btn:active { transform: scale(0.94);
-        }
-        .btn-icon { width: 40px; padding: 0; border-radius: 50%;
-        }
+        .btn:active { transform: scale(0.94); }
+        .btn-icon { width: 40px; padding: 0; border-radius: 50%; }
 
         .btn-glass {
-            background: var(--bg-glass);
-            border: 1px solid var(--border-glass); color: var(--txt-primary);
+            background: var(--bg-glass); border: 1px solid var(--border-glass); color: var(--txt-primary);
             box-shadow: var(--shadow-inner); backdrop-filter: blur(10px);
         }
         .btn-glass:hover { 
-            background: var(--bg-card);
-            border-color: var(--border-glass);
+            background: var(--bg-card); border-color: var(--border-glass);
             transform: translateY(-1px); 
             box-shadow: 0 4px 12px rgba(0,0,0,0.05), var(--shadow-inner);
         }
 
         .btn-primary {
-            background: var(--accent);
-            color: white;
+            background: var(--accent); color: white;
             box-shadow: 0 4px 12px -2px var(--accent-glow); 
             border: 1px solid rgba(255,255,255,0.1);
         }
@@ -207,8 +189,7 @@
 
         /* Submit Button */
         #submitBtn {
-            width: 70%;
-            max-width: 360px; height: 50px; align-self: center;
+            width: 70%; max-width: 360px; height: 50px; align-self: center;
             font-size: 15px; font-weight: 600; border-radius: 999px;
             background: rgba(52, 199, 89, 0.15);
             border: 1px solid rgba(52, 199, 89, 0.3);
@@ -216,42 +197,33 @@
             backdrop-filter: blur(20px);
         }
         #submitBtn:hover { 
-            background: rgba(52, 199, 89, 0.25);
-            color: #248a3d;
+            background: rgba(52, 199, 89, 0.25); color: #248a3d;
             transform: translateY(-1px);
         }
         body.theme-dark #submitBtn {
-            background: rgba(48, 209, 88, 0.2);
-            border-color: rgba(48, 209, 88, 0.3); color: #32d74b;
+            background: rgba(48, 209, 88, 0.2); border-color: rgba(48, 209, 88, 0.3); color: #32d74b;
         }
         body.theme-dark #submitBtn:hover {
-            background: rgba(48, 209, 88, 0.3);
-            color: #5ce372;
+            background: rgba(48, 209, 88, 0.3); color: #5ce372;
         }
 
         .btn-circle {
-            width: 36px;
-            height: 36px; border-radius: 50%;
+            width: 36px; height: 36px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             border: 1px solid var(--border-glass);
             background: var(--bg-glass); color: var(--txt-secondary);
-            font-size: 18px;
-            cursor: pointer; transition: 0.2s; padding: 0;
+            font-size: 18px; cursor: pointer; transition: 0.2s; padding: 0;
         }
-        .btn-circle:hover { background: var(--bg-card); transform: rotate(90deg);
-            color: var(--txt-primary); }
+        .btn-circle:hover { background: var(--bg-card); transform: rotate(90deg); color: var(--txt-primary); }
 
         /* Utility Copy Button */
         .copy-icon-btn, .uc-copy-btn {
-            background: transparent;
-            border: none; padding: 0; margin: 0;
+            background: transparent; border: none; padding: 0; margin: 0;
             display: inline-flex; align-items: center; justify-content: center;
             cursor: pointer; color: inherit; transition: all 0.2s;
         }
-        .copy-icon-btn:hover { background: rgba(128,128,128,0.1); border-radius: 8px; transform: scale(1.1);
-        }
-        .copy-icon-btn:active { transform: scale(0.9);
-        }
+        .copy-icon-btn:hover { background: rgba(128,128,128,0.1); border-radius: 8px; transform: scale(1.1); }
+        .copy-icon-btn:active { transform: scale(0.9); }
 
         /* Cards & Editor */
         .bento-card {
@@ -259,13 +231,11 @@
             backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%);
             border: 1px solid var(--border-glass); border-radius: var(--radius-box);
             box-shadow: var(--shadow-card); overflow: hidden;
-            display: flex; flex-direction: column;
-            transition: transform 0.3s ease;
+            display: flex; flex-direction: column; transition: transform 0.3s ease;
         }
         
         /* Drag & Drop Visuals */
-        .editor-zone { height: 100%;
-            min-height: 480px; position: relative; transition: all 0.2s ease; }
+        .editor-zone { height: 100%; min-height: 480px; position: relative; transition: all 0.2s ease; }
         .editor-zone.drag-over {
             background: rgba(var(--accent), 0.05);
             border: 2px dashed var(--accent);
@@ -279,280 +249,200 @@
             background: rgba(255,255,255,0.8); backdrop-filter: blur(4px);
             z-index: 50; pointer-events: none; border-radius: var(--radius-box);
         }
-        body.theme-dark .editor-zone.drag-over::after { background: rgba(0,0,0,0.6);
-        }
+        body.theme-dark .editor-zone.drag-over::after { background: rgba(0,0,0,0.6); }
 
         .editor-textarea {
-            width: 100%;
-            flex: 1; resize: none; overflow-y: auto;
+            width: 100%; flex: 1; resize: none; overflow-y: auto;
             border: none; background: transparent; padding: 24px 24px 60px;
-            font-family: var(--font-mono); font-size: 14px; line-height: 1.6;
-            color: var(--txt-primary);
+            font-family: var(--font-mono); font-size: 14px; line-height: 1.6; color: var(--txt-primary);
             font-variant-ligatures: contextual;
         }
-        .editor-textarea::placeholder { color: var(--txt-placeholder);
-        }
-        .editor-textarea::-webkit-scrollbar { width: 6px;
-        }
-        .editor-textarea::-webkit-scrollbar-track { background: transparent;
-        }
-        .editor-textarea::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.2); border-radius: 99px;
-        }
-        .editor-textarea:hover::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.4);
-        }
+        .editor-textarea::placeholder { color: var(--txt-placeholder); }
+        .editor-textarea::-webkit-scrollbar { width: 6px; }
+        .editor-textarea::-webkit-scrollbar-track { background: transparent; }
+        .editor-textarea::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.2); border-radius: 99px; }
+        .editor-textarea:hover::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.4); }
 
         .editor-status-bar {
-            position: absolute;
-            bottom: 12px; right: 12px;
+            position: absolute; bottom: 12px; right: 12px;
             pointer-events: none; display: flex; gap: 6px; z-index: 20;
         }
-        .editor-status-bar > * { pointer-events: auto;
-        }
+        .editor-status-bar > * { pointer-events: auto; }
         
         .status-pill {
-            display: inline-flex;
-            align-items: center; gap: 6px;
+            display: inline-flex; align-items: center; gap: 6px;
             padding: 4px 10px; border-radius: 8px;
             background: rgba(255,255,255,0.4); backdrop-filter: blur(8px);
             border: 1px solid rgba(255,255,255,0.3);
-            font-size: 11px;
-            font-weight: 600; color: var(--txt-secondary);
+            font-size: 11px; font-weight: 600; color: var(--txt-secondary);
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
-        body.theme-dark .status-pill { background: rgba(40,40,45,0.6);
-            border-color: rgba(255,255,255,0.1); }
+        body.theme-dark .status-pill { background: rgba(40,40,45,0.6); border-color: rgba(255,255,255,0.1); }
 
         .node-indicator {
-            color: var(--success);
-            background: rgba(52, 199, 89, 0.15);
+            color: var(--success); background: rgba(52, 199, 89, 0.15);
             font-weight: 700; display: none; border-color: rgba(52, 199, 89, 0.2);
         }
-        .node-indicator.active { display: inline-flex;
-        }
+        .node-indicator.active { display: inline-flex; }
 
         /* Sidebar */
-        .sidebar { display: flex;
-            flex-direction: column; gap: 24px; justify-content: space-between; }
-        .sidebar-content { display: flex; flex-direction: column;
-            gap: 24px; }
+        .sidebar { display: flex; flex-direction: column; gap: 24px; justify-content: space-between; }
+        .sidebar-content { display: flex; flex-direction: column; gap: 24px; }
 
         .panel-header {
-            font-size: 11px;
-            font-weight: 700; color: var(--txt-secondary);
+            font-size: 11px; font-weight: 700; color: var(--txt-secondary);
             text-transform: uppercase; letter-spacing: 0.08em;
             margin-bottom: 10px; margin-left: 4px; opacity: 0.9;
         }
 
-        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-        }
+        .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .tool-card {
-            background: var(--bg-glass);
-            backdrop-filter: blur(12px);
+            background: var(--bg-glass); backdrop-filter: blur(12px);
             border: 1px solid var(--border-glass); border-radius: var(--radius-sm);
             height: 72px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
             cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-inner);
             color: var(--txt-primary); font-weight: 500;
         }
         .tool-card:hover { 
-            transform: translateY(-3px);
-            border-color: var(--accent); background: var(--bg-card);
+            transform: translateY(-3px); border-color: var(--accent); background: var(--bg-card);
             box-shadow: 0 8px 16px -4px rgba(0,0,0,0.05), var(--shadow-inner);
         }
-        .tool-icon { width: 22px; height: 22px; opacity: 0.85; transition: 0.2s;
-        }
-        .tool-card:hover .tool-icon { transform: scale(1.1); color: var(--accent); opacity: 1;
-        }
-        .tool-label { font-size: 12px; color: var(--txt-secondary);
-        }
+        .tool-icon { width: 22px; height: 22px; opacity: 0.85; transition: 0.2s; }
+        .tool-card:hover .tool-icon { transform: scale(1.1); color: var(--accent); opacity: 1; }
+        .tool-label { font-size: 12px; color: var(--txt-secondary); }
 
         /* Segment Control */
         .seg-control {
-            background: rgba(128,128,128,0.08);
-            padding: 4px; border-radius: 14px;
+            background: rgba(128,128,128,0.08); padding: 4px; border-radius: 14px;
             display: flex; gap: 4px; border: 1px solid var(--border-subtle);
         }
         .seg-btn {
-            flex: 1;
-            border: none; background: transparent;
+            flex: 1; border: none; background: transparent;
             padding: 8px 0; font-size: 12px; font-weight: 600;
             color: var(--txt-secondary); border-radius: 10px; cursor: pointer; transition: 0.2s;
         }
-        .seg-btn:hover { color: var(--txt-primary); background: rgba(128,128,128,0.05);
-        }
+        .seg-btn:hover { color: var(--txt-primary); background: rgba(128,128,128,0.05); }
         .seg-btn.active {
-            background: var(--bg-card);
-            color: var(--txt-primary);
+            background: var(--bg-card); color: var(--txt-primary);
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         
         #ttlHint {
-            font-size: 11px;
-            font-weight: 600; color: var(--danger);
+            font-size: 11px; font-weight: 600; color: var(--danger);
             margin-top: 10px; text-align: right; transition: color 0.3s;
         }
 
         /* Inputs */
         .input-box {
-            background: var(--bg-glass);
-            border: 1px solid var(--border-subtle);
+            background: var(--bg-glass); border: 1px solid var(--border-subtle);
             border-radius: var(--radius-sm); padding: 0 12px; height: 44px;
             display: flex; align-items: center; transition: all 0.2s ease;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
         }
         .input-box:focus-within { 
-            border-color: var(--accent);
-            background: var(--bg-card);
+            border-color: var(--accent); background: var(--bg-card);
             box-shadow: 0 0 0 4px var(--accent-glow);
         }
-        .input-real { width: 100%;
-            border: none; background: transparent; color: var(--txt-primary); font-size: 13px; font-weight: 500;
-        }
+        .input-real { width: 100%; border: none; background: transparent; color: var(--txt-primary); font-size: 13px; font-weight: 500; }
 
         /* Result Zone */
-        .result-zone { display: none;
-            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .result-zone { display: none; animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .result-link {
-            font-family: var(--font-mono);
-            font-size: 12px; word-break: break-all;
+            font-family: var(--font-mono); font-size: 12px; word-break: break-all;
             padding: 14px; background: rgba(var(--accent), 0.08);
             border: 1px solid rgba(var(--accent), 0.1); color: var(--accent); border-radius: 12px;
-            margin-bottom: 12px;
-            text-align: center;
+            margin-bottom: 12px; text-align: center;
         }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px);
-        } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Modals */
         .modal-mask {
-            position: fixed;
-            inset: 0; z-index: 100;
+            position: fixed; inset: 0; z-index: 100;
             background: rgba(0,0,0,0.2); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none;
-            transition: 0.3s;
+            opacity: 0; pointer-events: none; transition: 0.3s;
         }
-        .modal-mask.show { opacity: 1; pointer-events: auto;
-        }
+        .modal-mask.show { opacity: 1; pointer-events: auto; }
         .modal-panel {
-            width: 90%;
-            max-width: 440px;
+            width: 90%; max-width: 440px;
             background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: 28px;
             padding: 28px; box-shadow: var(--shadow-float);
-            transform: scale(0.92) translateY(10px);
-            transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: scale(0.92) translateY(10px); transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .modal-mask.show .modal-panel { transform: scale(1) translateY(0);
-        }
+        .modal-mask.show .modal-panel { transform: scale(1) translateY(0); }
         
-        .modal-head { display: flex;
-            justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .modal-title { font-size: 20px; font-weight: 700;
-            display:flex; align-items:center; gap:10px; color: var(--txt-primary); }
-        .modal-title-stack { display:flex; flex-direction:column; gap:2px;
-        }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .modal-title { font-size: 20px; font-weight: 700; display:flex; align-items:center; gap:10px; color: var(--txt-primary); }
+        .modal-title-stack { display:flex; flex-direction:column; gap:2px; }
 
         /* Toast */
         #toastHost {
-            position: fixed;
-            top: 16px; left: 50%; transform: translateX(-50%);
+            position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
             z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;
         }
         .toast {
-            pointer-events: none;
-            display: inline-flex; align-items: center; gap: 10px;
+            pointer-events: none; display: inline-flex; align-items: center; gap: 10px;
             padding: 12px 18px; border-radius: 99px;
             background: var(--bg-card); border: 1px solid var(--border-glass);
-            backdrop-filter: blur(24px);
-            box-shadow: var(--shadow-float);
+            backdrop-filter: blur(24px); box-shadow: var(--shadow-float);
             font-size: 13px; font-weight: 600; color: var(--txt-primary);
             opacity: 0; transform: translateY(-10px) scale(0.95);
             animation: toastIn 0.3s cubic-bezier(0.2, 0.9, 0.2, 1) forwards;
         }
-        .toast[data-type="success"] { color: var(--success);
-        }
-        .toast[data-type="error"] { color: var(--danger);
-        }
-        @keyframes toastIn { to { opacity: 1; transform: translateY(0) scale(1);
-        } }
-        @keyframes toastOut { to { opacity: 0; transform: translateY(-10px) scale(0.95);
-        } }
+        .toast[data-type="success"] { color: var(--success); }
+        .toast[data-type="error"] { color: var(--danger); }
+        @keyframes toastIn { to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes toastOut { to { opacity: 0; transform: translateY(-10px) scale(0.95); } }
 
         /* User Center List - No Visible Scrollbar but Scrollable */
         .uc-list { 
-            overflow-y: auto;
-            display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px; 
-            scrollbar-width: none;
-            /* Firefox */
-            -ms-overflow-style: none;
-            /* IE 10+ */
+            overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px; 
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none;  /* IE 10+ */
         }
-        .uc-list::-webkit-scrollbar { display: none;
-            width: 0; height: 0; } /* Chrome/Safari */
+        .uc-list::-webkit-scrollbar { display: none; width: 0; height: 0; } /* Chrome/Safari */
         
         .uc-item {
-            background: var(--bg-glass);
-            padding: 18px; border-radius: 18px;
+            background: var(--bg-glass); padding: 18px; border-radius: 18px;
             border: 1px solid var(--border-subtle);
             transition: background 0.2s;
         }
-        .uc-item:hover { background: rgba(128,128,128,0.03);
-        }
+        .uc-item:hover { background: rgba(128,128,128,0.03); }
         
         /* Expire Colors */
-        .uc-expire { font-size: 11.5px;
-            font-weight: 600; text-align: right; }
-        .uc-expire[data-level="ok"] { color: var(--neutral);
-        }
-        .uc-expire[data-level="warn"] { color: var(--warn);
-        }
-        .uc-expire[data-level="urgent"] { color: var(--danger);
-        }
-        .uc-expire[data-level="forever"] { color: var(--success);
-        }
+        .uc-expire { font-size: 11.5px; font-weight: 600; text-align: right; }
+        .uc-expire[data-level="ok"] { color: var(--neutral); }
+        .uc-expire[data-level="warn"] { color: var(--warn); }
+        .uc-expire[data-level="urgent"] { color: var(--danger); }
+        .uc-expire[data-level="forever"] { color: var(--success); }
 
         .input-group-row {
-            display: flex;
-            align-items: center; gap: 0;
+            display: flex; align-items: center; gap: 0;
             background: var(--bg-glass); border: 1px solid var(--border-subtle);
             border-radius: var(--radius-sm); padding-right: 4px;
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
         }
         .input-group-row input {
-            flex: 1;
-            border: none; background: transparent; padding: 0 12px; height: 36px;
+            flex: 1; border: none; background: transparent; padding: 0 12px; height: 36px;
             color: var(--txt-primary); font-size: 12px; font-family: var(--font-mono); min-width: 0;
         }
 
-        .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2;
-        stroke-linecap: round; stroke-linejoin: round; }
-        .icon.note-icon { width: 22px; height: 22px; stroke: none;
-        fill: var(--txt-primary); }
+        .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .icon.note-icon { width: 22px; height: 22px; stroke: none; fill: var(--txt-primary); }
 
-        .footer { grid-column: 1 / -1; text-align: center; font-size: 12px;
-        color: var(--txt-secondary); opacity: 0.8; padding-top: 30px; line-height: 1.6; }
-        #fileInput { display: none;
-        }
-        .d-none { display: none !important;
-        }
-        .d-flex { display: flex !important;
-        }
+        .footer { grid-column: 1 / -1; text-align: center; font-size: 12px; color: var(--txt-secondary); opacity: 0.8; padding-top: 30px; line-height: 1.6; }
+        #fileInput { display: none; }
+        .d-none { display: none !important; }
+        .d-flex { display: flex !important; }
 
         @media (max-width: 860px) {
-            .app-shell { grid-template-columns: 1fr;
-            margin-top: 20px; gap: 24px; }
-            .sidebar { order: 2;
-            height: auto; }
-            .editor-zone { min-height: 320px;
-            }
-            #subClientOverlay { align-items: flex-end;
-            }
-            #subClientOverlay .modal-panel { margin: 0;
-            border-radius: 24px 24px 0 0; transform: translateY(100%); width: 100%; max-width: 100%;
-            }
-            #subClientOverlay.show .modal-panel { transform: translateY(0);
-            }
-            #submitBtn { width: 100%; height: 52px; font-size: 16px;
-            margin-top: 10px; }
+            .app-shell { grid-template-columns: 1fr; margin-top: 20px; gap: 24px; }
+            .sidebar { order: 2; height: auto; }
+            .editor-zone { min-height: 320px; }
+            #subClientOverlay { align-items: flex-end; }
+            #subClientOverlay .modal-panel { margin: 0; border-radius: 24px 24px 0 0; transform: translateY(100%); width: 100%; max-width: 100%; }
+            #subClientOverlay.show .modal-panel { transform: translateY(0); }
+            #submitBtn { width: 100%; height: 52px; font-size: 16px; margin-top: 10px; }
         }
     </style>
 </head>
@@ -560,26 +450,23 @@
 
     <main class="app-shell">
         
+        <!-- Header -->
         <header class="header-section">
             <div class="brand">
                 <div class="brand-title" style="display:flex; align-items:center; gap:12px;">
-                    
                     <img id="brandIcon" class="brand-icon" alt="Logo">
                     <div class="brand-text-group">
                         <div class="brand-text">PasteBox</div>
                         <div class="brand-subtext">A clean and fast paste toolkit</div>
                     </div>
- 
-               </div>
+                </div>
             </div>
             <div class="header-tools">
                 <button type="button" class="btn btn-icon btn-glass" id="themeToggle" title="切换主题" aria-label="切换主题">
-                    <svg class="icon" id="iconSun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" 
-                    y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg class="icon" id="iconSun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                     <svg class="icon d-none" id="iconMoon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 </button>
-                <button type="button" 
-                class="btn btn-glass" id="btnAuthOpen">
+                <button type="button" class="btn btn-glass" id="btnAuthOpen">
                     <span id="btnAuthLabel">登录</span>
                 </button>
             </div>
@@ -587,115 +474,90 @@
 
         <form id="pasteForm" style="display:contents">
             
+            <!-- Editor -->
             <div class="bento-card editor-zone" id="editorZone">
                 <textarea id="content" class="editor-textarea" placeholder="在这里粘贴代码或文本... (支持直接拖入文件)" spellcheck="false" required></textarea>
                 
                 <div class="editor-status-bar">
                     <span class="status-pill" id="lineCounter">0 行</span>
-            
                     <span class="status-pill"><span id="byteNum">0</span> 字符</span>
                     <span class="status-pill node-indicator" id="nodeInfo">节点</span>
-                    <button type="button" class="btn btn-glass d-none" id="btnHome" style="height:24px;
-                    font-size:11px; padding:0 10px;">结束编辑</button>
+                    <button type="button" class="btn btn-glass d-none" id="btnHome" style="height:24px; font-size:11px; padding:0 10px;">结束编辑</button>
                 </div>
             </div>
 
+            <!-- Sidebar -->
             <div class="sidebar">
                 <div class="sidebar-content">
                     <div>
-      
                         <div class="panel-header">快捷操作</div>
                         <div class="tools-grid">
                             <label class="tool-card" id="uploadBtn" for="fileInput" title="导入文件">
-                        
                                 <svg class="icon tool-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                                 <span class="tool-label">导入文件</span>
-                                
                                 <input type="file" id="fileInput">
                             </label>
                             <div class="tool-card" id="btnResetContent" title="清空内容">
-                                <svg class="icon tool-icon" viewBox="0 0 24 24"><path 
-                                d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                <svg class="icon tool-icon" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                                 <span class="tool-label">清空内容</span>
                             </div>
-               
                             <div class="tool-card" id="btnBase64Encode" title="Base64编码">
                                 <svg class="icon tool-icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
                                 <span class="tool-label">Base64编码</span>
- 
                             </div>
                             <div class="tool-card" id="btnBase64Decode" title="Base64解码">
-                                <svg class="icon tool-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 
-                                0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                                <svg class="icon tool-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
                                 <span class="tool-label">Base64解码</span>
                             </div>
-           
                         </div>
                     </div>
 
                     <div class="bento-card" style="padding:16px;">
                         <div class="panel-header">有效期</div>
-                    
                         <div class="seg-control" id="ttlGroup">
                             <button type="button" class="seg-btn" data-ttl="10m">10Min</button>
                             <button type="button" class="seg-btn" data-ttl="1d">1D</button>
-                            <button type="button" class="seg-btn active" 
-                            data-ttl="7d">7D</button>
+                            <button type="button" class="seg-btn active" data-ttl="7d">7D</button>
                             <button type="button" class="seg-btn" data-ttl="30d">30D</button>
                             <button type="button" class="seg-btn" data-ttl="forever" id="ttlForeverBtn" disabled>∞</button>
                         </div>
-            
                         <div id="ttlHint"></div>
                     </div>
 
-                    <div id="advancedSection" class="d-none" style="flex-direction:column;
-                    gap:12px;">
+                    <div id="advancedSection" class="d-none" style="flex-direction:column; gap:12px;">
                         <div class="panel-header">高级选项</div>
                         <div class="input-box">
                             <input type="text" id="customId" class="input-real" placeholder="自定义URL后缀 (选填)">
-                 
                         </div>
                         <div class="input-box">
                             <input type="text" id="remark" class="input-real" placeholder="给链接取个名字 (选填)">
                         </div>
-           
                     </div>
                 </div>
 
-                <div style="display:flex;
-                flex-direction:column; gap:8px;">
+                <div style="display:flex; flex-direction:column; gap:8px;">
                     <div id="resultBox" class="bento-card result-zone" style="padding:16px;">
                         <div class="panel-header" style="color:var(--success)">发布成功</div>
                         <div class="result-link" id="viewLinkText">...</div>
-                       
                         <div style="display:flex; gap:8px;">
                             <button type="button" class="uc-copy-btn" id="btnCopyView" style="width:40px;height:40px;border-radius:12px;" aria-label="复制链接">
-                                <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M715.6224 910.0288H356.096c-55.3984 0-100.3008-44.9024-100.3008-100.3008V452.8128c0-55.3984 44.9024-100.3008 100.3008-100.3008h359.5776c55.3984 0 100.3008 44.9024 100.3008 100.3008v356.9152c-0.0512 55.3984-44.9536 100.3008-100.352 100.3008z" fill="#56E5BE"></path><path d="M729.1904 910.0288H416.3072c-47.9232 0-86.7328-38.8608-86.7328-86.7328v-310.5792c0-47.9232 38.8608-86.7328 86.7328-86.7328h312.8832c47.9232 0 86.7328 38.8608 86.7328 86.7328v310.5792c0 
-                                47.872-38.8608 86.7328-86.7328 86.7328z" fill="#50DDB8"></path><path d="M727.6544 910.0288H466.2784c-36.0448 0-65.2288-29.184-65.2288-65.2288v-282.4704c0-36.0448 29.184-65.2288 65.2288-65.2288h284.416c36.0448 0 65.2288 29.184 65.2288 65.2288v259.4304c0 48.7424-39.5264 88.2688-88.2688 88.2688z" fill="#42D3AD"></path><path d="M763.5456 107.5712H410.0096c-81.2544 0-147.5072 65.536-148.6336 146.5856-79.1552 3.2256-142.5408 68.608-142.5408 148.5312v359.5776c0 81.9712 66.7136 148.6848 148.6848 148.6848h353.536c81.2544 0 147.5072-65.536 148.6336-146.5856 79.1552-3.2256 142.5408-68.608 142.5408-148.5312V256.256c0-81.9712-66.6624-148.6848-148.6848-148.6848z m-55.1936 654.6944c0 48.128-39.168 87.2448-87.2448 87.2448H267.52c-48.128 0-87.2448-39.168-87.2448-87.2448V402.6368c0-48.128 39.168-87.2448 87.2448-87.2448h353.536c48.128 0 87.2448 39.168 87.2448 87.2448v359.6288z m142.4384-146.432c0 46.0288-35.84 83.712-81.0496 86.9376V402.6368c0-81.9712-66.7136-148.6848-148.6848-148.6848H322.8672c1.2288-47.0528 39.7824-84.9408 87.1424-84.9408h353.5872c48.128 0 87.2448 39.168 87.2448 87.2448v359.5776z" fill="#2E3138"></path></svg>
+                                <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M715.6224 910.0288H356.096c-55.3984 0-100.3008-44.9024-100.3008-100.3008V452.8128c0-55.3984 44.9024-100.3008 100.3008-100.3008h359.5776c55.3984 0 100.3008 44.9024 100.3008 100.3008v356.9152c-0.0512 55.3984-44.9536 100.3008-100.352 100.3008z" fill="#56E5BE"></path><path d="M729.1904 910.0288H416.3072c-47.9232 0-86.7328-38.8608-86.7328-86.7328v-310.5792c0-47.9232 38.8608-86.7328 86.7328-86.7328h312.8832c47.9232 0 86.7328 38.8608 86.7328 86.7328v310.5792c0 47.872-38.8608 86.7328-86.7328 86.7328z" fill="#50DDB8"></path><path d="M727.6544 910.0288H466.2784c-36.0448 0-65.2288-29.184-65.2288-65.2288v-282.4704c0-36.0448 29.184-65.2288 65.2288-65.2288h284.416c36.0448 0 65.2288 29.184 65.2288 65.2288v259.4304c0 48.7424-39.5264 88.2688-88.2688 88.2688z" fill="#42D3AD"></path><path d="M763.5456 107.5712H410.0096c-81.2544 0-147.5072 65.536-148.6336 146.5856-79.1552 3.2256-142.5408 68.608-142.5408 148.5312v359.5776c0 81.9712 66.7136 148.6848 148.6848 148.6848h353.536c81.2544 0 147.5072-65.536 148.6336-146.5856 79.1552-3.2256 142.5408-68.608 142.5408-148.5312V256.256c0-81.9712-66.6624-148.6848-148.6848-148.6848z m-55.1936 654.6944c0 48.128-39.168 87.2448-87.2448 87.2448H267.52c-48.128 0-87.2448-39.168-87.2448-87.2448V402.6368c0-48.128 39.168-87.2448 87.2448-87.2448h353.536c48.128 0 87.2448 39.168 87.2448 87.2448v359.6288z m142.4384-146.432c0 46.0288-35.84 83.712-81.0496 86.9376V402.6368c0-81.9712-66.7136-148.6848-148.6848-148.6848H322.8672c1.2288-47.0528 39.7824-84.9408 87.1424-84.9408h353.5872c48.128 0 87.2448 39.168 87.2448 87.2448v359.5776z" fill="#2E3138"></path></svg>
                             </button>
-           
                             <button type="button" class="btn btn-glass" style="flex:1" id="btnOpenView">打开</button>
                         </div>
                     </div>
 
-                    <div id="statusMsg" style="font-size:12px;
-                    text-align:center; min-height:20px; color:var(--txt-secondary);"></div>
+                    <div id="statusMsg" style="font-size:12px; text-align:center; min-height:20px; color:var(--txt-secondary);"></div>
                     
                     <button type="submit" class="btn btn-primary" id="submitBtn">
-                        <span class="submit-ico" id="icoPublish" style="display:inline-flex;
-                        align-items:center; margin-right:6px;">
-                            <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M585.5744 595.5584m-298.1888 0a298.1888 298.1888 0 1 0 596.3776 0 298.1888 298.1888 0 1 0-596.3776 0Z" fill="#F5384A"></path><path d="M827.5968 528.6912a357.376 357.376 0 0 0 11.3152-90.368 298.1376 298.1376 0 1 0-493.568 333.7728 351.7952 351.7952 0 0 0 45.568 15.0528 358.8096 358.8096 0 0 0 436.6848-258.4576z" fill="#F54F5C"></path><path d="M585.5744 297.3696a298.3424 298.3424 0 0 0-291.84 359.3216c7.0144 2.2528 14.08 4.4032 21.2992 6.2464a358.4 358.4 0 0 0 445.7472-308.5824 296.6016 296.6016 0 
-                            0 0-175.2064-56.9856z" fill="#F66C73"></path><path d="M291.84 543.6416a358.912 358.912 0 0 0 375.9616-234.6496A298.0864 298.0864 0 0 0 291.84 543.6416z" fill="#F78989"></path><path d="M814.08 438.0672a299.1104 299.1104 0 0 0-593.92 0 206.5408 206.5408 0 0 0 34.6112 410.2144h76.1856a30.72 30.72 0 0 0 0-61.44H254.9248a145.1008 145.1008 0 0 1-8.7552-289.9456 35.84 35.84 0 0 0 33.5872-33.8944 237.6704 237.6704 0 0 1 474.7264 0 35.84 35.84 0 0 0 33.5872 33.8944 145.1008 145.1008 0 0 1-8.7552 289.9456h-71.68a30.72 30.72 0 1 0 0 61.44h71.68A206.5408 206.5408 0 0 0 814.08 438.0672z" fill="#444444"></path><path d="M536.576 528.896a30.72 30.72 0 0 0-42.752 0.6656l-107.1104 106.8032a30.72 30.72 0 0 0 43.4176 43.52l57.856-57.7536v221.9008a30.72 30.72 0 0 0 61.44 0v-218.624l58.5216 55.0912a30.72 
-                            30.72 0 0 0 42.1376-44.7488z" fill="#444444"></path></svg>
+                        <span class="submit-ico" id="icoPublish" style="display:inline-flex; align-items:center; margin-right:6px;">
+                            <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M585.5744 595.5584m-298.1888 0a298.1888 298.1888 0 1 0 596.3776 0 298.1888 298.1888 0 1 0-596.3776 0Z" fill="#F5384A"></path><path d="M827.5968 528.6912a357.376 357.376 0 0 0 11.3152-90.368 298.1376 298.1376 0 1 0-493.568 333.7728 351.7952 351.7952 0 0 0 45.568 15.0528 358.8096 358.8096 0 0 0 436.6848-258.4576z" fill="#F54F5C"></path><path d="M585.5744 297.3696a298.3424 298.3424 0 0 0-291.84 359.3216c7.0144 2.2528 14.08 4.4032 21.2992 6.2464a358.4 358.4 0 0 0 445.7472-308.5824 296.6016 296.6016 0 0 0-175.2064-56.9856z" fill="#F66C73"></path><path d="M291.84 543.6416a358.912 358.912 0 0 0 375.9616-234.6496A298.0864 298.0864 0 0 0 291.84 543.6416z" fill="#F78989"></path><path d="M814.08 438.0672a299.1104 299.1104 0 0 0-593.92 0 206.5408 206.5408 0 0 0 34.6112 410.2144h76.1856a30.72 30.72 0 0 0 0-61.44H254.9248a145.1008 145.1008 0 0 1-8.7552-289.9456 35.84 35.84 0 0 0 33.5872-33.8944 237.6704 237.6704 0 0 1 474.7264 0 35.84 35.84 0 0 0 33.5872 33.8944 145.1008 145.1008 0 0 1-8.7552 289.9456h-71.68a30.72 30.72 0 1 0 0 61.44h71.68A206.5408 206.5408 0 0 0 814.08 438.0672z" fill="#444444"></path><path d="M536.576 528.896a30.72 30.72 0 0 0-42.752 0.6656l-107.1104 106.8032a30.72 30.72 0 0 0 43.4176 43.52l57.856-57.7536v221.9008a30.72 30.72 0 0 0 61.44 0v-218.624l58.5216 55.0912a30.72 30.72 0 0 0 42.1376-44.7488z" fill="#444444"></path></svg>
                         </span>
-                        <span class="submit-ico d-none" id="icoUpdate" style="align-items:center;
-                        margin-right:6px;">
-                            <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M649.5232 827.0848c-225.2288 0-407.8592-182.5792-407.8592-407.8592 0-107.5712 41.728-205.3632 109.7728-278.272-145.408 62.3616-247.296 206.7456-247.296 374.9888 0 225.2288 182.6304 407.8592 407.8592 407.8592 117.6576 0 223.6416-49.8688 298.0864-129.5872-49.3056 21.1456-103.5776 32.8704-160.5632 32.8704z" fill="#ffa115"></path><path d="M919.8592 485.2736c-16.9472 0-30.72 13.7728-30.72 30.72 0 207.9744-169.1648 377.1392-377.1392 377.1392s-377.1392-169.1648-377.1392-377.1392S304.0256 138.8544 512 138.8544c108.032 0 209.7152 46.1312 280.7808 125.3888h-116.0704c-16.9472 0-30.72 13.7728-30.72 30.72s13.7728 30.72 30.72 30.72h188.2624c16.9472 0 30.72-13.7728 30.72-30.72V100.1472c0-16.9472-13.7728-30.72-30.72-30.72s-30.72 13.7728-30.72 30.72v118.272A438.17984 438.17984 0 0 0 512 77.3632c-241.8176 0-438.5792 196.7616-438.5792 438.5792s196.7616 438.5792 438.5792 438.5792 438.5792-196.7616 
-                            438.5792-438.5792c0-16.9472-13.7728-30.6688-30.72-30.6688z" fill="#474A54"></path><path d="M501.76 350.1056v160.7168H289.0752c-16.9472 0-30.72 13.7728-30.72 30.72s13.7728 30.72 30.72 30.72H532.48c16.9472 0 30.72-13.7728 30.72-30.72V350.1056c0-16.9472-13.7728-30.72-30.72-30.72s-30.72 13.7728-30.72 30.72z" fill="#474A54"></path></svg>
+                        <span class="submit-ico d-none" id="icoUpdate" style="align-items:center; margin-right:6px;">
+                            <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M649.5232 827.0848c-225.2288 0-407.8592-182.5792-407.8592-407.8592 0-107.5712 41.728-205.3632 109.7728-278.272-145.408 62.3616-247.296 206.7456-247.296 374.9888 0 225.2288 182.6304 407.8592 407.8592 407.8592 117.6576 0 223.6416-49.8688 298.0864-129.5872-49.3056 21.1456-103.5776 32.8704-160.5632 32.8704z" fill="#ffa115"></path><path d="M919.8592 485.2736c-16.9472 0-30.72 13.7728-30.72 30.72 0 207.9744-169.1648 377.1392-377.1392 377.1392s-377.1392-169.1648-377.1392-377.1392S304.0256 138.8544 512 138.8544c108.032 0 209.7152 46.1312 280.7808 125.3888h-116.0704c-16.9472 0-30.72 13.7728-30.72 30.72s13.7728 30.72 30.72 30.72h188.2624c16.9472 0 30.72-13.7728 30.72-30.72V100.1472c0-16.9472-13.7728-30.72-30.72-30.72s-30.72 13.7728-30.72 30.72v118.272A438.17984 438.17984 0 0 0 512 77.3632c-241.8176 0-438.5792 196.7616-438.5792 438.5792s196.7616 438.5792 438.5792 438.5792 438.5792-196.7616 438.5792-438.5792c0-16.9472-13.7728-30.6688-30.72-30.6688z" fill="#474A54"></path><path d="M501.76 350.1056v160.7168H289.0752c-16.9472 0-30.72 13.7728-30.72 30.72s13.7728 30.72 30.72 30.72H532.48c16.9472 0 30.72-13.7728 30.72-30.72V350.1056c0-16.9472-13.7728-30.72-30.72-30.72s-30.72 13.7728-30.72 30.72z" fill="#474A54"></path></svg>
                         </span>
                         <span class="text">发布内容</span>
                     </button>
-                
                 </div>
             </div>
         </form>
@@ -705,32 +567,28 @@
         </footer>
     </main>
 
+    <!-- Toast Container -->
     <div id="toastHost" aria-live="polite" aria-atomic="true"></div>
 
+    <!-- Auth Modal -->
     <div class="modal-mask" id="authModal">
         <div class="modal-panel">
-         
             <div class="modal-head">
                 <span class="modal-title">登录 · PasteBox</span>
                 <button class="btn-circle" id="authCloseBtn" title="关闭">×</button>
             </div>
-            <form id="authForm" style="display:flex;
-            flex-direction:column; gap:16px;">
+            <form id="authForm" style="display:flex; flex-direction:column; gap:16px;">
                 <div class="input-box">
                     <input id="authUsername" class="input-real" type="text" placeholder="用户名" autocomplete="username">
                 </div>
                 <div class="input-box">
-                    <input id="authPassword" class="input-real" type="password" 
-                    placeholder="密码" autocomplete="current-password">
+                    <input id="authPassword" class="input-real" type="password" placeholder="密码" autocomplete="current-password">
                 </div>
-                <label style="display:flex;
-                align-items:center; gap:8px; font-size:12px; color:var(--txt-secondary);">
+                <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--txt-secondary);">
                     <input id="authRemember" type="checkbox" checked> 保持登录状态
                 </label>
-                <div id="authMsg" style="font-size:12px;
-                text-align:center;"></div>
-                <div style="display:grid;
-                grid-template-columns: 1fr 1fr; gap:12px;">
+                <div id="authMsg" style="font-size:12px; text-align:center;"></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
                     <button type="button" class="btn btn-glass" id="btnDoRegister">注册</button>
                     <button type="submit" class="btn btn-primary" id="btnDoLogin">登录</button>
                 </div>
@@ -738,74 +596,62 @@
         </div>
     </div>
 
+    <!-- User Center Modal -->
     <div class="modal-mask" id="userCenter">
-        <div class="modal-panel" style="max-width:600px; height:80vh; display:flex; flex-direction:column;
-        position:relative;">
+        <div class="modal-panel" style="max-width:600px; height:80vh; display:flex; flex-direction:column; position:relative;">
             <div class="modal-head">
                 <div class="modal-title-stack">
                     <span class="modal-title">
-                        <svg class="icon note-icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M778.24 61.44a122.88 122.88 0 0 1 122.88 122.88v655.36a122.88 122.88 0 0 1-122.88 122.88H245.76a122.88 122.88 0 0 
-                        1-122.88-122.88V184.32a122.88 122.88 0 0 1 122.88-122.88h532.48z m0 61.44H245.76a61.44 61.44 0 0 0-61.3376 57.83552L184.32 184.32v655.36a61.44 61.44 0 0 0 57.83552 61.3376L245.76 901.12h532.48a61.44 61.44 0 0 0 61.3376-57.83552L839.68 839.68V184.32a61.44 61.44 0 0 0-57.83552-61.3376L778.24 122.88zM563.2 532.48a30.72 30.72 0 0 1 0 61.44h-266.24a30.72 30.72 0 0 1 0-61.44h266.24z m163.84-225.28a30.72 30.72 0 0 1 0 61.44h-430.08a30.72 30.72 0 0 1 0-61.44h430.08z" fill="#131415"></path></svg>
+                        <svg class="icon note-icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M778.24 61.44a122.88 122.88 0 0 1 122.88 122.88v655.36a122.88 122.88 0 0 1-122.88 122.88H245.76a122.88 122.88 0 0 1-122.88-122.88V184.32a122.88 122.88 0 0 1 122.88-122.88h532.48z m0 61.44H245.76a61.44 61.44 0 0 0-61.3376 57.83552L184.32 184.32v655.36a61.44 61.44 0 0 0 57.83552 61.3376L245.76 901.12h532.48a61.44 61.44 0 0 0 61.3376-57.83552L839.68 839.68V184.32a61.44 61.44 0 0 0-57.83552-61.3376L778.24 122.88zM563.2 532.48a30.72 30.72 0 0 1 0 61.44h-266.24a30.72 30.72 0 0 1 0-61.44h266.24z m163.84-225.28a30.72 30.72 0 0 1 0 61.44h-430.08a30.72 30.72 0 0 1 0-61.44h430.08z" fill="#131415"></path></svg>
                         Manage / Paste
-                  
                     </span>
                 </div>
-                <div style="display:flex;
-                gap:12px;">
+                <div style="display:flex; gap:12px;">
                     <button class="btn-circle" id="ucRefreshBtn" title="刷新列表" aria-label="刷新列表">
                         <svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
                     </button>
-       
                     <button class="btn-circle" id="ucLogoutBtn" title="退出登录" aria-label="退出登录">
-                        <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M288.998 738.284C346.186 794.396 424.552 829 511 829c120.81 0 225.836-67.581 279.335-167C814.365 617.344 828 566.264 828 512c0-8.414-0.328-16.751-0.972-25l-538.03 251.284z" fill="#d81e06"></path><path d="M511 859c-46.832 0-92.278-9.179-135.077-27.281-41.324-17.479-78.431-42.494-110.289-74.353-31.858-31.858-56.874-68.965-74.353-110.289C173.179 604.278 164 558.831 164 512c0-40.342 6.873-79.884 20.429-117.528 13.095-36.364 32.102-70.117 56.492-100.32 10.41-12.891 29.297-14.902 42.188-4.492 12.891 10.409 14.902 29.297 4.492 42.188C245.993 383.372 224 445.667 224 512c0 158.252 128.748 287 287 287s287-128.748 287-287c0-66.332-21.992-128.628-63.6-180.152-10.409-12.89-8.398-31.778 4.492-42.188 
-                        12.891-10.41 31.779-8.397 42.188 4.493 24.391 30.203 43.396 63.956 56.491 100.32C851.127 432.116 858 471.658 858 512c0 46.831-9.179 92.278-27.281 135.077-17.479 41.324-42.494 78.431-74.353 110.289s-68.965 56.874-110.289 74.353C603.278 849.821 557.831 859 511 859z" fill="#d81e06"></path><path d="M511 521c-16.5 0-30-13.5-30-30V183c0-16.5 13.5-30 30-30s30 13.5 30 30v308c0 16.5-13.5 30-30 30z" fill="#d81e06"></path></svg>
+                        <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M288.998 738.284C346.186 794.396 424.552 829 511 829c120.81 0 225.836-67.581 279.335-167C814.365 617.344 828 566.264 828 512c0-8.414-0.328-16.751-0.972-25l-538.03 251.284z" fill="#d81e06"></path><path d="M511 859c-46.832 0-92.278-9.179-135.077-27.281-41.324-17.479-78.431-42.494-110.289-74.353-31.858-31.858-56.874-68.965-74.353-110.289C173.179 604.278 164 558.831 164 512c0-40.342 6.873-79.884 20.429-117.528 13.095-36.364 32.102-70.117 56.492-100.32 10.41-12.891 29.297-14.902 42.188-4.492 12.891 10.409 14.902 29.297 4.492 42.188C245.993 383.372 224 445.667 224 512c0 158.252 128.748 287 287 287s287-128.748 287-287c0-66.332-21.992-128.628-63.6-180.152-10.409-12.89-8.398-31.778 4.492-42.188 12.891-10.41 31.779-8.397 42.188 4.493 24.391 30.203 43.396 63.956 56.491 100.32C851.127 432.116 858 471.658 858 512c0 46.831-9.179 92.278-27.281 135.077-17.479 41.324-42.494 78.431-74.353 110.289s-68.965 56.874-110.289 74.353C603.278 849.821 557.831 859 511 859z" fill="#d81e06"></path><path d="M511 521c-16.5 0-30-13.5-30-30V183c0-16.5 13.5-30 30-30s30 13.5 30 30v308c0 16.5-13.5 30-30 30z" fill="#d81e06"></path></svg>
                     </button>
                     <button class="btn-circle" id="ucCloseBtn" title="关闭" aria-label="关闭">×</button>
-                
                 </div>
             </div>
             
             <div class="uc-list" id="ucList"></div>
-            <div id="ucEmpty" style="text-align:center;
-            padding:40px; color:var(--txt-secondary); font-size:13px;">加载中...</div>
+            <div id="ucEmpty" style="text-align:center; padding:40px; color:var(--txt-secondary); font-size:13px;">加载中...</div>
         </div>
     </div>
 
+    <!-- Subscription Modal -->
     <div class="modal-mask" id="subClientOverlay">
-        <div class="modal-panel" style="width:100%;
-        max-width:500px;">
+        <div class="modal-panel" style="width:100%; max-width:500px;">
             <div class="modal-head">
                 <span class="modal-title">选择客户端格式</span>
                 <button class="btn-circle" id="subMenuCloseBtn" title="关闭">×</button>
             </div>
             
-            <div style="display:grid;
-            grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:20px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:20px;">
                 <button class="btn btn-glass" data-client="general" style="justify-content:center">通用格式</button>
                 <button class="btn btn-glass" data-client="base64" style="justify-content:center">Base64</button>
                 <button class="btn btn-glass" data-client="clash" style="justify-content:center">Clash</button>
                 <button class="btn btn-glass" data-client="surge" style="justify-content:center">Surge</button>
             </div>
-    
             
             <div class="input-group-row">
                 <input id="subLinkInput" readonly>
                 <button id="subLinkCopyBtn" class="copy-icon-btn" title="复制" style="width:40px;height:36px;">
-                    <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M715.6224 910.0288H356.096c-55.3984 0-100.3008-44.9024-100.3008-100.3008V452.8128c0-55.3984 44.9024-100.3008 100.3008-100.3008h359.5776c55.3984 0 100.3008 44.9024 100.3008 100.3008v356.9152c-0.0512 55.3984-44.9536 100.3008-100.352 100.3008z" 
-                    fill="#56E5BE"></path><path d="M729.1904 910.0288H416.3072c-47.9232 0-86.7328-38.8608-86.7328-86.7328v-310.5792c0-47.9232 38.8608-86.7328 86.7328-86.7328h312.8832c47.9232 0 86.7328 38.8608 86.7328 86.7328v310.5792c0 47.872-38.8608 86.7328-86.7328 86.7328z" fill="#50DDB8"></path><path d="M727.6544 910.0288H466.2784c-36.0448 0-65.2288-29.184-65.2288-65.2288v-282.4704c0-36.0448 29.184-65.2288 65.2288-65.2288h284.416c36.0448 0 65.2288 29.184 65.2288 65.2288v259.4304c0 48.7424-39.5264 88.2688-88.2688 88.2688z" fill="#42D3AD"></path><path d="M763.5456 107.5712H410.0096c-81.2544 0-147.5072 65.536-148.6336 146.5856-79.1552 3.2256-142.5408 68.608-142.5408 148.5312v359.5776c0 81.9712 66.7136 148.6848 148.6848 148.6848h353.536c81.2544 0 147.5072-65.536 148.6336-146.5856 79.1552-3.2256 142.5408-68.608 142.5408-148.5312V256.256c0-81.9712-66.6624-148.6848-148.6848-148.6848z m-55.1936 654.6944c0 48.128-39.168 87.2448-87.2448 87.2448H267.52c-48.128 0-87.2448-39.168-87.2448-87.2448V402.6368c0-48.128 39.168-87.2448 87.2448-87.2448h353.536c48.128 0 87.2448 39.168 87.2448 87.2448v359.6288z m142.4384-146.432c0 46.0288-35.84 83.712-81.0496 86.9376V402.6368c0-81.9712-66.7136-148.6848-148.6848-148.6848H322.8672c1.2288-47.0528 39.7824-84.9408 87.1424-84.9408h353.5872c48.128 0 87.2448 39.168 87.2448 87.2448v359.5776z" fill="#2E3138"></path></svg>
+                    <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M715.6224 910.0288H356.096c-55.3984 0-100.3008-44.9024-100.3008-100.3008V452.8128c0-55.3984 44.9024-100.3008 100.3008-100.3008h359.5776c55.3984 0 100.3008 44.9024 100.3008 100.3008v356.9152c-0.0512 55.3984-44.9536 100.3008-100.352 100.3008z" fill="#56E5BE"></path><path d="M729.1904 910.0288H416.3072c-47.9232 0-86.7328-38.8608-86.7328-86.7328v-310.5792c0-47.9232 38.8608-86.7328 86.7328-86.7328h312.8832c47.9232 0 86.7328 38.8608 86.7328 86.7328v310.5792c0 47.872-38.8608 86.7328-86.7328 86.7328z" fill="#50DDB8"></path><path d="M727.6544 910.0288H466.2784c-36.0448 0-65.2288-29.184-65.2288-65.2288v-282.4704c0-36.0448 29.184-65.2288 65.2288-65.2288h284.416c36.0448 0 65.2288 29.184 65.2288 65.2288v259.4304c0 48.7424-39.5264 88.2688-88.2688 88.2688z" fill="#42D3AD"></path><path d="M763.5456 107.5712H410.0096c-81.2544 0-147.5072 65.536-148.6336 146.5856-79.1552 3.2256-142.5408 68.608-142.5408 148.5312v359.5776c0 81.9712 66.7136 148.6848 148.6848 148.6848h353.536c81.2544 0 147.5072-65.536 148.6336-146.5856 79.1552-3.2256 142.5408-68.608 142.5408-148.5312V256.256c0-81.9712-66.6624-148.6848-148.6848-148.6848z m-55.1936 654.6944c0 48.128-39.168 87.2448-87.2448 87.2448H267.52c-48.128 0-87.2448-39.168-87.2448-87.2448V402.6368c0-48.128 39.168-87.2448 87.2448-87.2448h353.536c48.128 0 87.2448 39.168 87.2448 87.2448v359.6288z m142.4384-146.432c0 46.0288-35.84 83.712-81.0496 86.9376V402.6368c0-81.9712-66.7136-148.6848-148.6848-148.6848H322.8672c1.2288-47.0528 39.7824-84.9408 87.1424-84.9408h353.5872c48.128 0 87.2448 39.168 87.2448 87.2448v359.5776z" fill="#2E3138"></path></svg>
                 </button>
-            
             </div>
         </div>
     </div>
 
-    <script>
-    const THEME_KEY = "lyn_paste_theme_v4";
-    const API_BASE = location.origin + "/api/paste";
-    const AUTH_BASE = location.origin + "/api/auth";
-    const VIEW_BASE = location.origin + "/api/paste"; // [已修复] 更改为 /api/paste
-    const qs = id => document.getElementById(id);
-
+  <script>
+  const THEME_KEY = "lyn_paste_theme_v4";
+  const API_BASE = location.origin + "/api/paste";
+  const AUTH_BASE = location.origin + "/api/auth";
+  const VIEW_BASE = location.origin + "/api/paste";
+  const qs = id => document.getElementById(id);
     // Elements
     const el = {
         themeToggle: qs("themeToggle"), iconSun: qs("iconSun"), iconMoon: qs("iconMoon"),
@@ -814,8 +660,7 @@
         submitBtn: qs("submitBtn"), resultBox: qs("resultBox"), viewLinkText: qs("viewLinkText"),
         btnCopyView: qs("btnCopyView"), btnOpenView: qs("btnOpenView"), statusMsg: qs("statusMsg"),
         advancedSection: qs("advancedSection"), ttlForeverBtn: qs("ttlForeverBtn"),
-        customId: qs("customId"), 
-        remark: qs("remark"), fileInput: qs("fileInput"),
+        customId: qs("customId"), remark: qs("remark"), fileInput: qs("fileInput"),
         uploadBtn: qs("uploadBtn"), btnResetContent: qs("btnResetContent"),
         btnBase64Encode: qs("btnBase64Encode"), btnBase64Decode: qs("btnBase64Decode"),
         btnHome: qs("btnHome"), btnAuthOpen: qs("btnAuthOpen"), btnAuthLabel: qs("btnAuthLabel"),
@@ -824,16 +669,17 @@
         btnDoLogin: qs("btnDoLogin"), btnDoRegister: qs("btnDoRegister"),
         authCloseBtn: qs("authCloseBtn"), authMsg: qs("authMsg"),
         userCenter: qs("userCenter"), ucEmpty: qs("ucEmpty"), ucList: qs("ucList"),
-   
         ucRefreshBtn: qs("ucRefreshBtn"), ucLogoutBtn: qs("ucLogoutBtn"), ucCloseBtn: qs("ucCloseBtn"),
         ttlGroup: qs("ttlGroup"), ttlHint: qs("ttlHint"),
         icoPublish: qs("icoPublish"), icoUpdate: qs("icoUpdate")
     };
+
     const state = {
         loggedIn: false, username: null, ttlKey: "7d",
         customSlugError: false, isSubmitting: false,
         mode: "create", originalSlug: null
     };
+
     // --- Theme Logic ---
     function applyTheme(t) {
         document.body.classList.remove("theme-light", "theme-dark");
@@ -842,8 +688,7 @@
             el.iconSun.classList.toggle("d-none", t === "dark");
             el.iconMoon.classList.toggle("d-none", t !== "dark");
         }
-        try { localStorage.setItem(THEME_KEY, t);
-        } catch (_) {}
+        try { localStorage.setItem(THEME_KEY, t); } catch (_) {}
     }
 
     (function initTheme() {
@@ -852,10 +697,10 @@
             const s = localStorage.getItem(THEME_KEY);
             if (s === "dark" || s === "light") t = s;
             else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) t = "dark";
-        } catch 
-        (_) {}
+        } catch (_) {}
         applyTheme(t);
     })();
+
     if (el.themeToggle) {
         el.themeToggle.addEventListener("click", () => {
             const cur = document.body.classList.contains("theme-dark") ? "dark" : "light";
@@ -869,9 +714,9 @@
         const ICONS = Array.from({length: 10}, (_, i) => `https://save.aura.us.kg/Picture/Preview/YL${i+1}.png`);
         el.brandIcon.src = ICONS[Math.floor(Math.random() * ICONS.length)];
     })();
+
     // --- Helpers ---
-    function toggleScrollLock(lock) { document.body.style.overflow = lock ? 'hidden' : '';
-    }
+    function toggleScrollLock(lock) { document.body.style.overflow = lock ? 'hidden' : ''; }
     
     function escapeHTML(str) {
         if (!str) return "";
@@ -918,17 +763,14 @@
 
     function setStatus(msg, type) {
         if (el.statusMsg) {
-            el.statusMsg.textContent = msg ||
-            "";
+            el.statusMsg.textContent = msg || "";
             el.statusMsg.style.color = type === "error" ? "var(--danger)" : (type === "success" ? "var(--success)" : "var(--txt-secondary)");
         }
         if (msg) showToast(msg, type === "error" ? "error" : (type === "success" ? "success" : "info"));
     }
 
-    function base64EncodeUtf8(str) { try { return btoa(unescape(encodeURIComponent(str))); } catch (_) { return null;
-    } }
-    function base64DecodeUtf8(str) { try { return decodeURIComponent(escape(atob(str))); } catch (_) { return null;
-    } }
+    function base64EncodeUtf8(str) { try { return btoa(unescape(encodeURIComponent(str))); } catch (_) { return null; } }
+    function base64DecodeUtf8(str) { try { return decodeURIComponent(escape(atob(str))); } catch (_) { return null; } }
 
     async function postJSON(url, body) {
         const res = await fetch(url, {
@@ -969,10 +811,10 @@
         if (!el.content || !el.byteNum) return;
         const val = el.content.value || "";
         let len = 0;
-        try { len = new TextEncoder().encode(val).length;
-        } catch (_) { len = val.length; }
+        try { len = new TextEncoder().encode(val).length; } catch (_) { len = val.length; }
         el.byteNum.textContent = len;
         if (el.lineCounter) el.lineCounter.textContent = (val ? val.split(/\r\n|\r|\n/).length : 0) + " 行";
+        
         if (el.nodeInfo) {
             const info = detectNodes(val);
             if (info.isNode && info.count > 0) {
@@ -984,6 +826,7 @@
         }
     }
     if (el.content) el.content.addEventListener("input", updateByteCount);
+
     // Drag & Drop
     if (el.editorZone) {
         el.editorZone.addEventListener("dragover", (e) => { e.preventDefault(); el.editorZone.classList.add("drag-over"); });
@@ -993,8 +836,7 @@
             const file = e.dataTransfer.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = () => { el.content.value = reader.result || ""; updateByteCount(); setStatus(`已加载: 
-                ${file.name}`, "success"); };
+                reader.onload = () => { el.content.value = reader.result || ""; updateByteCount(); setStatus(`已加载: ${file.name}`, "success"); };
                 reader.readAsText(file);
             }
         });
@@ -1007,7 +849,6 @@
             const reader = new FileReader();
             reader.onload = () => {
                 el.content.value = reader.result || "";
-  
                 updateByteCount();
                 setStatus(`已加载: ${file.name}`, "success");
             };
@@ -1018,6 +859,7 @@
     if (el.btnResetContent) el.btnResetContent.addEventListener("click", () => {
         el.content.value = ""; el.remark.value = ""; updateByteCount(); setStatus("已清空");
     });
+
     if (el.btnBase64Encode) el.btnBase64Encode.addEventListener("click", () => {
         const v = el.content.value;
         if (!v) return setStatus("内容为空", "error");
@@ -1025,6 +867,7 @@
         if (enc) { el.content.value = enc; updateByteCount(); setStatus("编码成功", "success"); }
         else setStatus("编码失败", "error");
     });
+
     if (el.btnBase64Decode) el.btnBase64Decode.addEventListener("click", () => {
         const v = el.content.value;
         if (!v) return setStatus("内容为空", "error");
@@ -1032,6 +875,7 @@
         if (dec) { el.content.value = dec; updateByteCount(); setStatus("解码成功", "success"); }
         else setStatus("解码失败", "error");
     });
+
     // --- TTL Logic ---
     const ttlMap = { "10m": 600000, "1d": 86400000, "7d": 604800000, "30d": 2592000000 };
     function setTtl(key) {
@@ -1041,8 +885,7 @@
         }
         let text = "永久有效";
         if (key !== "forever") {
-            const ms = ttlMap[key] ||
-            0;
+            const ms = ttlMap[key] || 0;
             const date = new Date(Date.now() + ms);
             const m = (date.getMonth()+1).toString().padStart(2,'0');
             const d = date.getDate().toString().padStart(2,'0');
@@ -1052,11 +895,13 @@
         }
         if (el.ttlHint) el.ttlHint.textContent = text;
     }
-    setTtl("7d");
+    setTtl("7d"); //默认7天有效期
+
     if (el.ttlGroup) el.ttlGroup.addEventListener("click", e => {
         const btn = e.target.closest(".seg-btn");
         if (btn && !btn.disabled) setTtl(btn.dataset.ttl);
     });
+
     function formatRemainDetailed(ms) {
         if (!isFinite(ms)) return "";
         if (ms <= 0) return "<1分钟";
@@ -1064,6 +909,7 @@
         const min = Math.floor(sec/60);
         const hr = Math.floor(min/60);
         const day = Math.floor(hr/24);
+        
         if (day >= 1) return `${day}天 ${hr%24}小时`;
         if (hr >= 1) return `${hr}小时 ${min%60}分`;
         return `${min}分钟`;
@@ -1077,10 +923,8 @@
         const remain = expireAt - Date.now();
         
         let level = "ok";
-        if (remain <= 86400000) level = "urgent";
-        // 1 day
-        else if (remain <= 259200000) level = "warn";
-        // 3 days
+        if (remain <= 86400000) level = "urgent"; // 1 day
+        else if (remain <= 259200000) level = "warn"; // 3 days
         
         const date = new Date(expireAt);
         const dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
@@ -1095,23 +939,20 @@
         el.advancedSection.classList.toggle("d-flex", state.loggedIn);
         el.advancedSection.classList.toggle("d-none", !state.loggedIn);
         
-        if (!val) { el.customId.parentElement.style.borderColor = ""; return;
-        }
+        if (!val) { el.customId.parentElement.style.borderColor = ""; return; }
         state.customSlugError = !/^[A-Za-z0-9_-]+$/.test(val);
         el.customId.parentElement.style.borderColor = state.customSlugError ? "var(--danger)" : "var(--success)";
     }
     if (el.customId) el.customId.addEventListener("input", validateCustomSlug);
 
     function enterCreateMode(clear) {
-        state.mode = "create";
-        state.originalSlug = null;
+        state.mode = "create"; state.originalSlug = null;
         if (el.submitBtn) el.submitBtn.querySelector(".text").textContent = "发布内容";
         if (el.icoPublish) el.icoPublish.classList.remove("d-none");
         if (el.icoUpdate) el.icoUpdate.classList.add("d-none");
         if (el.btnHome) el.btnHome.classList.add("d-none");
         if (clear) {
-            el.content.value = ""; el.remark.value = "";
-            el.customId.value = "";
+            el.content.value = ""; el.remark.value = ""; el.customId.value = "";
             el.resultBox.style.display = "none";
             updateByteCount(); setStatus("");
         }
@@ -1122,10 +963,10 @@
         history.replaceState(null, "", location.origin + "/Paste"); 
         window.scrollTo({ top: 0, behavior: "smooth" });
     });
+
     // --- Auth Logic ---
     function applyAuthUI() {
-        if (el.btnAuthLabel) el.btnAuthLabel.textContent = state.loggedIn ?
-        (state.username || "用户") : "登录";
+        if (el.btnAuthLabel) el.btnAuthLabel.textContent = state.loggedIn ? (state.username || "用户") : "登录";
         if (el.advancedSection) {
             el.advancedSection.classList.toggle("d-flex", state.loggedIn);
             el.advancedSection.classList.toggle("d-none", !state.loggedIn);
@@ -1136,10 +977,8 @@
         }
         validateCustomSlug();
     }
-    function setLoggedIn(u) { state.loggedIn = true; state.username = u || "用户"; localStorage.setItem("pbx_username", state.username); applyAuthUI();
-    }
-    function setLoggedOut() { state.loggedIn = false; state.username = null; localStorage.removeItem("pbx_username"); applyAuthUI();
-    }
+    function setLoggedIn(u) { state.loggedIn = true; state.username = u || "用户"; localStorage.setItem("pbx_username", state.username); applyAuthUI(); }
+    function setLoggedOut() { state.loggedIn = false; state.username = null; localStorage.removeItem("pbx_username"); applyAuthUI(); }
 
     async function initAuthFromServer() {
         const saved = localStorage.getItem("pbx_username");
@@ -1163,12 +1002,12 @@
         el.authMsg.style.color = "var(--txt-secondary)";
         
         try {
-      
             const data = await postJSON(AUTH_BASE + "/login", { username: u, password: p, remember: el.authRemember.checked });
             setLoggedIn(data.username || u); setStatus("登录成功", "success");
             setTimeout(() => (el.authModal.classList.remove("show"), toggleScrollLock(false)), 500);
         } catch (err) { setStatus(err.message || "登录失败", "error"); el.authMsg.textContent = ""; }
     });
+    
     if (el.btnDoRegister) el.btnDoRegister.addEventListener("click", async () => {
         const u = el.authUsername.value.trim(), p = el.authPassword.value;
         if (!u || !p) return setStatus("请输入账号密码", "error");
@@ -1177,15 +1016,14 @@
         el.authMsg.style.color = "var(--txt-secondary)";
         
         try { 
-            await postJSON(AUTH_BASE + "/register", { username: u, password: 
-            p }); 
+            await postJSON(AUTH_BASE + "/register", { username: u, password: p }); 
             setStatus("注册成功，请登录", "success"); 
             el.authMsg.textContent = "";
         } catch (err) { setStatus(err.message, "error"); el.authMsg.textContent = ""; }
     });
+
     // --- User Center ---
-    function openUserCenter() { el.userCenter.classList.add("show"); toggleScrollLock(true); loadUserPastes();
-    }
+    function openUserCenter() { el.userCenter.classList.add("show"); toggleScrollLock(true); loadUserPastes(); }
     if (el.ucCloseBtn) el.ucCloseBtn.addEventListener("click", () => (el.userCenter.classList.remove("show"), toggleScrollLock(false)));
     if (el.ucLogoutBtn) el.ucLogoutBtn.addEventListener("click", async () => {
         try { await postJSON(AUTH_BASE + "/logout"); } catch (_) {}
@@ -1195,23 +1033,26 @@
     if (el.ucRefreshBtn) el.ucRefreshBtn.addEventListener("click", loadUserPastes);
 
     async function loadUserPastes() {
-        el.ucEmpty.style.display = "block";
-        el.ucEmpty.textContent = "加载中..."; el.ucList.innerHTML = "";
+        el.ucEmpty.style.display = "block"; el.ucEmpty.textContent = "加载中..."; el.ucList.innerHTML = "";
         try {
             const res = await fetch(location.origin + "/api/me/pastes", { credentials: "include" });
             if (res.status === 401) { setLoggedOut(); return; }
             const data = await res.json();
             if (!data.ok) throw new Error(data.error);
             const items = data.items || [];
-            if (!items.length) { el.ucEmpty.textContent = "暂无记录"; return;
-            }
+            if (!items.length) { el.ucEmpty.textContent = "暂无记录"; return; }
 
-            // [修改] 移除了原有的 fetch 详情循环，直接使用列表数据
-            const valid = items.map(item => {
-                // 如果后端返回 content，则可以直接检测节点
-                item._nodeInfo = detectNodes(item.content); 
-                return item;
-            });
+            const valid = [];
+            await Promise.all(items.map(async item => {
+                try {
+                    const r = await fetch(`${API_BASE}/${encodeURIComponent(item.slug || item.id)}?manage=1`, { credentials: "include" });
+                    if (!r.ok) return;
+                    const d = await r.json();
+                    if (d.ok === false) return;
+                    d._nodeInfo = detectNodes(d.content);
+                    valid.push(d);
+                } catch (_) {}
+            }));
             valid.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
             
             el.ucEmpty.style.display = "none";
@@ -1226,32 +1067,26 @@
                     <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:6px;">
                         <span>${escapeHTML(d.remark || "无标题")}</span>
                         <span style="font-family:var(--font-mono);opacity:0.6;font-size:12px;">/${escapeHTML(d.slug)}</span>
-       
                     </div>
                     <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
                         <div class="uc-expire" data-level="${meta.level}">${meta.text}</div>
                     </div>
-                    
                     <div class="input-group-row" style="margin-bottom:12px; height:32px;">
                         <input value="${link}" readonly onclick="this.select()">
-                        <button class="copy-icon-btn" data-link="${link}" style="height:32px;
-                        width:36px;">
-                            <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M715.6224 910.0288H356.096c-55.3984 0-100.3008-44.9024-100.3008-100.3008V452.8128c0-55.3984 44.9024-100.3008 100.3008-100.3008h359.5776c55.3984 0 100.3008 44.9024 100.3008 100.3008v356.9152c-0.0512 55.3984-44.9536 100.3008-100.352 100.3008z" fill="#56E5BE"></path><path d="M729.1904 910.0288H416.3072c-47.9232 0-86.7328-38.8608-86.7328-86.7328v-310.5792c0-47.9232 38.8608-86.7328 86.7328-86.7328h312.8832c47.9232 0 86.7328 38.8608 86.7328 86.7328v310.5792c0 47.872-38.8608 86.7328-86.7328 86.7328z" fill="#50DDB8"></path><path d="M727.6544 910.0288H466.2784c-36.0448 0-65.2288-29.184-65.2288-65.2288v-282.4704c0-36.0448 29.184-65.2288 65.2288-65.2288h284.416c36.0448 0 65.2288 29.184 65.2288 65.2288v259.4304c0 48.7424-39.5264 88.2688-88.2688 88.2688z" fill="#42D3AD"></path><path d="M763.5456 107.5712H410.0096c-81.2544 0-147.5072 65.536-148.6336 146.5856-79.1552 3.2256-142.5408 68.608-142.5408 148.5312v359.5776c0 81.9712 66.7136 148.6848 148.6848 148.6848h353.536c81.2544 0 147.5072-65.536 148.6336-146.5856 79.1552-3.2256 142.5408-68.608 142.5408-148.5312V256.256c0-81.9712-66.6624-148.6848-148.6848-148.6848z m-55.1936 654.6944c0 48.128-39.168 
-                        87.2448-87.2448 87.2448H267.52c-48.128 0-87.2448-39.168-87.2448-87.2448V402.6368c0-48.128 39.168-87.2448 87.2448-87.2448h353.536c48.128 0 87.2448 39.168 87.2448 87.2448v359.6288z m142.4384-146.432c0 46.0288-35.84 83.712-81.0496 86.9376V402.6368c0-81.9712-66.7136-148.6848-148.6848-148.6848H322.8672c1.2288-47.0528 39.7824-84.9408 87.1424-84.9408h353.5872c48.128 0 87.2448 39.168 87.2448 87.2448v359.5776z" fill="#2E3138"></path></svg>
+                        <button class="copy-icon-btn" data-link="${link}" style="height:32px; width:36px;">
+                            <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M715.6224 910.0288H356.096c-55.3984 0-100.3008-44.9024-100.3008-100.3008V452.8128c0-55.3984 44.9024-100.3008 100.3008-100.3008h359.5776c55.3984 0 100.3008 44.9024 100.3008 100.3008v356.9152c-0.0512 55.3984-44.9536 100.3008-100.352 100.3008z" fill="#56E5BE"></path><path d="M729.1904 910.0288H416.3072c-47.9232 0-86.7328-38.8608-86.7328-86.7328v-310.5792c0-47.9232 38.8608-86.7328 86.7328-86.7328h312.8832c47.9232 0 86.7328 38.8608 86.7328 86.7328v310.5792c0 47.872-38.8608 86.7328-86.7328 86.7328z" fill="#50DDB8"></path><path d="M727.6544 910.0288H466.2784c-36.0448 0-65.2288-29.184-65.2288-65.2288v-282.4704c0-36.0448 29.184-65.2288 65.2288-65.2288h284.416c36.0448 0 65.2288 29.184 65.2288 65.2288v259.4304c0 48.7424-39.5264 88.2688-88.2688 88.2688z" fill="#42D3AD"></path><path d="M763.5456 107.5712H410.0096c-81.2544 0-147.5072 65.536-148.6336 146.5856-79.1552 3.2256-142.5408 68.608-142.5408 148.5312v359.5776c0 81.9712 66.7136 148.6848 148.6848 148.6848h353.536c81.2544 0 147.5072-65.536 148.6336-146.5856 79.1552-3.2256 142.5408-68.608 142.5408-148.5312V256.256c0-81.9712-66.6624-148.6848-148.6848-148.6848z m-55.1936 654.6944c0 48.128-39.168 87.2448-87.2448 87.2448H267.52c-48.128 0-87.2448-39.168-87.2448-87.2448V402.6368c0-48.128 39.168-87.2448 87.2448-87.2448h353.536c48.128 0 87.2448 39.168 87.2448 87.2448v359.6288z m142.4384-146.432c0 46.0288-35.84 83.712-81.0496 86.9376V402.6368c0-81.9712-66.7136-148.6848-148.6848-148.6848H322.8672c1.2288-47.0528 39.7824-84.9408 87.1424-84.9408h353.5872c48.128 0 87.2448 39.168 87.2448 87.2448v359.5776z" fill="#2E3138"></path></svg>
                         </button>
                     </div>
                     <div style="display:flex;gap:10px;">
-              
-                        ${hasNode ? `<button class="btn btn-primary" style="height:32px;padding:0 14px;font-size:12px;"
-                        onclick="openSubMenu('${d.slug}')">订阅</button>` : ''}
-                        <button class="btn btn-glass" style="height:32px;padding:0 14px;font-size:12px;"
-                        onclick="enterEditMode('${d.slug}')">编辑</button>
-                        <button class="btn btn-glass" style="height:32px;padding:0 14px;font-size:12px;color:var(--danger);"
-                        onclick="deletePaste('${d.slug}')">删除</button>
+                        ${hasNode ? `<button class="btn btn-primary" style="height:32px;padding:0 14px;font-size:12px;" onclick="openSubMenu('${d.slug}')">订阅</button>` : ''}
+                        <button class="btn btn-glass" style="height:32px;padding:0 14px;font-size:12px;" onclick="enterEditMode('${d.slug}')">编辑</button>
+                        <button class="btn btn-glass" style="height:32px;padding:0 14px;font-size:12px;color:var(--danger);" onclick="deletePaste('${d.slug}')">删除</button>
                     </div>`;
+                
                 row.querySelector('.copy-icon-btn').addEventListener('click', function() {
                     copyTextToClipboard(this.dataset.link, "链接已复制", this);
                 });
+                
                 el.ucList.appendChild(row);
             });
         } catch (e) { el.ucEmpty.textContent = "加载失败"; }
@@ -1259,8 +1094,7 @@
 
     // Global hooks needed for inline HTML onclicks
     window.enterEditMode = async (slug) => {
-        el.userCenter.classList.remove("show");
-        toggleScrollLock(false);
+        el.userCenter.classList.remove("show"); toggleScrollLock(false);
         state.mode = "edit"; state.originalSlug = slug;
         if (el.submitBtn) el.submitBtn.querySelector(".text").textContent = "更新内容";
         if (el.icoPublish) el.icoPublish.classList.add("d-none");
@@ -1272,16 +1106,15 @@
             const res = await fetch(`${API_BASE}/${encodeURIComponent(slug)}?manage=1`, { credentials: "include" });
             const data = await res.json();
             if (!res.ok || !data.ok) throw new Error();
-            el.content.value = data.content || "";
-            el.remark.value = data.remark || "";
-            if (el.customId) { el.customId.value = data.slug || slug; el.customId.readOnly = false;
-            }
+            el.content.value = data.content || ""; el.remark.value = data.remark || "";
+            if (el.customId) { el.customId.value = data.slug || slug; el.customId.readOnly = false; }
             updateByteCount(); if (data.ttlKey) setTtl(data.ttlKey);
             
             history.replaceState(null, "", `?id=${slug}`);
             setStatus("编辑模式", "success");
         } catch (_) { setStatus("出错", "error"); enterCreateMode(false); }
     };
+
     window.deletePaste = async (slug) => {
         if (!confirm("确认删除?")) return;
         try {
@@ -1289,12 +1122,14 @@
             showToast("已删除", "success"); loadUserPastes();
         } catch (_) { showToast("删除失败", "error"); }
     };
+
     // --- Sub Menu ---
     window.openSubMenu = (slug) => {
         const overlay = document.getElementById("subClientOverlay");
         const input = document.getElementById("subLinkInput");
         const pills = overlay.querySelectorAll("button[data-client]");
         let selected = "general";
+
         const update = () => {
             const base = `${location.origin}/autosub?id=${encodeURIComponent(slug)}`;
             input.value = (selected === "general") ? base : `${base}&client=${selected}`;
@@ -1308,6 +1143,7 @@
         pills.forEach(b => b.onclick = () => { selected = b.dataset.client; update(); });
         overlay.classList.add("show"); toggleScrollLock(true);
         update();
+        
         document.getElementById("subMenuCloseBtn").onclick = () => { overlay.classList.remove("show"); toggleScrollLock(false); };
         document.getElementById("subLinkCopyBtn").onclick = function() {
             copyTextToClipboard(input.value, "订阅链接已复制", this);
@@ -1329,14 +1165,12 @@
         state.isSubmitting = true;
         el.submitBtn.querySelector(".text").textContent = "正在处理...";
         try {
-            const p = { action: state.mode === "edit" 
-            ? "update" : "create", content: text, ttlKey: state.ttlKey, remark: el.remark.value.trim() };
+            const p = { action: state.mode === "edit" ? "update" : "create", content: text, ttlKey: state.ttlKey, remark: el.remark.value.trim() };
             if (state.mode === "edit") p.slug = state.originalSlug;
             if (state.mode === "edit" && el.customId.value && el.customId.value !== state.originalSlug) p.newSlug = el.customId.value;
             else if (state.mode === "create" && state.loggedIn && el.customId.value) p.slug = el.customId.value;
 
             const data = await postJSON(API_BASE, p);
-        
             el.viewLinkText.textContent = `${VIEW_BASE}/${encodeURIComponent(data.slug || p.slug)}`;
             el.resultBox.style.display = "block";
             setStatus("成功", "success");
@@ -1347,10 +1181,12 @@
             el.submitBtn.querySelector(".text").textContent = state.mode === "edit" ? "更新内容" : "发布内容";
         }
     });
+
     // Hitokoto
     fetch('https://v1.hitokoto.cn').then(r => r.json()).then(d => {
         document.getElementById("hitokotoText").innerHTML = `${d.hitokoto}<br><span style="font-size:11px;opacity:0.6;">—— ${d.from}</span>`;
     }).catch(() => {});
+
     initAuthFromServer();
     </script>
 </body>
