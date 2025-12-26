@@ -803,7 +803,7 @@
     const THEME_KEY = "lyn_paste_theme_v4";
     const API_BASE = location.origin + "/api/paste";
     const AUTH_BASE = location.origin + "/api/auth";
-    const VIEW_BASE = location.origin + "/Paste";
+    const VIEW_BASE = location.origin + "/api/paste"; // [已修复] 更改为 /api/paste
     const qs = id => document.getElementById(id);
 
     // Elements
@@ -1206,8 +1206,9 @@
             if (!items.length) { el.ucEmpty.textContent = "暂无记录"; return;
             }
 
+            // [修改] 移除了原有的 fetch 详情循环，直接使用列表数据
             const valid = items.map(item => {
-                // 如果列表接口返回了 content，这里会检测到节点；如果没有，nodeInfo.count 为 0，按钮隐藏
+                // 如果后端返回 content，则可以直接检测节点
                 item._nodeInfo = detectNodes(item.content); 
                 return item;
             });
