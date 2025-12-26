@@ -895,11 +895,7 @@
         }
         if (el.ttlHint) el.ttlHint.textContent = text;
     }
-if (state.loggedIn) {
-    setTtl("forever"); // 已登录默认永久
-} else {
-    setTtl("7d");      // 未登录默认7天
-}
+    setTtl("7d"); //默认7天有效期
 
     if (el.ttlGroup) el.ttlGroup.addEventListener("click", e => {
         const btn = e.target.closest(".seg-btn");
