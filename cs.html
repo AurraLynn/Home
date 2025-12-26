@@ -187,24 +187,38 @@
             box-shadow: 0 8px 20px -4px var(--accent-glow);
         }
 
-        /* Submit Button */
+        /* Submit Button - 蓝色主题优化版 */
         #submitBtn {
             width: 70%; max-width: 360px; height: 50px; align-self: center;
             font-size: 15px; font-weight: 600; border-radius: 999px;
-            background: rgba(52, 199, 89, 0.15);
-            border: 1px solid rgba(52, 199, 89, 0.3);
-            color: #2da84e;
+            
+            /* 浅色模式 - 清透蓝 */
+            background: rgba(0, 122, 255, 0.12);
+            border: 1px solid rgba(0, 122, 255, 0.3);
+            color: #007aff;
+            
             backdrop-filter: blur(20px);
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
+
         #submitBtn:hover { 
-            background: rgba(52, 199, 89, 0.25); color: #248a3d;
+            background: rgba(0, 122, 255, 0.25);
+            color: #0056b3;
             transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
         }
+
+        /* 深色模式 - 荧光蓝 */
         body.theme-dark #submitBtn {
-            background: rgba(48, 209, 88, 0.2); border-color: rgba(48, 209, 88, 0.3); color: #32d74b;
+            background: rgba(10, 132, 255, 0.2);
+            border-color: rgba(10, 132, 255, 0.4); 
+            color: #0a84ff;
         }
+
         body.theme-dark #submitBtn:hover {
-            background: rgba(48, 209, 88, 0.3); color: #5ce372;
+            background: rgba(10, 132, 255, 0.35); 
+            color: #5ac8fa;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
 
         .btn-circle {
@@ -476,12 +490,12 @@
             
             <!-- Editor -->
             <div class="bento-card editor-zone" id="editorZone">
-                <textarea id="content" class="editor-textarea" placeholder="在这里粘贴代码或文本..." spellcheck="false" required></textarea>
+                <textarea id="content" class="editor-textarea" placeholder="在这里粘贴代码或文本... (支持直接拖入文件)" spellcheck="false" required></textarea>
                 
                 <div class="editor-status-bar">
                     <span class="status-pill" id="lineCounter">0 行</span>
                     <span class="status-pill"><span id="byteNum">0</span> 字符</span>
-                    <span class="status-pill node-indicator" id="nodeInfo">节点</span>
+                    <span class="status-pill node-indicator" id="nodeInfo">代理</span>
                     <button type="button" class="btn btn-glass d-none" id="btnHome" style="height:24px; font-size:11px; padding:0 10px;">结束编辑</button>
                 </div>
             </div>
@@ -492,9 +506,9 @@
                     <div>
                         <div class="panel-header">快捷操作</div>
                         <div class="tools-grid">
-                            <label class="tool-card" id="uploadBtn" for="fileInput" title="导入文件">
+                            <label class="tool-card" id="uploadBtn" for="fileInput" title="导入文本">
                                 <svg class="icon tool-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                                <span class="tool-label">导入文件</span>
+                                <span class="tool-label">导入文本</span>
                                 <input type="file" id="fileInput">
                             </label>
                             <div class="tool-card" id="btnResetContent" title="清空内容">
@@ -519,7 +533,7 @@
                             <button type="button" class="seg-btn" data-ttl="1d">1D</button>
                             <button type="button" class="seg-btn active" data-ttl="7d">7D</button>
                             <button type="button" class="seg-btn" data-ttl="30d">30D</button>
-                            <button type="button" class="seg-btn" data-ttl="forever" id="ttlForeverBtn" disabled>∞</button>
+                            <button type="button" class="seg-btn" data-ttl="forever" id="ttlForeverBtn" disabled>♾️</button>
                         </div>
                         <div id="ttlHint"></div>
                     </div>
@@ -544,6 +558,7 @@
                                 <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M715.6224 910.0288H356.096c-55.3984 0-100.3008-44.9024-100.3008-100.3008V452.8128c0-55.3984 44.9024-100.3008 100.3008-100.3008h359.5776c55.3984 0 100.3008 44.9024 100.3008 100.3008v356.9152c-0.0512 55.3984-44.9536 100.3008-100.352 100.3008z" fill="#56E5BE"></path><path d="M729.1904 910.0288H416.3072c-47.9232 0-86.7328-38.8608-86.7328-86.7328v-310.5792c0-47.9232 38.8608-86.7328 86.7328-86.7328h312.8832c47.9232 0 86.7328 38.8608 86.7328 86.7328v310.5792c0 47.872-38.8608 86.7328-86.7328 86.7328z" fill="#50DDB8"></path><path d="M727.6544 910.0288H466.2784c-36.0448 0-65.2288-29.184-65.2288-65.2288v-282.4704c0-36.0448 29.184-65.2288 65.2288-65.2288h284.416c36.0448 0 65.2288 29.184 65.2288 65.2288v259.4304c0 48.7424-39.5264 88.2688-88.2688 88.2688z" fill="#42D3AD"></path><path d="M763.5456 107.5712H410.0096c-81.2544 0-147.5072 65.536-148.6336 146.5856-79.1552 3.2256-142.5408 68.608-142.5408 148.5312v359.5776c0 81.9712 66.7136 148.6848 148.6848 148.6848h353.536c81.2544 0 147.5072-65.536 148.6336-146.5856 79.1552-3.2256 142.5408-68.608 142.5408-148.5312V256.256c0-81.9712-66.6624-148.6848-148.6848-148.6848z m-55.1936 654.6944c0 48.128-39.168 87.2448-87.2448 87.2448H267.52c-48.128 0-87.2448-39.168-87.2448-87.2448V402.6368c0-48.128 39.168-87.2448 87.2448-87.2448h353.536c48.128 0 87.2448 39.168 87.2448 87.2448v359.6288z m142.4384-146.432c0 46.0288-35.84 83.712-81.0496 86.9376V402.6368c0-81.9712-66.7136-148.6848-148.6848-148.6848H322.8672c1.2288-47.0528 39.7824-84.9408 87.1424-84.9408h353.5872c48.128 0 87.2448 39.168 87.2448 87.2448v359.5776z" fill="#2E3138"></path></svg>
                             </button>
                             <button type="button" class="btn btn-glass" style="flex:1" id="btnOpenView">打开</button>
+                            <button type="button" class="btn btn-primary d-none" style="flex:1" id="btnSubscribeView">订阅</button>
                         </div>
                     </div>
 
@@ -650,16 +665,18 @@
     const THEME_KEY = "lyn_paste_theme_v4";
     const API_BASE = location.origin + "/api/paste";
     const AUTH_BASE = location.origin + "/api/auth";
-    const VIEW_BASE = location.origin + "/api/paste";
+    const VIEW_BASE = location.origin + "/api/aste";
     const qs = id => document.getElementById(id);
 
     // Elements
     const el = {
         themeToggle: qs("themeToggle"), iconSun: qs("iconSun"), iconMoon: qs("iconMoon"),
         brandIcon: qs("brandIcon"), content: qs("content"), byteNum: qs("byteNum"),
-        lineCounter: qs("lineCounter"), nodeInfo: qs("nodeInfo"),
+        lineCounter: qs("lineCounter"), nodeInfo: qs("nodeInfo"), editorZone: qs("editorZone"),
         submitBtn: qs("submitBtn"), resultBox: qs("resultBox"), viewLinkText: qs("viewLinkText"),
-        btnCopyView: qs("btnCopyView"), btnOpenView: qs("btnOpenView"), statusMsg: qs("statusMsg"),
+        btnCopyView: qs("btnCopyView"), btnOpenView: qs("btnOpenView"), 
+        btnSubscribeView: qs("btnSubscribeView"), // 新增
+        statusMsg: qs("statusMsg"),
         advancedSection: qs("advancedSection"), ttlForeverBtn: qs("ttlForeverBtn"),
         customId: qs("customId"), remark: qs("remark"), fileInput: qs("fileInput"),
         uploadBtn: qs("uploadBtn"), btnResetContent: qs("btnResetContent"),
@@ -735,25 +752,30 @@
         toast.textContent = message;
         host.appendChild(toast);
         setTimeout(() => {
-            toast.style.animation = "toastOut 160ms ease-in forwards";
-            setTimeout(() => toast.remove(), 180);
+            toast.style.animation = "toastOut 0.3s cubic-bezier(0.2, 0.9, 0.2, 1) forwards";
+            setTimeout(() => toast.remove(), 300);
         }, Math.max(300, duration | 0));
         if (host.children.length > 3) host.removeChild(host.firstElementChild);
     }
 
-    async function copyTextToClipboard(text, okMsg = "已复制") {
+    // Advanced Copy: Swaps icon temporarily + Toast
+    async function copyTextToClipboard(text, successMsg, btnElement) {
         try {
             await navigator.clipboard.writeText(text);
-            showToast(okMsg, "success");
+            if (btnElement) {
+                const originalHTML = btnElement.innerHTML;
+                // SVG Checkmark
+                btnElement.innerHTML = `<svg class="icon" viewBox="0 0 24 24" style="color:var(--success)"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                setTimeout(() => btnElement.innerHTML = originalHTML, 1500);
+            }
+            // Always show toast
+            showToast(successMsg || "已复制", "success");
         } catch (_) {
+            // Fallback
             const ta = document.createElement("textarea");
-            ta.value = text;
-            ta.style.cssText = "position:fixed;left:-9999px";
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand("copy");
-            ta.remove();
-            showToast(okMsg, "success");
+            ta.value = text; ta.style.cssText = "position:fixed;left:-9999px";
+            document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove();
+            showToast(successMsg || "已复制", "success");
         }
     }
 
@@ -778,7 +800,7 @@
         return data;
     }
 
-    // --- Editor Logic ---
+    // --- Editor Logic (Drag & Drop + Counting) ---
     function detectNodes(raw) {
         const text = (raw || "").trim();
         if (!text) return { isNode: false, count: 0 };
@@ -822,6 +844,21 @@
         }
     }
     if (el.content) el.content.addEventListener("input", updateByteCount);
+
+    // Drag & Drop
+    if (el.editorZone) {
+        el.editorZone.addEventListener("dragover", (e) => { e.preventDefault(); el.editorZone.classList.add("drag-over"); });
+        el.editorZone.addEventListener("dragleave", (e) => { e.preventDefault(); el.editorZone.classList.remove("drag-over"); });
+        el.editorZone.addEventListener("drop", (e) => {
+            e.preventDefault(); el.editorZone.classList.remove("drag-over");
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = () => { el.content.value = reader.result || ""; updateByteCount(); setStatus(`已加载: ${file.name}`, "success"); };
+                reader.readAsText(file);
+            }
+        });
+    }
 
     if (el.fileInput) {
         el.fileInput.addEventListener("change", () => {
@@ -909,7 +946,6 @@
         const date = new Date(expireAt);
         const dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
         
-        // e.g. "2025-01-01 过期 · 剩余 2天 5小时"
         return { level, text: `${dateStr} 过期 · ${formatRemainDetailed(remain)}` };
     }
 
@@ -978,17 +1014,29 @@
         e.preventDefault();
         const u = el.authUsername.value.trim(), p = el.authPassword.value;
         if (!u || !p) return setStatus("请输入账号密码", "error");
+        
+        el.authMsg.textContent = "正在登录...";
+        el.authMsg.style.color = "var(--txt-secondary)";
+        
         try {
             const data = await postJSON(AUTH_BASE + "/login", { username: u, password: p, remember: el.authRemember.checked });
             setLoggedIn(data.username || u); setStatus("登录成功", "success");
             setTimeout(() => (el.authModal.classList.remove("show"), toggleScrollLock(false)), 500);
-        } catch (err) { setStatus(err.message || "登录失败", "error"); }
+        } catch (err) { setStatus(err.message || "登录失败", "error"); el.authMsg.textContent = ""; }
     });
+    
     if (el.btnDoRegister) el.btnDoRegister.addEventListener("click", async () => {
         const u = el.authUsername.value.trim(), p = el.authPassword.value;
         if (!u || !p) return setStatus("请输入账号密码", "error");
-        try { await postJSON(AUTH_BASE + "/register", { username: u, password: p }); setStatus("注册成功，请登录", "success"); }
-        catch (err) { setStatus(err.message, "error"); }
+        
+        el.authMsg.textContent = "正在注册...";
+        el.authMsg.style.color = "var(--txt-secondary)";
+        
+        try { 
+            await postJSON(AUTH_BASE + "/register", { username: u, password: p }); 
+            setStatus("注册成功，请登录", "success"); 
+            el.authMsg.textContent = "";
+        } catch (err) { setStatus(err.message, "error"); el.authMsg.textContent = ""; }
     });
 
     // --- User Center ---
@@ -1053,7 +1101,7 @@
                     </div>`;
                 
                 row.querySelector('.copy-icon-btn').addEventListener('click', function() {
-                    copyTextToClipboard(this.dataset.link, "链接已复制");
+                    copyTextToClipboard(this.dataset.link, "链接已复制", this);
                 });
                 
                 el.ucList.appendChild(row);
@@ -1114,79 +1162,68 @@
         update();
         
         document.getElementById("subMenuCloseBtn").onclick = () => { overlay.classList.remove("show"); toggleScrollLock(false); };
-        document.getElementById("subLinkCopyBtn").onclick = () => {
-            copyTextToClipboard(input.value, "订阅链接已复制");
-            overlay.classList.remove("show"); toggleScrollLock(false);
+        document.getElementById("subLinkCopyBtn").onclick = function() {
+            copyTextToClipboard(input.value, "订阅链接已复制", this);
+            setTimeout(() => { overlay.classList.remove("show"); toggleScrollLock(false); }, 300);
         };
     };
 
     // --- Main Submit ---
-    if (el.submitBtn) el.submitBtn.addEventListener("click", async (e) => {
+    if (el.resultBox) {
+        el.btnCopyView.addEventListener("click", function() { copyTextToClipboard(el.viewLinkText.textContent, "链接已复制", this); });
+        el.btnOpenView.addEventListener("click", () => window.open(el.viewLinkText.textContent));
+    }
+
+    if (qs("pasteForm")) qs("pasteForm").addEventListener("submit", async e => {
         e.preventDefault();
-        if (state.isSubmitting) return;
-        const text = (el.content ? (el.content.value || "") : "").trim();
-        if (!text) return setStatus("内容为空", "error");
+        const text = el.content.value.trim();
+        if (!text) return;
+        
+        // 1. 预先检测节点
+        const nodeInfo = detectNodes(text);
 
         state.isSubmitting = true;
-        if (el.submitBtn.querySelector(".text")) el.submitBtn.querySelector(".text").textContent = "正在处理...";
-
+        el.submitBtn.querySelector(".text").textContent = "正在处理...";
         try {
-            const p = {
-                action: state.mode === "edit" ? "update" : "create",
-                text,
-                ttlKey: state.ttlKey,
-                remark: (el.remark ? el.remark.value.trim() : "")
-            };
-
-            // 编辑模式：默认用原 slug
+            const p = { action: state.mode === "edit" ? "update" : "create", content: text, ttlKey: state.ttlKey, remark: el.remark.value.trim() };
             if (state.mode === "edit") p.slug = state.originalSlug;
-
-            // 允许在编辑时改 ID
-            if (state.mode === "edit" && el.customId && el.customId.value && el.customId.value !== state.originalSlug) {
-                p.newSlug = el.customId.value.trim();
-            }
-
-            // 新建时：登录用户允许自定义 ID
-            if (state.mode === "create" && state.loggedIn && el.customId && el.customId.value) {
-                p.slug = el.customId.value.trim();
-            }
+            if (state.mode === "edit" && el.customId.value && el.customId.value !== state.originalSlug) p.newSlug = el.customId.value;
+            else if (state.mode === "create" && state.loggedIn && el.customId.value) p.slug = el.customId.value;
 
             const data = await postJSON(API_BASE, p);
-            const slug = data.slug || p.slug;
+            const finalSlug = data.slug || p.slug;
 
-            // 结果区展示
-            const viewUrl = `${VIEW_BASE}/${encodeURIComponent(slug)}`;
-            if (el.viewLinkText) el.viewLinkText.textContent = viewUrl;
-            if (el.resultBox) el.resultBox.style.display = "block";
-
-            // ✅ 普通文本 => 打开；代理节点 => 订阅（复用个人中心订阅弹窗）
-            const info = detectNodes(text);
-            if (el.btnOpenView) {
-                const isNode = !!(info && info.isNode && info.count > 0);
-                el.btnOpenView.textContent = isNode ? "订阅" : "打开";
-                el.btnOpenView.onclick = () => {
-                    if (isNode) {
-                        if (window.openSubMenu) window.openSubMenu(slug);
-                        else copyTextToClipboard(`${location.origin}/autosub?id=${encodeURIComponent(slug)}`, "订阅链接已复制", el.btnCopyView);
-                    } else {
-                        window.open(viewUrl, "_blank", "noopener");
-                    }
-                };
-            }
-
-            if (el.btnCopyView) {
-                el.btnCopyView.onclick = () => copyTextToClipboard(viewUrl, "链接已复制", el.btnCopyView);
-            }
-
-            setStatus("成功", "success");
+            // 2. 先重置界面 (修复闪现bug)
             enterCreateMode(true);
-        } catch (err) {
-            setStatus(err?.message || "失败", "error");
-        } finally {
-            state.isSubmitting = false;
-            if (el.submitBtn && el.submitBtn.querySelector(".text")) {
-                el.submitBtn.querySelector(".text").textContent = state.mode === "edit" ? "更新内容" : "发布内容";
+            
+            // 3. 设置链接
+            el.viewLinkText.textContent = `${VIEW_BASE}/${encodeURIComponent(finalSlug)}`;
+
+            // 4. 根据内容类型切换按钮
+            const btnOpen = qs('btnOpenView');
+            const btnSub = qs('btnSubscribeView');
+            
+            if (nodeInfo.isNode && nodeInfo.count > 0) {
+                // 是节点：隐藏打开，显示订阅
+                if(btnOpen) btnOpen.classList.add('d-none');
+                if(btnSub) {
+                    btnSub.classList.remove('d-none');
+                    btnSub.onclick = () => openSubMenu(finalSlug);
+                }
+            } else {
+                // 普通文本：显示打开，隐藏订阅
+                if(btnOpen) btnOpen.classList.remove('d-none');
+                if(btnSub) btnSub.classList.add('d-none');
             }
+
+            // 5. 显示结果框
+            el.resultBox.style.display = "block";
+            setStatus("发布成功", "success");
+            
+        } catch (err) { setStatus("失败", "error"); }
+        finally {
+            state.isSubmitting = false;
+            el.submitBtn.querySelector(".text").textContent = state.mode === "edit" ? "更新内容" : "发布内容";
         }
     });
 
