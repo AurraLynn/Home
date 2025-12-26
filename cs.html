@@ -35,11 +35,11 @@
             --txt-secondary: #6e6e73;
             --txt-placeholder: #aeaeb2;
 
-            --accent: #007aff;
+            --accent: rgba(253, 0, 93, 0.81);
             --accent-glow: rgba(0, 122, 255, 0.25);
             
             /* Status Colors */
-            --danger: #ff3b30;
+            --danger: rgba(253, 0, 93, 0.81);
             --warn: #ff9500;
             --success: #34c759;
             --neutral: #86868b;
@@ -72,7 +72,7 @@
             --txt-secondary: #98989d;
             --txt-placeholder: #58585e;
 
-            --accent: #0a84ff;
+            --accent: #4cbd52;
             --accent-glow: rgba(10, 132, 255, 0.35);
             
             --danger: #ff453a;
@@ -462,7 +462,7 @@
                 </div>
             </div>
             <div class="header-tools">
-                <button type="button" class="btn btn-icon btn-glass" id="themeToggle" title="切换主题" aria-label="切换主题">
+                <button type="button" class="btn btn-icon btn-glass" id="themeToggle" title="切换白夜模式" aria-label="切换白夜模式">
                     <svg class="icon" id="iconSun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                     <svg class="icon d-none" id="iconMoon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 </button>
@@ -481,7 +481,7 @@
                 <div class="editor-status-bar">
                     <span class="status-pill" id="lineCounter">0 行</span>
                     <span class="status-pill"><span id="byteNum">0</span> 字符</span>
-                    <span class="status-pill node-indicator" id="nodeInfo">节点</span>
+                    <span class="status-pill node-indicator" id="nodeInfo">代理</span>
                     <button type="button" class="btn btn-glass d-none" id="btnHome" style="height:24px; font-size:11px; padding:0 10px;">结束编辑</button>
                 </div>
             </div>
@@ -492,9 +492,9 @@
                     <div>
                         <div class="panel-header">快捷操作</div>
                         <div class="tools-grid">
-                            <label class="tool-card" id="uploadBtn" for="fileInput" title="导入文件">
+                            <label class="tool-card" id="uploadBtn" for="fileInput" title="导入文本">
                                 <svg class="icon tool-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                                <span class="tool-label">导入文件</span>
+                                <span class="tool-label">导入文本</span>
                                 <input type="file" id="fileInput">
                             </label>
                             <div class="tool-card" id="btnResetContent" title="清空内容">
@@ -519,7 +519,7 @@
                             <button type="button" class="seg-btn" data-ttl="1d">1D</button>
                             <button type="button" class="seg-btn active" data-ttl="7d">7D</button>
                             <button type="button" class="seg-btn" data-ttl="30d">30D</button>
-                            <button type="button" class="seg-btn" data-ttl="forever" id="ttlForeverBtn" disabled>∞</button>
+                            <button type="button" class="seg-btn" data-ttl="forever" id="ttlForeverBtn" disabled>♾️</button>
                         </div>
                         <div id="ttlHint"></div>
                     </div>
@@ -551,8 +551,11 @@
                     
                     <button type="submit" class="btn btn-primary" id="submitBtn">
                         <span class="submit-ico" id="icoPublish" style="display:inline-flex; align-items:center; margin-right:6px;">
-<svg t="1766749581507" class="icon" viewBox="0 0 1077 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="41515" width="128" height="128"><path d="M797.642105 738.357895m-269.473684 0a269.473684 269.473684 0 1 0 538.947368 0 269.473684 269.473684 0 1 0-538.947368 0Z" fill="#C9D9FC" p-id="41516"></path><path d="M855.379537 840.041095h-30.218779a35.408842 35.408842 0 0 1-24.8832-10.568758 34.939958 34.939958 0 0 1-10.051369-24.996379 33.209937 33.209937 0 0 1 10.019032-24.619116 33.576421 33.576421 0 0 1 24.915537-9.533979c11.555032 0 30.218779-2.328253 30.218779-2.328252 85.040505 0 133.874526-62.345432 133.874526-146.992506a152.376589 152.376589 0 0 0-11.684379-58.583579 152.899368 152.899368 0 0 0-33.328505-49.664 153.734737 153.734737 0 0 0-49.901137-33.17221 154.300632 154.300632 0 0 0-58.858442-11.625095h-50.682611v-36.001684a251.181811 251.181811 0 0 0-19.278147-96.482358 252.001011 252.001011 0 0 0-54.913347-81.796042 253.332211 253.332211 0 0 0-82.178695-54.649263 254.329263 254.329263 0 0 0-193.870147 0 253.386105 253.386105 0 0 0-82.178695 54.649263 252.038737 252.038737 0 0 0-54.907958 81.796042 251.090189 251.090189 0 0 0-19.283537 96.482358v36.001684h-39.698863a154.160505 154.160505 0 0 0-108.7488 44.829642 152.716126 152.716126 0 0 0-45.039832 108.2368 152.721516 152.721516 0 0 0 45.039832 108.24219 154.165895 154.165895 0 0 0 108.7488 44.829642h427.875705a35.354947 35.354947 0 0 1 22.457937 12.061642 35.047747 35.047747 0 0 1 8.418358 23.983158 33.765053 33.765053 0 0 1-8.068042 24.2688 34.061474 34.061474 0 0 1-22.808253 11.732884h-427.870316a226.913011 226.913011 0 0 1-155.044378-59.866274A224.859621 224.859621 0 0 1 11.371789 637.111242a224.5632 224.5632 0 0 1 49.787958-157.927747 226.584253 226.584253 0 0 1 144.782821-81.434948 324.645726 324.645726 0 0 1 106.619958-206.848A327.556042 327.556042 0 0 1 530.701474 107.789474a327.550653 327.550653 0 0 1 218.138947 83.111073 324.629558 324.629558 0 0 1 106.625347 206.848 226.514189 226.514189 0 0 1 146.604464 71.868632A224.471579 224.471579 0 0 1 1061.726316 621.045221c-1.897095 124.205811-83.326653 218.995874-206.346779 218.995874z" fill="#000000" p-id="41517"></path><path d="M704.226358 570.691368a37.737095 37.737095 0 0 1-8.391411 52.692885c-52.240168 37.882611-118.600758 51.862905-178.661052 50.159831-59.381221-1.681516-119.576253-18.944-158.757727-51.792842a37.726316 37.726316 0 1 1 48.472927-57.818274c21.870484 18.334989 63.434105 32.800337 112.424421 34.190821 48.316632 1.368926 96.945853-10.24 132.219958-35.823831a37.737095 37.737095 0 0 1 52.692884 8.39141z" fill="#000000" p-id="41518"></path></svg>
-</span>
+                            <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M585.5744 595.5584m-298.1888 0a298.1888 298.1888 0 1 0 596.3776 0 298.1888 298.1888 0 1 0-596.3776 0Z" fill="#F5384A"></path><path d="M827.5968 528.6912a357.376 357.376 0 0 0 11.3152-90.368 298.1376 298.1376 0 1 0-493.568 333.7728 351.7952 351.7952 0 0 0 45.568 15.0528 358.8096 358.8096 0 0 0 436.6848-258.4576z" fill="#F54F5C"></path><path d="M585.5744 297.3696a298.3424 298.3424 0 0 0-291.84 359.3216c7.0144 2.2528 14.08 4.4032 21.2992 6.2464a358.4 358.4 0 0 0 445.7472-308.5824 296.6016 296.6016 0 0 0-175.2064-56.9856z" fill="#F66C73"></path><path d="M291.84 543.6416a358.912 358.912 0 0 0 375.9616-234.6496A298.0864 298.0864 0 0 0 291.84 543.6416z" fill="#F78989"></path><path d="M814.08 438.0672a299.1104 299.1104 0 0 0-593.92 0 206.5408 206.5408 0 0 0 34.6112 410.2144h76.1856a30.72 30.72 0 0 0 0-61.44H254.9248a145.1008 145.1008 0 0 1-8.7552-289.9456 35.84 35.84 0 0 0 33.5872-33.8944 237.6704 237.6704 0 0 1 474.7264 0 35.84 35.84 0 0 0 33.5872 33.8944 145.1008 145.1008 0 0 1-8.7552 289.9456h-71.68a30.72 30.72 0 1 0 0 61.44h71.68A206.5408 206.5408 0 0 0 814.08 438.0672z" fill="#444444"></path><path d="M536.576 528.896a30.72 30.72 0 0 0-42.752 0.6656l-107.1104 106.8032a30.72 30.72 0 0 0 43.4176 43.52l57.856-57.7536v221.9008a30.72 30.72 0 0 0 61.44 0v-218.624l58.5216 55.0912a30.72 30.72 0 0 0 42.1376-44.7488z" fill="#444444"></path></svg>
+                        </span>
+                        <span class="submit-ico d-none" id="icoUpdate" style="align-items:center; margin-right:6px;">
+                            <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M649.5232 827.0848c-225.2288 0-407.8592-182.5792-407.8592-407.8592 0-107.5712 41.728-205.3632 109.7728-278.272-145.408 62.3616-247.296 206.7456-247.296 374.9888 0 225.2288 182.6304 407.8592 407.8592 407.8592 117.6576 0 223.6416-49.8688 298.0864-129.5872-49.3056 21.1456-103.5776 32.8704-160.5632 32.8704z" fill="#ffa115"></path><path d="M919.8592 485.2736c-16.9472 0-30.72 13.7728-30.72 30.72 0 207.9744-169.1648 377.1392-377.1392 377.1392s-377.1392-169.1648-377.1392-377.1392S304.0256 138.8544 512 138.8544c108.032 0 209.7152 46.1312 280.7808 125.3888h-116.0704c-16.9472 0-30.72 13.7728-30.72 30.72s13.7728 30.72 30.72 30.72h188.2624c16.9472 0 30.72-13.7728 30.72-30.72V100.1472c0-16.9472-13.7728-30.72-30.72-30.72s-30.72 13.7728-30.72 30.72v118.272A438.17984 438.17984 0 0 0 512 77.3632c-241.8176 0-438.5792 196.7616-438.5792 438.5792s196.7616 438.5792 438.5792 438.5792 438.5792-196.7616 438.5792-438.5792c0-16.9472-13.7728-30.6688-30.72-30.6688z" fill="#474A54"></path><path d="M501.76 350.1056v160.7168H289.0752c-16.9472 0-30.72 13.7728-30.72 30.72s13.7728 30.72 30.72 30.72H532.48c16.9472 0 30.72-13.7728 30.72-30.72V350.1056c0-16.9472-13.7728-30.72-30.72-30.72s-30.72 13.7728-30.72 30.72z" fill="#474A54"></path></svg>
+                        </span>
                         <span class="text">发布内容</span>
                     </button>
                 </div>
@@ -608,22 +611,8 @@
                         <svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
                     </button>
                     <button class="btn-circle" id="ucLogoutBtn" title="退出登录" aria-label="退出登录">
-    <svg
-        t="1766746157397"
-        class="icon"
-        viewBox="0 0 1024 1024"
-        xmlns="http://www.w3.org/2000/svg"
-        width="18"
-        height="18"
-    >
-        <path d="M512 218.7c176.7 0 320 143.3 320 320s-143.3 320-320 320-320-143.3-320-320 143.3-320 320-320z"
-              fill="#FFFB5C"></path>
-        <path d="M512 992c-61.2 0-120.6-11.7-176.5-34.8-54-22.3-102.5-54.2-144.1-94.8-41.6-40.7-74.3-88.1-97.2-140.8C70.6 667 58.6 609 58.6 549.2c0-71.5 18-142.6 51.9-205.5 32.8-60.8 80.5-114.2 137.9-154.4 15.9-11.2 38.1-7.5 49.5 8 11.4 15.5 7.8 37.1-8.2 48.3-48.5 34-88.8 79.1-116.4 130.4-29 53.8-43.7 112.1-43.7 173.3 0 99.8 39.8 193.7 112 264.2C313.8 884.1 409.8 923 512 923c102.1 0 198.2-38.9 270.4-109.5 72.2-70.5 112-164.4 112-264.2 0-61.1-14.7-119.5-43.7-173.3-27.7-51.3-67.9-96.3-116.5-130.3-15.9-11.1-19.6-32.7-8.2-48.3s33.6-19.2 49.5-8c57.4 40.2 105.2 93.6 137.9 154.4 34 62.9 51.9 134 51.9 205.5 0 59.8-12 117.8-35.7 172.4-22.8 52.7-55.5 100.1-97.2 140.8-41.6 40.7-90.1 72.5-144.1 94.9C632.5 980.3 573.2 992 512 992z"
-              fill="#333333"></path>
-        <path d="M522.6 511.4c-19.6 0-35.5-15.4-35.5-34.6V66.6c0-19.1 15.9-34.6 35.5-34.6s35.5 15.5 35.5 34.6v410.2c0 19.2-15.9 34.6-35.5 34.6z"
-              fill="#333333"></path>
-    </svg>
-</button>
+                        <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M288.998 738.284C346.186 794.396 424.552 829 511 829c120.81 0 225.836-67.581 279.335-167C814.365 617.344 828 566.264 828 512c0-8.414-0.328-16.751-0.972-25l-538.03 251.284z" fill="#d81e06"></path><path d="M511 859c-46.832 0-92.278-9.179-135.077-27.281-41.324-17.479-78.431-42.494-110.289-74.353-31.858-31.858-56.874-68.965-74.353-110.289C173.179 604.278 164 558.831 164 512c0-40.342 6.873-79.884 20.429-117.528 13.095-36.364 32.102-70.117 56.492-100.32 10.41-12.891 29.297-14.902 42.188-4.492 12.891 10.409 14.902 29.297 4.492 42.188C245.993 383.372 224 445.667 224 512c0 158.252 128.748 287 287 287s287-128.748 287-287c0-66.332-21.992-128.628-63.6-180.152-10.409-12.89-8.398-31.778 4.492-42.188 12.891-10.41 31.779-8.397 42.188 4.493 24.391 30.203 43.396 63.956 56.491 100.32C851.127 432.116 858 471.658 858 512c0 46.831-9.179 92.278-27.281 135.077-17.479 41.324-42.494 78.431-74.353 110.289s-68.965 56.874-110.289 74.353C603.278 849.821 557.831 859 511 859z" fill="#d81e06"></path><path d="M511 521c-16.5 0-30-13.5-30-30V183c0-16.5 13.5-30 30-30s30 13.5 30 30v308c0 16.5-13.5 30-30 30z" fill="#d81e06"></path></svg>
+                    </button>
                     <button class="btn-circle" id="ucCloseBtn" title="关闭" aria-label="关闭">×</button>
                 </div>
             </div>
@@ -657,12 +646,13 @@
         </div>
     </div>
 
-  <script>
-  const THEME_KEY = "lyn_paste_theme_v4";
-  const API_BASE = location.origin + "/api/paste";
-  const AUTH_BASE = location.origin + "/api/auth";
-  const VIEW_BASE = location.origin + "/api/paste";
-  const qs = id => document.getElementById(id);
+    <script>
+    const THEME_KEY = "lyn_paste_theme_v4";
+    const API_BASE = location.origin + "/api/paste";
+    const AUTH_BASE = location.origin + "/api/auth";
+    const VIEW_BASE = location.origin + "/Paste";
+    const qs = id => document.getElementById(id);
+
     // Elements
     const el = {
         themeToggle: qs("themeToggle"), iconSun: qs("iconSun"), iconMoon: qs("iconMoon"),
@@ -906,8 +896,7 @@
         }
         if (el.ttlHint) el.ttlHint.textContent = text;
     }
-    setTtl("7d"); //默认7天有效期
-
+    setTtl("7d");
     if (el.ttlGroup) el.ttlGroup.addEventListener("click", e => {
         const btn = e.target.closest(".seg-btn");
         if (btn && !btn.disabled) setTtl(btn.dataset.ttl);
@@ -956,7 +945,7 @@
     }
     if (el.customId) el.customId.addEventListener("input", validateCustomSlug);
 
-    function enterCreateMode(clear) {
+    function enterCreateMode(clear, keepResult=false) {
         state.mode = "create"; state.originalSlug = null;
         if (el.submitBtn) el.submitBtn.querySelector(".text").textContent = "发布内容";
         if (el.icoPublish) el.icoPublish.classList.remove("d-none");
@@ -964,7 +953,7 @@
         if (el.btnHome) el.btnHome.classList.add("d-none");
         if (clear) {
             el.content.value = ""; el.remark.value = ""; el.customId.value = "";
-            el.resultBox.style.display = "none";
+            if (!keepResult) el.resultBox.style.display = "none";
             updateByteCount(); setStatus("");
         }
     }
@@ -1185,7 +1174,7 @@
             el.viewLinkText.textContent = `${VIEW_BASE}/${encodeURIComponent(data.slug || p.slug)}`;
             el.resultBox.style.display = "block";
             setStatus("成功", "success");
-            enterCreateMode(true);
+            enterCreateMode(true, true);
         } catch (err) { setStatus("失败", "error"); }
         finally {
             state.isSubmitting = false;
