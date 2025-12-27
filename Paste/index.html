@@ -586,7 +586,7 @@
                     </div>
                 </div>
 
-                <div id="statusMsg" style="font-size:12px; text-align:center; min-height:20px; color:var(--txt-secondary);"></div>
+                <div id="statusMsg" style="font-size:10px; text-align:center; min-height:15px; color:var(--txt-secondary);"></div>
 
                 <!-- 底部发布大按钮 -->
                 <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -1126,7 +1126,7 @@
 
                 row.innerHTML = `
                     <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:6px;">
-                        <span>${escapeHTML(d.remark || "标题未定义")}</span>
+                        <span>${escapeHTML(d.remark || "无标题")}</span>
                         <span style="font-family:var(--font-mono);opacity:0.6;font-size:12px;">/${escapeHTML(d.slug)}</span>
                     </div>
                     <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
