@@ -678,7 +678,10 @@
             <input id="subLinkInput" readonly>
             <button id="subLinkCopyBtn" class="copy-icon-btn" title="复制" style="width:40px;height:36px;">
                 <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M715.6224 910.0288H356.096c-55.3984 0-100.3008-44.9024-100.3008-100.3008V452.8128c0-55.3984 44.9024-100.3008 100.3008-100.3008h359.5776c55.3984 0 100.3008 44.9024 100.3008 100.3008v356.9152c-0.0512 55.3984-44.9536 100.3008-100.352 100.3008z" fill="#56E5BE"></path><path d="M729.1904 910.0288H416.3072c-47.9232 0-86.7328-38.8608-86.7328-86.7328v-310.5792c0-47.9232 38.8608-86.7328 86.7328-86.7328h312.8832c47.9232 0 86.7328 38.8608 86.7328 86.7328v310.5792c0 47.872-38.8608 86.7328-86.7328 86.7328z" fill="#50DDB8"></path><path d="M727.6544 910.0288H466.2784c-36.0448 0-65.2288-29.184-65.2288-65.2288v-282.4704c0-36.0448 29.184-65.2288 65.2288-65.2288h284.416c36.0448 0 65.2288 29.184 65.2288 65.2288v259.4304c0 48.7424-39.5264 88.2688-88.2688 88.2688z" fill="#42D3AD"></path><path d="M763.5456 107.5712H410.0096c-81.2544 0-147.5072 65.536-148.6336 146.5856-79.1552 3.2256-142.5408 68.608-142.5408 148.5312v359.5776c0 81.9712 66.7136 148.6848 148.6848 148.6848h353.536c81.2544 0 147.5072-65.536 148.6336-146.5856 79.1552-3.2256 142.5408-68.608 142.5408-148.5312V256.256c0-81.9712-66.6624-148.6848-148.6848-148.6848z m-55.1936 654.6944c0 48.128-39.168 87.2448-87.2448 87.2448H267.52c-48.128 0-87.2448-39.168-87.2448-87.2448V402.6368c0-48.128 39.168-87.2448 87.2448-87.2448h353.536c48.128 0 87.2448 39.168 87.2448 87.2448v359.6288z m142.4384-146.432c0 46.0288-35.84 83.712-81.0496 86.9376V402.6368c0-81.9712-66.7136-148.6848-148.6848-148.6848H322.8672c1.2288-47.0528 39.7824-84.9408 87.1424-84.9408h353.5872c48.128 0 87.2448 39.168 87.2448 87.2448v359.5776z" fill="#2E3138"></path></svg>
-            </button>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -1112,7 +1115,6 @@
 
             // 2. 存入状态，开始加载第一批
             // 注意：因为 API 可能只返回了简单的列表，我们通常按原顺序显示，
-            // 或者如果 items 里有 timestamp，可以在这里先 sort。假设 items 是按时间倒序的。
             state.pasteList = items;
             el.ucEmpty.style.display = "none";
             state.isLoadingPastes = false; // 重置锁以便 renderNextPasteBatch 可以工作
@@ -1133,8 +1135,7 @@
         const batch = state.pasteList.slice(state.pasteListCursor, state.pasteListCursor + BATCH_SIZE);
         state.pasteListCursor += batch.length;
 
-        // 逐个获取详情并渲染 (并发获取，但按顺序追加以保持稳定)
-        // 也可以使用 Promise.all，因为 BATCH_SIZE 很小
+        // 逐个获取详情并渲染
         const promises = batch.map(async (item) => {
             try {
                 const r = await fetch(`${API_BASE}/${encodeURIComponent(item.slug || item.id)}?manage=1`, { credentials: "include" });
@@ -1142,63 +1143,81 @@
                 const d = await r.json();
                 if (d.ok === false) return null;
 
-                // --- 过滤过期内容 ---
+                // --- 过滤过期内容 (修复版) ---
+                // 确保 createdAt 正确解析 (兼容数字或ISO字符串)
+                let createdTime = new Date(d.createdAt).getTime();
+                if (isNaN(createdTime)) createdTime = 0;
+
                 if (d.ttlKey && d.ttlKey !== "forever") {
                     const ms = ttlMap[d.ttlKey];
-                    if (ms && (d.createdAt + ms < Date.now())) {
-                        return null; // 已过期，不显示
+                    // 只有在时间有效时才过滤
+                    if (ms && createdTime > 0) {
+                        const expireTime = createdTime + ms;
+                        if (expireTime < Date.now()) {
+                            return null; // 已过期，不显示
+                        }
                     }
                 }
 
+                d._parsedTime = createdTime;
                 d._nodeInfo = detectNodes(d.content);
                 return d;
             } catch (_) { return null; }
         });
 
         const results = await Promise.all(promises);
+        // 过滤掉 null
+        const validItems = results.filter(i => i);
 
-        results.forEach(d => {
-            if (!d) return;
+        // 渲染有效项
+        if (validItems.length > 0) {
+             validItems.forEach(d => {
+                const row = document.createElement("div");
+                row.className = "uc-item";
+                const link = `${VIEW_BASE}/${d.slug}`;
+                const meta = getExpireMeta(d.ttlKey, d._parsedTime || Date.now());
+                const hasNode = d._nodeInfo.isNode && d._nodeInfo.count > 0;
 
-            const row = document.createElement("div");
-            row.className = "uc-item";
-            const link = `${VIEW_BASE}/${d.slug}`;
-            const meta = getExpireMeta(d.ttlKey, d.createdAt || Date.now());
-            const hasNode = d._nodeInfo.isNode && d._nodeInfo.count > 0;
+                row.innerHTML = `
+                    <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:6px;">
+                        <span>${escapeHTML(d.remark || "无标题")}</span>
+                        <span style="font-family:var(--font-mono);opacity:0.6;font-size:12px;">/${escapeHTML(d.slug)}</span>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+                        <div class="uc-expire" data-level="${meta.level}">${meta.text}</div>
+                    </div>
+                    <div class="input-group-row" style="margin-bottom:12px; height:32px;">
+                        <input value="${link}" readonly onclick="this.select()">
+                        <button class="copy-icon-btn" data-link="${link}" style="height:32px; width:36px;">
+                            <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M715.6224 910.0288H356.096c-55.3984 0-100.3008-44.9024-100.3008-100.3008V452.8128c0-55.3984 44.9024-100.3008 100.3008-100.3008h359.5776c55.3984 0 100.3008 44.9024 100.3008 100.3008v356.9152c-0.0512 55.3984-44.9536 100.3008-100.352 100.3008z" fill="#56E5BE"></path><path d="M729.1904 910.0288H416.3072c-47.9232 0-86.7328-38.8608-86.7328-86.7328v-310.5792c0-47.9232 38.8608-86.7328 86.7328-86.7328h312.8832c47.9232 0 86.7328 38.8608 86.7328 86.7328v310.5792c0 47.872-38.8608 86.7328-86.7328 86.7328z" fill="#50DDB8"></path><path d="M727.6544 910.0288H466.2784c-36.0448 0-65.2288-29.184-65.2288-65.2288v-282.4704c0-36.0448 29.184-65.2288 65.2288-65.2288h284.416c36.0448 0 65.2288 29.184 65.2288 65.2288v259.4304c0 48.7424-39.5264 88.2688-88.2688 88.2688z" fill="#42D3AD"></path><path d="M763.5456 107.5712H410.0096c-81.2544 0-147.5072 65.536-148.6336 146.5856-79.1552 3.2256-142.5408 68.608-142.5408 148.5312v359.5776c0 81.9712 66.7136 148.6848 148.6848 148.6848h353.536c81.2544 0 147.5072-65.536 148.6336-146.5856 79.1552-3.2256 142.5408-68.608 142.5408-148.5312V256.256c0-81.9712-66.6624-148.6848-148.6848-148.6848z m-55.1936 654.6944c0 48.128-39.168 87.2448-87.2448 87.2448H267.52c-48.128 0-87.2448-39.168-87.2448-87.2448V402.6368c0-48.128 39.168-87.2448 87.2448-87.2448h353.536c48.128 0 87.2448 39.168 87.2448 87.2448v359.6288z m142.4384-146.432c0 46.0288-35.84 83.712-81.0496 86.9376V402.6368c0-81.9712-66.7136-148.6848-148.6848-148.6848H322.8672c1.2288-47.0528 39.7824-84.9408 87.1424-84.9408h353.5872c48.128 0 87.2448 39.168 87.2448 87.2448v359.5776z" fill="#2E3138"></path></svg>
+                        </button>
+                    </div>
+                    <div style="display:flex;gap:10px;">
+                        ${hasNode ? `<button class="btn btn-primary" style="height:32px;padding:0 14px;font-size:12px;" onclick="openSubMenu('${d.slug}')">订阅</button>` : ''}
+                        <button class="btn btn-glass" style="height:32px;padding:0 14px;font-size:12px;" onclick="enterEditMode('${d.slug}')">编辑</button>
+                        <button class="btn btn-glass" style="height:32px;padding:0 14px;font-size:12px;color:var(--danger);" onclick="deletePaste('${d.slug}')">删除</button>
+                    </div>`;
 
-            row.innerHTML = `
-                <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:6px;">
-                    <span>${escapeHTML(d.remark || "无标题")}</span>
-                    <span style="font-family:var(--font-mono);opacity:0.6;font-size:12px;">/${escapeHTML(d.slug)}</span>
-                </div>
-                <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
-                    <div class="uc-expire" data-level="${meta.level}">${meta.text}</div>
-                </div>
-                <div class="input-group-row" style="margin-bottom:12px; height:32px;">
-                    <input value="${link}" readonly onclick="this.select()">
-                    <button class="copy-icon-btn" data-link="${link}" style="height:32px; width:36px;">
-                        <svg class="icon" viewBox="0 0 1024 1024" width="18" height="18"><path d="M715.6224 910.0288H356.096c-55.3984 0-100.3008-44.9024-100.3008-100.3008V452.8128c0-55.3984 44.9024-100.3008 100.3008-100.3008h359.5776c55.3984 0 100.3008 44.9024 100.3008 100.3008v356.9152c-0.0512 55.3984-44.9536 100.3008-100.352 100.3008z" fill="#56E5BE"></path><path d="M729.1904 910.0288H416.3072c-47.9232 0-86.7328-38.8608-86.7328-86.7328v-310.5792c0-47.9232 38.8608-86.7328 86.7328-86.7328h312.8832c47.9232 0 86.7328 38.8608 86.7328 86.7328v310.5792c0 47.872-38.8608 86.7328-86.7328 86.7328z" fill="#50DDB8"></path><path d="M727.6544 910.0288H466.2784c-36.0448 0-65.2288-29.184-65.2288-65.2288v-282.4704c0-36.0448 29.184-65.2288 65.2288-65.2288h284.416c36.0448 0 65.2288 29.184 65.2288 65.2288v259.4304c0 48.7424-39.5264 88.2688-88.2688 88.2688z" fill="#42D3AD"></path><path d="M763.5456 107.5712H410.0096c-81.2544 0-147.5072 65.536-148.6336 146.5856-79.1552 3.2256-142.5408 68.608-142.5408 148.5312v359.5776c0 81.9712 66.7136 148.6848 148.6848 148.6848h353.536c81.2544 0 147.5072-65.536 148.6336-146.5856 79.1552-3.2256 142.5408-68.608 142.5408-148.5312V256.256c0-81.9712-66.6624-148.6848-148.6848-148.6848z m-55.1936 654.6944c0 48.128-39.168 87.2448-87.2448 87.2448H267.52c-48.128 0-87.2448-39.168-87.2448-87.2448V402.6368c0-48.128 39.168-87.2448 87.2448-87.2448h353.536c48.128 0 87.2448 39.168 87.2448 87.2448v359.6288z m142.4384-146.432c0 46.0288-35.84 83.712-81.0496 86.9376V402.6368c0-81.9712-66.7136-148.6848-148.6848-148.6848H322.8672c1.2288-47.0528 39.7824-84.9408 87.1424-84.9408h353.5872c48.128 0 87.2448 39.168 87.2448 87.2448v359.5776z" fill="#2E3138"></path></svg>
-                    </button>
-                </div>
-                <div style="display:flex;gap:10px;">
-                    ${hasNode ? `<button class="btn btn-primary" style="height:32px;padding:0 14px;font-size:12px;" onclick="openSubMenu('${d.slug}')">订阅</button>` : ''}
-                    <button class="btn btn-glass" style="height:32px;padding:0 14px;font-size:12px;" onclick="enterEditMode('${d.slug}')">编辑</button>
-                    <button class="btn btn-glass" style="height:32px;padding:0 14px;font-size:12px;color:var(--danger);" onclick="deletePaste('${d.slug}')">删除</button>
-                </div>`;
+                row.querySelector('.copy-icon-btn').addEventListener('click', function() {
+                    copyTextToClipboard(this.dataset.link, "链接已复制", this);
+                });
 
-            row.querySelector('.copy-icon-btn').addEventListener('click', function() {
-                copyTextToClipboard(this.dataset.link, "链接已复制", this);
+                el.ucList.appendChild(row);
             });
-
-            el.ucList.appendChild(row);
-        });
-
-        if (el.ucList.children.length === 0 && state.pasteListCursor >= state.pasteList.length) {
-             el.ucEmpty.style.display = "block";
-             el.ucEmpty.textContent = "暂无有效记录";
+            el.ucEmpty.style.display = "none";
         }
-        
+
         state.isLoadingPastes = false;
+
+        // [核心修复] 如果这一批全部过滤掉了(有效为0)，但还有数据没加载，必须递归调用加载下一批
+        // 否则界面是空的，用户也无法滚动触发加载
+        if (validItems.length === 0 && state.pasteListCursor < state.pasteList.length) {
+            await renderNextPasteBatch();
+        } else if (el.ucList.children.length === 0 && state.pasteListCursor >= state.pasteList.length) {
+            // 如果所有数据都加载完了，但屏幕上还是空的
+            el.ucEmpty.style.display = "block";
+            el.ucEmpty.textContent = "暂无有效内容 (过期项已隐藏)";
+        }
     }
 
     // 全局函数：用于行内 HTML 点击事件
