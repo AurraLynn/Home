@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>iOS 26 Music Player</title>
+    <style>
+        /* 基础重置与 iOS 字体栈 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        /* 动态模糊背景（模拟 Apple Music） */
+        .background-blur {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 50%, #5e35b1, #1e88e5, #000);
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.6;
+            transition: background 1s ease;
+        }
+
+        /* 播放器主容器 - 毛玻璃质感 */
+        .player-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            max-height: 850px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 40px;
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        /* 顶部指示条 */
+        .drag-indicator {
+            width: 40px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            margin: 0 auto 30px auto;
+        }
+
+        /* 封面容器与动画 */
+        .artwork-container {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 24px;
+            overflow: hidden;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform: scale(0.85); /* 默认暂停状态稍微缩小 */
+        }
+
+        .artwork-container.playing {
+            transform: scale(1); /* 播放时放大 */
+        }
+
+        .artwork {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+        }
+
+        /* 歌曲信息 */
+        .info-container {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .text-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: 0.5px;
+        }
+
+        .artist {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 400;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 进度条 */
+        .progress-container {
+            margin-bottom: 40px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: #fff;
+            border-radius: 10px;
+            width: 0%;
+            position: relative;
+        }
+
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: -3px;
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .progress-bar-bg:hover .progress-bar-fill::after {
+            opacity: 1;
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        /* 控制按钮 */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.9);
+            opacity: 0.7;
+        }
+
+        .btn svg {
+            fill: currentColor;
+        }
+
+        .btn-play {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            backdrop-filter: blur(10px);
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 400px) {
+            .player-container {
+                border-radius: 0;
+                height: 100vh;
+                max-height: none;
+                border: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background-blur" id="bgBlur"></div>
+
+    <div class="player-container">
+        <div class="drag-indicator"></div>
+
+        <div class="artwork-container" id="artworkContainer">
+            <img src="" alt="Album Art" class="artwork" id="artwork">
+        </div>
+
+        <div class="info-container">
+            <div class="text-info">
+                <div class="title" id="title">Loading...</div>
+                <div class="artist" id="artist">Loading...</div>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar-bg" id="progressBg">
+                <div class="progress-bar-fill" id="progressFill"></div>
+            </div>
+            <div class="time-info">
+                <span id="currentTime">0:00</span>
+                <span id="duration">-:--</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="prevBtn">
+                <svg width="32" height="32" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            <button class="btn btn-play" id="playBtn">
+                <svg id="playIcon" width="36" height="36" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="pauseIcon" width="36" height="36" viewBox="0 0 24 24" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button class="btn" id="nextBtn">
+                <svg width="32" height="32" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <audio id="audioElement" preload="metadata"></audio>
+
+    <script>
+        /** * 🎵 歌曲列表配置区 (在这里添加您的音乐)
+         * 只需要修改这个数组，就能轻松添加音乐、封面和背景颜色
+         */
+        const playlist = [
+            {
+                title: "Cyberpunk City",
+                artist: "Synthwave Artist",
+                src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", // 替换为您的音频链接 (mp3等)
+                cover: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000&auto=format&fit=crop", // 替换为您的封面链接
+                bgColor: "radial-gradient(circle at 50% 50%, #5e35b1, #1e88e5, #000)" // 封面的主题色
+            },
+            {
+                title: "Ambient Journey",
+                artist: "Chillout Lounge",
+                src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+                cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1000&auto=format&fit=crop",
+                bgColor: "radial-gradient(circle at 50% 50%, #e53935, #fb8c00, #000)"
+            },
+            {
+                title: "Deep Focus",
+                artist: "Lo-Fi Beats",
+                src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+                cover: "https://images.unsplash.com/photo-1493225457124-a1a2a5370f20?q=80&w=1000&auto=format&fit=crop",
+                bgColor: "radial-gradient(circle at 50% 50%, #00897b, #43a047, #000)"
+            }
+        ];
+
+        // --- 核心逻辑 ---
+        let currentTrackIndex = 0;
+        let isPlaying = false;
+
+        const audio = document.getElementById('audioElement');
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        const artworkContainer = document.getElementById('artworkContainer');
+        const artwork = document.getElementById('artwork');
+        const title = document.getElementById('title');
+        const artist = document.getElementById('artist');
+        const bgBlur = document.getElementById('bgBlur');
+        const progressBg = document.getElementById('progressBg');
+        const progressFill = document.getElementById('progressFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+
+        // 初始化加载
+        function loadTrack(index) {
+            const track = playlist[index];
+            audio.src = track.src;
+            title.textContent = track.title;
+            artist.textContent = track.artist;
+            artwork.src = track.cover;
+            bgBlur.style.background = track.bgColor;
+            
+            // 重置进度
+            progressFill.style.width = '0%';
+            currentTimeEl.textContent = '0:00';
+            
+            updateMediaSession(track);
+        }
+
+        // 播放控制
+        function togglePlay() {
+            if (isPlaying) {
+                pauseMusic();
+            } else {
+                playMusic();
+            }
+        }
+
+        function playMusic() {
+            isPlaying = true;
+            audio.play();
+            playIcon.style.display = 'none';
+            pauseIcon.style.display = 'block';
+            artworkContainer.classList.add('playing');
+        }
+
+        function pauseMusic() {
+            isPlaying = false;
+            audio.pause();
+            playIcon.style.display = 'block';
+            pauseIcon.style.display = 'none';
+            artworkContainer.classList.remove('playing');
+        }
+
+        function nextTrack() {
+            currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+            loadTrack(currentTrackIndex);
+            if (isPlaying) playMusic();
+        }
+
+        function prevTrack() {
+            currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+            loadTrack(currentTrackIndex);
+            if (isPlaying) playMusic();
+        }
+
+        // 进度条逻辑
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        audio.addEventListener('timeupdate', () => {
+            const current = audio.currentTime;
+            const duration = audio.duration;
+            if (duration) {
+                const progressPercent = (current / duration) * 100;
+                progressFill.style.width = `${progressPercent}%`;
+                currentTimeEl.textContent = formatTime(current);
+            }
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            durationEl.textContent = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', nextTrack);
+
+        // 点击进度条跳转
+        progressBg.addEventListener('click', (e) => {
+            const width = progressBg.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            audio.currentTime = (clickX / width) * duration;
+        });
+
+        // 绑定按钮事件
+        playBtn.addEventListener('click', togglePlay);
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        // --- 后台播放与锁屏控制核心 (Media Session API) ---
+        function updateMediaSession(track) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: track.title,
+                    artist: track.artist,
+                    album: 'iOS 26 Style Player',
+                    artwork: [
+                        { src: track.cover, sizes: '512x512', type: 'image/jpeg' },
+                        { src: track.cover, sizes: '1024x1024', type: 'image/jpeg' }
+                    ]
+                });
+
+                navigator.mediaSession.setActionHandler('play', playMusic);
+                navigator.mediaSession.setActionHandler('pause', pauseMusic);
+                navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
+                navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
+                navigator.mediaSession.setActionHandler('seekto', (details) => {
+                    if (details.fastSeek && 'fastSeek' in audio) {
+                        audio.fastSeek(details.seekTime);
+                    } else {
+                        audio.currentTime = details.seekTime;
+                    }
+                });
+            }
+        }
+
+        // 启动加载第一首歌
+        loadTrack(currentTrackIndex);
+    </script>
+</body>
+</html>
