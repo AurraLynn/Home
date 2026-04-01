@@ -27,7 +27,7 @@
         @keyframes double-blink { 0%, 70%, 100% { transform: scaleY(1); } 75% { transform: scaleY(0.05); } 80% { transform: scaleY(1); } 85% { transform: scaleY(0.05); } 90% { transform: scaleY(1); } }
         .animate-double-blink { animation: double-blink 2.5s infinite ease-in-out; }
 
-        /* ==================== iOS 26 液态玻璃核心效果 ==================== */
+        /* 液态玻璃核心效果 */
         .liquid-glass {
             background: linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0.08));
             backdrop-filter: blur(48px) saturate(200%) contrast(110%);
@@ -36,126 +36,131 @@
                     inset 0 1px 0 rgba(255,255,255,0.7),
                     0 0 0 1px rgba(255,255,255,0.15);
         }
-        .liquid-glass-cat {
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .cat-focus {
-            transform: scale(1.06) translateY(-4px);
-            box-shadow:
-                    0 35px 70px -12px rgb(236 72 153 / 0.4),
-                    inset 0 4px 12px rgba(255,255,255,0.9);
-        }
-        .cat-breathing {
-            animation: cat-breath 3s ease-in-out infinite;
-        }
-        @keyframes cat-breath {
-            0%,100% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-        }
-        /* 胡须抖动 */
-        .whisker-twitch {
-            animation: whisker-twitch 0.6s ease-in-out infinite alternate;
-        }
-        @keyframes whisker-twitch {
-            from { transform: rotate(-2deg); }
-            to { transform: rotate(2deg); }
-        }
-        /* 眼睛玻璃高光 */
-        .eye-container {
-            box-shadow: inset 0 3px 6px rgba(0,0,0,0.2), 0 0 12px rgba(255,255,255,0.6);
-        }
+        .liquid-glass-cat { transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .cat-focus { transform: scale(1.05); box-shadow: 0 30px 60px -12px rgb(236 72 153 / 0.4), inset 0 4px 12px rgba(255,255,255,0.9); }
+        .cat-breathing { animation: cat-breath 3s ease-in-out infinite; }
+        @keyframes cat-breath { 0%,100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+        .whisker-twitch { animation: whisker-twitch 0.6s ease-in-out infinite alternate; }
+        @keyframes whisker-twitch { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+        .eye-container { box-shadow: inset 0 3px 6px rgba(0,0,0,0.2), 0 0 12px rgba(255,255,255,0.6); }
 
-        /* 灵动岛 */
+        /* 真·三段式灵动岛 */
         .dynamic-island {
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(20px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1);
+            backdrop-filter: blur(24px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.15);
+            z-index: 100;
         }
         .dynamic-island-active {
             width: auto;
-            min-width: 200px;
+            min-width: 240px;
             max-width: 90vw;
-            height: 40px;
-            border-radius: 20px;
-            padding: 0 20px;
+            height: 44px;
+            border-radius: 22px;
+            padding: 0 16px 0 12px;
             opacity: 1;
             transform: translateX(-50%) translateY(0) scale(1);
         }
         .dynamic-island-idle {
-            width: 120px;
-            height: 28px;
-            border-radius: 14px;
+            width: 140px;
+            height: 32px;
+            border-radius: 16px;
             opacity: 0;
-            transform: translateX(-50%) translateY(-20px) scale(0.8);
+            transform: translateX(-50%) translateY(-20px) scale(0.85);
             pointer-events: none;
         }
 
-        /* 强制单行并隐藏溢出 */
-        .placeholder-truncate {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding-right: 20px;
-        }
+        .placeholder-truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 20px; }
+        .fade-out-slow { transition: opacity 2s ease-out; }
     </style>
 </head>
 <body class="text-gray-900 antialiased flex flex-col no-select">
 <div id="app" class="flex-1 p-4 sm:p-10 relative flex flex-col items-center min-h-screen w-full" @click="closeContextMenu" @touchstart="closeContextMenu">
 
-    <div class="fixed top-4 left-1/2 z-50 flex items-center justify-center dynamic-island overflow-hidden"
-         :class="(statusText || showIdleMessage) ? 'dynamic-island-active' : 'dynamic-island-idle'">
-        <span class="text-xs font-medium truncate" :class="isError ? 'text-red-400' : 'text-white'">
-            {{ statusText || currentIdleMessage }}
-        </span>
+    <div class="fixed top-4 left-1/2 flex items-center justify-between dynamic-island overflow-hidden fade-out-slow"
+         :class="systemMsgText ? 'dynamic-island-active' : 'dynamic-island-idle'">
+        <div class="flex items-center gap-3 w-full">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0" :class="isSystemError ? 'bg-red-500/20' : 'bg-pink-500/20'">
+                <svg v-if="isSystemError" class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <svg v-else class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <span class="text-xs font-semibold truncate flex-1" :class="isSystemError ? 'text-red-400' : 'text-white'">
+                {{ systemMsgText }}
+            </span>
+            <div class="flex gap-1 shrink-0 ml-2" v-if="systemMsgText">
+                <div class="w-1 h-3 bg-pink-400 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                <div class="w-1 h-3 bg-pink-400 rounded-full animate-bounce" style="animation-delay: 0.15s"></div>
+                <div class="w-1 h-3 bg-pink-400 rounded-full animate-bounce" style="animation-delay: 0.3s"></div>
+            </div>
+        </div>
     </div>
 
-    <div class="fixed top-36 sm:top-40 z-40 flex flex-col items-center w-full px-4 pointer-events-none">
-
+    <div class="fixed top-32 sm:top-36 z-40 flex flex-col items-center w-full px-4 pointer-events-none">
         <div class="relative pointer-events-auto w-[92vw] max-w-[420px] sm:w-80 sm:hover:w-[34rem] sm:focus-within:w-[38rem] transition-all duration-700 group mx-auto">
 
             <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-[-6px] group-focus-within:mb-[-1px] transition-all duration-500 z-0 flex flex-col items-center w-24 pointer-events-none">
-                <div class="relative flex justify-center items-end transition-all duration-700" :class="{ 'cat-breathing': isFocused }">
-                    <div class="absolute -top-9 -left-5 w-11 h-12 bg-gradient-to-br from-pink-200 to-violet-200 border border-white/60 shadow-xl rounded-tl-3xl transition-all duration-500 origin-bottom-right"
-                         :style="{ transform: isFocused ? 'rotate(-12deg) scale(1.05)' : 'rotate(-32deg)' }"
-                         style="clip-path: polygon(50% 0%, 0% 100%, 100% 100%);">
-                        <div class="absolute inset-0 bg-white/30 rounded-tl-3xl"></div>
+
+                <div :class="['absolute bottom-full mb-4 left-1/2 -translate-x-1/2 whitespace-nowrap max-w-[240px] overflow-hidden text-ellipsis bg-white/95 backdrop-blur-3xl border border-white/40 shadow-2xl px-5 py-2.5 rounded-3xl text-[11px] font-bold transition-all duration-[800ms] ease-in-out z-50 pointer-events-none liquid-shine',
+                              (catMsgText || (showIdleMessage && sites.length > 0 && !isFocused)) ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-90']">
+                    <span class="text-pink-500">
+                        {{ catMsgText || currentIdleMessage }}
+                    </span>
+                </div>
+
+                <div class="relative flex justify-center items-end transition-all duration-700 pb-2 translate-y-[44px] group-focus-within:translate-y-[20px]" :class="{ 'cat-breathing': isFocused }">
+
+                    <div class="absolute -top-5 -left-1 w-9 h-11 bg-gradient-to-br from-pink-200 to-violet-200 border border-white/60 shadow-xl rounded-tl-[1.5rem] rounded-tr-md rounded-bl-md transition-all duration-500 origin-bottom-right"
+                         :style="{ transform: isFocused ? 'rotate(-18deg) scale(1.05)' : 'rotate(-28deg)' }">
+                        <div class="absolute inset-1 bg-white/40 rounded-tl-[1.5rem] rounded-tr-md rounded-bl-md"></div>
                     </div>
-                    <div class="absolute -top-9 -right-5 w-11 h-12 bg-gradient-to-bl from-pink-200 to-violet-200 border border-white/60 shadow-xl rounded-tr-3xl transition-all duration-500 origin-bottom-left"
-                         :style="{ transform: isFocused ? 'rotate(12deg) scale(1.05)' : 'rotate(32deg)' }"
-                         style="clip-path: polygon(50% 0%, 0% 100%, 100% 100%);">
-                        <div class="absolute inset-0 bg-white/30 rounded-tr-3xl"></div>
+                    <div class="absolute -top-5 -right-1 w-9 h-11 bg-gradient-to-bl from-pink-200 to-violet-200 border border-white/60 shadow-xl rounded-tr-[1.5rem] rounded-tl-md rounded-br-md transition-all duration-500 origin-bottom-left"
+                         :style="{ transform: isFocused ? 'rotate(18deg) scale(1.05)' : 'rotate(28deg)' }">
+                        <div class="absolute inset-1 bg-white/40 rounded-tr-[1.5rem] rounded-tl-md rounded-br-md"></div>
                     </div>
 
-                    <div class="liquid-glass-cat w-24 h-16 bg-gradient-to-br from-pink-200/90 via-violet-200/70 to-fuchsia-200/80 border border-white/50 shadow-[0_25px_50px_-12px_rgb(0,0,0,0.5),inset_0_2px_8px_rgba(255,255,255,0.7)] rounded-[2.75rem] relative z-10 flex flex-col items-center pt-4 transition-all duration-500 hover:scale-[1.04]"
+                    <div class="liquid-glass-cat w-20 h-[4.5rem] bg-gradient-to-b from-pink-100/95 to-violet-200/80 border border-white/50 shadow-[0_20px_40px_-10px_rgb(0,0,0,0.3),inset_0_2px_8px_rgba(255,255,255,0.8)] rounded-full relative z-10 flex flex-col items-center pt-3.5 transition-all duration-500"
                          :class="{ 'cat-focus': isFocused }">
 
-                        <div :class="['flex gap-3 transition-all duration-300', isFocused ? 'animate-double-blink scale-110' : 'animate-normal-blink']">
-                            <div class="eye-container w-6 h-7 bg-white/95 backdrop-blur-xl rounded-2xl flex items-center justify-center shadow-inner relative overflow-hidden">
-                                <div class="eye w-4 h-[18px] bg-[#2C1F1A] rounded-2xl absolute transition-all duration-75 ease-out flex items-center justify-end px-0.5" :style="eyeStyle">
-                                    <div class="w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_6px_#fff]"></div>
+                        <div class="absolute top-7 left-2 w-3 h-2 bg-pink-400/50 rounded-full blur-[1px] transition-all duration-500" :class="isFocused ? 'opacity-100 scale-100' : 'opacity-0 scale-50'"></div>
+                        <div class="absolute top-7 right-2 w-3 h-2 bg-pink-400/50 rounded-full blur-[1px] transition-all duration-500" :class="isFocused ? 'opacity-100 scale-100' : 'opacity-0 scale-50'"></div>
+
+                        <div :class="['flex gap-2.5 transition-all duration-300 relative z-10', isFocused ? 'animate-double-blink scale-110' : 'animate-normal-blink']">
+                            <div class="eye-container w-[22px] h-[26px] bg-white/95 backdrop-blur-xl rounded-2xl flex items-center justify-center shadow-inner relative overflow-hidden">
+                                <div class="bg-[#2C1F1A] rounded-2xl absolute transition-all duration-300 ease-out flex items-center justify-end px-0.5"
+                                     :class="isFocused ? 'w-4 h-[20px]' : 'w-3.5 h-[16px]'" :style="eyeStyle">
+                                    <div class="bg-white rounded-full shadow-[0_0_6px_#fff] transition-all duration-300" :class="isFocused ? 'w-1.5 h-1.5' : 'w-1 h-1'"></div>
+                                    <div class="absolute bottom-1.5 left-1 bg-white/90 rounded-full w-1 h-1 transition-all duration-300" :class="isFocused ? 'opacity-100' : 'opacity-0'"></div>
                                 </div>
                             </div>
-                            <div class="eye-container w-6 h-7 bg-white/95 backdrop-blur-xl rounded-2xl flex items-center justify-center shadow-inner relative overflow-hidden">
-                                <div class="eye w-4 h-[18px] bg-[#2C1F1A] rounded-2xl absolute transition-all duration-75 ease-out flex items-center justify-end px-0.5" :style="eyeStyle">
-                                    <div class="w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_6px_#fff]"></div>
+                            <div class="eye-container w-[22px] h-[26px] bg-white/95 backdrop-blur-xl rounded-2xl flex items-center justify-center shadow-inner relative overflow-hidden">
+                                <div class="bg-[#2C1F1A] rounded-2xl absolute transition-all duration-300 ease-out flex items-center justify-end px-0.5"
+                                     :class="isFocused ? 'w-4 h-[20px]' : 'w-3.5 h-[16px]'" :style="eyeStyle">
+                                    <div class="bg-white rounded-full shadow-[0_0_6px_#fff] transition-all duration-300" :class="isFocused ? 'w-1.5 h-1.5' : 'w-1 h-1'"></div>
+                                    <div class="absolute bottom-1.5 left-1 bg-white/90 rounded-full w-1 h-1 transition-all duration-300" :class="isFocused ? 'opacity-100' : 'opacity-0'"></div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mt-1.5 flex flex-col items-center">
-                            <div class="w-2 h-1.5 bg-pink-500 rounded-full shadow-[0_0_6px_#ec4899]"></div>
-                            <div class="whiskers flex gap-4 mt-1 transition-all duration-300" :class="{ 'whisker-twitch': isFocused }">
-                                <div class="w-4 h-px bg-pink-600/80 rotate-[-35deg]"></div>
-                                <div class="w-4 h-px bg-pink-600/80"></div>
-                                <div class="w-4 h-px bg-pink-600/80 rotate-[35deg]"></div>
+                        <div class="mt-1 flex flex-col items-center relative z-10">
+                            <div class="w-1.5 h-1 bg-pink-400 rounded-full shadow-[0_0_4px_#ec4899] transition-transform duration-300" :class="isFocused ? 'translate-y-[1px] scale-110' : ''"></div>
+
+                            <div class="flex justify-center transition-all duration-300 relative z-10" :class="isFocused ? 'opacity-100 scale-100 mt-1' : 'opacity-0 scale-50 h-0 mt-0'">
+                                <div class="w-1.5 h-1.5 border-b-[1.5px] border-l-[1.5px] border-[#2C1F1A] rounded-bl-[2px] transform -rotate-45"></div>
+                                <div class="w-1.5 h-1.5 border-b-[1.5px] border-r-[1.5px] border-[#2C1F1A] rounded-br-[2px] transform rotate-45 -ml-[0.5px]"></div>
+                            </div>
+
+                            <div class="whiskers flex gap-3 transition-all duration-300" :class="isFocused ? 'whisker-twitch mt-0.5' : 'mt-1'">
+                                <div class="w-3.5 h-px bg-pink-500/70 rotate-[-25deg]"></div>
+                                <div class="w-3.5 h-px bg-pink-500/70"></div>
+                                <div class="w-3.5 h-px bg-pink-500/70 rotate-[25deg]"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="liquid-glass relative z-10 bg-white/10 backdrop-blur-3xl border border-white/40 text-white px-5 py-3.5 rounded-3xl shadow-2xl flex items-center gap-3 h-14 w-full pointer-events-auto transition-all duration-500 group-focus-within:ring-2 group-focus-within:ring-white/30">
+            <div class="liquid-glass relative z-30 bg-white/10 backdrop-blur-3xl border border-white/40 text-white px-5 py-3.5 rounded-3xl shadow-2xl flex items-center gap-3 h-14 w-full pointer-events-auto transition-all duration-500 group-focus-within:ring-2 group-focus-within:ring-white/30">
                 <svg class="w-5 h-5 shrink-0 text-white/70 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 01-14 0 7 7 0 0114 0z"></path>
                 </svg>
@@ -174,36 +179,16 @@
                            autocomplete="off" spellcheck="false" placeholder=" ">
                 </div>
             </div>
-
-            <div class="absolute top-full mt-[-8px] flex justify-center w-full gap-20 pointer-events-none z-0 transition-all duration-500" :class="isFocused ? 'translate-y-2' : 'translate-y-0'">
-                <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-b-[20px] rounded-t-lg border-b border-l border-r border-white/30 shadow-md flex flex-col items-center justify-end pb-2">
-                    <div class="flex gap-1.5 mb-1">
-                        <div class="w-2 h-2.5 bg-pink-300/70 rounded-full"></div>
-                        <div class="w-2 h-2.5 bg-pink-300/70 rounded-full mt-[-2px]"></div>
-                        <div class="w-2 h-2.5 bg-pink-300/70 rounded-full"></div>
-                    </div>
-                    <div class="w-5 h-4 bg-pink-300/70 rounded-[10px] rounded-b-[14px]"></div>
-                </div>
-                <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-b-[20px] rounded-t-lg border-b border-l border-r border-white/30 shadow-md flex flex-col items-center justify-end pb-2">
-                    <div class="flex gap-1.5 mb-1">
-                        <div class="w-2 h-2.5 bg-pink-300/70 rounded-full"></div>
-                        <div class="w-2 h-2.5 bg-pink-300/70 rounded-full mt-[-2px]"></div>
-                        <div class="w-2 h-2.5 bg-pink-300/70 rounded-full"></div>
-                    </div>
-                    <div class="w-5 h-4 bg-pink-300/70 rounded-[10px] rounded-b-[14px]"></div>
-                </div>
-            </div>
-
         </div>
     </div>
 
     <div class="mt-56 sm:mt-64 mb-4 text-center pointer-events-none">
         <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white/90 drop-shadow-md mix-blend-overlay">Control Center</h1>
-        <p class="mt-2 text-[10px] sm:text-xs text-white/80 font-medium tracking-wide uppercase letter-spacing-wider">Spatial Bookmark Hub</p>
+        <p class="mt-2 text-[10px] sm:text-xs text-white/80 font-medium tracking-wide uppercase letter-spacing-wider">让本喵看看你又搞了什么名堂</p>
     </div>
 
     <div class="w-full max-w-4xl px-2 mb-6 flex gap-2 sm:gap-3 overflow-x-auto no-scrollbar relative z-10 snap-x justify-start sm:justify-center py-2" style="-webkit-overflow-scrolling: touch;">
-        <button v-for="cat in categories" :key="cat" @click="selectedCategory = cat"
+        <button v-for="cat in categories" :key="cat" @click="selectCategory(cat)"
                 :class="['px-5 py-2 rounded-full text-[11px] sm:text-xs font-bold whitespace-nowrap transition-all duration-300 shadow-sm snap-center border backdrop-blur-xl',
                              selectedCategory === cat ? 'bg-white/30 text-white border-white/50 shadow-[0_0_15px_rgba(255,255,255,0.2)]' : 'bg-white/10 text-white/80 border-white/20 hover:bg-white/20']">
             {{ truncateCategory(cat) }}
@@ -213,14 +198,18 @@
     <transition-group name="list" tag="div" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-9 gap-3 sm:gap-5 w-full max-w-7xl z-10 pb-20 relative px-2">
         <a v-for="site in filteredSites" :key="site.id || site.url" :href="formatUrl(site.url)" target="_blank"
            @contextmenu.prevent="showContextMenu($event, site)" @touchstart="onTouchStart($event, site)" @touchend="onTouchEnd" @touchmove="onTouchMove"
-           class="flex flex-col items-center p-3 sm:p-4 bg-white/10 backdrop-blur-3xl border border-white/30 shadow-sm rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:bg-white/20 group relative cursor-pointer">
+           class="flex flex-col items-center p-3 sm:p-4 bg-white/10 backdrop-blur-3xl border border-white/30 shadow-sm rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:bg-white/20 group relative cursor-pointer pt-6">
+
+            <div v-if="site.category && site.category !== 'Default'" class="absolute top-2 right-2 px-2 py-0.5 bg-gradient-to-r from-pink-500/80 to-purple-500/80 backdrop-blur-md text-white text-[9px] font-extrabold rounded-full shadow-md tracking-wide">
+                {{ site.category }}
+            </div>
 
             <div class="w-9 h-9 sm:w-11 sm:h-11 bg-white/50 squircle shadow-inner border border-white/60 flex items-center justify-center overflow-hidden mb-2 transition-transform duration-300 group-hover:scale-110">
                 <img :src="site.icon_url || `https://www.google.com/s2/favicons?domain=${getDomain(site.url)}&sz=256`" class="w-full h-full object-cover" @error="handleImageError">
             </div>
 
             <span class="text-[11px] sm:text-xs font-bold text-gray-800 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] w-full text-center truncate px-1">{{ site.title }}</span>
-            <span class="text-[9px] text-gray-200 mt-0.5 font-medium w-full text-center truncate px-1 transition-colors group-hover:text-white" :title="site.category || site.tags">{{ site.category || site.tags || '未分类' }}</span>
+            <span class="text-[9px] text-gray-200 mt-0.5 font-medium w-full text-center truncate px-1 transition-colors group-hover:text-white" :title="site.remark">{{ site.remark || '这人很懒，没写备注' }}</span>
         </a>
     </transition-group>
 
@@ -261,29 +250,27 @@
         <div v-if="showEditModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm" @click.self="showEditModal = false">
             <div class="bg-white/20 backdrop-blur-3xl border border-white/40 shadow-2xl rounded-3xl p-5 w-[85vw] max-w-sm flex flex-col">
                 <h3 class="text-base font-bold text-white mb-4 text-center">精装修你的破站</h3>
-
                 <div class="space-y-3 mb-5">
                     <div>
                         <label class="text-[10px] text-white/80 ml-1 block mb-0.5">站点名称</label>
                         <input type="text" v-model="editForm.title" class="no-zoom-input w-full bg-white/50 border border-white/50 rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-pink-400/50 text-gray-800 shadow-inner text-sm">
                     </div>
                     <div>
-                        <label class="text-[10px] text-white/80 ml-1 block mb-0.5">分类标签 (别每个都写不一样的！)</label>
+                        <label class="text-[10px] text-white/80 ml-1 block mb-0.5">分类标签 (会变成卡片右上角的小药丸)</label>
                         <input type="text" v-model="editForm.category" placeholder="如: 生产力, 摸鱼" class="no-zoom-input w-full bg-white/50 border border-white/50 rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-pink-400/50 text-gray-800 shadow-inner text-sm">
                     </div>
                     <div>
-                        <label class="text-[10px] text-white/80 ml-1 block mb-0.5">自定义图标 URL (留空则自动抓取)</label>
+                        <label class="text-[10px] text-white/80 ml-1 block mb-0.5">自定义图标 URL (没存后端的话改了白改！)</label>
                         <input type="text" v-model="editForm.icon_url" placeholder="https://..." class="no-zoom-input w-full bg-white/50 border border-white/50 rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-pink-400/50 text-gray-800 shadow-inner text-sm">
                     </div>
                     <div>
-                        <label class="text-[10px] text-white/80 ml-1 block mb-0.5">个人备注</label>
+                        <label class="text-[10px] text-white/80 ml-1 block mb-0.5">个人备注 (会在卡片标题下方显示)</label>
                         <input type="text" v-model="editForm.remark" placeholder="这破站是干嘛用的..." class="no-zoom-input w-full bg-white/50 border border-white/50 rounded-xl px-3 py-1.5 outline-none focus:ring-2 focus:ring-pink-400/50 text-gray-800 shadow-inner text-sm">
                     </div>
                 </div>
-
                 <div class="flex w-full gap-3">
                     <button @click="showEditModal = false" class="flex-1 py-2 rounded-xl bg-gray-200/80 hover:bg-gray-300 text-gray-800 text-xs font-bold transition-colors">算了不改了</button>
-                    <button @click="submitEdit" class="flex-1 py-2 rounded-xl bg-pink-500 hover:bg-pink-400 text-white text-xs font-bold shadow-md transition-colors">保存配置</button>
+                    <button @click="submitEdit" class="flex-1 py-2 rounded-xl bg-pink-500 hover:bg-pink-400 text-white text-xs font-bold shadow-md transition-colors">强行保存</button>
                 </div>
             </div>
         </div>
@@ -303,12 +290,18 @@
             const searchInput = ref(null);
             const sites = ref([]);
             const isFocused = ref(false);
-            const isError = ref(false);
 
-            const statusText = ref('');
+            // 系统灵动岛通知状态 (已改为8秒)
+            const systemMsgText = ref('');
+            const isSystemError = ref(false);
+            let sysMsgTimer = null;
+
+            // 猫咪碎碎念气泡状态 (已改为20秒弹一次，留5秒)
+            const catMsgText = ref('');
             const showIdleMessage = ref(false);
             const idleIndex = ref(0);
             const currentEatPrefix = ref('');
+            let catMsgTimer = null;
             let idleIntervalTimer = null;
 
             const showSearchModal = ref(false);
@@ -318,7 +311,6 @@
             const pendingUrl = ref('');
 
             const showEditModal = ref(false);
-            // 编辑表单加上了新的字段
             const editForm = ref({ id: '', title: '', category: '', icon_url: '', remark: '' });
             const showDeleteModal = ref(false);
             const siteToDelete = ref(null);
@@ -352,17 +344,32 @@
                 eyeStyle.value = { transform: `translate(${x}px, ${y}px)` };
             };
 
-            const placeholders = ["搜点网址投喂本喵...", "把奇奇怪怪的链接交出来", "别磨蹭，把你那点见不得人的存货交出来 ( ⌘ + K )"];
+            const placeholders = ["就这？还有更烂的网站吗 ( ⌘ + K )", "把奇奇怪怪的链接交出来", "搜点网址投喂本喵"];
             const currentPlaceholder = ref(placeholders[0]);
             let placeholderIndex = 0;
             let placeholderTimer = null;
 
             const eatPrefixes = ["🙄 勉为其难嚼一口：", "🗑️ 惊了，这是啥：", "🤢 刚才不小心瞥见了：", "🚮 你的传家宝：", "😒 这种破站你也好意思存："];
 
-            const setSystemMessage = (msg, isErr = false, duration = 3500) => {
-                isError.value = isErr;
-                statusText.value = msg;
-                setTimeout(() => { statusText.value = ''; }, duration);
+            // 专属系统灵动岛通知：停留 8 秒
+            const setSystemMessage = (msg, isErr = false, duration = 8000) => {
+                isSystemError.value = isErr;
+                systemMsgText.value = msg;
+                if (sysMsgTimer) clearTimeout(sysMsgTimer);
+                sysMsgTimer = setTimeout(() => { systemMsgText.value = ''; }, duration);
+            };
+
+            // 专属猫咪气泡通知
+            const setCatMessage = (msg, duration = 5000) => {
+                catMsgText.value = msg;
+                if (catMsgTimer) clearTimeout(catMsgTimer);
+                catMsgTimer = setTimeout(() => { catMsgText.value = ''; }, duration);
+            };
+
+            // 点击分类时触发 8 秒系统通知
+            const selectCategory = (cat) => {
+                selectedCategory.value = cat;
+                setSystemMessage(`📁 正在加载：${cat}`, false, 8000);
             };
 
             const currentIdleMessage = computed(() => {
@@ -372,12 +379,13 @@
 
             const startIdleLoop = () => {
                 idleIntervalTimer = setInterval(() => {
-                    if (sites.value.length === 0 || statusText.value || isFocused.value) return;
+                    if (sites.value.length === 0 || catMsgText.value || isFocused.value) return;
                     idleIndex.value = (idleIndex.value + 1) % sites.value.length;
                     currentEatPrefix.value = eatPrefixes[Math.floor(Math.random() * eatPrefixes.length)];
                     showIdleMessage.value = true;
-                    setTimeout(() => { showIdleMessage.value = false; }, 3000);
-                }, 13000);
+                    // 停留 5 秒后散去
+                    setTimeout(() => { showIdleMessage.value = false; }, 5000);
+                }, 20000); // 间隔 20 秒
             };
 
             const API_BASE = '/api/Fav';
@@ -399,8 +407,9 @@
             const initFooter = () => {
                 const quotes = [
                     "代码写得像坨屎，UI 倒是整得挺花哨。",
-                    "每天折腾这些没用的，正经活干完了吗？",
-                    "收藏从未停止，学习从未开始。"
+                    "每天折腾这些没用的，正经活干完了吗？本喵饿了。",
+                    "别光折腾前端了，后端 JS 接口写好没？本喵在看着你。",
+                    "收藏从未停止，学习从未开始。你是收藏家还是收破烂的？"
                 ];
                 quote.value = quotes[Math.floor(Math.random() * quotes.length)];
             };
@@ -416,11 +425,18 @@
                     if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); searchInput.value?.focus(); }
                     if (e.key === 'Escape') { showAuthModal.value=false; showSearchModal.value=false; showEditModal.value=false; showDeleteModal.value=false; closeContextMenu(); searchInput.value?.blur(); }
                 });
-                // 占位符切换变慢，设为 6 秒
                 placeholderTimer = setInterval(() => { placeholderIndex = (placeholderIndex + 1) % placeholders.length; currentPlaceholder.value = placeholders[placeholderIndex]; }, 6000);
             });
 
-            onUnmounted(() => { window.removeEventListener('mousemove', handleMouseMove); window.removeEventListener('touchmove', handleMouseMove); window.removeEventListener('touchstart', handleMouseMove); clearInterval(placeholderTimer); clearInterval(idleIntervalTimer); });
+            onUnmounted(() => {
+                window.removeEventListener('mousemove', handleMouseMove);
+                window.removeEventListener('touchmove', handleMouseMove);
+                window.removeEventListener('touchstart', handleMouseMove);
+                clearInterval(placeholderTimer);
+                clearInterval(idleIntervalTimer);
+                if (sysMsgTimer) clearTimeout(sysMsgTimer);
+                if (catMsgTimer) clearTimeout(catMsgTimer);
+            });
 
             const filteredSites = computed(() => {
                 let result = sites.value;
@@ -448,7 +464,7 @@
                     else { showAuthModal.value = true; nextTick(() => document.getElementById('sec-token')?.focus()); }
                 } else {
                     if (filteredSites.value.length === 0) { pendingSearch.value = text; showSearchModal.value = true; }
-                    else { setSystemMessage("🙄 瞎啊？你要找的破烂不就在下面吗。"); }
+                    else { setCatMessage("🙄 瞎啊？你要找的破烂不就在下面吗。", 5000); }
                 }
             };
 
@@ -458,18 +474,18 @@
             const submitAuth = async () => {
                 if (!passToken.value) return;
                 const pwd = passToken.value; showAuthModal.value = false;
-                setSystemMessage("🙄 行吧，本喵屈尊降贵去爬网线看一眼...", false, 5000);
+                setSystemMessage("📡 正在爬网线连接后端...", false, 8000);
                 try {
                     const res = await fetch(`${API_BASE}/add`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: pendingUrl.value, category: 'Default', authCode: pwd }) });
                     const data = await res.json();
                     if (res.ok && data.success) {
-                        localStorage.setItem('fav_sec_token', pwd); setSystemMessage("✅ 算你走运：" + data.msg);
+                        localStorage.setItem('fav_sec_token', pwd); setSystemMessage("✅ 收录成功：" + data.msg, false, 8000);
                         passToken.value = ''; pendingUrl.value = ''; inputValue.value = ''; await fetchSites();
                     } else {
-                        if (res.status === 403) { localStorage.removeItem('fav_sec_token'); setSystemMessage("❌ 脑子呢？密码都能输错！重来！", true); }
-                        else { setSystemMessage("❌ " + (data.msg || "后端罢工了，救不了。"), true); }
+                        if (res.status === 403) { localStorage.removeItem('fav_sec_token'); setSystemMessage("❌ 密码错误，鉴权失败", true, 8000); }
+                        else { setSystemMessage("❌ " + (data.msg || "后端服务器异常"), true, 8000); }
                     }
-                } catch (e) { setSystemMessage("❌ API 断气了，别折腾了。", true); }
+                } catch (e) { setSystemMessage("❌ 网络请求失败，API 无响应", true, 8000); }
             };
 
             const showContextMenu = (eOrTouch, site) => {
@@ -489,28 +505,27 @@
                 siteToDelete.value = contextMenu.value.site;
                 closeContextMenu();
                 const pwd = localStorage.getItem('fav_sec_token');
-                if (!pwd) return setSystemMessage("⚠️ 你谁啊？先在搜索框输个网址+密码验明正身！", true);
+                if (!pwd) return setSystemMessage("⚠️ 操作拒绝：未检测到身份凭证", true, 8000);
                 showDeleteModal.value = true;
             };
 
             const confirmDelete = async () => {
                 const pwd = localStorage.getItem('fav_sec_token');
                 showDeleteModal.value = false;
-                setSystemMessage("🔥 正在把这玩意儿扬了，骨灰都不剩...", false, 5000);
+                setSystemMessage("🔥 正在执行物理清除协议...", false, 8000);
                 try {
                     const res = await fetch(`${API_BASE}/delete`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ id: siteToDelete.value.id, authCode: pwd })
                     });
                     const data = await res.json();
-                    if (data.success) { setSystemMessage("🙄 终于清净了，少存点垃圾吧。"); await fetchSites(); }
-                    else { setSystemMessage("❌ 删不掉：" + data.msg, true); }
-                } catch (e) { setSystemMessage("❌ 删个屁，后端接口挂了。", true); }
+                    if (data.success) { setSystemMessage("🗑️ 清理完成，垃圾已销毁", false, 8000); await fetchSites(); }
+                    else { setSystemMessage("❌ 删除失败：" + data.msg, true, 8000); }
+                } catch (e) { setSystemMessage("❌ 删除异常：后端接口无响应", true, 8000); }
             };
 
             const openEditModal = () => {
                 const site = contextMenu.value.site;
-                // 把新的属性带进来
                 editForm.value = {
                     id: site.id,
                     title: site.title,
@@ -523,18 +538,18 @@
 
             const submitEdit = async () => {
                 const pwd = localStorage.getItem('fav_sec_token');
-                if (!pwd) return setSystemMessage("⚠️ 别乱摸！先在搜索框输网址+密码验证身份！", true);
+                if (!pwd) return setSystemMessage("⚠️ 操作拒绝：未检测到身份凭证", true, 8000);
                 showEditModal.value = false;
-                setSystemMessage("🙄 瞎折腾什么，正在给你传数据...", false, 5000);
+                setSystemMessage("📦 正在向后端推送更新数据...", false, 8000);
                 try {
                     const res = await fetch(`${API_BASE}/edit`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ ...editForm.value, authCode: pwd })
                     });
                     const data = await res.json();
-                    if (data.success) { setSystemMessage("✅ 装修完了，看看顺眼不？"); await fetchSites(); }
-                    else { setSystemMessage("❌ 改个锤子：" + data.msg, true); }
-                } catch (e) { setSystemMessage("❌ 别试了，后端接口躺尸了。", true); }
+                    if (data.success) { setSystemMessage("✅ 配置已保存并同步", false, 8000); await fetchSites(); }
+                    else { setSystemMessage("❌ 更新失败：" + data.msg, true, 8000); }
+                } catch (e) { setSystemMessage("❌ 更新异常：后端接口无响应", true, 8000); }
             };
 
             const handleImageError = (e) => { e.target.src = 'https://api.iconify.design/bx:bx-ghost.svg'; };
@@ -542,15 +557,16 @@
             const onInputBlur = () => { isFocused.value = false; };
 
             return {
-                sites, inputValue, handleSmartEnter, filteredSites, formatUrl, isFocused, statusText, isError, searchInput,
+                sites, inputValue, handleSmartEnter, filteredSites, formatUrl, isFocused, searchInput,
                 showSearchModal, pendingSearch, confirmWebSearch,
                 contextMenu, showContextMenu, closeContextMenu, onTouchStart, onTouchEnd, onTouchMove,
                 openDeleteModal, showDeleteModal, confirmDelete, siteToDelete,
                 openEditModal, showEditModal, editForm, submitEdit, handleImageError, getDomain,
                 showAuthModal, passToken, submitAuth, cancelAuth, quote, ping,
                 eyeStyle, currentPlaceholder, currentEatPrefix, showIdleMessage, currentIdleMessage,
-                onInputFocus, onInputBlur,
-                categories, selectedCategory, truncateCategory
+                onInputFocus, onInputBlur, selectCategory,
+                categories, selectedCategory, truncateCategory,
+                systemMsgText, isSystemError, catMsgText
             };
         }
     }).mount('#app')
