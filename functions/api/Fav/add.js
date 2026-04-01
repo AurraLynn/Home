@@ -2,51 +2,63 @@ export async function onRequestPost(context) {
   const { request, env } = context;
   const { url, category, authCode } = await request.json();
 
-  // 1. 验证你的后台暗号
   if (authCode !== env.ADMIN_PASSWORD) {
     return Response.json({ success: false, msg: "暗号不对，爬。" }, { status: 403 });
   }
 
-  let icon = "";
-  let title = "";
+  let finalIcon = "";
+  let finalTitle = "";
+  let finalRemark = ""; 
+  let targetUrl = url;
+
+  if (!targetUrl.includes('://')) { targetUrl = 'https://' + targetUrl; }
 
   try {
-    const targetUrl = new URL(url.startsWith('http') ? url : 'https://' + url);
-    const domain = targetUrl.hostname;
+    const urlObj = new URL(targetUrl);
+    const domain = urlObj.hostname;
+    const protocol = urlObj.protocol;
 
-    // 2. 暴力抓取策略
-    if (domain.includes('t.me')) {
-      const res = await fetch(url);
-      const html = await res.text();
-      icon = html.match(/<meta property="og:image" content="(.*?)"/)?.[1] || "";
-      title = html.match(/<meta property="og:title" content="(.*?)"/)?.[1] || "TG 频道";
-    } 
-    else if (domain.includes('apps.apple.com')) {
-      const appId = url.match(/id(\d+)/)?.[1];
-      const res = await fetch(`https://itunes.apple.com/lookup?id=${appId}`);
-      const data = await res.json();
-      icon = data.results[0]?.artworkUrl512 || "";
-      title = data.results[0]?.trackName || "iOS App";
-    } 
-    else {
-      // 默认抓取
-      icon = `https://icons.duckduckgo.com/ip3/${domain}.ico`;
-      title = domain;
+    if (protocol !== 'http:' && protocol !== 'https:') {
+      finalTitle = protocol.replace(':', ' Protocol');
+      finalIcon = 'https://api.iconify.design/logos:apple-app-store.svg'; 
+      finalRemark = "本地应用唤醒链接";
+    } else {
+      finalIcon = `https://www.google.com/s2/favicons?domain=${domain}&sz=256`;
+      finalTitle = domain;
+      
+      try {
+        const res = await fetch(targetUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
+        const html = await res.text();
+        
+        // 抓取标题
+        const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+        if (titleMatch) finalTitle = titleMatch[1].trim();
+        
+        // 抓取简介 (Description)
+        const descMatch = html.match(/<meta[^>]*name="description"[^>]*content="([^"]*)"[^>]*>/i) || 
+                          html.match(/<meta[^>]*property="og:description"[^>]*content="([^"]*)"[^>]*>/i);
+        
+        if (descMatch && descMatch[1].trim() !== "") {
+            finalRemark = descMatch[1].trim();
+        } else {
+            // 如果没有简介，把标题当做备注兜底，拒绝空荡荡
+            finalRemark = titleMatch ? titleMatch[1].trim() : "这破站连个简介都没有";
+        }
+      } catch (e) {
+        finalRemark = "防爬虫太严，偷不到简介。";
+      }
     }
 
-// 狸猫换太子：把抓到的 finalRemark 强行存进 category 字段里，如果没抓到就显示 Default
-    const saveCategory = finalRemark ? finalRemark.substring(0, 50) + "..." : (category || "Default");
+    // 强制截取长度并存入 category 字段
+    const saveCategory = finalRemark ? finalRemark.substring(0, 60) + "..." : "暂无备注";
+
     await env.DB.prepare(
       "INSERT INTO navigation (title, url, icon_url, category) VALUES (?, ?, ?, ?)"
     ).bind(finalTitle, targetUrl, finalIcon, saveCategory).run();
 
-    return Response.json({ 
-      success: true, 
-      msg: "图标扒到了，优雅。", 
-      data: { title, icon } 
-    });
+    return Response.json({ success: true, msg: "已强行收录并偷走简介。" });
 
   } catch (e) {
-    return Response.json({ success: false, msg: "这网址有毒，解析不动。" }, { status: 500 });
+    return Response.json({ success: false, msg: "链接格式稀烂，解析暴毙。" }, { status: 500 });
   }
 }
