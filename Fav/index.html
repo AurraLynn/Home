@@ -7,8 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
+        /* 护眼暗调极客背景 */
         @keyframes aurora { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        body { margin: 0; min-height: 100vh; background: linear-gradient(-45deg, #e0c3fc, #8ec5fc, #fbc2eb, #a18cd1); background-size: 400% 400%; animation: aurora 20s ease infinite; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; overflow-x: hidden; }
+        body { margin: 0; min-height: 100vh; background: linear-gradient(-45deg, #a18cd1, #6991c7, #c48cb3, #7663a6); background-size: 400% 400%; animation: aurora 20s ease infinite; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; overflow-x: hidden; }
         .squircle { border-radius: 22.5%; }
         ::-webkit-scrollbar { display: none; }
         .modal-enter-active, .modal-leave-active { transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
@@ -21,77 +22,48 @@
         .no-zoom-input { font-size: 16px !important; }
         .fade-text-enter-active, .fade-text-leave-active { transition: opacity 0.5s ease; }
         .fade-text-enter-from, .fade-text-leave-to { opacity: 0; }
-        
-        /* 正常眨眼：慵懒感 */
-        @keyframes normal-blink {
-            0%, 93%, 100% { transform: scaleY(1); }
-            95% { transform: scaleY(0.05); } 
-            97% { transform: scaleY(1); }
-        }
+        @keyframes normal-blink { 0%, 93%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.05); } 97% { transform: scaleY(1); } }
         .animate-normal-blink { animation: normal-blink 5s infinite cubic-bezier(0.4, 0, 0.2, 1); }
-        
-        /* 期待眨眼：快速连眨两下 */
-        @keyframes double-blink {
-            0%, 70%, 100% { transform: scaleY(1); }
-            75% { transform: scaleY(0.05); }
-            80% { transform: scaleY(1); }
-            85% { transform: scaleY(0.05); }
-            90% { transform: scaleY(1); }
-        }
+        @keyframes double-blink { 0%, 70%, 100% { transform: scaleY(1); } 75% { transform: scaleY(0.05); } 80% { transform: scaleY(1); } 85% { transform: scaleY(0.05); } 90% { transform: scaleY(1); } }
         .animate-double-blink { animation: double-blink 2.5s infinite ease-in-out; }
     </style>
 </head>
 <body class="text-gray-900 antialiased flex flex-col no-select">
-    <div id="app" class="flex-1 p-4 sm:p-10 relative flex flex-col items-center min-h-screen w-full" @click="closeContextMenu" @touchstart="closeContextMenu">
+    <div id="app" class="flex-1 p-4 sm:p-10 relative flex flex-col items-center min-h-screen w-full">
         
         <div class="fixed top-20 sm:top-16 z-40 flex flex-col items-center w-full px-6 pointer-events-none">
             
             <div class="relative pointer-events-auto w-[90vw] sm:w-72 sm:focus-within:w-[32rem] sm:hover:w-[26rem] transition-all duration-500 group mx-auto mt-4">
                 
                 <div class="absolute left-1/2 -translate-x-1/2 bottom-full mb-[-15px] group-focus-within:mb-[-2px] transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] z-0 flex flex-col items-center w-24 pointer-events-none">
-                    
                     <div class="flex justify-between w-full px-1 absolute -top-3.5 z-0">
-                        <div class="w-7 h-7 bg-pink-200 border border-pink-300 rounded-tl-full rounded-tr-md rounded-bl-md transform -rotate-[40deg] group-focus-within:-rotate-[10deg] shadow-sm transition-transform duration-500">
-                            <div class="w-4 h-4 bg-pink-100 rounded-tl-full absolute bottom-1 right-1"></div>
-                        </div>
-                        <div class="w-7 h-7 bg-pink-200 border border-pink-300 rounded-tr-full rounded-tl-md rounded-br-md transform rotate-[40deg] group-focus-within:rotate-[10deg] shadow-sm transition-transform duration-500">
-                            <div class="w-4 h-4 bg-pink-100 rounded-tr-full absolute bottom-1 left-1"></div>
-                        </div>
+                        <div class="w-7 h-7 bg-pink-200 border border-pink-300 rounded-tl-full rounded-tr-md rounded-bl-md transform -rotate-[40deg] group-focus-within:-rotate-[10deg] shadow-sm transition-transform duration-500"><div class="w-4 h-4 bg-pink-100 rounded-tl-full absolute bottom-1 right-1"></div></div>
+                        <div class="w-7 h-7 bg-pink-200 border border-pink-300 rounded-tr-full rounded-tl-md rounded-br-md transform rotate-[40deg] group-focus-within:rotate-[10deg] shadow-sm transition-transform duration-500"><div class="w-4 h-4 bg-pink-100 rounded-tr-full absolute bottom-1 left-1"></div></div>
                     </div>
-                    
                     <div class="w-20 h-14 bg-pink-200 border border-pink-300 rounded-t-[2.5rem] rounded-b-3xl relative z-10 shadow-inner flex flex-col items-center pt-3.5">
-                        
                         <div :class="['flex gap-2.5', isFocused ? 'animate-double-blink' : 'animate-normal-blink']">
-                            <div class="w-5 h-[22px] bg-white rounded-full flex items-center justify-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] relative overflow-hidden">
-                                <div class="w-3.5 h-[15px] bg-[#4A3B32] rounded-full absolute transition-all duration-[50ms] ease-out flex items-start justify-end p-0.5" :style="eyeStyle">
-                                    <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
-                                </div>
-                            </div>
-                            <div class="w-5 h-[22px] bg-white rounded-full flex items-center justify-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] relative overflow-hidden">
-                                <div class="w-3.5 h-[15px] bg-[#4A3B32] rounded-full absolute transition-all duration-[50ms] ease-out flex items-start justify-end p-0.5" :style="eyeStyle">
-                                    <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
-                                </div>
-                            </div>
+                            <div class="w-5 h-[22px] bg-white rounded-full flex items-center justify-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] relative overflow-hidden"><div class="w-3.5 h-[15px] bg-[#4A3B32] rounded-full absolute transition-all duration-[50ms] ease-out flex items-start justify-end p-0.5" :style="eyeStyle"><div class="w-1.5 h-1.5 bg-white rounded-full"></div></div></div>
+                            <div class="w-5 h-[22px] bg-white rounded-full flex items-center justify-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] relative overflow-hidden"><div class="w-3.5 h-[15px] bg-[#4A3B32] rounded-full absolute transition-all duration-[50ms] ease-out flex items-start justify-end p-0.5" :style="eyeStyle"><div class="w-1.5 h-1.5 bg-white rounded-full"></div></div></div>
                         </div>
-                        
                         <div class="w-1.5 h-1 bg-pink-400 rounded-full mt-1.5 shadow-[0_1px_2px_rgba(0,0,0,0.1)]"></div>
                         <div class="flex mt-0.5 opacity-70">
                             <div class="w-2 h-1.5 border-b-[1.5px] border-r-[1.5px] border-pink-500 rounded-br-full transform rotate-45"></div>
                             <div class="w-2 h-1.5 border-b-[1.5px] border-l-[1.5px] border-pink-500 rounded-bl-full transform -rotate-45"></div>
                         </div>
-                        <div class="absolute w-3 h-1.5 bg-pink-400/40 rounded-full blur-[1px] top-6 left-1.5"></div>
-                        <div class="absolute w-3 h-1.5 bg-pink-400/40 rounded-full blur-[1px] top-6 right-1.5"></div>
                     </div>
+                </div>
+
+                <div class="absolute top-full -mt-2.5 left-1/2 -translate-x-1/2 flex gap-12 z-0 pointer-events-none transition-all duration-500"
+                     :class="isFocused ? 'translate-y-2.5' : 'translate-y-0'">
+                    <div class="w-4 h-3.5 bg-pink-200 border border-pink-300 rounded-b-full shadow-md flex justify-around items-end pb-0.5 px-0.5"><div class="w-0.5 h-1 bg-pink-300 rounded-full"></div><div class="w-0.5 h-1 bg-pink-300 rounded-full"></div></div>
+                    <div class="w-4 h-3.5 bg-pink-200 border border-pink-300 rounded-b-full shadow-md flex justify-around items-end pb-0.5 px-0.5"><div class="w-0.5 h-1 bg-pink-300 rounded-full"></div><div class="w-0.5 h-1 bg-pink-300 rounded-full"></div></div>
                 </div>
 
                 <div class="relative z-10 bg-black/85 backdrop-blur-2xl border border-white/20 text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2.5 h-full w-full pointer-events-auto">
                     <svg :class="['w-4 h-4 shrink-0 transition-colors duration-300', inputValue ? 'text-pink-400' : 'text-gray-400 group-focus-within:text-pink-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    
                     <div class="relative w-full h-5 overflow-hidden flex items-center">
                         <transition name="fade-text">
-                            <div v-if="!inputValue" :key="currentPlaceholder" class="absolute inset-0 pointer-events-none text-gray-400 text-sm tracking-wide truncate flex items-center">
-                                {{ currentPlaceholder }}
-                            </div>
+                            <div v-if="!inputValue" :key="currentPlaceholder" class="absolute inset-0 pointer-events-none text-gray-400 text-sm tracking-wide truncate flex items-center">{{ currentPlaceholder }}</div>
                         </transition>
                         <input type="text" ref="searchInput" 
                                class="no-zoom-input relative z-10 bg-transparent border-none outline-none w-full text-white placeholder-transparent" 
@@ -99,20 +71,20 @@
                     </div>
                 </div>
 
-                <div :class="['absolute top-full mt-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/95 backdrop-blur-md text-pink-500 px-4 py-1.5 rounded-2xl shadow-xl text-[11px] font-bold transition-all duration-500 z-20 pointer-events-none flex flex-col items-center', (!islandActive && sites.length > 0 && !isFocused) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 scale-90']">
+                <div :class="['absolute top-full mt-4 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white/95 backdrop-blur-md text-pink-500 px-4 py-1.5 rounded-2xl shadow-xl text-[11px] font-bold transition-all duration-500 z-20 pointer-events-none flex flex-col items-center', (!islandActive && sites.length > 0 && !isFocused) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 scale-90']">
                     <div class="absolute -top-1.5 w-0 h-0 border-b-[6px] border-l-[6px] border-r-[6px] border-transparent border-b-white/95"></div>
                     <span>{{ currentEatPrefix }} {{ sites[0]?.title }}</span>
                 </div>
             </div>
 
-            <div :class="['mt-3 px-5 py-1.5 rounded-full backdrop-blur-xl transition-all duration-500 transform text-xs z-50', islandActive ? 'translate-y-0 opacity-100 pointer-events-auto' : '-translate-y-4 opacity-0', isError ? 'bg-red-500/90 text-white shadow-lg' : 'bg-black/80 text-white shadow-lg']">
+            <div :class="['mt-5 px-5 py-1.5 rounded-full backdrop-blur-xl transition-all duration-500 transform text-xs z-50', islandActive ? 'translate-y-0 opacity-100 pointer-events-auto' : '-translate-y-4 opacity-0', isError ? 'bg-red-500/90 text-white shadow-lg' : 'bg-black/80 text-white shadow-lg']">
                 {{ statusText }}
             </div>
         </div>
 
         <div class="mt-40 mb-8 text-center pointer-events-none">
             <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white/90 drop-shadow-md mix-blend-overlay">Control Center</h1>
-            <p class="mt-2 text-[10px] sm:text-xs text-white/70 font-medium tracking-wide uppercase letter-spacing-wider">Spatial Bookmark Hub</p>
+            <p class="mt-2 text-[10px] sm:text-xs text-white/80 font-medium tracking-wide uppercase letter-spacing-wider">Spatial Bookmark Hub</p>
         </div>
 
         <transition-group name="list" tag="div" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-9 gap-3 sm:gap-5 w-full max-w-7xl z-10 pb-20 relative px-2">
@@ -126,51 +98,61 @@
                 </div>
                 
                 <span class="text-[11px] sm:text-xs font-bold text-gray-800 drop-shadow-sm w-full text-center truncate px-1">{{ site.title }}</span>
-                <span class="text-[9px] text-gray-500/90 mt-0.5 font-medium w-full text-center truncate px-1 transition-colors group-hover:text-gray-800" :title="site.category">{{ site.category !== 'Default' ? site.category : '暂无备注' }}</span>
+                <span class="text-[9px] text-gray-200 mt-0.5 font-medium w-full text-center truncate px-1 transition-colors group-hover:text-white" :title="site.category">{{ site.category !== 'Default' ? site.category : '暂无备注' }}</span>
             </a>
         </transition-group>
 
-        <div class="mt-auto w-full max-w-7xl pt-10 pb-6 flex flex-col items-center justify-center text-[10px] font-medium text-white/70 tracking-widest text-center opacity-80 hover:opacity-100 transition-opacity">
-            <div class="mb-3 animate-pulse text-xs text-white/90 font-bold drop-shadow-md px-4">{{ quote }}</div>
+        <div class="mt-auto w-full max-w-7xl pt-10 pb-6 flex flex-col items-center justify-center text-[10px] font-medium text-white/80 tracking-widest text-center opacity-90 hover:opacity-100 transition-opacity">
+            <div class="mb-3 animate-pulse text-xs text-white drop-shadow-md px-4">{{ quote }}</div>
             <div class="flex flex-wrap justify-center gap-x-4 gap-y-2 px-4">
                 <span>© 2026 Fav Hub.</span>
-                <span>边缘节点延迟: <span :class="{'text-green-300 font-bold': ping < 100, 'text-red-300 font-bold': ping >= 100}">{{ ping }}ms</span></span>
-                <span>残骸收录: <span class="text-blue-200 font-bold">{{ sites.length }}</span> 具</span>
+                <span>边缘节点延迟: 
+                    <span :class="['font-extrabold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]', ping < 100 ? 'text-green-300' : 'text-red-400']">{{ ping }}ms</span>
+                </span>
+                <span>残骸收录: <span class="text-blue-200 font-bold drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">{{ sites.length }}</span> 具</span>
             </div>
         </div>
 
-        <div v-show="contextMenu.visible" :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }" @click.stop @touchstart.stop
-             class="fixed z-50 w-40 bg-white/85 backdrop-blur-2xl border border-white/50 rounded-2xl shadow-2xl overflow-hidden text-[13px] font-medium transition-opacity duration-200 transform origin-top-left">
+        <div v-if="contextMenu.visible" class="fixed inset-0 z-40" @click="closeContextMenu" @touchstart.prevent="closeContextMenu"></div>
+
+        <div v-show="contextMenu.visible" :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }" 
+             class="fixed z-50 w-44 bg-white/90 backdrop-blur-2xl border border-white/50 rounded-2xl shadow-2xl overflow-hidden text-[13px] font-medium transition-opacity duration-200 transform origin-top-left">
             <div class="px-4 py-2 text-gray-400 border-b border-gray-200/50 text-[10px] uppercase tracking-wider truncate">{{ contextMenu.site?.title }}</div>
-            <button class="w-full text-left px-4 py-2.5 hover:bg-pink-500 hover:text-white transition-colors" @click.stop="editSite">修改狗牌 (编辑)</button>
+            <button class="w-full text-left px-4 py-2.5 hover:bg-pink-500 hover:text-white transition-colors" @click.stop="openEditModal">修改狗牌 (编辑)</button>
             <div class="h-[1px] bg-gray-200/50 mx-2"></div>
-            <button class="w-full text-left px-4 py-2.5 text-red-500 hover:bg-red-500 hover:text-white transition-colors" @click.stop="deleteSite">就地正法 (删除)</button>
+            <button class="w-full text-left px-4 py-2.5 text-red-500 hover:bg-red-500 hover:text-white transition-colors font-bold" @click.stop="deleteSite">就地正法 (删除)</button>
         </div>
 
         <transition name="modal">
-            <div v-if="showSearchModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm" @click.stop="showSearchModal = false" @touchstart.stop="showSearchModal = false">
-                <div class="bg-white/20 backdrop-blur-3xl border border-white/40 shadow-2xl rounded-3xl p-6 w-[85vw] max-w-xs flex flex-col items-center text-center" @click.stop @touchstart.stop>
-                    <div class="text-4xl mb-3">🙄</div>
-                    <h3 class="text-base font-bold text-gray-900 mb-2">库里没这玩意</h3>
-                    <p class="text-xs text-gray-700 mb-6">连「<span class="font-bold text-black">{{ pendingSearch }}</span>」都搜不到，丢给谷歌搜吧？</p>
+            <div v-if="showAuthModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm" @click.self="cancelAuth">
+                <div class="bg-white/20 backdrop-blur-3xl border border-white/40 shadow-2xl rounded-3xl p-6 w-[85vw] max-w-xs flex flex-col items-center">
+                    <div class="w-10 h-10 bg-pink-500/20 rounded-full flex items-center justify-center mb-3"><svg class="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div>
+                    <h3 class="text-base font-bold text-white mb-1">入库验证</h3>
+                    <p class="text-[10px] text-white/70 mb-4 text-center">又搞到什么黑料了？暗号交出来。</p>
+                    <input type="text" id="sec-token" v-model="passToken" @keyup.enter="submitAuth" class="stealth-password no-zoom-input w-full bg-white/50 border border-white/50 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-pink-400/50 text-center tracking-widest text-gray-800 mb-4 shadow-inner placeholder-gray-500" placeholder="懂的都懂..." autocomplete="nope" data-form-type="other" autocorrect="off" spellcheck="false">
                     <div class="flex w-full gap-3">
-                        <button @click="showSearchModal = false" class="flex-1 py-2 rounded-xl bg-gray-200/60 hover:bg-gray-300/60 text-gray-700 text-xs font-semibold transition-colors">算了</button>
-                        <button @click="confirmWebSearch" class="flex-1 py-2 rounded-xl bg-pink-500 hover:bg-pink-400 text-white text-xs font-semibold shadow-md transition-colors">滚去搜</button>
+                        <button @click="cancelAuth" class="flex-1 py-2 rounded-xl bg-gray-200/60 hover:bg-gray-300/60 text-gray-800 text-xs font-semibold transition-colors">撤退</button>
+                        <button @click="submitAuth" class="flex-1 py-2 rounded-xl bg-pink-500 hover:bg-pink-400 text-white text-xs font-semibold shadow-md transition-colors">安排上</button>
                     </div>
                 </div>
             </div>
         </transition>
 
         <transition name="modal">
-            <div v-if="showAuthModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm" @click.stop="cancelAuth" @touchstart.stop="cancelAuth">
-                <div class="bg-white/20 backdrop-blur-3xl border border-white/40 shadow-2xl rounded-3xl p-6 w-[85vw] max-w-xs flex flex-col items-center" @click.stop @touchstart.stop>
-                    <div class="w-10 h-10 bg-pink-500/20 rounded-full flex items-center justify-center mb-3"><svg class="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div>
-                    <h3 class="text-base font-bold text-gray-900 mb-1">入库验证</h3>
-                    <p class="text-[10px] text-gray-700 mb-4 text-center">又搞到什么黑料了？暗号交出来。</p>
-                    <input type="text" id="sec-token" v-model="passToken" @keyup.enter="submitAuth" class="stealth-password no-zoom-input w-full bg-white/50 border border-white/50 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-pink-400/50 text-center tracking-widest text-gray-800 mb-4 shadow-inner placeholder-gray-500" placeholder="懂的都懂..." autocomplete="nope" data-form-type="other" autocorrect="off" spellcheck="false">
+            <div v-if="showEditModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm" @click.self="showEditModal = false">
+                <div class="bg-white/20 backdrop-blur-3xl border border-white/40 shadow-2xl rounded-3xl p-6 w-[85vw] max-w-sm flex flex-col">
+                    <h3 class="text-lg font-bold text-white mb-4 text-center">修改狗牌</h3>
+                    <div class="mb-3">
+                        <label class="text-[10px] text-white/70 ml-1 mb-1 block">站点名称</label>
+                        <input type="text" v-model="editForm.title" class="no-zoom-input w-full bg-white/50 border border-white/50 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-pink-400/50 text-gray-800 shadow-inner">
+                    </div>
+                    <div class="mb-5">
+                        <label class="text-[10px] text-white/70 ml-1 mb-1 block">备注/分类</label>
+                        <input type="text" v-model="editForm.category" class="no-zoom-input w-full bg-white/50 border border-white/50 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-pink-400/50 text-gray-800 shadow-inner">
+                    </div>
                     <div class="flex w-full gap-3">
-                        <button @click="cancelAuth" class="flex-1 py-2 rounded-xl bg-gray-200/60 hover:bg-gray-300/60 text-gray-700 text-xs font-semibold transition-colors">撤退</button>
-                        <button @click="submitAuth" class="flex-1 py-2 rounded-xl bg-pink-500 hover:bg-pink-400 text-white text-xs font-semibold shadow-md transition-colors">安排上</button>
+                        <button @click="showEditModal = false" class="flex-1 py-2 rounded-xl bg-gray-200/60 hover:bg-gray-300/60 text-gray-800 text-xs font-semibold transition-colors">算了</button>
+                        <button @click="submitEdit" class="flex-1 py-2 rounded-xl bg-blue-500 hover:bg-blue-400 text-white text-xs font-semibold shadow-md transition-colors">保存修改</button>
                     </div>
                 </div>
             </div>
@@ -191,62 +173,53 @@
                 const statusText = ref('');
                 const showSearchModal = ref(false);
                 const pendingSearch = ref('');
+                
                 const showAuthModal = ref(false);
                 const passToken = ref(''); 
                 const pendingUrl = ref('');
+                
+                // 编辑状态
+                const showEditModal = ref(false);
+                const editForm = ref({ id: '', title: '', category: '' });
+
                 const contextMenu = ref({ visible: false, x: 0, y: 0, site: null });
                 
                 const ping = ref('--');
                 const quote = ref('加载中...');
                 let touchTimer = null;
                 
-                // 修复点 2：容错极强的触摸/鼠标事件解构，防报错
                 const eyeStyle = ref({ transform: 'translate(0px, 0px)' });
                 const handleMouseMove = (e) => {
                     const limit = 2.5; 
-                    let clientX = 0;
-                    let clientY = 0;
-
-                    // 安全提取坐标，防止因为离开屏幕报错
+                    let clientX = 0; let clientY = 0;
                     if (e.touches && e.touches.length > 0) {
-                        clientX = e.touches[0].clientX;
-                        clientY = e.touches[0].clientY;
+                        clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
                     } else if (e.clientX !== undefined) {
-                        clientX = e.clientX;
-                        clientY = e.clientY;
-                    } else {
-                        return; // 遇到无法解析的事件直接跑路
-                    }
+                        clientX = e.clientX; clientY = e.clientY;
+                    } else { return; }
                     
                     const x = (clientX / window.innerWidth - 0.5) * limit * 2;
                     let y = (clientY / window.innerHeight - 0.5) * limit * 2;
-                    
                     if (isFocused.value) { y = Math.max(1, y + 2); }
                     eyeStyle.value = { transform: `translate(${x}px, ${y}px)` };
                 };
 
                 const placeholders = [
-                    "搜点网址投喂本喵... ( ⌘ + K )",
-                    "把奇奇怪怪的链接交出来 ( ⌘ + K )",
-                    "全宇宙最骚的网址控制台 ( ⌘ + K )",
-                    "输个域名，我帮你顺着网线爬过去 ( ⌘ + K )",
-                    "你的收藏夹已经饿得皮包骨了 ( ⌘ + K )",
-                    "又想偷点什么没用的代码？ ( ⌘ + K )",
-                    "让我看看今天又是哪个倒霉网站 ( ⌘ + K )"
+                    "搜点网址投喂本喵... ( ⌘ + K )", "把奇奇怪怪的链接交出来 ( ⌘ + K )",
+                    "全宇宙最骚的网址控制台 ( ⌘ + K )", "输个域名，我帮你顺着网线爬过去 ( ⌘ + K )",
+                    "你的收藏夹已经饿得皮包骨了 ( ⌘ + K )"
                 ];
                 const currentPlaceholder = ref(placeholders[0]);
                 let placeholderIndex = 0;
                 let placeholderTimer = null;
 
                 const eatPrefixes = [
-                    "✨ 勉为其难咽下了：", "✨ 你的电子垃圾+1：", 
-                    "✨ 刚才被迫吞了：", "✨ 又塞进来一个破站：", "✨ 凑合吃了一口：",
-                    "✨ 嚼了两下，真难吃：", "✨ 收废品啦！刚捡了：", "✨ 库里又多了一具尸体："
+                    "✨ 勉为其难咽下了：", "✨ 你的电子垃圾+1：", "✨ 刚才被迫吞了：", 
+                    "✨ 又塞进来一个破站：", "✨ 凑合吃了一口：", "✨ 库里又多了一具尸体："
                 ];
                 const currentEatPrefix = ref(eatPrefixes[0]);
 
-                const LIST_API_URL = '/api/Fav/list';
-                const ADD_API_URL = '/api/Fav/add';
+                const API_BASE = '/api/Fav';
 
                 const formatUrl = (rawUrl) => {
                     if (!rawUrl) return '#';
@@ -254,19 +227,12 @@
                     return 'https://' + rawUrl;
                 };
 
-                // 修复点 3：前端隔离 new URL()，提供金钟罩函数
-                const getDomain = (url) => {
-                    try {
-                        return new URL(formatUrl(url)).hostname;
-                    } catch (e) {
-                        return 'google.com'; // 万一数据库塞了垃圾，直接扔个 google 兜底，绝不死机
-                    }
-                };
+                const getDomain = (url) => { try { return new URL(formatUrl(url)).hostname; } catch (e) { return 'google.com'; } };
 
                 const fetchSites = async () => {
                     try {
                         const start = Date.now();
-                        const res = await fetch(LIST_API_URL);
+                        const res = await fetch(`${API_BASE}/list`);
                         const end = Date.now();
                         if (res.ok) {
                             sites.value = await res.json();
@@ -278,13 +244,10 @@
 
                 const initFooter = () => {
                     const quotes = [
-                        "别看了，你的代理节点又全红了。", "代码写得像坨屎，收藏夹倒是搞得挺花哨。", 
-                        "你那几个破服务器还没挂？堪称医学奇迹。", "天天跑青龙脚本，也没见你薅出套海景房。", 
-                        "别刷了，薅羊毛的尽头是被当成羊宰。", "搞了一堆高大上的复杂分流，最后连张黄图都加载不出来。", 
-                        "Surge 规则写得比简历都长，平时只用来刷推特？", "测速一片绿，打开网页卡成狗。", 
-                        "存了这么多神仙仓库，你的 GitHub 贡献图绿过吗？", "收藏夹里的教程吃灰三年了，你点开过一次吗？", 
-                        "差生文具多，极客花活多。", "买了一堆软路由，其实只用得到透明代理。",
-                        "每天折腾 Docker 容器，正经活儿一点没干。", "VPS 探针面板看得比股票还勤，然而并没什么卵用。"
+                        "别看了，你的代理节点又全红了。", "天天跑青龙脚本，也没见你薅出套海景房。", 
+                        "搞了一堆高大上的复杂分流，最后连张黄图都加载不出来。", "Surge 规则写得比简历都长，平时只用来刷推特？", 
+                        "测速一片绿，打开网页卡成狗。", "买了一堆软路由，其实只用得到透明代理。",
+                        "每天折腾 Docker 容器，正经活儿一点没干。"
                     ];
                     quote.value = quotes[Math.floor(Math.random() * quotes.length)];
                 };
@@ -292,14 +255,12 @@
                 onMounted(() => {
                     fetchSites();
                     initFooter();
-                    
                     window.addEventListener('mousemove', handleMouseMove);
                     window.addEventListener('touchmove', handleMouseMove, {passive: true});
                     window.addEventListener('touchstart', handleMouseMove, {passive: true});
-                    
                     window.addEventListener('keydown', (e) => {
                         if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); searchInput.value?.focus(); }
-                        if (e.key === 'Escape') { showAuthModal.value = false; showSearchModal.value = false; closeContextMenu(); searchInput.value?.blur(); }
+                        if (e.key === 'Escape') { showAuthModal.value = false; showSearchModal.value = false; showEditModal.value = false; closeContextMenu(); searchInput.value?.blur(); }
                     });
                     placeholderTimer = setInterval(() => {
                         placeholderIndex = (placeholderIndex + 1) % placeholders.length;
@@ -324,7 +285,6 @@
                     if (e && !e.isTrusted) return; 
                     const text = inputValue.value.trim();
                     if (!text) return;
-                    
                     const isUrlOrScheme = text.includes('://') || (/^([\w-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(text) && !text.includes(' '));
                     
                     if (isUrlOrScheme) {
@@ -346,22 +306,17 @@
 
                 const submitAuth = async () => {
                     if (!passToken.value) return;
-                    const currentPassword = passToken.value; 
-                    
-                    showAuthModal.value = false; islandActive.value = true; isError.value = false;
+                    const pwd = passToken.value; showAuthModal.value = false; islandActive.value = true; isError.value = false;
                     statusText.value = "收到。本喵正在顺着网线爬过去偷资料...";
-
                     try {
-                        const res = await fetch(ADD_API_URL, {
+                        const res = await fetch(`${API_BASE}/add`, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ url: pendingUrl.value, category: 'Script/Proxy', authCode: currentPassword })
+                            body: JSON.stringify({ url: pendingUrl.value, category: 'Script/Proxy', authCode: pwd })
                         });
                         const data = await res.json();
                         if (res.ok && data.success) {
-                            localStorage.setItem('fav_sec_token', currentPassword);
-                            statusText.value = data.msg;
-                            passToken.value = ''; pendingUrl.value = ''; inputValue.value = ''; 
-                            await fetchSites(); 
+                            localStorage.setItem('fav_sec_token', pwd); statusText.value = data.msg;
+                            passToken.value = ''; pendingUrl.value = ''; inputValue.value = ''; await fetchSites(); 
                         } else {
                             isError.value = true; 
                             if (res.status === 403) { localStorage.removeItem('fav_sec_token'); statusText.value = "暗号错！快滚去 Cloudflare 设密码！"; } 
@@ -375,23 +330,61 @@
                     eOrTouch.preventDefault?.(); 
                     let x = eOrTouch.clientX || eOrTouch.touches?.[0].clientX; 
                     let y = eOrTouch.clientY || eOrTouch.touches?.[0].clientY;
-                    if (window.innerWidth - x < 160) x = window.innerWidth - 160; 
+                    if (window.innerWidth - x < 180) x = window.innerWidth - 180; 
                     contextMenu.value = { visible: true, x, y, site }; 
                 };
                 
-                const closeContextMenu = () => { 
-                    if (contextMenu.value.visible) contextMenu.value.visible = false; 
-                };
+                const closeContextMenu = () => { if (contextMenu.value.visible) contextMenu.value.visible = false; };
 
-                const onTouchStart = (e, site) => { 
-                    e.stopPropagation();
-                    touchTimer = setTimeout(() => { showContextMenu(e, site); }, 500); 
-                };
+                const onTouchStart = (e, site) => { touchTimer = setTimeout(() => { showContextMenu(e, site); }, 500); };
                 const onTouchEnd = () => { clearTimeout(touchTimer); };
                 const onTouchMove = () => { clearTimeout(touchTimer); }; 
                 
-                const deleteSite = async () => { alert("还没写删除接口呢。"); closeContextMenu(); };
-                const editSite = () => { alert("你以为说改就能改？先凑合着用。"); closeContextMenu(); };
+                // 真·删除逻辑
+                const deleteSite = async () => { 
+                    const site = contextMenu.value.site;
+                    closeContextMenu();
+                    const pwd = localStorage.getItem('fav_sec_token');
+                    if (!pwd) return alert("为了防内鬼，请先在搜索框随便加个网址输入一次密码验证身份！");
+                    if (!confirm(`真要彻底超度 [${site.title}] 吗？\n干掉就真没了！`)) return;
+
+                    try {
+                        const res = await fetch(`${API_BASE}/delete`, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: site.id, authCode: pwd })
+                        });
+                        const data = await res.json();
+                        if (data.success) { alert("已送走。"); await fetchSites(); } else { alert(data.msg); }
+                    } catch (e) { alert("删除请求失败，看看后端的 delete.js 写了没？"); }
+                };
+
+                // 真·编辑逻辑
+                const openEditModal = () => { 
+                    const site = contextMenu.value.site;
+                    editForm.value = { id: site.id, title: site.title, category: site.category };
+                    closeContextMenu();
+                    showEditModal.value = true;
+                };
+
+                const submitEdit = async () => {
+                    const pwd = localStorage.getItem('fav_sec_token');
+                    if (!pwd) { alert("去主页输次密码验证身份先！"); return; }
+                    
+                    showEditModal.value = false;
+                    islandActive.value = true; isError.value = false; statusText.value = "正在修改狗牌...";
+
+                    try {
+                        const res = await fetch(`${API_BASE}/edit`, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ ...editForm.value, authCode: pwd })
+                        });
+                        const data = await res.json();
+                        if (data.success) { statusText.value = data.msg; await fetchSites(); } 
+                        else { isError.value = true; statusText.value = data.msg; }
+                    } catch (e) { isError.value = true; statusText.value = "修改失败，后端坏了。"; }
+                    setTimeout(() => { islandActive.value = false; }, 3500);
+                };
+
                 const handleImageError = (e) => { e.target.src = 'https://api.iconify.design/bx:bx-ghost.svg'; };
                 const onInputFocus = () => { isFocused.value = true; };
                 const onInputBlur = () => { isFocused.value = false; };
@@ -400,7 +393,7 @@
                     sites, inputValue, handleSmartEnter, filteredSites, formatUrl, islandActive, isFocused, statusText, isError, searchInput, 
                     showSearchModal, pendingSearch, confirmWebSearch,
                     contextMenu, showContextMenu, closeContextMenu, onTouchStart, onTouchEnd, onTouchMove,
-                    deleteSite, editSite, handleImageError, getDomain,
+                    deleteSite, openEditModal, showEditModal, editForm, submitEdit, handleImageError, getDomain,
                     showAuthModal, passToken, submitAuth, cancelAuth, quote, ping,
                     eyeStyle, currentPlaceholder, currentEatPrefix,
                     onInputFocus, onInputBlur
