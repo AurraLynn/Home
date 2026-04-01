@@ -34,10 +34,11 @@ export async function onRequestPost(context) {
       title = domain;
     }
 
-    // 3. 写入 D1 数据库 (确保你在 CF 后台绑定的变量名是 DB)
+// 狸猫换太子：把抓到的 finalRemark 强行存进 category 字段里，如果没抓到就显示 Default
+    const saveCategory = finalRemark ? finalRemark.substring(0, 50) + "..." : (category || "Default");
     await env.DB.prepare(
       "INSERT INTO navigation (title, url, icon_url, category) VALUES (?, ?, ?, ?)"
-    ).bind(title, url, icon, category || "默认分类").run();
+    ).bind(finalTitle, targetUrl, finalIcon, saveCategory).run();
 
     return Response.json({ 
       success: true, 
