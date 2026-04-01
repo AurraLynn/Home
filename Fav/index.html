@@ -7,18 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        @keyframes aurora {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        body {
-            margin: 0; min-height: 100vh;
-            background: linear-gradient(-45deg, #e0c3fc, #8ec5fc, #fbc2eb, #a18cd1);
-            background-size: 400% 400%; animation: aurora 20s ease infinite;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-            overflow-x: hidden;
-        }
+        @keyframes aurora { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        body { margin: 0; min-height: 100vh; background: linear-gradient(-45deg, #e0c3fc, #8ec5fc, #fbc2eb, #a18cd1); background-size: 400% 400%; animation: aurora 20s ease infinite; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; overflow-x: hidden; }
+        /* 苹果超椭圆完美比例 */
         .squircle { border-radius: 22.5%; }
         ::-webkit-scrollbar { display: none; }
         .modal-enter-active, .modal-leave-active { transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
@@ -26,20 +17,17 @@
         .list-move, .list-enter-active, .list-leave-active { transition: all 0.4s ease; }
         .list-enter-from, .list-leave-to { opacity: 0; transform: scale(0.9); }
         .list-leave-active { position: absolute; }
-        
-        /* 魔法障眼法：让普通文本框显示为黑点，同时骗过 Safari 的密码雷达 */
-        .stealth-password {
-            -webkit-text-security: disc;
-        }
+        /* 终极障眼法：干碎 Safari 密码嗅探 */
+        .stealth-password { -webkit-text-security: disc; }
     </style>
 </head>
-<body class="text-gray-900 antialiased" @click="closeContextMenu">
-    <div id="app" class="min-h-screen p-6 sm:p-12 relative flex flex-col items-center">
+<body class="text-gray-900 antialiased flex flex-col" @click="closeContextMenu">
+    <div id="app" class="flex-1 p-4 sm:p-10 relative flex flex-col items-center">
         
-        <div class="fixed top-8 z-40 flex flex-col items-center">
-            <div class="bg-black/85 backdrop-blur-2xl border border-white/20 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 transition-all duration-500 w-72 focus-within:w-[32rem] hover:w-[26rem] group">
+        <div class="fixed top-6 sm:top-8 z-40 flex flex-col items-center">
+            <div class="bg-black/85 backdrop-blur-2xl border border-white/20 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 transition-all duration-500 w-[90vw] sm:w-72 focus-within:w-[95vw] sm:focus-within:w-[32rem] sm:hover:w-[26rem] max-w-md sm:max-w-none group mx-auto">
                 <svg :class="['w-5 h-5 transition-colors duration-300', inputValue ? 'text-blue-400' : 'text-gray-400 group-focus-within:text-blue-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input type="text" ref="searchInput" placeholder="搜索卡片，或贴个网址进来 ( ⌘ + K )" 
+                <input type="text" ref="searchInput" placeholder="搜点什么，或贴个网址进来 ( ⌘ + K )" 
                        class="bg-transparent border-none outline-none text-sm w-full placeholder-gray-400 tracking-wide" 
                        @keyup.enter="handleSmartEnter" v-model="inputValue" autocomplete="off" spellcheck="false">
             </div>
@@ -48,30 +36,49 @@
             </div>
         </div>
 
-        <div class="mt-32 mb-16 text-center pointer-events-none">
-            <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tight text-white/90 drop-shadow-md mix-blend-overlay">Control Center</h1>
-            <p class="mt-4 text-white/70 font-medium tracking-wide">Spatial Bookmark & Script Hub</p>
+        <div class="mt-28 mb-10 text-center pointer-events-none">
+            <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white/90 drop-shadow-md mix-blend-overlay">Control Center</h1>
+            <p class="mt-3 text-xs sm:text-sm text-white/70 font-medium tracking-wide">Spatial Bookmark & Script Hub</p>
         </div>
 
-        <transition-group name="list" tag="div" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8 w-full max-w-7xl z-10 pb-20 relative">
-            <a v-for="site in filteredSites" :key="site.id || site.url" :href="site.url" target="_blank"
+        <transition-group name="list" tag="div" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 sm:gap-6 w-full max-w-7xl z-10 pb-20 relative px-2">
+            
+            <a v-for="site in filteredSites" :key="site.id || site.url" :href="formatUrl(site.url)" target="_blank"
                @contextmenu.prevent="showContextMenu($event, site)"
-               class="flex flex-col items-center p-6 bg-white/20 backdrop-blur-3xl border border-white/40 shadow-sm rounded-[2rem] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:bg-white/30 group">
-                <div class="w-16 h-16 sm:w-20 sm:h-20 bg-white/40 squircle shadow-inner border border-white/50 flex items-center justify-center overflow-hidden mb-4 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
-                    <img :src="site.icon_url || 'https://icons.duckduckgo.com/ip3/' + new URL(site.url).hostname + '.ico'" class="w-full h-full object-cover" @error="handleImageError">
+               class="flex flex-col items-center p-4 sm:p-5 bg-white/20 backdrop-blur-3xl border border-white/40 shadow-sm rounded-3xl transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg hover:bg-white/30 group relative">
+                
+                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-white/40 squircle shadow-inner border border-white/50 flex items-center justify-center overflow-hidden mb-3 transition-transform duration-300 group-hover:scale-105">
+                    <img :src="site.icon_url || `https://www.google.com/s2/favicons?domain=${new URL(formatUrl(site.url)).hostname}&sz=256`" class="w-full h-full object-cover" @error="handleImageError">
                 </div>
-                <span class="text-sm font-bold text-gray-800 drop-shadow-sm truncate w-full text-center">{{ site.title }}</span>
-                <span class="text-xs text-gray-600/80 mt-1 font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">{{ site.category || 'Default' }}</span>
+                
+                <span class="text-xs font-bold text-gray-800 drop-shadow-sm w-full text-center truncate px-1" :title="site.title">{{ site.title }}</span>
+                <span class="text-[10px] text-gray-600/80 mt-0.5 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 absolute bottom-1.5 translate-y-2 group-hover:translate-y-0 hidden sm:block">{{ site.category || 'Default' }}</span>
             </a>
+
         </transition-group>
+
+        <div class="mt-auto w-full max-w-7xl pt-10 pb-4 flex flex-col items-center justify-center text-[10px] sm:text-xs font-medium text-white/60 tracking-wider text-center">
+            <div class="mb-2 animate-pulse">{{ quote }}</div>
+            <div class="flex flex-col sm:flex-row gap-1 sm:gap-4">
+                <span>© 2026 Fav Hub.</span>
+                <span>服务器竟已苟活：<span class="font-bold text-white/80">{{ uptime }}</span></span>
+            </div>
+        </div>
+
+        <div v-show="contextMenu.visible" :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }" 
+             class="fixed z-50 w-44 bg-white/70 backdrop-blur-xl border border-white/50 rounded-2xl shadow-2xl overflow-hidden text-sm font-medium transition-opacity duration-200">
+            <div class="px-4 py-2 text-gray-500 border-b border-gray-200/50 text-xs truncate">{{ contextMenu.site?.title }}</div>
+            <button class="w-full text-left px-4 py-2 hover:bg-blue-500 hover:text-white transition-colors" @click.stop="editSite">重编它的狗牌</button>
+            <div class="h-[1px] bg-gray-200/50"></div>
+            <button class="w-full text-left px-4 py-2 text-red-500 hover:bg-red-500 hover:text-white transition-colors" @click.stop="deleteSite">就地正法 (删除)</button>
+        </div>
 
         <transition name="modal">
             <div v-if="showSearchModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm" @click.self="showSearchModal = false">
-                <div class="bg-white/20 backdrop-blur-3xl border border-white/40 shadow-2xl rounded-3xl p-8 w-80 flex flex-col items-center text-center">
+                <div class="bg-white/20 backdrop-blur-3xl border border-white/40 shadow-2xl rounded-3xl p-8 w-[85vw] max-w-xs flex flex-col items-center text-center">
                     <div class="text-5xl mb-4">🙄</div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">本地查无此物</h3>
-                    <p class="text-sm text-gray-600 mb-6">你这小破站里根本没收录「<span class="font-bold text-black">{{ pendingSearch }}</span>」，要不要勉为其难帮你丢给谷歌搜一下？</p>
-                    
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">库里没这玩意</h3>
+                    <p class="text-sm text-gray-600 mb-6">你这破站连「<span class="font-bold text-black">{{ pendingSearch }}</span>」都搜不到，要不我勉为其难帮你丢给谷歌？</p>
                     <div class="flex w-full gap-3">
                         <button @click="showSearchModal = false" class="flex-1 py-2.5 rounded-xl bg-gray-200/50 hover:bg-gray-300/50 text-gray-700 font-semibold transition-colors">算了</button>
                         <button @click="confirmWebSearch" class="flex-1 py-2.5 rounded-xl bg-blue-600/90 hover:bg-blue-500 text-white font-semibold shadow-md transition-colors">滚去搜</button>
@@ -82,26 +89,15 @@
 
         <transition name="modal">
             <div v-if="showAuthModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm" @click.self="cancelAuth">
-                <div class="bg-white/20 backdrop-blur-3xl border border-white/40 shadow-2xl rounded-3xl p-8 w-80 flex flex-col items-center">
-                    <div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                    </div>
+                <div class="bg-white/20 backdrop-blur-3xl border border-white/40 shadow-2xl rounded-3xl p-6 sm:p-8 w-[85vw] max-w-xs flex flex-col items-center">
+                    <div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mb-4"><svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></div>
                     <h3 class="text-lg font-bold text-gray-900 mb-1">入库验证</h3>
-                    <p class="text-xs text-gray-600 mb-5">又搞到什么奇奇怪怪的网址了？暗号交出来。</p>
-                    
-                    <input type="text" id="sec-token" v-model="passToken" @keyup.enter="submitAuth"
-                           class="stealth-password w-full bg-white/50 border border-white/50 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-400/50 text-center tracking-widest text-gray-800 mb-4 shadow-inner placeholder-gray-500" 
-                           placeholder="懂的都懂..." autocomplete="nope" data-form-type="other" autocorrect="off" spellcheck="false">
-                    
-                    <label class="flex items-center gap-2 w-full mb-6 cursor-pointer group">
-                        <div class="relative">
-                            <input type="checkbox" v-model="rememberDevice" class="sr-only">
-                            <div class="block bg-white/40 border border-white/50 w-10 h-6 rounded-full transition-colors" :class="{'bg-blue-400 border-blue-400': rememberDevice}"></div>
-                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform" :class="{'translate-x-4': rememberDevice}"></div>
-                        </div>
+                    <p class="text-xs text-gray-600 mb-5 text-center">又搞到什么奇奇怪怪的资源了？暗号交出来。</p>
+                    <input type="text" id="sec-token" v-model="passToken" @keyup.enter="submitAuth" class="stealth-password w-full bg-white/50 border border-white/50 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-400/50 text-center tracking-widest text-gray-800 mb-4 shadow-inner placeholder-gray-500" placeholder="懂的都懂..." autocomplete="nope" data-form-type="other" autocorrect="off" spellcheck="false">
+                    <label class="flex items-center justify-center gap-2 w-full mb-6 cursor-pointer group">
+                        <div class="relative"><input type="checkbox" v-model="rememberDevice" class="sr-only"><div class="block bg-white/40 border border-white/50 w-10 h-6 rounded-full transition-colors" :class="{'bg-blue-400 border-blue-400': rememberDevice}"></div><div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform" :class="{'translate-x-4': rememberDevice}"></div></div>
                         <span class="text-xs font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">这破设备值得信任</span>
                     </label>
-                    
                     <div class="flex w-full gap-3">
                         <button @click="cancelAuth" class="flex-1 py-2.5 rounded-xl bg-gray-200/50 hover:bg-gray-300/50 text-gray-700 font-semibold transition-colors">撤退</button>
                         <button @click="submitAuth" class="flex-1 py-2.5 rounded-xl bg-blue-600/90 hover:bg-blue-500 text-white font-semibold shadow-md transition-colors">安排上</button>
@@ -119,39 +115,62 @@
                 const inputValue = ref('');
                 const searchInput = ref(null);
                 const sites = ref([]);
-                
                 const islandActive = ref(false);
                 const isError = ref(false);
                 const statusText = ref('');
-                
-                // 搜索嘲讽弹窗
                 const showSearchModal = ref(false);
                 const pendingSearch = ref('');
-
-                // 入库验证弹窗
                 const showAuthModal = ref(false);
                 const passToken = ref(''); 
                 const pendingUrl = ref('');
                 const rememberDevice = ref(true);
-
-                // ⚠️ 大写！大写！大写！这辈子别再改小写了！
+                const contextMenu = ref({ visible: false, x: 0, y: 0, site: null });
+                
+                const uptime = ref('');
+                const quote = ref('正在查字典找骂人的词...');
+                
+                // 大写 Fav，打死别改！
                 const LIST_API_URL = '/api/Fav/list';
                 const ADD_API_URL = '/api/Fav/add';
+                const DEL_API_URL = '/api/Fav/delete';
+
+                // 神级正则工具：专治各种没协议的、深层调用的残疾链接
+                const formatUrl = (rawUrl) => {
+                    if (!rawUrl) return '#';
+                    if (rawUrl.includes('://')) return rawUrl;
+                    return 'https://' + rawUrl; // 默认补全 HTTPS，干掉入赘
+                };
 
                 const fetchSites = async () => {
                     try {
                         const res = await fetch(LIST_API_URL);
                         if (res.ok) sites.value = await res.json();
-                    } catch (e) {
-                        console.error('API没通，要不就是你数据库绑歪了', e);
-                    }
+                    } catch (e) { console.error('API没通', e); }
+                };
+
+                const initFooter = () => {
+                    const quotes = [
+                        "别看了，你的代理节点又全红了。", 
+                        "代码写得像坨屎，收藏夹倒是搞得挺花哨。", 
+                        "天天跑青龙脚本，也没见你薅出套海景房。",
+                        "你那几个破服务器还没挂？堪称医学奇迹。",
+                        "搞了一堆复杂的路由分流，最后连个图都加载不出来。"
+                    ];
+                    quote.value = quotes[Math.floor(Math.random() * quotes.length)];
+                    
+                    const startTime = new Date('2024-01-01T00:00:00').getTime(); 
+                    setInterval(() => {
+                        const diff = Math.floor((Date.now() - startTime) / 1000);
+                        uptime.value = `${Math.floor(diff / 86400)}天 ${Math.floor((diff % 86400) / 3600)}时 ${Math.floor((diff % 3600) / 60)}分 ${diff % 60}秒`;
+                    }, 1000);
                 };
 
                 onMounted(() => {
                     fetchSites();
+                    initFooter();
                     window.addEventListener('keydown', (e) => {
                         if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); searchInput.value?.focus(); }
-                        if (e.key === 'Escape') { showAuthModal.value = false; showSearchModal.value = false; }
+                        if (e.key === 'Escape') { showAuthModal.value = false; showSearchModal.value = false; closeContextMenu(); }
                     });
                 });
 
@@ -161,55 +180,38 @@
                     return sites.value.filter(site => (site.title && site.title.toLowerCase().includes(keyword)) || (site.category && site.category.toLowerCase().includes(keyword)));
                 });
 
-                // 回车智能判断器
                 const handleSmartEnter = () => {
                     const text = inputValue.value.trim();
                     if (!text) return;
                     
-                    // 只要看着像个网址，且没空格，就当网址处理
-                    const urlRegex = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/i;
+                    // 只要带 :// 或者是常规域名结构（且没空格），通通视为准备添加的资源
+                    const isUrlOrScheme = text.includes('://') || (/^([\w-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(text) && !text.includes(' '));
                     
-                    if (urlRegex.test(text) && !text.includes(' ')) {
+                    if (isUrlOrScheme) {
                         pendingUrl.value = text;
                         const savedToken = localStorage.getItem('fav_sec_token');
-                        
-                        if (savedToken) {
-                            passToken.value = savedToken;
-                            submitAuth(); 
-                        } else {
-                            showAuthModal.value = true;
-                            nextTick(() => document.getElementById('sec-token')?.focus());
-                        }
+                        if (savedToken) { passToken.value = savedToken; submitAuth(); } 
+                        else { showAuthModal.value = true; nextTick(() => document.getElementById('sec-token')?.focus()); }
                     } else {
-                        // 如果搜了个寂寞，弹框嘲讽
                         if (filteredSites.value.length === 0) {
                             pendingSearch.value = text;
                             showSearchModal.value = true;
                         } else {
-                            // 搜到了还按回车，给个不痛不痒的提示
                             islandActive.value = true; isError.value = false;
-                            statusText.value = `下面这 ${filteredSites.value.length} 个结果够你看吗？不够自己想办法。`;
+                            statusText.value = `没瞎的话自己往下看。`;
                             setTimeout(() => { islandActive.value = false; }, 2000);
                         }
                     }
                 };
 
-                // 执行全网搜
-                const confirmWebSearch = () => {
-                    window.open(`https://www.google.com/search?q=${encodeURIComponent(pendingSearch.value)}`, '_blank');
-                    showSearchModal.value = false;
-                    inputValue.value = ''; 
-                };
-
+                const confirmWebSearch = () => { window.open(`https://www.google.com/search?q=${encodeURIComponent(pendingSearch.value)}`, '_blank'); showSearchModal.value = false; inputValue.value = ''; };
                 const cancelAuth = () => { showAuthModal.value = false; passToken.value = ''; pendingUrl.value = ''; };
 
                 const submitAuth = async () => {
                     if (!passToken.value) return;
-                    
                     const currentPassword = passToken.value; 
-                    showAuthModal.value = false;
-                    islandActive.value = true; isError.value = false;
-                    statusText.value = "收到。正在顺着网线爬过去偷图标...";
+                    showAuthModal.value = false; islandActive.value = true; isError.value = false;
+                    statusText.value = "收到。正在顺着网线爬过去偷资料...";
 
                     try {
                         const res = await fetch(ADD_API_URL, {
@@ -218,41 +220,54 @@
                             body: JSON.stringify({ url: pendingUrl.value, category: 'Script/Proxy', authCode: currentPassword })
                         });
                         
-                        const contentType = res.headers.get("content-type");
-                        if (!contentType || !contentType.includes("application/json")) {
-                            throw new Error(`Cloudflare 甩了个 ${res.status} 给你，回去查拼写和路径吧。`);
-                        }
-
                         const data = await res.json();
-                        
                         if (res.ok && data.success) {
                             if(rememberDevice.value) localStorage.setItem('fav_sec_token', currentPassword);
-                            statusText.value = data.msg || "算你走运，塞进去了。";
+                            statusText.value = data.msg;
                             passToken.value = ''; pendingUrl.value = ''; inputValue.value = ''; 
                             await fetchSites(); 
                         } else {
-                            isError.value = true;
-                            statusText.value = data.msg || "后端罢工了，大概率是你暗号记错了。";
-                            if (res.status === 403) {
-                                localStorage.removeItem('fav_sec_token');
-                                setTimeout(() => { showAuthModal.value = true; }, 2000); 
-                            }
+                            isError.value = true; statusText.value = data.msg;
+                            if (res.status === 403) { localStorage.removeItem('fav_sec_token'); setTimeout(() => { showAuthModal.value = true; }, 2000); }
                         }
-                    } catch (e) {
-                        isError.value = true;
-                        statusText.value = e.message;
-                    }
+                    } catch (e) { isError.value = true; statusText.value = "你网炸了，或者接口没通。"; }
                     setTimeout(() => { islandActive.value = false; }, 3500);
                 };
 
-                const showContextMenu = (e, site) => { /* 待接入 */ };
-                const closeContextMenu = () => { /* 待接入 */ };
-                const handleImageError = (e) => { e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjY2JjYmNiIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiPjwvY2lyY2xlPjxsaW5lIHgxPSIxMiIgeTE9IjgiIHgyPSIxMiIgeTI9IjEyIj48L2xpbmU+PGxpbmUgeDE9IjEyIiB5MT0iMTYiIHgyPSIxMi4wMSIgeTI9IjE2Ij48L2xpbmU+PC9zdmc+'; };
+                const showContextMenu = (e, site) => { 
+                    // 防止菜单超出屏幕边缘
+                    let x = e.clientX; let y = e.clientY;
+                    if (window.innerWidth - x < 180) x = window.innerWidth - 180;
+                    contextMenu.value = { visible: true, x, y, site }; 
+                };
+                const closeContextMenu = () => { contextMenu.value.visible = false; };
+                
+                const deleteSite = async () => {
+                    const site = contextMenu.value.site;
+                    const savedToken = localStorage.getItem('fav_sec_token');
+                    closeContextMenu();
+                    if (!savedToken) { alert("连个暗号都不敢留，删个屁。先去填个网址验证身份。"); return; }
+                    if (!confirm(`真要彻底超度 [${site.title}] 吗？`)) return;
+
+                    try {
+                        const res = await fetch(DEL_API_URL, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: site.id, authCode: savedToken })
+                        });
+                        const data = await res.json();
+                        if(data.success) { alert("已送走。"); await fetchSites(); } 
+                        else { alert(data.msg); }
+                    } catch (e) { alert("删除接口还没写或者请求崩了。"); }
+                };
+
+                const editSite = () => { alert("你以为说改就能改？编辑面板还没写，先凑合着用。"); closeContextMenu(); };
+                const handleImageError = (e) => { e.target.src = 'https://api.iconify.design/bx:bx-ghost.svg'; }; // 幽灵图标兜底
 
                 return { 
-                    sites, inputValue, handleSmartEnter, filteredSites, islandActive, statusText, isError, searchInput, 
+                    sites, inputValue, handleSmartEnter, filteredSites, formatUrl, islandActive, statusText, isError, searchInput, 
                     showSearchModal, pendingSearch, confirmWebSearch,
-                    showContextMenu, closeContextMenu, handleImageError, showAuthModal, passToken, submitAuth, cancelAuth, rememberDevice
+                    contextMenu, showContextMenu, closeContextMenu, deleteSite, editSite, handleImageError, 
+                    showAuthModal, passToken, submitAuth, cancelAuth, rememberDevice, quote, uptime
                 };
             }
         }).mount('#app')
