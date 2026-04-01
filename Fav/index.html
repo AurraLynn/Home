@@ -27,7 +27,7 @@
         .list-enter-from, .list-leave-to { opacity: 0; transform: scale(0.9); }
         .list-leave-active { position: absolute; }
         
-        /* 核心黑科技：伪装成密码框，彻底干掉系统密码管理器弹窗 */
+        /* 魔法障眼法：让普通文本框显示为黑点，同时骗过 Safari 的密码雷达 */
         .stealth-password {
             -webkit-text-security: disc;
         }
@@ -39,7 +39,7 @@
         <div class="fixed top-8 z-40 flex flex-col items-center">
             <div class="bg-black/85 backdrop-blur-2xl border border-white/20 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 transition-all duration-500 w-72 focus-within:w-[32rem] hover:w-[26rem] group">
                 <svg :class="['w-5 h-5 transition-colors duration-300', inputValue ? 'text-blue-400' : 'text-gray-400 group-focus-within:text-blue-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input type="text" ref="searchInput" placeholder="搜索卡片，或填入网址收集 ( ⌘ + K )" 
+                <input type="text" ref="searchInput" placeholder="搜索卡片，或贴个网址进来 ( ⌘ + K )" 
                        class="bg-transparent border-none outline-none text-sm w-full placeholder-gray-400 tracking-wide" 
                        @keyup.enter="handleSmartEnter" v-model="inputValue" autocomplete="off" spellcheck="false">
             </div>
@@ -66,21 +66,45 @@
         </transition-group>
 
         <transition name="modal">
+            <div v-if="showSearchModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm" @click.self="showSearchModal = false">
+                <div class="bg-white/20 backdrop-blur-3xl border border-white/40 shadow-2xl rounded-3xl p-8 w-80 flex flex-col items-center text-center">
+                    <div class="text-5xl mb-4">🙄</div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">本地查无此物</h3>
+                    <p class="text-sm text-gray-600 mb-6">你这小破站里根本没收录「<span class="font-bold text-black">{{ pendingSearch }}</span>」，要不要勉为其难帮你丢给谷歌搜一下？</p>
+                    
+                    <div class="flex w-full gap-3">
+                        <button @click="showSearchModal = false" class="flex-1 py-2.5 rounded-xl bg-gray-200/50 hover:bg-gray-300/50 text-gray-700 font-semibold transition-colors">算了</button>
+                        <button @click="confirmWebSearch" class="flex-1 py-2.5 rounded-xl bg-blue-600/90 hover:bg-blue-500 text-white font-semibold shadow-md transition-colors">滚去搜</button>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <transition name="modal">
             <div v-if="showAuthModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm" @click.self="cancelAuth">
                 <div class="bg-white/20 backdrop-blur-3xl border border-white/40 shadow-2xl rounded-3xl p-8 w-80 flex flex-col items-center">
                     <div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-1">管理员验证</h3>
-                    <p class="text-xs text-gray-600 mb-5">请输入暗号执行写入</p>
+                    <h3 class="text-lg font-bold text-gray-900 mb-1">入库验证</h3>
+                    <p class="text-xs text-gray-600 mb-5">又搞到什么奇奇怪怪的网址了？暗号交出来。</p>
                     
-                    <input type="text" id="auth-input" v-model="authPassword" @keyup.enter="submitAuth"
-                           class="stealth-password w-full bg-white/50 border border-white/50 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-400/50 text-center tracking-widest text-gray-800 mb-4 shadow-inner placeholder-gray-400" 
-                           placeholder="••••••••" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    <input type="text" id="sec-token" v-model="passToken" @keyup.enter="submitAuth"
+                           class="stealth-password w-full bg-white/50 border border-white/50 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-400/50 text-center tracking-widest text-gray-800 mb-4 shadow-inner placeholder-gray-500" 
+                           placeholder="懂的都懂..." autocomplete="nope" data-form-type="other" autocorrect="off" spellcheck="false">
+                    
+                    <label class="flex items-center gap-2 w-full mb-6 cursor-pointer group">
+                        <div class="relative">
+                            <input type="checkbox" v-model="rememberDevice" class="sr-only">
+                            <div class="block bg-white/40 border border-white/50 w-10 h-6 rounded-full transition-colors" :class="{'bg-blue-400 border-blue-400': rememberDevice}"></div>
+                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform" :class="{'translate-x-4': rememberDevice}"></div>
+                        </div>
+                        <span class="text-xs font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">这破设备值得信任</span>
+                    </label>
                     
                     <div class="flex w-full gap-3">
-                        <button @click="cancelAuth" class="flex-1 py-2.5 rounded-xl bg-gray-200/50 hover:bg-gray-300/50 text-gray-700 font-semibold transition-colors">取消</button>
-                        <button @click="submitAuth" class="flex-1 py-2.5 rounded-xl bg-blue-600/90 hover:bg-blue-500 text-white font-semibold shadow-md transition-colors">执行</button>
+                        <button @click="cancelAuth" class="flex-1 py-2.5 rounded-xl bg-gray-200/50 hover:bg-gray-300/50 text-gray-700 font-semibold transition-colors">撤退</button>
+                        <button @click="submitAuth" class="flex-1 py-2.5 rounded-xl bg-blue-600/90 hover:bg-blue-500 text-white font-semibold shadow-md transition-colors">安排上</button>
                     </div>
                 </div>
             </div>
@@ -95,24 +119,31 @@
                 const inputValue = ref('');
                 const searchInput = ref(null);
                 const sites = ref([]);
+                
                 const islandActive = ref(false);
                 const isError = ref(false);
                 const statusText = ref('');
-                const showAuthModal = ref(false);
-                const authPassword = ref('');
-                const pendingUrl = ref('');
+                
+                // 搜索嘲讽弹窗
+                const showSearchModal = ref(false);
+                const pendingSearch = ref('');
 
-                // ⚠️ 如果你的后端文件在 functions/api/add.js，请把这里的路径改成 '/api/add'
-                // ⚠️ 如果在 functions/api/fav/add.js，就保持 '/api/fav/list' 不变
-                const LIST_API_URL = '/api/fav/list';
-                const ADD_API_URL = '/api/fav/add';
+                // 入库验证弹窗
+                const showAuthModal = ref(false);
+                const passToken = ref(''); 
+                const pendingUrl = ref('');
+                const rememberDevice = ref(true);
+
+                // ⚠️ 大写！大写！大写！这辈子别再改小写了！
+                const LIST_API_URL = '/api/Fav/list';
+                const ADD_API_URL = '/api/Fav/add';
 
                 const fetchSites = async () => {
                     try {
                         const res = await fetch(LIST_API_URL);
                         if (res.ok) sites.value = await res.json();
                     } catch (e) {
-                        console.error('API未就绪或报错', e);
+                        console.error('API没通，要不就是你数据库绑歪了', e);
                     }
                 };
 
@@ -120,7 +151,7 @@
                     fetchSites();
                     window.addEventListener('keydown', (e) => {
                         if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); searchInput.value?.focus(); }
-                        if (e.key === 'Escape' && showAuthModal.value) cancelAuth();
+                        if (e.key === 'Escape') { showAuthModal.value = false; showSearchModal.value = false; }
                     });
                 });
 
@@ -130,39 +161,55 @@
                     return sites.value.filter(site => (site.title && site.title.toLowerCase().includes(keyword)) || (site.category && site.category.toLowerCase().includes(keyword)));
                 });
 
+                // 回车智能判断器
                 const handleSmartEnter = () => {
                     const text = inputValue.value.trim();
                     if (!text) return;
+                    
+                    // 只要看着像个网址，且没空格，就当网址处理
                     const urlRegex = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/i;
                     
                     if (urlRegex.test(text) && !text.includes(' ')) {
                         pendingUrl.value = text;
-                        const savedToken = localStorage.getItem('fav_auth_token');
+                        const savedToken = localStorage.getItem('fav_sec_token');
                         
                         if (savedToken) {
-                            // 极客免密体验：有记录直接秒发，绝不弹窗打扰
-                            authPassword.value = savedToken;
+                            passToken.value = savedToken;
                             submitAuth(); 
                         } else {
-                            // 第一次才弹窗
                             showAuthModal.value = true;
-                            nextTick(() => document.getElementById('auth-input')?.focus());
+                            nextTick(() => document.getElementById('sec-token')?.focus());
                         }
                     } else {
-                        window.open(`https://www.google.com/search?q=${encodeURIComponent(text)}`, '_blank');
-                        inputValue.value = ''; 
+                        // 如果搜了个寂寞，弹框嘲讽
+                        if (filteredSites.value.length === 0) {
+                            pendingSearch.value = text;
+                            showSearchModal.value = true;
+                        } else {
+                            // 搜到了还按回车，给个不痛不痒的提示
+                            islandActive.value = true; isError.value = false;
+                            statusText.value = `下面这 ${filteredSites.value.length} 个结果够你看吗？不够自己想办法。`;
+                            setTimeout(() => { islandActive.value = false; }, 2000);
+                        }
                     }
                 };
 
-                const cancelAuth = () => { showAuthModal.value = false; authPassword.value = ''; pendingUrl.value = ''; };
+                // 执行全网搜
+                const confirmWebSearch = () => {
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(pendingSearch.value)}`, '_blank');
+                    showSearchModal.value = false;
+                    inputValue.value = ''; 
+                };
+
+                const cancelAuth = () => { showAuthModal.value = false; passToken.value = ''; pendingUrl.value = ''; };
 
                 const submitAuth = async () => {
-                    if (!authPassword.value) return;
+                    if (!passToken.value) return;
                     
-                    const currentPassword = authPassword.value; // 缓存当前密码用于成功后存入本地
+                    const currentPassword = passToken.value; 
                     showAuthModal.value = false;
                     islandActive.value = true; isError.value = false;
-                    statusText.value = "识别为 URL，正在潜入目标服务器扒取图标...";
+                    statusText.value = "收到。正在顺着网线爬过去偷图标...";
 
                     try {
                         const res = await fetch(ADD_API_URL, {
@@ -173,24 +220,22 @@
                         
                         const contentType = res.headers.get("content-type");
                         if (!contentType || !contentType.includes("application/json")) {
-                            throw new Error(`发生 ${res.status} 错误！检查后端文件物理路径是否和请求地址一致`);
+                            throw new Error(`Cloudflare 甩了个 ${res.status} 给你，回去查拼写和路径吧。`);
                         }
 
                         const data = await res.json();
                         
                         if (res.ok && data.success) {
-                            // 【关键】只有当后端真正返回 success，才将这台设备设为免密信任状态
-                            localStorage.setItem('fav_auth_token', currentPassword);
-                            statusText.value = data.msg || "添加成功";
-                            authPassword.value = ''; pendingUrl.value = ''; inputValue.value = ''; 
+                            if(rememberDevice.value) localStorage.setItem('fav_sec_token', currentPassword);
+                            statusText.value = data.msg || "算你走运，塞进去了。";
+                            passToken.value = ''; pendingUrl.value = ''; inputValue.value = ''; 
                             await fetchSites(); 
                         } else {
-                            // 密码错误，清除信任缓存，重新要求输入
                             isError.value = true;
-                            statusText.value = data.msg || "后端罢工了";
+                            statusText.value = data.msg || "后端罢工了，大概率是你暗号记错了。";
                             if (res.status === 403) {
-                                localStorage.removeItem('fav_auth_token');
-                                setTimeout(() => { showAuthModal.value = true; }, 1500); // 弹窗重试
+                                localStorage.removeItem('fav_sec_token');
+                                setTimeout(() => { showAuthModal.value = true; }, 2000); 
                             }
                         }
                     } catch (e) {
@@ -206,7 +251,8 @@
 
                 return { 
                     sites, inputValue, handleSmartEnter, filteredSites, islandActive, statusText, isError, searchInput, 
-                    showContextMenu, closeContextMenu, handleImageError, showAuthModal, authPassword, submitAuth, cancelAuth
+                    showSearchModal, pendingSearch, confirmWebSearch,
+                    showContextMenu, closeContextMenu, handleImageError, showAuthModal, passToken, submitAuth, cancelAuth, rememberDevice
                 };
             }
         }).mount('#app')
