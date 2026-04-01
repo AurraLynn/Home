@@ -24,20 +24,25 @@
         .squircle { border-radius: 22.5%; }
         ::-webkit-scrollbar { display: none; }
         
-        /* 弹窗过渡动画 */
+        /* 弹窗及卡片过渡动画 */
         .modal-enter-active, .modal-leave-active { transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
         .modal-enter-from, .modal-leave-to { opacity: 0; transform: scale(0.95) translateY(-10px); }
+        
+        /* 列表过滤的平滑动画 */
+        .list-move, .list-enter-active, .list-leave-active { transition: all 0.4s ease; }
+        .list-enter-from, .list-leave-to { opacity: 0; transform: scale(0.9); }
+        .list-leave-active { position: absolute; }
     </style>
 </head>
 <body class="text-gray-900 antialiased" @click="closeContextMenu">
     <div id="app" class="min-h-screen p-6 sm:p-12 relative flex flex-col items-center">
         
         <div class="fixed top-8 z-40 flex flex-col items-center">
-            <div class="bg-black/85 backdrop-blur-2xl border border-white/20 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 transition-all duration-500 w-64 focus-within:w-[28rem] hover:w-80 group">
-                <svg class="w-5 h-5 text-gray-400 group-focus-within:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input type="text" ref="searchInput" placeholder="Add URL ( ⌘ + K )" 
-                       class="bg-transparent border-none outline-none text-sm w-full placeholder-gray-400" 
-                       @keyup.enter="handleInput" v-model="inputValue">
+            <div class="bg-black/85 backdrop-blur-2xl border border-white/20 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 transition-all duration-500 w-72 focus-within:w-[32rem] hover:w-[26rem] group">
+                <svg :class="['w-5 h-5 transition-colors duration-300', inputValue ? 'text-blue-400' : 'text-gray-400 group-focus-within:text-blue-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" ref="searchInput" placeholder="搜索卡片 / 网页，或填入网址收集 ( ⌘ + K )" 
+                       class="bg-transparent border-none outline-none text-sm w-full placeholder-gray-400 tracking-wide" 
+                       @keyup.enter="handleSmartEnter" v-model="inputValue">
             </div>
             <div :class="['mt-3 px-6 py-2 rounded-full backdrop-blur-xl transition-all duration-500 transform text-sm', islandActive ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none', isError ? 'bg-red-500/80 text-white' : 'bg-black/80 text-white']">
                 {{ statusText }}
@@ -49,8 +54,9 @@
             <p class="mt-4 text-white/70 font-medium tracking-wide">Spatial Bookmark & Script Hub</p>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8 w-full max-w-7xl z-10 pb-20">
-            <a v-for="site in sites" :key="site.id" :href="site.url" target="_blank"
+        <transition-group name="list" tag="div" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8 w-full max-w-7xl z-10 pb-20 relative">
+            
+            <a v-for="site in filteredSites" :key="site.id || site.url" :href="site.url" target="_blank"
                @contextmenu.prevent="showContextMenu($event, site)"
                class="flex flex-col items-center p-6 bg-white/20 backdrop-blur-3xl border border-white/40 shadow-sm rounded-[2rem] transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:bg-white/30 group">
                 <div class="w-16 h-16 sm:w-20 sm:h-20 bg-white/40 squircle shadow-inner border border-white/50 flex items-center justify-center overflow-hidden mb-4 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
@@ -59,6 +65,11 @@
                 <span class="text-sm font-bold text-gray-800 drop-shadow-sm truncate w-full text-center">{{ site.title }}</span>
                 <span class="text-xs text-gray-600/80 mt-1 font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">{{ site.category || 'Default' }}</span>
             </a>
+
+        </transition-group>
+
+        <div v-if="filteredSites.length === 0 && sites.length > 0" class="text-white/60 text-sm mt-10 font-medium tracking-wide animate-pulse">
+            未命中本地卡片记录，敲击回车将前往全网搜索...
         </div>
 
         <div v-show="contextMenu.visible" :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }" 
@@ -76,7 +87,7 @@
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 mb-1">管理员身份验证</h3>
-                    <p class="text-xs text-gray-600 mb-6">请输入通行暗号以执行抓取写入</p>
+                    <p class="text-xs text-gray-600 mb-6">解析到有效 URL，请输入暗号执行写入</p>
                     
                     <input type="password" id="auth-input" v-model="authPassword" @keyup.enter="submitAuth"
                            class="w-full bg-white/50 border border-white/50 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-blue-400/50 text-center tracking-widest text-gray-800 mb-6 shadow-inner placeholder-gray-400" placeholder="••••••••">
@@ -92,7 +103,7 @@
     </div>
 
     <script>
-        const { createApp, ref, onMounted, nextTick } = Vue;
+        const { createApp, ref, onMounted, nextTick, computed } = Vue;
         
         createApp({
             setup() {
@@ -100,20 +111,17 @@
                 const searchInput = ref(null);
                 const sites = ref([]);
                 
-                // 灵动岛状态
                 const islandActive = ref(false);
                 const isError = ref(false);
                 const statusText = ref('');
                 
-                // 右键菜单状态
                 const contextMenu = ref({ visible: false, x: 0, y: 0, site: null });
                 
-                // 鉴权弹窗状态
                 const showAuthModal = ref(false);
                 const authPassword = ref('');
                 const pendingUrl = ref('');
 
-                // API: 请求后端列表 (对接新的 Fav 模块化路径)
+                // API: 请求后端列表
                 const fetchSites = async () => {
                     try {
                         const res = await fetch('/api/fav/list');
@@ -125,62 +133,70 @@
 
                 onMounted(() => {
                     fetchSites();
-                    // 绑定 Cmd+K 唤醒搜索
                     window.addEventListener('keydown', (e) => {
                         if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
                             e.preventDefault();
                             searchInput.value.focus();
                         }
-                        // 绑定 ESC 键关闭弹窗
                         if (e.key === 'Escape' && showAuthModal.value) {
                             cancelAuth();
                         }
                     });
                 });
 
-                // 右键菜单逻辑
-                const showContextMenu = (e, site) => {
-                    contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, site };
-                };
-                const closeContextMenu = () => { contextMenu.value.visible = false; };
-                const deleteSite = () => { alert('删除接口待接入: ' + contextMenu.value.site.title); closeContextMenu(); };
-                const refetchIcon = () => { alert('重抓接口待接入: ' + contextMenu.value.site.title); closeContextMenu(); }
-
-                // 图标失效兜底 SVG
-                const handleImageError = (e) => {
-                    e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjY2JjYmNiIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiPjwvY2lyY2xlPjxsaW5lIHgxPSIxMiIgeTE9IjgiIHgyPSIxMiIgeTI9IjEyIj48L2xpbmU+PGxpbmUgeDE9IjEyIiB5MT0iMTYiIHgyPSIxMi4wMSIgeTI9IjE2Ij48L2xpbmU+PC9zdmc+';
-                };
-
-                // 第一步：回车唤起密码弹窗
-                const handleInput = () => {
-                    const url = inputValue.value.trim();
-                    if (!url) return;
+                // ==========================================
+                // 核心亮点：实时计算过滤卡片 (带丝滑位移动画)
+                // ==========================================
+                const filteredSites = computed(() => {
+                    const keyword = inputValue.value.trim().toLowerCase();
+                    if (!keyword) return sites.value;
                     
-                    pendingUrl.value = url;
-                    inputValue.value = ''; // 清空主输入框
-                    showAuthModal.value = true;
-                    
-                    // DOM 更新后自动聚焦密码框
-                    nextTick(() => {
-                        document.getElementById('auth-input')?.focus();
-                    });
+                    return sites.value.filter(site => 
+                        (site.title && site.title.toLowerCase().includes(keyword)) || 
+                        (site.category && site.category.toLowerCase().includes(keyword))
+                    );
+                });
+
+                // ==========================================
+                // 核心亮点：智能路由 (判断是搜索还是添加网址)
+                // ==========================================
+                const handleSmartEnter = () => {
+                    const text = inputValue.value.trim();
+                    if (!text) return;
+
+                    // 使用正则做初步的 URL 嗅探 (不允许有空格，且必须包含 . )
+                    // 如果符合网址特征，则走“添加逻辑”
+                    const urlRegex = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/i;
+                    const isUrl = urlRegex.test(text) && !text.includes(' ');
+
+                    if (isUrl) {
+                        // 【路由 1：添加网址】
+                        pendingUrl.value = text;
+                        // 不清空输入框，直接弹密码验证
+                        showAuthModal.value = true;
+                        nextTick(() => document.getElementById('auth-input')?.focus());
+                    } else {
+                        // 【路由 2：全网搜索】
+                        // 如果输入的明显是普通的关键词，直接新标签页打开 Google
+                        window.open(`https://www.google.com/search?q=${encodeURIComponent(text)}`, '_blank');
+                        inputValue.value = ''; // 搜索完清空输入框
+                    }
                 };
 
-                // 取消输入密码
                 const cancelAuth = () => {
                     showAuthModal.value = false;
                     authPassword.value = '';
                     pendingUrl.value = '';
                 };
 
-                // 第二步：提交密码请求后端 (对接新的 Fav 模块化路径)
+                // 执行添加请求
                 const submitAuth = async () => {
                     if (!authPassword.value) return;
                     
                     showAuthModal.value = false;
                     islandActive.value = true; 
                     isError.value = false;
-                    statusText.value = "正在潜入目标服务器偷取图标...";
+                    statusText.value = "识别为 URL，正在潜入目标服务器扒取图标...";
 
                     try {
                         const res = await fetch('/api/fav/add', {
@@ -195,7 +211,8 @@
                             statusText.value = data.msg;
                             authPassword.value = ''; 
                             pendingUrl.value = '';
-                            await fetchSites(); // 刷新数据
+                            inputValue.value = ''; // 添加成功后才清空主输入框
+                            await fetchSites(); 
                         } else {
                             isError.value = true;
                             statusText.value = data.msg || "后端罢工了";
@@ -208,8 +225,14 @@
                     setTimeout(() => { islandActive.value = false; }, 3000);
                 };
 
+                const showContextMenu = (e, site) => { contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, site }; };
+                const closeContextMenu = () => { contextMenu.value.visible = false; };
+                const deleteSite = () => { alert('删除接口待接入'); closeContextMenu(); };
+                const refetchIcon = () => { alert('重抓接口待接入'); closeContextMenu(); }
+                const handleImageError = (e) => { e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjY2JjYmNiIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiPjwvY2lyY2xlPjxsaW5lIHgxPSIxMiIgeTE9IjgiIHgyPSIxMiIgeTI9IjEyIj48L2xpbmU+PGxpbmUgeDE9IjEyIiB5MT0iMTYiIHgyPSIxMi4wMSIgeTI9IjE2Ij48L2xpbmU+PC9zdmc+'; };
+
                 return { 
-                    sites, inputValue, handleInput, 
+                    sites, inputValue, handleSmartEnter, filteredSites,
                     islandActive, statusText, isError, searchInput, 
                     contextMenu, showContextMenu, closeContextMenu, 
                     deleteSite, refetchIcon, handleImageError,
