@@ -2,9 +2,47 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>✨ 垃圾缝合站</title>
     <style>
+        /* 防止页面加载瞬间的 CSS 动画/SVG 闪烁 */
+        .preload * {
+            -webkit-transition: none !important;
+            transition: none !important;
+            animation: none !important;
+        }
+
+        /* ---------------- 美化全局与局部滚动条 ---------------- */
+        * {
+            /* 兼容 Firefox 的极简滚动条 */
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+        }
+
+        /* 针对 Chrome/Edge/Safari 的滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 8px; /* 垂直滚动条宽度 */
+            height: 8px; /* 水平滚动条高度 */
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; /* 轨道透明 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15); /* 默认半透明白 */
+            border-radius: 10px; /* 圆角滑块 */
+            border: 2px solid rgba(0, 0, 0, 0.2); /* 加一点内边距感 */
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.6); /* 悬浮时变成主题蓝，带有发光感 */
+        }
+
+        /* 为 textarea (输入和结果区) 单独留出轨道上下边距，防止滚动条顶到圆角 */
+        textarea::-webkit-scrollbar-track {
+            margin-top: 14px; 
+            margin-bottom: 14px;
+        }
+        /* --------------------------------------------------- */
+
         :root {
             --accent: #3b82f6;
             --bg: #09090b;
@@ -74,7 +112,6 @@
         .info-btn:hover::after { animation: pulse 1s infinite; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(2.5); opacity: 0; } }
 
-        /* 注释文本：幽灵灰 + 小字号 */
         .tooltip-text {
             visibility: hidden; width: 220px; background: rgba(15, 23, 42, 0.95); 
             color: rgba(148, 163, 184, 0.85); text-align: left; border-radius: 12px; padding: 12px; 
@@ -103,13 +140,17 @@
         }
         .dropdown-arrow:hover { color: var(--accent); }
         .dropdown-arrow.active { transform: translateY(-50%) rotate(180deg); color: var(--accent); }
+        
         .custom-dropdown {
             position: absolute; top: calc(100% + 12px); left: 0; right: 0;
             background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
             border: 1px solid var(--border); border-radius: 16px; padding: 8px;
             opacity: 0; visibility: hidden; transform: translateY(-10px);
             transition: all 0.3s; z-index: 100; box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            /* 加入最大高度限制，防止以后选项过多撑爆屏幕 */
+            max-height: 250px; overflow-y: auto; overflow-x: hidden;
         }
+        
         .custom-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
         .dropdown-item {
             padding: 12px 14px; border-radius: 12px; cursor: pointer; display: flex;
@@ -118,7 +159,6 @@
         }
         .dropdown-item:hover { background: rgba(59, 130, 246, 0.15); color: #fff; }
         
-        /* 标签微缩 */
         .tag-sanwang {
             display: inline-block; color: rgba(251, 191, 36, 0.9); background: rgba(251, 191, 36, 0.1);
             border: 1px solid rgba(251, 191, 36, 0.2); padding: 2px 6px; border-radius: 6px;
@@ -126,7 +166,6 @@
         }
         .dropdown-item .tooltip-text { width: 250px; bottom: 150%; z-index: 101; }
 
-        /* 果冻毛玻璃按钮组 */
         .action-group { display: flex; gap: 15px; margin: 30px 0; }
         
         .btn-main, .btn-clear {
@@ -150,10 +189,8 @@
         .btn-clear:hover { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #fff; transform: translateY(-2px); box-shadow: 0 12px 24px rgba(239, 68, 68, 0.15); }
 
         .btn-main svg, .btn-clear svg { flex-shrink: 0; }
-
         @keyframes rotate-sync { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* 结果与小药丸 */
         .result-container { position: relative; margin-top: 15px; }
         .badge-pill {
             display: inline-block; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4);
@@ -162,7 +199,7 @@
         }
         .badge-pill.success { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
         
-        #out { padding-top: 52px; } 
+        #out { padding: 16px; } 
         
         .btn-copy {
             position: absolute; right: 14px; top: 14px; background: rgba(255, 255, 255, 0.08);
@@ -173,7 +210,6 @@
         .btn-copy:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
         .btn-copy.success { color: #4ade80; border-color: rgba(74, 222, 128, 0.3); background: rgba(74, 222, 128, 0.1); }
 
-        /* Toast 通知系统 */
         .toast-container {
             position: fixed; top: 24px; right: 24px; z-index: 9999;
             display: flex; flex-direction: column; gap: 12px; pointer-events: none;
@@ -196,12 +232,10 @@
         .toast-card.warning { box-shadow: -4px 0 15px -5px rgba(245, 158, 11, 0.5), 0 15px 35px rgba(0,0,0,0.6); border-left: 2px solid #f59e0b; }
 
         .toast-content { display: flex; align-items: center; gap: 12px; flex: 1; line-height: 1.4; }
-        
         .toast-icon-front svg { width: 20px; height: 20px; flex-shrink: 0; }
         .toast-card.success .toast-icon-front { color: #34d399; }
         .toast-card.error .toast-icon-front { color: #f87171; animation: shake 0.5s ease-in-out; }
         .toast-card.warning .toast-icon-front { color: #fbbf24; }
-
         .toast-icon-back { color: var(--text-dim); display: flex; align-items: center; flex-shrink: 0; }
         .toast-icon-back svg { width: 18px; height: 18px; }
         
@@ -214,27 +248,22 @@
         @keyframes soul-pulse { 0% { transform: scale(0.9); opacity: 0.6; } 100% { transform: scale(1.1); opacity: 1; color: #60a5fa; } }
         @keyframes mock-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
-        /* 移动端适配 */
         @media (max-width: 680px) {
             body { padding: 15px; }
             .glass-panel { padding: 25px 20px; border-radius: 24px; }
             .config-grid { grid-template-columns: 1fr; gap: 15px; }
-            
             .action-group { flex-direction: row; gap: 10px; margin: 20px 0; }
             .btn-main, .btn-clear { height: 44px; font-size: 13px; border-radius: 12px; padding: 0 10px; }
             .btn-main svg, .btn-clear svg { width: 16px; height: 16px; }
-            
             .btn-copy { padding: 6px 12px; font-size: 11px; right: 10px; top: 10px; height: 32px; border-radius: 10px; }
             .btn-copy svg { width: 14px; height: 14px; }
-            
             .toast-container { top: 16px; left: 16px; right: 16px; align-items: center; pointer-events: none; }
             .toast-card { min-width: unset; width: 100%; max-width: 100%; box-sizing: border-box; }
-            
             .dropdown-item .tooltip-text { display: none; }
         }
     </style>
 </head>
-<body>
+<body class="preload">
 
 <div class="toast-container" id="toastContainer"></div>
 
@@ -347,6 +376,10 @@
 </div>
 
 <script>
+window.addEventListener('DOMContentLoaded', () => {
+    document.body.classList.remove('preload');
+});
+
 const svgIcons = {
     successFront: `<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
     errorFront: `<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
@@ -400,7 +433,6 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// 核心解析逻辑：防漏 443 + 自动解密备注 + IP 兜底
 function process() {
     const raw = document.getElementById('raw').value;
     const uuid = document.getElementById('uuid').value.trim();
@@ -422,33 +454,43 @@ function process() {
         l = l.trim();
         if(!l) return;
         
-        // 暴力拆解：支持 socks5://, s5://, 甚至 𝕤5://
         let cleanLine = l.replace(/^(socks5|s5|𝕤5):\/\//i, '').trim();
         
-        // 正则匹配：组1抓取 地址:端口，组2抓取后面可能带的所有垃圾备注
-        let match = cleanLine.match(/^([a-zA-Z0-9\.-]+:\d+)(.*)$/);
-        if(!match) return; 
+        let splitRegex = /[\s|#]/;
+        let splitIndex = cleanLine.search(splitRegex);
         
-        let address = match[1]; 
-        let ipOnly = address.split(':')[0]; // 提前备好纯 IP 当备胎
-        let rawRemark = match[2];
+        let address = "";
+        let rawRemark = "";
         
-        // 备注清洗：洗掉开头多余的空格、竖线、横杠、逗号，外加 # 号
-        let remark = rawRemark.replace(/^[\s\|\-,#]+/, '').trim();
+        if (splitIndex !== -1) {
+            address = cleanLine.substring(0, splitIndex).trim();
+            rawRemark = cleanLine.substring(splitIndex);
+        } else {
+            address = cleanLine;
+        }
+
+        if (!address) return;
+
+        let ipOnly = address;
+        if (address.includes('@')) {
+            ipOnly = address.split('@')[1];
+        }
+        ipOnly = ipOnly.split(':')[0];
         
-        // 抢救性解码：如果废料里的备注是被 URLEncode 过的（如 %E8%8A%82），顺手解个码
-        try { 
-            remark = decodeURIComponent(remark); 
-        } catch(e) {
-            // 解码失败就算了，别把整个进程搞崩溃
+        let remark = "";
+        if (rawRemark) {
+            let remarkParts = rawRemark.split('|').map(s => s.replace(/^[\s\-,#]+|[\s\-,#]+$/g, '')).filter(s => s);
+            if (remarkParts.length > 0) {
+                remark = remarkParts[0];
+            }
+            try { remark = decodeURIComponent(remark); } catch(e) {}
         }
         
-        // 无情兜底：要是抠不出一丁点备注，就拿 IP 顶上
         if (!remark) {
             remark = ipOnly;
         }
 
-        let link = 'socks5://' + address; // 内核只认标准 socks5://
+        let link = 'socks5://' + address; 
         let path = encodeURIComponent('/' + link + '?ed=2560');
         let rem = encodeURIComponent(remark);
         
