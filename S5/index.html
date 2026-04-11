@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>✨ 垃圾缝合站</title>
     <style>
         :root {
@@ -67,7 +66,7 @@
         .input-box:hover .icon-svg { transform: translateY(-2px) scale(1.1); color: var(--accent); }
 
         .info-btn { position: relative; display: inline-flex; align-items: center; margin-left: 6px; cursor: help; }
-        .info-btn svg { width: 15px; height: 15px; fill: #60a5fa; filter: drop-shadow(0 0 5px rgba(96, 165, 250, 0.4)); transition: transform 0.3s; }
+        .info-btn svg { width: 15px; height: 15px; fill: rgba(96, 165, 250, 0.8); filter: drop-shadow(0 0 5px rgba(96, 165, 250, 0.3)); transition: transform 0.3s; }
         .info-btn::after {
             content: ''; position: absolute; width: 14px; height: 14px; border: 1px solid #60a5fa;
             border-radius: 50%; opacity: 0; transition: all 0.5s ease;
@@ -75,12 +74,16 @@
         .info-btn:hover::after { animation: pulse 1s infinite; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(2.5); opacity: 0; } }
 
+        /* 核心修改：注释文本更小、更淡 */
         .tooltip-text {
-            visibility: hidden; width: 200px; background: rgba(15, 23, 42, 0.95); color: #cbd5e1;
-            text-align: left; border-radius: 12px; padding: 12px; font-size: 12px; position: absolute;
-            z-index: 50; bottom: 140%; left: 50%; transform: translateX(-50%) translateY(10px);
-            opacity: 0; transition: all 0.3s; border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: none; line-height: 1.6;
+            visibility: hidden; width: 220px; background: rgba(15, 23, 42, 0.95); 
+            color: rgba(148, 163, 184, 0.85); /* 幽灵灰，降低视觉权重 */
+            text-align: left; border-radius: 12px; padding: 12px; 
+            font-size: 11px; /* 字号压小 */
+            position: absolute; z-index: 50; bottom: 140%; left: 50%; 
+            transform: translateX(-50%) translateY(10px);
+            opacity: 0; transition: all 0.3s; border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: none; line-height: 1.5;
         }
         .info-btn:hover .tooltip-text { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -89,9 +92,11 @@
             border-radius: 16px; outline: none; transition: all 0.25s; font-family: "SF Mono", ui-monospace, monospace;
         }
         input[type="text"] { width: 100%; padding: 14px 16px; font-size: 13px; }
-        /* textarea 统一标准对齐方式，防止跑偏 */
-        textarea { width: 100%; height: 160px; padding: 16px; font-size: 12px; line-height: 1.6; resize: none; text-align: left; vertical-align: top; }
+        textarea { width: 100%; height: 160px; padding: 16px; font-size: 12px; line-height: 1.6; resize: none; }
         input:focus, textarea:focus { border-color: var(--accent); background: rgba(0, 0, 0, 0.6); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); }
+        
+        /* 占位符也跟着打入冷宫 */
+        ::placeholder { color: rgba(161, 161, 170, 0.4); }
 
         /* 下拉框组件 */
         .custom-select-wrapper { position: relative; width: 100%; }
@@ -115,14 +120,16 @@
             font-size: 13px; font-family: "SF Mono", ui-monospace, monospace; transition: all 0.25s;
         }
         .dropdown-item:hover { background: rgba(59, 130, 246, 0.15); color: #fff; }
+        
+        /* 标签微缩 */
         .tag-sanwang {
-            display: inline-block; color: #fbbf24; background: rgba(251, 191, 36, 0.15);
-            border: 1px solid rgba(251, 191, 36, 0.3); padding: 3px 8px; border-radius: 6px;
-            font-size: 11px; font-weight: 700; margin-bottom: 8px; box-shadow: 0 0 10px rgba(251, 191, 36, 0.1);
+            display: inline-block; color: rgba(251, 191, 36, 0.9); background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.2); padding: 2px 6px; border-radius: 6px;
+            font-size: 10px; font-weight: 600; margin-bottom: 6px; 
         }
         .dropdown-item .tooltip-text { width: 250px; bottom: 150%; z-index: 101; }
 
-        /* 升级版果冻质感毛玻璃按钮 */
+        /* 按钮组 */
         .action-group { display: flex; gap: 15px; margin: 30px 0; }
         
         .btn-main, .btn-clear {
@@ -133,33 +140,17 @@
         }
 
         .btn-main { 
-            flex: 3; 
-            background: rgba(255, 255, 255, 0.1); 
-            border: 1px solid rgba(255, 255, 255, 0.15); 
-            color: #fff; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            flex: 3; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); 
+            color: #fff; box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
-        .btn-main:hover { 
-            background: rgba(255, 255, 255, 0.15); 
-            border-color: rgba(255, 255, 255, 0.3); 
-            box-shadow: 0 10px 25px rgba(255,255,255,0.08); 
-        }
+        .btn-main:hover { background: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.3); box-shadow: 0 10px 25px rgba(255,255,255,0.08); }
         .btn-main:hover svg { animation: rotate-sync 1.5s linear infinite; }
         
         .btn-clear { 
-            flex: 1.2; 
-            background: rgba(239, 68, 68, 0.1); 
-            border: 1px solid rgba(239, 68, 68, 0.2); 
-            color: #fca5a5; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            flex: 1.2; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); 
+            color: #fca5a5; box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
-        .btn-clear:hover { 
-            background: rgba(239, 68, 68, 0.2); 
-            border-color: rgba(239, 68, 68, 0.4); 
-            color: #fff; 
-            transform: translateY(-2px); 
-            box-shadow: 0 12px 24px rgba(239, 68, 68, 0.15); 
-        }
+        .btn-clear:hover { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #fff; transform: translateY(-2px); box-shadow: 0 12px 24px rgba(239, 68, 68, 0.15); }
 
         .btn-main svg, .btn-clear svg { flex-shrink: 0; }
 
@@ -174,8 +165,7 @@
         }
         .badge-pill.success { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
         
-        /* 复制按钮及输出框修复方案：用右内边距代替上内边距，保证文字顶格且不被遮挡 */
-        #out { padding-top: 16px; padding-right: 110px; } 
+        #out { padding-top: 52px; } 
         
         .btn-copy {
             position: absolute; right: 14px; top: 14px; background: rgba(255, 255, 255, 0.08);
@@ -186,7 +176,7 @@
         .btn-copy:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
         .btn-copy.success { color: #4ade80; border-color: rgba(74, 222, 128, 0.3); background: rgba(74, 222, 128, 0.1); }
 
-        /* ================= 全局 Toast 通知系统 ================= */
+        /* Toast 通知系统 */
         .toast-container {
             position: fixed; top: 24px; right: 24px; z-index: 9999;
             display: flex; flex-direction: column; gap: 12px; pointer-events: none;
@@ -227,21 +217,15 @@
         @keyframes soul-pulse { 0% { transform: scale(0.9); opacity: 0.6; } 100% { transform: scale(1.1); opacity: 1; color: #60a5fa; } }
         @keyframes mock-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
-        /* ================= 移动端终极抢救 ================= */
+        /* 移动端适配 */
         @media (max-width: 680px) {
             body { padding: 15px; }
             .glass-panel { padding: 25px 20px; border-radius: 24px; }
             .config-grid { grid-template-columns: 1fr; gap: 15px; }
             
-            /* 【核心修复】强制设定 16px 防止 iOS 点击输入框自动缩放页面 */
-            input[type="text"], textarea, .custom-select-wrapper input { font-size: 16px !important; }
-            
             .action-group { flex-direction: row; gap: 10px; margin: 20px 0; }
             .btn-main, .btn-clear { height: 44px; font-size: 13px; border-radius: 12px; padding: 0 10px; }
             .btn-main svg, .btn-clear svg { width: 16px; height: 16px; }
-            
-            /* 手机端由于按钮更小了，留出更合理的右间距即可 */
-            #out { padding-right: 95px; }
             
             .btn-copy { padding: 6px 12px; font-size: 11px; right: 10px; top: 10px; height: 32px; border-radius: 10px; }
             .btn-copy svg { width: 14px; height: 14px; }
