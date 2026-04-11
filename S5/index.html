@@ -35,6 +35,7 @@
             width: 100%;
             max-width: 850px;
             box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.8);
+            position: relative;
         }
 
         h2 {
@@ -54,279 +55,156 @@
             margin-bottom: 30px;
         }
         
-        .input-box {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .label-wrap {
-            display: flex;
-            align-items: center;
-            font-size: 13px;
-            color: var(--text-dim);
-            font-weight: 500;
-        }
+        .input-box { display: flex; flex-direction: column; gap: 10px; }
+        .label-wrap { display: flex; align-items: center; font-size: 13px; color: var(--text-dim); font-weight: 500; }
 
         .icon-svg {
-            width: 18px;
-            height: 18px;
-            margin-right: 8px;
-            stroke: currentColor;
-            stroke-width: 2;
-            fill: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 18px; height: 18px; margin-right: 8px;
+            stroke: currentColor; stroke-width: 2; fill: none; transition: all 0.3s;
         }
+        .input-box:hover .icon-svg { transform: translateY(-2px) scale(1.1); color: var(--accent); }
 
-        .input-box:hover .icon-svg {
-            transform: translateY(-2px) scale(1.1);
-            color: var(--accent);
-        }
-
-        .info-btn {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 6px;
-            cursor: help;
-        }
-
-        .info-btn svg {
-            width: 15px;
-            height: 15px;
-            fill: #60a5fa;
-            filter: drop-shadow(0 0 5px rgba(96, 165, 250, 0.4));
-            transition: transform 0.3s ease;
-        }
-
+        .info-btn { position: relative; display: inline-flex; align-items: center; margin-left: 6px; cursor: help; }
+        .info-btn svg { width: 15px; height: 15px; fill: #60a5fa; filter: drop-shadow(0 0 5px rgba(96, 165, 250, 0.4)); transition: transform 0.3s; }
         .info-btn::after {
-            content: '';
-            position: absolute;
-            width: 14px;
-            height: 14px;
-            border: 1px solid #60a5fa;
-            border-radius: 50%;
-            opacity: 0;
-            transition: all 0.5s ease;
+            content: ''; position: absolute; width: 14px; height: 14px; border: 1px solid #60a5fa;
+            border-radius: 50%; opacity: 0; transition: all 0.5s ease;
         }
-
-        .info-btn:hover::after {
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.5; }
-            100% { transform: scale(2.5); opacity: 0; }
-        }
+        .info-btn:hover::after { animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(2.5); opacity: 0; } }
 
         .tooltip-text {
-            visibility: hidden;
-            width: 200px;
-            background: rgba(15, 23, 42, 0.95);
-            color: #cbd5e1;
-            text-align: left;
-            border-radius: 12px;
-            padding: 12px;
-            font-size: 12px;
-            position: absolute;
-            z-index: 50;
-            bottom: 140%;
-            left: 50%;
-            transform: translateX(-50%) translateY(10px);
-            opacity: 0;
-            transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            pointer-events: none;
-            line-height: 1.6;
+            visibility: hidden; width: 200px; background: rgba(15, 23, 42, 0.95); color: #cbd5e1;
+            text-align: left; border-radius: 12px; padding: 12px; font-size: 12px; position: absolute;
+            z-index: 50; bottom: 140%; left: 50%; transform: translateX(-50%) translateY(10px);
+            opacity: 0; transition: all 0.3s; border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: none; line-height: 1.6;
         }
-
-        .info-btn:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
+        .info-btn:hover .tooltip-text { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
 
         input[type="text"], textarea {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid var(--border);
-            color: #fff;
-            border-radius: 16px;
-            outline: none;
-            transition: all 0.25s;
-            font-family: "SF Mono", ui-monospace, monospace;
+            background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border); color: #fff;
+            border-radius: 16px; outline: none; transition: all 0.25s; font-family: "SF Mono", ui-monospace, monospace;
         }
-
         input[type="text"] { padding: 14px 16px; font-size: 13px; }
-        textarea { 
-            width: 100%; height: 160px; padding: 16px; font-size: 12px; 
-            line-height: 1.6; resize: none; box-sizing: border-box;
-        }
+        textarea { width: 100%; height: 160px; padding: 16px; font-size: 12px; line-height: 1.6; resize: none; box-sizing: border-box; }
+        input:focus, textarea:focus { border-color: var(--accent); background: rgba(0, 0, 0, 0.6); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); }
 
-        input:focus, textarea:focus {
-            border-color: var(--accent);
-            background: rgba(0, 0, 0, 0.6);
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
-        }
-
-        /* 自定义毛玻璃下拉框样式 */
-        .custom-select-wrapper {
-            position: relative;
-            width: 100%;
-        }
-        .custom-select-wrapper input {
-            width: 100%;
-            padding-right: 40px; 
-            box-sizing: border-box;
-        }
+        /* 下拉框组件 */
+        .custom-select-wrapper { position: relative; width: 100%; }
+        .custom-select-wrapper input { width: 100%; padding-right: 40px; box-sizing: border-box; }
         .dropdown-arrow {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 18px;
-            height: 18px;
-            color: #a1a1aa;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+            width: 18px; height: 18px; color: #a1a1aa; cursor: pointer; transition: all 0.3s;
         }
         .dropdown-arrow:hover { color: var(--accent); }
-        .dropdown-arrow.active {
-            transform: translateY(-50%) rotate(180deg);
-            color: var(--accent);
-        }
+        .dropdown-arrow.active { transform: translateY(-50%) rotate(180deg); color: var(--accent); }
         .custom-dropdown {
-            position: absolute;
-            top: calc(100% + 12px);
-            left: 0;
-            right: 0;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 8px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
-            z-index: 100;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            position: absolute; top: calc(100% + 12px); left: 0; right: 0;
+            background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(30px); border: 1px solid var(--border);
+            border-radius: 16px; padding: 8px; opacity: 0; visibility: hidden; transform: translateY(-10px);
+            transition: all 0.3s; z-index: 100; box-shadow: 0 20px 40px rgba(0,0,0,0.8);
         }
-        .custom-dropdown.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
+        .custom-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
         .dropdown-item {
-            padding: 12px 14px;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            color: #cbd5e1;
-            font-size: 13px;
-            font-family: "SF Mono", ui-monospace, monospace;
-            transition: all 0.25s;
+            padding: 12px 14px; border-radius: 12px; cursor: pointer; display: flex;
+            align-items: center; justify-content: space-between; color: #cbd5e1;
+            font-size: 13px; font-family: "SF Mono", ui-monospace, monospace; transition: all 0.25s;
         }
-        .dropdown-item:hover {
-            background: rgba(59, 130, 246, 0.15);
-            color: #fff;
-        }
-        
-        /* 三网优选 标签 */
+        .dropdown-item:hover { background: rgba(59, 130, 246, 0.15); color: #fff; }
         .tag-sanwang {
-            display: inline-block;
-            color: #fbbf24;
-            background: rgba(251, 191, 36, 0.15);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            box-shadow: 0 0 10px rgba(251, 191, 36, 0.1);
+            display: inline-block; color: #fbbf24; background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.3); padding: 3px 8px; border-radius: 6px;
+            font-size: 11px; font-weight: 700; margin-bottom: 8px; box-shadow: 0 0 10px rgba(251, 191, 36, 0.1);
         }
-        .dropdown-item .tooltip-text {
-            width: 250px;
-            bottom: 150%;
-            z-index: 101;
-        }
+        .dropdown-item .tooltip-text { width: 250px; bottom: 150%; z-index: 101; }
 
+        /* 按钮组 */
+        .action-group { display: flex; gap: 15px; margin: 30px 0; }
         .btn-main {
-            width: 100%;
-            background: #fff;
-            color: #000;
-            border: none;
-            padding: 18px;
-            border-radius: 18px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            margin: 30px 0;
+            flex: 3; background: #fff; color: #000; border: none; padding: 18px;
+            border-radius: 18px; font-size: 15px; font-weight: 700; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; gap: 12px; transition: all 0.3s;
         }
-
-        .btn-main:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(255, 255, 255, 0.1);
+        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(255, 255, 255, 0.1); }
+        .btn-main:hover svg { animation: rotate-sync 1.5s linear infinite; }
+        
+        .btn-clear {
+            flex: 1; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #f87171; border-radius: 18px; font-size: 14px; font-weight: 600;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: all 0.3s;
         }
+        .btn-clear:hover { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #fff; transform: translateY(-2px); box-shadow: 0 12px 24px rgba(239, 68, 68, 0.15); }
+        @keyframes rotate-sync { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .btn-main svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        .btn-main:hover svg {
-            animation: rotate-sync 1.5s linear infinite;
-        }
-
-        @keyframes rotate-sync {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
+        /* 结果与小药丸 */
         .result-container { position: relative; margin-top: 15px; }
-
+        .badge-pill {
+            display: inline-block; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;
+            margin-left: 10px; transition: all 0.3s;
+        }
+        .badge-pill.success { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
         .btn-copy {
-            position: absolute;
-            right: 14px;
-            top: 14px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid var(--border);
-            color: #94a3b8;
-            padding: 10px 18px;
-            border-radius: 12px;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
+            position: absolute; right: 14px; top: 14px; background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border); color: #94a3b8; padding: 10px 18px; border-radius: 12px;
+            font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;
         }
+        .btn-copy:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+        .btn-copy.success { color: #4ade80; border-color: rgba(74, 222, 128, 0.3); background: rgba(74, 222, 128, 0.05); }
 
-        .btn-copy:hover {
-            background: rgba(255, 255, 255, 0.12);
-            color: #fff;
+        /* ================= 有灵魂的全局 Toast 通知系统 ================= */
+        .toast-container {
+            position: fixed; top: 24px; right: 24px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 12px; pointer-events: none;
         }
+        .toast-card {
+            background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 16px; padding: 14px 20px;
+            color: #f8fafc; font-size: 13px; font-family: "SF Mono", ui-monospace, monospace;
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6); pointer-events: auto;
+            transform: translateX(120%); animation: slideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            min-width: 280px; max-width: 400px;
+        }
+        .toast-card.fadeOut { animation: slideOut 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards; }
+        @keyframes slideIn { to { transform: translateX(0); } }
+        @keyframes slideOut { to { transform: translateX(120%); opacity: 0; } }
 
-        .btn-copy.success {
-            color: #4ade80;
-            border-color: rgba(74, 222, 128, 0.3);
-            background: rgba(74, 222, 128, 0.05);
-        }
+        /* 状态颜色侧边光效 */
+        .toast-card.error { box-shadow: -4px 0 15px -5px rgba(239, 68, 68, 0.5), 0 15px 35px rgba(0,0,0,0.6); border-left: 2px solid #ef4444; }
+        .toast-card.success { box-shadow: -4px 0 15px -5px rgba(16, 185, 129, 0.5), 0 15px 35px rgba(0,0,0,0.6); border-left: 2px solid #10b981; }
+        .toast-card.warning { box-shadow: -4px 0 15px -5px rgba(245, 158, 11, 0.5), 0 15px 35px rgba(0,0,0,0.6); border-left: 2px solid #f59e0b; }
+
+        .toast-content { display: flex; align-items: center; gap: 12px; flex: 1; line-height: 1.4; }
+        
+        /* 头部状态 SVG 动画 */
+        .toast-icon-front svg { width: 20px; height: 20px; flex-shrink: 0; }
+        .toast-card.success .toast-icon-front { color: #34d399; }
+        .toast-card.error .toast-icon-front { color: #f87171; animation: shake 0.5s ease-in-out; }
+        .toast-card.warning .toast-icon-front { color: #fbbf24; }
+
+        /* 尾部灵魂 SVG 动画 */
+        .toast-icon-back { color: var(--text-dim); display: flex; align-items: center; }
+        .toast-icon-back svg { width: 18px; height: 18px; }
+        
+        /* 尾部不同的灵魂动效 */
+        .spin-slow { animation: spin 3s linear infinite; }
+        .pulse-fast { animation: soul-pulse 0.8s infinite alternate; }
+        .bounce-mock { animation: mock-bounce 1s infinite; }
+
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-4px);} 75% {transform: translateX(4px);} }
+        @keyframes spin { 100% {transform: rotate(360deg);} }
+        @keyframes soul-pulse { 0% { transform: scale(0.9); opacity: 0.6; } 100% { transform: scale(1.1); opacity: 1; color: #60a5fa; } }
+        @keyframes mock-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
     </style>
 </head>
 <body>
 
+<div class="toast-container" id="toastContainer"></div>
+
 <div class="glass-panel">
-    <h2>✨ 𝕤5 to VLESS 缝合机</h2>
+    <h2>✨ SOCKS5 to VLESS 缝合机</h2>
     
     <div class="config-grid">
         <div class="input-box">
@@ -347,7 +225,7 @@
                 优选前门 (IP:端口)
                 <div class="info-btn">
                     <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-                    <span class="tooltip-text">非 HTTPS 端口会让流量在 GFW 面前裸奔。自己输入或者点右侧箭头选个暗门。<br>常用: 2053, 2083, 2087, 2096, 8443</span>
+                    <span class="tooltip-text">非 HTTPS 端口会让流量在 GFW 面前裸奔。自己输入或者点右侧箭头选个暗门。<br>常用: 443,2053, 2083, 2087, 2096, 8443</span>
                 </div>
             </div>
             <div class="custom-select-wrapper">
@@ -406,17 +284,24 @@
         <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
         待处理废料区
     </div>
-    <textarea id="raw" placeholder="把那些残缺不全的 𝕤5 链接和裸奔 IP 整捆丢进来，脏数据我自己会抠。"></textarea>
+    <textarea id="raw" placeholder="把那些残缺不全的 SOCKS5 链接和裸奔 IP 整捆丢进来，脏数据我自己会抠。"></textarea>
 
-    <button class="btn-main" onclick="process()">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        开启物理缝合
-    </button>
+    <div class="action-group">
+        <button class="btn-main" onclick="process()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            开启物理缝合
+        </button>
+        <button class="btn-clear" onclick="clearData()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            一键火化
+        </button>
+    </div>
 
     <div class="result-container">
         <div class="label-wrap">
             <svg class="icon-svg" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-            生成的装甲链接
+            生成的装甲链接 
+            <span class="badge-pill" id="nodeCount">待投喂</span>
         </div>
         <textarea id="out" readonly placeholder="成品链接会出现在这里，如果出不来，多找找自己的问题。"></textarea>
         <button class="btn-copy" id="copyBtn" onclick="copy()">
@@ -427,87 +312,153 @@
 </div>
 
 <script>
+// ========== 核心：Toast 通知系统引擎 ==========
+const svgIcons = {
+    // 头部状态图标
+    successFront: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+    errorFront: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+    warningFront: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>`,
+    
+    // 尾部灵魂嘲讽图标
+    backPulse: `<svg class="pulse-fast" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>`, // 心跳
+    backMock: `<svg class="bounce-mock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>`, // 眼睛
+    backSpin: `<svg class="spin-slow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>` // 齿轮
+};
+
+function showToast(message, type = 'warning', backIcon = 'backMock') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast-card ${type}`;
+    
+    let frontSvg = svgIcons.warningFront;
+    if(type === 'success') frontSvg = svgIcons.successFront;
+    if(type === 'error') frontSvg = svgIcons.errorFront;
+
+    toast.innerHTML = `
+        <div class="toast-content">
+            <div class="toast-icon-front">${frontSvg}</div>
+            <span>${message}</span>
+        </div>
+        <div class="toast-icon-back">${svgIcons[backIcon]}</div>
+    `;
+    
+    container.appendChild(toast);
+
+    // 自动销毁逻辑
+    setTimeout(() => {
+        toast.classList.add('fadeOut');
+        setTimeout(() => toast.remove(), 400); // 等动画结束拔除 DOM
+    }, 3500);
+}
+// ===============================================
+
 // 下拉框组件交互
 function toggleDropdown(event) {
     event.stopPropagation();
-    const dropdown = document.getElementById('ipDropdown');
-    const arrow = document.getElementById('ipArrow');
-    dropdown.classList.toggle('show');
-    arrow.classList.toggle('active');
+    document.getElementById('ipDropdown').classList.toggle('show');
+    document.getElementById('ipArrow').classList.toggle('active');
 }
-
 function selectOption(value) {
     const input = document.getElementById('ipport');
-    input.value = value;
-    input.focus();
+    input.value = value; input.focus();
     document.getElementById('ipDropdown').classList.remove('show');
     document.getElementById('ipArrow').classList.remove('active');
 }
-
 document.addEventListener('click', function(e) {
     const wrapper = document.querySelector('.custom-select-wrapper');
-    const dropdown = document.getElementById('ipDropdown');
-    const arrow = document.getElementById('ipArrow');
     if (wrapper && !wrapper.contains(e.target)) {
-        dropdown.classList.remove('show');
-        arrow.classList.remove('active');
+        document.getElementById('ipDropdown').classList.remove('show');
+        document.getElementById('ipArrow').classList.remove('active');
     }
 });
 
-// 核心缝合逻辑：生冷不忌版
+// 缝合逻辑
 function process() {
     const raw = document.getElementById('raw').value;
     const uuid = document.getElementById('uuid').value.trim();
     const ipport = document.getElementById('ipport').value.trim();
     const host = document.getElementById('host').value.trim();
-    if(!raw) return alert("空手套白狼？没门。");
+    const countPill = document.getElementById('nodeCount');
+    
+    // 用 Toast 替换原生的 alert
+    if(!raw) {
+        countPill.innerText = "空手套白狼？";
+        countPill.classList.remove('success');
+        return showToast("空手套白狼？去梦里缝合吧你。", "warning", "backMock");
+    }
     
     const lines = raw.split('\n');
     let res = "";
+    let validCount = 0;
 
     lines.forEach(l => {
         l = l.trim();
         if(!l) return;
         
-        // 暴力拆解：不管带不带 socks5:// 或者 𝕤5://，先把它拔了
-        let cleanLine = l.replace(/^(socks5|𝕤5):\/\//i, '').trim();
-        
-        // 正则匹配：组1抓取 地址:端口，组2抓取后面可能带的所有垃圾备注
+        let cleanLine = l.replace(/^(socks5):\/\//i, '').trim();
         let match = cleanLine.match(/^([a-zA-Z0-9\.-]+:\d+)(.*)$/);
         if(!match) return; 
         
         let address = match[1]; 
         let ipOnly = address.split(':')[0]; 
-        
-        // 备注清洗：洗掉开头多余的空格、竖线、横杠和逗号
         let rawRemark = match[2];
         let remark = rawRemark.replace(/^[\s\|\-,]+/, '').trim();
         
-        // 无情兜底：要是抠不出一丁点备注，就拿 IP 顶上
-        if (!remark) {
-            remark = ipOnly;
-        }
+        if (!remark) remark = ipOnly;
 
-        let link = 'socks5://' + address; // 这里的协议头还是要用标准的，免得内核不认
+        let link = 'socks5://' + address; 
         let path = encodeURIComponent('/' + link + '?ed=2560');
         let rem = encodeURIComponent(remark);
         
         res += `vless://${uuid}@${ipport}?path=${path}&security=tls&encryption=none&host=${host}&fp=chrome&type=ws&sni=${host}#${rem}\n`;
+        validCount++;
     });
 
-    document.getElementById('out').value = res || "一堆垃圾里连个格式对的都找不着，你到底粘了些啥？";
+    if (validCount > 0) {
+        document.getElementById('out').value = res;
+        countPill.innerText = `存活 ${validCount} 条`;
+        countPill.classList.add('success');
+        showToast(`操作完成。竟然真的有 ${validCount} 条数据能用。`, "success", "backPulse");
+    } else {
+        document.getElementById('out').value = "一堆垃圾里连个格式对的都找不着，你到底粘了些啥？";
+        countPill.innerText = "全军覆没";
+        countPill.classList.remove('success');
+        showToast("数据全军覆没，你这找节点的眼光绝了。", "error", "backMock");
+    }
+}
+
+// 一键火化
+function clearData() {
+    if(!document.getElementById('raw').value && !document.getElementById('out').value) {
+        return showToast("本来就是空的，你点空气呢？", "warning", "backSpin");
+    }
+    
+    document.getElementById('raw').value = '';
+    document.getElementById('out').value = '';
+    
+    const countPill = document.getElementById('nodeCount');
+    countPill.innerText = '骨灰已扬';
+    countPill.classList.remove('success');
+    
+    document.getElementById('copyBtn').classList.remove('success');
+    document.getElementById('copyTxt').innerText = "优雅窃取";
+    
+    showToast("清理完毕。骨灰扬得干干净净，连渣都不剩。", "warning", "backSpin");
 }
 
 function copy() {
     const out = document.getElementById('out');
     const btn = document.getElementById('copyBtn');
     const txt = document.getElementById('copyTxt');
-    if(!out.value || out.value.includes("？") || out.value.includes("空手套白狼")) return;
+    if(!out.value || out.value.includes("？") || out.value.includes("空手套白狼")) {
+        return showToast("没东西可偷，你是打算复制空气回去吗？", "error", "backMock");
+    }
     
     out.select();
     navigator.clipboard.writeText(out.value).then(() => {
         btn.classList.add('success');
         txt.innerText = "已入库";
+        showToast("已无情剥削并复制到剪贴板。", "success", "backPulse");
         setTimeout(() => { btn.classList.remove('success'); txt.innerText = "优雅窃取"; }, 2000);
     });
 }
