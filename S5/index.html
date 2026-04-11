@@ -326,7 +326,7 @@
 <body>
 
 <div class="glass-panel">
-    <h2>✨ SOCKS5 to VLESS 缝合机</h2>
+    <h2>✨ 𝕤5 to VLESS 缝合机</h2>
     
     <div class="config-grid">
         <div class="input-box">
@@ -406,7 +406,7 @@
         <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
         待处理废料区
     </div>
-    <textarea id="raw" placeholder="把那些带备注的 socks5:// 链接整捆丢进来，脏数据我自己会抠。"></textarea>
+    <textarea id="raw" placeholder="把那些残缺不全的 𝕤5 链接和裸奔 IP 整捆丢进来，脏数据我自己会抠。"></textarea>
 
     <button class="btn-main" onclick="process()">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -418,7 +418,7 @@
             <svg class="icon-svg" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
             生成的装甲链接
         </div>
-        <textarea id="out" readonly placeholder="成品链接会出现在这里，不通的话多反思一下。"></textarea>
+        <textarea id="out" readonly placeholder="成品链接会出现在这里，如果出不来，多找找自己的问题。"></textarea>
         <button class="btn-copy" id="copyBtn" onclick="copy()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
             <span id="copyTxt">优雅窃取</span>
@@ -454,7 +454,7 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// 核心缝合逻辑
+// 核心缝合逻辑：生冷不忌版
 function process() {
     const raw = document.getElementById('raw').value;
     const uuid = document.getElementById('uuid').value.trim();
@@ -464,26 +464,38 @@ function process() {
     
     const lines = raw.split('\n');
     let res = "";
-    let i = 1;
 
     lines.forEach(l => {
         l = l.trim();
         if(!l) return;
-        let match = l.match(/(socks5:\/\/[^\s|]+)/);
-        if(!match) return;
         
-        let link = match[1];
-        let remark = "未命名废料-" + i;
-        let parts = l.split('|');
-        if(parts.length > 1 && parts[1].trim()) remark = parts[1].trim();
+        // 暴力拆解：不管带不带 socks5:// 或者 𝕤5://，先把它拔了
+        let cleanLine = l.replace(/^(socks5|𝕤5):\/\//i, '').trim();
+        
+        // 正则匹配：组1抓取 地址:端口，组2抓取后面可能带的所有垃圾备注
+        let match = cleanLine.match(/^([a-zA-Z0-9\.-]+:\d+)(.*)$/);
+        if(!match) return; 
+        
+        let address = match[1]; 
+        let ipOnly = address.split(':')[0]; 
+        
+        // 备注清洗：洗掉开头多余的空格、竖线、横杠和逗号
+        let rawRemark = match[2];
+        let remark = rawRemark.replace(/^[\s\|\-,]+/, '').trim();
+        
+        // 无情兜底：要是抠不出一丁点备注，就拿 IP 顶上
+        if (!remark) {
+            remark = ipOnly;
+        }
 
+        let link = 'socks5://' + address; // 这里的协议头还是要用标准的，免得内核不认
         let path = encodeURIComponent('/' + link + '?ed=2560');
         let rem = encodeURIComponent(remark);
+        
         res += `vless://${uuid}@${ipport}?path=${path}&security=tls&encryption=none&host=${host}&fp=chrome&type=ws&sni=${host}#${rem}\n`;
-        i++;
     });
 
-    document.getElementById('out').value = res || "一堆垃圾里连个 socks5:// 都找不着，你到底粘了些啥？";
+    document.getElementById('out').value = res || "一堆垃圾里连个格式对的都找不着，你到底粘了些啥？";
 }
 
 function copy() {
