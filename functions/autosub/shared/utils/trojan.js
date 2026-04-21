@@ -71,15 +71,15 @@ export function parseTrojan(input) {
     };
   }
 
-  const passPart = basePart.slice(0, atIndex); // password
-  const hostPortPart = basePart.slice(atIndex + 1); // host:port
+  const passPart = basePart.slice(0, atIndex);
+  const hostPortPart = basePart.slice(atIndex + 1);
 
   const password = passPart.trim();
   const [serverRaw, portStr] = hostPortPart.split(":", 2);
   const server = (serverRaw || "").trim();
   const port = Number((portStr || "").trim() || 0);
 
-  // 5. 解析 query 参数
+  // 5. 解析 query 参数（🔥 修复：统一小写）
   const params = {};
   if (query) {
     const segs = query.split("&");
@@ -88,8 +88,10 @@ export function parseTrojan(input) {
       const [kRaw, vRaw = ""] = seg.split("=", 2);
       const k = (kRaw || "").trim();
       if (!k) continue;
-      const key = safeDecode(k);
+
+      const key = safeDecode(k).toLowerCase(); // 🔥 核心修复
       const val = safeDecode(vRaw);
+
       params[key] = val;
     }
   }
@@ -102,11 +104,11 @@ export function parseTrojan(input) {
   // 7. sni / peer / host
   const sni =
     (params.sni ||
-      params.peer || // 很多机场 trojan-grpc 用 peer
+      params.peer ||
       params.host ||
       "") + "";
 
-  // 8. 传输方式 / 混淆：grpc / ws / websocket / ...
+  // 8. 传输方式
   const obfs = (params.obfs || params.type || "").toLowerCase();
   let network = "";
   if (obfs === "grpc") {
@@ -114,17 +116,33 @@ export function parseTrojan(input) {
   } else if (obfs === "ws" || obfs === "websocket") {
     network = "ws";
   } else {
-    network = ""; // 默认 tcp
+    network = "";
   }
 
-  // 9. path / serviceName
-  // trojan-grpc 常见参数：serviceName=/xxx 或 path=/xxx
+  // 9. path
   const path =
-    params.serviceName ||
-    params["serviceName"] ||
-    params.path ||
+    params.servicename ||
     params["grpc-service-name"] ||
+    params.path ||
     "";
+
+  // =========================
+  // 🔥 新增：关键参数解析
+  // =========================
+
+  // allowInsecure（大小写统一后直接用）
+  const allowInsecure =
+    params["allowinsecure"] ||
+    params["allow-insecure"] ||
+    params["allow_insecure"];
+
+  const skipCertVerify = String(allowInsecure) === "1";
+
+  // tfo
+  const tfo = String(params.tfo) === "1";
+
+  // udp
+  const udp = params.udp !== "0";
 
   if (!server || !port || !password) {
     return {
@@ -135,6 +153,9 @@ export function parseTrojan(input) {
       network,
       path,
       obfs,
+      skipCertVerify,
+      tfo,
+      udp,
     };
   }
 
@@ -146,8 +167,13 @@ export function parseTrojan(input) {
     port,
     password,
     sni,
-    network, // "", grpc, ws
+    network,
     path,
     obfs,
+
+    // 🔥 输出给 renderer 用
+    skipCertVerify,
+    tfo,
+    udp,
   };
 }
