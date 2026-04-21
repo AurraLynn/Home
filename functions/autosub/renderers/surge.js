@@ -7,10 +7,7 @@
  */
 
 /*
- * 生成安全的代理名称：
- *   - 优先用 node.name
- *   - 没有就用 协议前缀 + server:port
- *   - 去掉换行、逗号、等号等特殊字符
+ * 生成安全的代理名称
  */
 function makeProxyName(node, fallbackPrefix) {
   const rawName = (node && node.name) || "";
@@ -30,7 +27,7 @@ function makeProxyName(node, fallbackPrefix) {
 }
 
 /*
- * 格式化 SS 密码：
+ * 格式化 SS 密码
  */
 function formatSSPassword(pwd) {
   if (pwd == null) return '""';
@@ -47,12 +44,13 @@ function formatSSPassword(pwd) {
 }
 
 /*
- * 渲染 Shadowsocks
+ * Shadowsocks
  */
 function renderSS(node) {
   if (!node.server || !node.port || !node.cipher || !node.password) return null;
 
   const name = makeProxyName(node, "SS");
+
   const parts = [
     `${name}=ss`,
     node.server,
@@ -67,12 +65,12 @@ function renderSS(node) {
 }
 
 /*
- * 渲染 Trojan
+ * Trojan（重点修复）
  *
- * 重点增强：
- *   - 自动补 SNI（很多机场不写会直接失败）
- *   - 正确处理 skip-cert-verify（来自 allowInsecure）
- *   - 参数顺序优化（兼容性更好）
+ * 修复点：
+ *   - allowInsecure → skip-cert-verify（多写法兼容）
+ *   - SNI 自动补齐
+ *   - 参数顺序优化
  */
 function renderTrojan(node) {
   if (!node.server || !node.port || !node.password) return null;
@@ -86,23 +84,28 @@ function renderTrojan(node) {
     `password=${node.password}`,
   ];
 
-  // SNI（优先使用节点提供，其次 fallback 为 server）
+  // SNI（优先 node.sni，否则 fallback server）
   const sni = node.sni || node.server;
   if (sni) {
     parts.push(`sni=${sni}`);
   }
 
-  // allowInsecure → skip-cert-verify
-  if (node.skipCertVerify === true) {
+  // 🔥 核心修复：兼容所有来源字段
+  const skip =
+    node.skipCertVerify === true ||
+    node["skip-cert-verify"] === true ||
+    String(node.allowInsecure) === "1";
+
+  if (skip) {
     parts.push("skip-cert-verify=true");
   }
 
-  // UDP（默认开启，除非显式 false）
+  // UDP（默认开启）
   if (node.udp !== false) {
     parts.push("udp-relay=true");
   }
 
-  // TCP Fast Open
+  // TFO
   if (node.tfo === true) {
     parts.push("tfo=true");
   }
@@ -111,12 +114,13 @@ function renderTrojan(node) {
 }
 
 /*
- * 渲染 VMess
+ * VMess
  */
 function renderVmess(node) {
   if (!node.server || !node.port || !node.uuid) return null;
 
   const name = makeProxyName(node, "VMess");
+
   const parts = [
     `${name}=vmess`,
     node.server,
@@ -159,11 +163,7 @@ function renderVmess(node) {
 }
 
 /*
- * 渲染 Hysteria2
- *
- * 增强：
- *   - SNI fallback
- *   - skip-cert-verify 支持
+ * Hysteria2
  */
 function renderHy2(node) {
   const pwd = node.password || node.auth;
@@ -183,7 +183,10 @@ function renderHy2(node) {
     parts.push(`sni=${sni}`);
   }
 
-  if (node.skipCertVerify === true) {
+  if (
+    node.skipCertVerify === true ||
+    node["skip-cert-verify"] === true
+  ) {
     parts.push("skip-cert-verify=true");
   }
 
@@ -216,14 +219,14 @@ export function renderSurge(nodes = []) {
 
   lines.push("# AUTOSUB · Surge Proxy List");
   lines.push("# 支持协议：ss / vmess / hysteria2 / trojan");
-  lines.push("# 其它协议暂不转换，仅在末尾统计，方便排查");
+  lines.push("# 其它协议暂不转换，仅在末尾统计");
   lines.push("");
   lines.push("[Proxy]");
 
   for (const n of nodes || []) {
     if (!n || !n.type) continue;
-    const type = String(n.type || "").toLowerCase();
 
+    const type = String(n.type || "").toLowerCase();
     let line = null;
 
     if (type === "ss") {
@@ -245,21 +248,20 @@ export function renderSurge(nodes = []) {
   }
 
   if (supportedCount === 0) {
-    lines.push("# （未找到可转换为 Surge 的支持协议节点）");
+    lines.push("# （未找到可用节点）");
   }
 
   const uns = Object.entries(unsupportedTypes);
   if (uns.length) {
     lines.push("");
-    lines.push("# ===== 未转换的协议统计（仅提示，不影响使用） =====");
+    lines.push("# ===== 未转换协议统计 =====");
     for (const [t, count] of uns) {
-      lines.push(`# ${t}: ${count} 条`);
+      lines.push(`# ${t}: ${count}`);
     }
   }
 
-  const body = lines.join("\n");
   return {
-    body,
+    body: lines.join("\n"),
     contentType: "text/plain; charset=utf-8",
   };
 }
