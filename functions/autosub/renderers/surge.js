@@ -31,8 +31,6 @@ function makeProxyName(node, fallbackPrefix) {
 
 /*
  * 格式化 SS 密码：
- *   - 如果是 URL 编码（包含 %3D 等），先 decode 一次
- *   - 外面包一层双引号，内部 " 做转义
  */
 function formatSSPassword(pwd) {
   if (pwd == null) return '""';
@@ -41,9 +39,7 @@ function formatSSPassword(pwd) {
   if (out.includes("%")) {
     try {
       out = decodeURIComponent(out);
-    } catch {
-      // 解码失败就用原始值
-    }
+    } catch {}
   }
 
   out = out.replace(/"/g, '\\"');
@@ -51,9 +47,7 @@ function formatSSPassword(pwd) {
 }
 
 /*
- * 渲染 Shadowsocks 节点为 Surge 代理行
- * 参考格式：
- *   NAME=ss,server,port,encrypt-method=...,password="...",udp-relay=true,tfo=true
+ * 渲染 Shadowsocks
  */
 function renderSS(node) {
   if (!node.server || !node.port || !node.cipher || !node.password) return null;
@@ -73,45 +67,51 @@ function renderSS(node) {
 }
 
 /*
- * 渲染 Trojan 节点为 Surge 代理行
- * 参考格式：
- *   NAME=trojan,server,port,password=xxx,sni=example.com,skip-cert-verify=true,udp-relay=true,tfo=true
+ * 渲染 Trojan
+ *
+ * 重点增强：
+ *   - 自动补 SNI（很多机场不写会直接失败）
+ *   - 正确处理 skip-cert-verify（来自 allowInsecure）
+ *   - 参数顺序优化（兼容性更好）
  */
 function renderTrojan(node) {
   if (!node.server || !node.port || !node.password) return null;
 
   const name = makeProxyName(node, "Trojan");
+
   const parts = [
     `${name}=trojan`,
     node.server,
     node.port,
     `password=${node.password}`,
-    "udp-relay=true",
-    "tfo=true",
   ];
 
-  if (node.sni) {
-    parts.push(`sni=${node.sni}`);
+  // SNI（优先使用节点提供，其次 fallback 为 server）
+  const sni = node.sni || node.server;
+  if (sni) {
+    parts.push(`sni=${sni}`);
   }
 
+  // allowInsecure → skip-cert-verify
   if (node.skipCertVerify === true) {
     parts.push("skip-cert-verify=true");
+  }
+
+  // UDP（默认开启，除非显式 false）
+  if (node.udp !== false) {
+    parts.push("udp-relay=true");
+  }
+
+  // TCP Fast Open
+  if (node.tfo === true) {
+    parts.push("tfo=true");
   }
 
   return parts.join(",");
 }
 
 /*
- * 渲染 VMess 节点为 Surge 代理行
- *
- * 目标格式（你给的“正确转换”）：
- *   广港隧道-香港 A 5x=vmess,d.ewfewfs.click,27506,
- *       username=UUID,
- *       ws=true,
- *       ws-path=/,
- *       ws-headers=Host:"tms.dingtalk.com",
- *       vmess-aead=true,
- *       tls=false
+ * 渲染 VMess
  */
 function renderVmess(node) {
   if (!node.server || !node.port || !node.uuid) return null;
@@ -127,31 +127,31 @@ function renderVmess(node) {
   const security = String(node.security || "").toLowerCase();
   const net = String(node.network || "").toLowerCase();
 
-  // WebSocket
   if (net === "ws" || net === "websocket") {
     parts.push("ws=true");
+
     if (node.path) {
       parts.push(`ws-path=${node.path}`);
     }
-    const host = node.host || node.sni;
+
+    const host = node.host || node.sni || node.server;
     if (host) {
       const hEsc = String(host).replace(/"/g, '\\"');
       parts.push(`ws-headers=Host:"${hEsc}"`);
     }
   }
 
-  // vmess-aead：alterId=0 或缺省时认为启用 AEAD
   let a = node.alterId;
   if (typeof a === "string") {
     const n = Number(a);
     if (!Number.isNaN(n)) a = n;
   }
+
   const useAead = a === 0 || a === undefined || a === null;
   if (useAead) {
     parts.push("vmess-aead=true");
   }
 
-  // TLS 显式写出 true/false，和你例子保持一致
   const tlsOn = node.tls === true || security === "tls";
   parts.push(`tls=${tlsOn ? "true" : "false"}`);
 
@@ -159,35 +159,46 @@ function renderVmess(node) {
 }
 
 /*
- * 渲染 Hysteria2 节点为 Surge 代理行
- * 参考格式：
- *   NAME=hysteria2,server,port,password=xxx,sni=example.com,skip-cert-verify=true,udp-relay=true,tfo=true
+ * 渲染 Hysteria2
+ *
+ * 增强：
+ *   - SNI fallback
+ *   - skip-cert-verify 支持
  */
 function renderHy2(node) {
   const pwd = node.password || node.auth;
   if (!node.server || !node.port || !pwd) return null;
 
   const name = makeProxyName(node, "Hy2");
+
   const parts = [
     `${name}=hysteria2`,
     node.server,
     node.port,
     `password=${pwd}`,
-    "udp-relay=true",
-    "tfo=true",
   ];
 
-  if (node.sni) {
-    parts.push(`sni=${node.sni}`);
+  const sni = node.sni || node.server;
+  if (sni) {
+    parts.push(`sni=${sni}`);
   }
 
   if (node.skipCertVerify === true) {
     parts.push("skip-cert-verify=true");
   }
 
+  if (node.udp !== false) {
+    parts.push("udp-relay=true");
+  }
+
+  if (node.tfo === true) {
+    parts.push("tfo=true");
+  }
+
   if (node.alpn) {
     parts.push(`alpn=${node.alpn}`);
   }
+
   if (node.obfs) {
     parts.push(`obfs=${node.obfs}`);
   }
@@ -196,16 +207,7 @@ function renderHy2(node) {
 }
 
 /*
- * 主渲染函数：Node[] → Surge 配置文本
- *
- * 支持：
- *   - ss
- *   - vmess
- *   - hysteria2 (包含标准化的 hysteria / hy2)
- *   - trojan
- *
- * 返回：
- *   - { body, contentType }
+ * 主渲染函数
  */
 export function renderSurge(nodes = []) {
   const lines = [];
