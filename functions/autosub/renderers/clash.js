@@ -11,13 +11,14 @@
       • trojan
       • hysteria2 / hy2
       • anytls
+      • tuic
 
   - 输出：
       Clash / Mihomo 通用配置（块状 YAML）：
         port / socks-port / dns / rules 等基础配置
         proxies:
           - name: "..."
-            type: ss / vmess / vless / trojan / hysteria2 / anytls
+            type: ss / vmess / vless / trojan / hysteria2 / anytls / tuic
             ...
 
   - 调用示例：
@@ -404,6 +405,103 @@ function nodeToClashProxy(node) {
     return proxy;
   }
 
+  // ===== TUIC =====
+  if (type === "tuic") {
+    const uuid = pickString(node.uuid || node.id);
+    const password = pickString(node.password || node.pwd);
+    const token = pickString(node.token);
+
+    // mihomo TUIC 支持 token 或 uuid + password；两种都没有就跳过
+    if (!token && (!uuid || !password)) return null;
+
+    const proxy = {
+      _type: "tuic",
+      name,
+      server,
+      port,
+    };
+
+    if (token) {
+      proxy.token = token;
+    } else {
+      proxy.uuid = uuid;
+      proxy.password = password;
+    }
+
+    const sni =
+      pickString(node.sni) ||
+      pickString(node.servername) ||
+      pickString(node.serverName) ||
+      pickString(node["server-name"]);
+    if (sni) proxy.sni = sni;
+
+    const alpnRaw = Array.isArray(node.alpn)
+      ? node.alpn.join(",")
+      : pickString(node.alpn);
+    if (alpnRaw) {
+      proxy.alpn = alpnRaw
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean);
+    }
+
+    const udpRelayMode = pickString(
+      node.udpRelayMode || node["udp-relay-mode"] || node.udp_relay_mode
+    ).replace(/_/g, "-");
+    if (udpRelayMode) proxy["udp-relay-mode"] = udpRelayMode;
+
+    const cc = pickString(
+      node.congestionController ||
+        node["congestion-controller"] ||
+        node["congestion-control"] ||
+        node.congestion_control
+    ).replace(/_/g, "-");
+    if (cc) proxy["congestion-controller"] = cc;
+
+    if (typeof node.skipCertVerify === "boolean") {
+      proxy.skipCertVerify = node.skipCertVerify;
+    } else if (typeof node["skip-cert-verify"] === "boolean") {
+      proxy.skipCertVerify = node["skip-cert-verify"];
+    }
+
+    if (typeof node.reduceRtt === "boolean") {
+      proxy.reduceRtt = node.reduceRtt;
+    } else if (typeof node["reduce-rtt"] === "boolean") {
+      proxy.reduceRtt = node["reduce-rtt"];
+    }
+
+    if (typeof node.disableSni === "boolean") {
+      proxy.disableSni = node.disableSni;
+    } else if (typeof node["disable-sni"] === "boolean") {
+      proxy.disableSni = node["disable-sni"];
+    }
+
+    const requestTimeout = pickNumber(
+      node.requestTimeout || node["request-timeout"],
+      0
+    );
+    if (requestTimeout > 0) proxy.requestTimeout = requestTimeout;
+
+    const heartbeatInterval = pickNumber(
+      node.heartbeatInterval || node["heartbeat-interval"],
+      0
+    );
+    if (heartbeatInterval > 0) proxy.heartbeatInterval = heartbeatInterval;
+
+    const maxUdpRelayPacketSize = pickNumber(
+      node.maxUdpRelayPacketSize || node["max-udp-relay-packet-size"],
+      0
+    );
+    if (maxUdpRelayPacketSize > 0) {
+      proxy.maxUdpRelayPacketSize = maxUdpRelayPacketSize;
+    }
+
+    const ip = pickString(node.ip);
+    if (ip) proxy.ip = ip;
+
+    return proxy;
+  }
+
   // ===== Hysteria2 / hy2 =====
   if (type === "hysteria2" || type === "hy2") {
     const pwd = pickString(node.password || node.auth);
@@ -746,6 +844,77 @@ function dumpProxyBlock(lines, proxy) {
     return;
   }
 
+  // ===== TUIC =====
+  if (proxy._type === "tuic") {
+    if (proxy.token) {
+      pushLine(lines, 2, `token: ${yamlQuote(proxy.token)}`);
+    } else {
+      pushLine(lines, 2, `uuid: ${yamlQuote(proxy.uuid)}`);
+      pushLine(lines, 2, `password: ${yamlQuote(proxy.password)}`);
+    }
+
+    if (proxy.ip) {
+      pushLine(lines, 2, `ip: ${yamlQuote(proxy.ip)}`);
+    }
+
+    if (proxy.sni) {
+      pushLine(lines, 2, `sni: ${yamlQuote(proxy.sni)}`);
+    }
+
+    if (proxy.alpn && Array.isArray(proxy.alpn) && proxy.alpn.length) {
+      pushLine(lines, 2, `alpn:`);
+      for (const a of proxy.alpn) {
+        pushLine(lines, 3, `- ${yamlQuote(a)}`);
+      }
+    }
+
+    if (proxy["udp-relay-mode"]) {
+      pushLine(lines, 2, `udp-relay-mode: ${proxy["udp-relay-mode"]}`);
+    }
+
+    if (proxy["congestion-controller"]) {
+      pushLine(
+        lines,
+        2,
+        `congestion-controller: ${proxy["congestion-controller"]}`
+      );
+    }
+
+    if (typeof proxy.skipCertVerify === "boolean") {
+      pushLine(
+        lines,
+        2,
+        `skip-cert-verify: ${proxy.skipCertVerify ? "true" : "false"}`
+      );
+    }
+
+    if (typeof proxy.reduceRtt === "boolean") {
+      pushLine(lines, 2, `reduce-rtt: ${proxy.reduceRtt ? "true" : "false"}`);
+    }
+
+    if (typeof proxy.disableSni === "boolean") {
+      pushLine(lines, 2, `disable-sni: ${proxy.disableSni ? "true" : "false"}`);
+    }
+
+    if (proxy.requestTimeout > 0) {
+      pushLine(lines, 2, `request-timeout: ${proxy.requestTimeout}`);
+    }
+
+    if (proxy.heartbeatInterval > 0) {
+      pushLine(lines, 2, `heartbeat-interval: ${proxy.heartbeatInterval}`);
+    }
+
+    if (proxy.maxUdpRelayPacketSize > 0) {
+      pushLine(
+        lines,
+        2,
+        `max-udp-relay-packet-size: ${proxy.maxUdpRelayPacketSize}`
+      );
+    }
+
+    return;
+  }
+
   // ===== Hysteria2 =====
   if (proxy._type === "hysteria2") {
     pushLine(lines, 2, `password: ${proxy.password}`);
@@ -777,6 +946,7 @@ export function renderClash(nodes = []) {
     hysteria2: 0,
     hy2: 0,
     anytls: 0,
+    tuic: 0,
     unknown: 0,
   };
 
@@ -797,7 +967,7 @@ export function renderClash(nodes = []) {
   // ===== 头部 =====
   lines.push(`# Generated by Lyn autosub`);
   lines.push(
-    `# stats: ss=${stats.ss}, vmess=${stats.vmess}, vless=${stats.vless}, trojan=${stats.trojan}, hy2=${stats.hysteria2 + stats.hy2}, anytls=${stats.anytls}, unknown=${stats.unknown}`
+    `# stats: ss=${stats.ss}, vmess=${stats.vmess}, vless=${stats.vless}, trojan=${stats.trojan}, hy2=${stats.hysteria2 + stats.hy2}, anytls=${stats.anytls}, tuic=${stats.tuic}, unknown=${stats.unknown}`
   );
   lines.push(`port: 7890`);
   lines.push(`socks-port: 7891`);
