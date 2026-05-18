@@ -256,17 +256,27 @@ function renderAnyTLS(node) {
 
 /*
  * TUIC
- * Surge 常见格式：
- *   name=tuic,server,port,uuid=xxx,password=xxx,sni=example.com,alpn=h3,congestion-control=bbr,udp-relay-mode=native
+ * Surge 官方格式：
+ *   name=tuic,server,port,token=pwd,alpn=h3
+ *
+ * 注意：
+ *   - Surge TUIC 使用 token，不使用 Mihomo 的 uuid/password 参数
+ *   - 如果来源是 tuic://uuid:password@host:port，则 token = uuid:password
+ *   - 不输出 Mihomo 专用字段：congestion-control / udp-relay-mode / udp-relay
  */
 function renderTuic(node) {
   if (!node.server || !node.port) return null;
 
   const uuid = node.uuid || node.id || "";
   const password = node.password || node.pwd || "";
-  const token = node.token || "";
+  let token = node.token || "";
 
-  if (!token && (!uuid || !password)) return null;
+  // tuic://uuid:password@host:port → Surge token=uuid:password
+  if (!token && uuid && password) {
+    token = `${uuid}:${password}`;
+  }
+
+  if (!token) return null;
 
   const name = makeProxyName(node, "TUIC");
 
@@ -274,20 +284,10 @@ function renderTuic(node) {
     `${name}=tuic`,
     node.server,
     node.port,
+    `token=${token}`,
   ];
 
-  if (uuid) {
-    parts.push(`uuid=${uuid}`);
-  }
-
-  if (password) {
-    parts.push(`password=${password}`);
-  } else if (token) {
-    // 兼容只有 token 的来源，避免直接丢节点
-    parts.push(`password=${token}`);
-  }
-
-  const sni = node.sni || node.servername || node.serverName || node.server;
+  const sni = node.sni || node.servername || node.serverName;
   if (sni) {
     parts.push(`sni=${sni}`);
   }
@@ -297,52 +297,26 @@ function renderTuic(node) {
     parts.push(`alpn=${alpn}`);
   }
 
-  const cc = String(
-    node.congestionController ||
-      node["congestion-controller"] ||
-      node["congestion-control"] ||
-      node.congestion_control ||
-      ""
-  )
-    .trim()
-    .replace(/_/g, "-");
-
-  if (cc) {
-    parts.push(`congestion-control=${cc}`);
-  }
-
-  const udpRelayMode = String(
-    node.udpRelayMode ||
-      node["udp-relay-mode"] ||
-      node.udp_relay_mode ||
-      ""
-  )
-    .trim()
-    .replace(/_/g, "-");
-
-  if (udpRelayMode) {
-    parts.push(`udp-relay-mode=${udpRelayMode}`);
-  }
-
   if (
     node.skipCertVerify === true ||
     node["skip-cert-verify"] === true ||
     String(node.allowInsecure) === "1" ||
-    String(node.insecure) === "1"
+    String(node.insecure) === "1" ||
+    String(node.allowInsecure).toLowerCase() === "true" ||
+    String(node.insecure).toLowerCase() === "true"
   ) {
     parts.push("skip-cert-verify=true");
   }
 
-  if (node.tfo === true) {
-    parts.push("tfo=true");
+  const portHopping = node.portHopping || node["port-hopping"];
+  if (portHopping) {
+    parts.push(`port-hopping=${portHopping}`);
   }
 
-  if (node.reduceRtt === true || node["reduce-rtt"] === true) {
-    parts.push("reduce-rtt=true");
-  }
-
-  if (node.udp !== false) {
-    parts.push("udp-relay=true");
+  const portHoppingInterval =
+    node.portHoppingInterval || node["port-hopping-interval"];
+  if (portHoppingInterval) {
+    parts.push(`port-hopping-interval=${portHoppingInterval}`);
   }
 
   return parts.join(",");
