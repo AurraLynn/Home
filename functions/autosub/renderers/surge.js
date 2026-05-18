@@ -2,7 +2,7 @@
  * 文件路径：functions/autosub/renderers/surge.js
  * 文件作用：
  *   - 将标准 Node[] 渲染为 Surge 可用的代理列表
- *   - 当前支持协议：ss / vmess / hysteria2 / trojan / anytls
+ *   - 当前支持协议：ss / vmess / hysteria2 / trojan / anytls / tuic
  *   - 其它协议暂不转换（只在末尾统计提示）
  */
 
@@ -253,6 +253,101 @@ function renderAnyTLS(node) {
   return parts.join(",");
 }
 
+
+/*
+ * TUIC
+ * Surge 常见格式：
+ *   name=tuic,server,port,uuid=xxx,password=xxx,sni=example.com,alpn=h3,congestion-control=bbr,udp-relay-mode=native
+ */
+function renderTuic(node) {
+  if (!node.server || !node.port) return null;
+
+  const uuid = node.uuid || node.id || "";
+  const password = node.password || node.pwd || "";
+  const token = node.token || "";
+
+  if (!token && (!uuid || !password)) return null;
+
+  const name = makeProxyName(node, "TUIC");
+
+  const parts = [
+    `${name}=tuic`,
+    node.server,
+    node.port,
+  ];
+
+  if (uuid) {
+    parts.push(`uuid=${uuid}`);
+  }
+
+  if (password) {
+    parts.push(`password=${password}`);
+  } else if (token) {
+    // 兼容只有 token 的来源，避免直接丢节点
+    parts.push(`password=${token}`);
+  }
+
+  const sni = node.sni || node.servername || node.serverName || node.server;
+  if (sni) {
+    parts.push(`sni=${sni}`);
+  }
+
+  const alpn = Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn;
+  if (alpn) {
+    parts.push(`alpn=${alpn}`);
+  }
+
+  const cc = String(
+    node.congestionController ||
+      node["congestion-controller"] ||
+      node["congestion-control"] ||
+      node.congestion_control ||
+      ""
+  )
+    .trim()
+    .replace(/_/g, "-");
+
+  if (cc) {
+    parts.push(`congestion-control=${cc}`);
+  }
+
+  const udpRelayMode = String(
+    node.udpRelayMode ||
+      node["udp-relay-mode"] ||
+      node.udp_relay_mode ||
+      ""
+  )
+    .trim()
+    .replace(/_/g, "-");
+
+  if (udpRelayMode) {
+    parts.push(`udp-relay-mode=${udpRelayMode}`);
+  }
+
+  if (
+    node.skipCertVerify === true ||
+    node["skip-cert-verify"] === true ||
+    String(node.allowInsecure) === "1" ||
+    String(node.insecure) === "1"
+  ) {
+    parts.push("skip-cert-verify=true");
+  }
+
+  if (node.tfo === true) {
+    parts.push("tfo=true");
+  }
+
+  if (node.reduceRtt === true || node["reduce-rtt"] === true) {
+    parts.push("reduce-rtt=true");
+  }
+
+  if (node.udp !== false) {
+    parts.push("udp-relay=true");
+  }
+
+  return parts.join(",");
+}
+
 /*
  * 主渲染函数
  */
@@ -262,7 +357,7 @@ export function renderSurge(nodes = []) {
   let supportedCount = 0;
 
   lines.push("# AUTOSUB · Surge Proxy List");
-  lines.push("# 支持协议：ss / vmess / hysteria2 / trojan / anytls");
+  lines.push("# 支持协议：ss / vmess / hysteria2 / trojan / anytls / tuic");
   lines.push("# 其它协议暂不转换，仅在末尾统计");
   lines.push("");
   lines.push("[Proxy]");
@@ -283,6 +378,8 @@ export function renderSurge(nodes = []) {
       line = renderHy2(n);
     } else if (type === "anytls") {
       line = renderAnyTLS(n);
+    } else if (type === "tuic") {
+      line = renderTuic(n);
     } else {
       unsupportedTypes[type] = (unsupportedTypes[type] || 0) + 1;
     }
