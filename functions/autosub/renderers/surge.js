@@ -255,68 +255,62 @@ function renderAnyTLS(node) {
 
 
 /*
- * TUIC
- * Surge 官方格式：
- *   name=tuic,server,port,token=pwd,alpn=h3
+ * TUIC v5
+ *
+ * 原始 URI：
+ *   tuic://uuid:password@host:port?sni=xxx&alpn=h3&allow_insecure=1#name
+ *
+ * Surge 正确格式：
+ *   name=tuic-v5,server,port,uuid=xxx,password="xxx",alpn=h3,sni="xxx",skip-cert-verify=true
  *
  * 注意：
- *   - Surge TUIC 使用 token，不使用 Mihomo 的 uuid/password 参数
- *   - 如果来源是 tuic://uuid:password@host:port，则 token = uuid:password
+ *   - Surge 使用 tuic-v5，不是 tuic
+ *   - password 建议加双引号
+ *   - sni 建议加双引号
  *   - 不输出 Mihomo 专用字段：congestion-control / udp-relay-mode / udp-relay
  */
 function renderTuic(node) {
   if (!node.server || !node.port) return null;
 
   const uuid = node.uuid || node.id || "";
-  const password = node.password || node.pwd || "";
-  let token = node.token || "";
+  const password = node.password || "";
 
-  // tuic://uuid:password@host:port → Surge token=uuid:password
-  if (!token && uuid && password) {
-    token = `${uuid}:${password}`;
-  }
-
-  if (!token) return null;
+  if (!uuid || !password) return null;
 
   const name = makeProxyName(node, "TUIC");
 
+  const esc = (v) => String(v ?? "").replace(/"/g, '\"');
+
   const parts = [
-    `${name}=tuic`,
+    `${name}=tuic-v5`,
     node.server,
     node.port,
-    `token=${token}`,
+    `uuid=${uuid}`,
+    `password="${esc(password)}"`,
   ];
-
-  const sni = node.sni || node.servername || node.serverName;
-  if (sni) {
-    parts.push(`sni=${sni}`);
-  }
 
   const alpn = Array.isArray(node.alpn) ? node.alpn.join(",") : node.alpn;
   if (alpn) {
     parts.push(`alpn=${alpn}`);
   }
 
-  if (
+  const sni = node.sni || node.servername || node.serverName;
+  if (sni) {
+    parts.push(`sni="${esc(sni)}"`);
+  }
+
+  const skip =
     node.skipCertVerify === true ||
     node["skip-cert-verify"] === true ||
-    String(node.allowInsecure) === "1" ||
-    String(node.insecure) === "1" ||
     String(node.allowInsecure).toLowerCase() === "true" ||
-    String(node.insecure).toLowerCase() === "true"
-  ) {
+    String(node.allowInsecure) === "1" ||
+    String(node.allow_insecure).toLowerCase() === "true" ||
+    String(node.allow_insecure) === "1" ||
+    String(node.insecure).toLowerCase() === "true" ||
+    String(node.insecure) === "1";
+
+  if (skip) {
     parts.push("skip-cert-verify=true");
-  }
-
-  const portHopping = node.portHopping || node["port-hopping"];
-  if (portHopping) {
-    parts.push(`port-hopping=${portHopping}`);
-  }
-
-  const portHoppingInterval =
-    node.portHoppingInterval || node["port-hopping-interval"];
-  if (portHoppingInterval) {
-    parts.push(`port-hopping-interval=${portHoppingInterval}`);
   }
 
   return parts.join(",");
@@ -331,7 +325,7 @@ export function renderSurge(nodes = []) {
   let supportedCount = 0;
 
   lines.push("# AUTOSUB · Surge Proxy List");
-  lines.push("# 支持协议：ss / vmess / hysteria2 / trojan / anytls / tuic");
+  lines.push("# 支持协议：ss / vmess / hysteria2 / trojan / anytls / tuic-v5");
   lines.push("# 其它协议暂不转换，仅在末尾统计");
   lines.push("");
   lines.push("[Proxy]");
