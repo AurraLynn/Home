@@ -18,6 +18,7 @@
  *   - hysteria2   → parseHy2
  *   - vmess       → parseVmess
  *   - vless       → parseVless
+ *   - anytls      → parseAnyTLS
  *
  * 输出：
  *   - 标准化 Node[] 数组，供各客户端渲染器使用
@@ -277,6 +278,26 @@ function nodeFromClashInline(obj, rawLine) {
         };
     }
 
+
+    if (t === "anytls") {
+        return {
+            ...base,
+            password: obj.password || obj.auth || "",
+            sni: obj.sni || obj.peer || obj.servername,
+            peer: obj.peer,
+            alpn: obj.alpn,
+            udp: typeof obj.udp === "boolean" ? obj.udp : undefined,
+            clientFingerprint:
+                obj["client-fingerprint"] || obj.fingerprint || obj.fp,
+            skipCertVerify:
+                typeof obj["skip-cert-verify"] === "boolean"
+                    ? obj["skip-cert-verify"]
+                    : typeof obj.insecure === "boolean"
+                    ? obj.insecure
+                    : undefined,
+        };
+    }
+
     return base;
 }
 
@@ -308,6 +329,17 @@ export function parseAnythingToNodes(rawText) {
                 n
                     ? { ...n, type: "ss", raw: n.raw || line }
                     : { type: "ss", raw: line }
+            );
+            continue;
+        }
+
+        // anytls://
+        if (line.toLowerCase().startsWith("anytls://")) {
+            const n = parseAnyTLS(line);
+            nodes.push(
+                n
+                    ? { ...n, type: "anytls", raw: n.raw || line }
+                    : { type: "anytls", raw: line }
             );
             continue;
         }
@@ -373,6 +405,7 @@ export function parseAnythingToNodes(rawText) {
                     t === "vmess" ||
                     t === "vless" ||
                     t === "trojan" ||
+                    t === "anytls" ||
                     t === "hysteria2" ||
                     t === "hysteria" ||
                     t === "hy2"
