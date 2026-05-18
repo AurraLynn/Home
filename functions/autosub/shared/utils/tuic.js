@@ -1,12 +1,13 @@
 /*
- * functions/autosub/shared/utils/tuic.js
- *
- * TUIC URI 解析器
+ * 文件路径：functions/autosub/shared/utils/tuic.js
+ * 文件作用：
+ *   - 解析 tuic:// 分享链接为 autosub 标准 Node
+ *   - 兼容 TUIC v5 常见 URI 参数写法
  *
  * 常见格式：
- * tuic://uuid:password@example.com:443?sni=example.com&alpn=h3&congestion_control=bbr&udp_relay_mode=native#Name
- * tuic://uuid:password@example.com:443?password=xxx&sni=example.com#Name
- * tuic://example.com:443?uuid=xxx&password=xxx&sni=example.com#Name
+ *   tuic://uuid:password@example.com:443?sni=example.com&alpn=h3&congestion_control=bbr&udp_relay_mode=native#Name
+ *   tuic://uuid:password@example.com:443?password=xxx&sni=example.com#Name
+ *   tuic://example.com:443?uuid=xxx&password=xxx&sni=example.com#Name
  */
 
 function safeDecode(s) {
@@ -19,13 +20,11 @@ function safeDecode(s) {
 
 function parseBool(v) {
   const s = String(v ?? "").trim().toLowerCase();
-  return s === "1" || s === "true" || s === "yes";
+  return s === "1" || s === "true" || s === "yes" || s === "on";
 }
 
-function normalizeChoice(value, allowed, fallback = "") {
-  const s = String(value || "").trim().toLowerCase().replace(/_/g, "-");
-  if (!s) return fallback;
-  return allowed.includes(s) ? s : fallback;
+function normalizeKebab(v) {
+  return String(v || "").trim().toLowerCase().replace(/_/g, "-");
 }
 
 function parseAlpn(v) {
@@ -37,6 +36,14 @@ function parseAlpn(v) {
     .filter(Boolean);
 }
 
+function pickParam(params, names, fallback = "") {
+  for (const name of names) {
+    const v = params.get(name);
+    if (v !== null && v !== undefined && String(v).trim() !== "") return v;
+  }
+  return fallback;
+}
+
 export function parseTuic(input) {
   if (!input || typeof input !== "string") return null;
 
@@ -45,7 +52,6 @@ export function parseTuic(input) {
 
   let url;
   try {
-    // URL 可以直接解析 tuic://
     url = new URL(raw);
   } catch {
     return {
@@ -58,110 +64,105 @@ export function parseTuic(input) {
   const params = url.searchParams;
 
   const name = safeDecode(
-    (url.hash || "").replace(/^#/, "") ||
-      url.hostname ||
-      "TUIC"
+    (url.hash || "").replace(/^#/, "") || url.hostname || "TUIC"
   );
 
   const server = url.hostname.replace(/^\[|\]$/g, "");
   const port = Number(url.port || 443);
 
-  /*
-   * 常见 URI:
-   * tuic://uuid:password@host:port?...
-   *
-   * url.username = uuid
-   * url.password = password
-   *
-   * 也兼容：
-   * ?uuid=xxx&password=xxx
-   * ?token=xxx
-   */
+  // 标准常见：tuic://uuid:password@host:port?...#name
+  // 兼容：?uuid=xxx&password=xxx 或 ?token=xxx
   const uuid =
     safeDecode(url.username) ||
-    params.get("uuid") ||
-    params.get("id") ||
-    "";
+    pickParam(params, ["uuid", "id", "user", "username"], "");
 
   const password =
     safeDecode(url.password) ||
-    params.get("password") ||
-    params.get("pwd") ||
-    params.get("token") ||
-    "";
+    pickParam(params, ["password", "pwd", "pass"], "");
 
-  const token = params.get("token") || "";
+  const token = pickParam(params, ["token"], "");
 
-  const sni =
-    params.get("sni") ||
-    params.get("peer") ||
-    params.get("servername") ||
-    params.get("server_name") ||
-    params.get("tls-host") ||
-    "";
+  const sni = pickParam(
+    params,
+    ["sni", "peer", "servername", "server_name", "server-name", "tls-host"],
+    ""
+  );
 
-  const alpn = parseAlpn(params.get("alpn") || "h3");
+  const alpn = parseAlpn(pickParam(params, ["alpn"], "h3"));
 
-  const congestionController = normalizeChoice(
-    params.get("congestion_control") ||
-      params.get("congestion-controller") ||
-      params.get("cc") ||
-      params.get("mode"),
-    ["bbr", "cubic", "new-reno", "new_reno"],
-    "bbr"
-  ).replace(/_/g, "-");
+  const congestionController = normalizeKebab(
+    pickParam(
+      params,
+      [
+        "congestion_control",
+        "congestion-controller",
+        "congestion-control",
+        "congestionController",
+        "cc",
+      ],
+      "bbr"
+    )
+  );
 
-  const udpRelayMode = normalizeChoice(
-    params.get("udp_relay_mode") ||
-      params.get("udp-relay-mode") ||
-      params.get("udpRelayMode"),
-    ["native", "quic"],
-    "native"
+  const udpRelayMode = normalizeKebab(
+    pickParam(
+      params,
+      ["udp_relay_mode", "udp-relay-mode", "udpRelayMode"],
+      "native"
+    )
   );
 
   const skipCertVerify = parseBool(
-    params.get("insecure") ||
-      params.get("allowInsecure") ||
-      params.get("skip-cert-verify")
+    pickParam(
+      params,
+      [
+        "insecure",
+        "allowInsecure",
+        "allow_insecure",
+        "allow-insecure",
+        "skip-cert-verify",
+        "skip_cert_verify",
+      ],
+      ""
+    )
   );
 
   const reduceRtt = parseBool(
-    params.get("reduce_rtt") ||
-      params.get("reduce-rtt") ||
-      params.get("0rtt") ||
-      params.get("zero_rtt_handshake")
+    pickParam(
+      params,
+      ["reduce_rtt", "reduce-rtt", "0rtt", "zero_rtt_handshake"],
+      ""
+    )
   );
 
   const disableSni = parseBool(
-    params.get("disable_sni") || params.get("disable-sni")
+    pickParam(params, ["disable_sni", "disable-sni", "disableSni"], "")
   );
 
   const requestTimeout = Number(
-    params.get("request_timeout") ||
-      params.get("request-timeout") ||
-      0
+    pickParam(params, ["request_timeout", "request-timeout"], "0")
   );
 
   const heartbeatInterval = Number(
-    params.get("heartbeat_interval") ||
-      params.get("heartbeat-interval") ||
-      0
+    pickParam(params, ["heartbeat_interval", "heartbeat-interval"], "0")
   );
 
   const maxUdpRelayPacketSize = Number(
-    params.get("max_udp_relay_packet_size") ||
-      params.get("max-udp-relay-packet-size") ||
-      0
+    pickParam(
+      params,
+      ["max_udp_relay_packet_size", "max-udp-relay-packet-size"],
+      "0"
+    )
   );
 
-  const ip = params.get("ip") || "";
+  const ip = pickParam(params, ["ip"], "");
 
   return {
     type: "tuic",
     raw,
     name,
     server,
-    port,
+    port: Number.isFinite(port) && port > 0 ? port : 443,
     uuid,
     password,
     token,
@@ -173,9 +174,7 @@ export function parseTuic(input) {
     reduceRtt,
     disableSni,
     requestTimeout: Number.isFinite(requestTimeout) ? requestTimeout : 0,
-    heartbeatInterval: Number.isFinite(heartbeatInterval)
-      ? heartbeatInterval
-      : 0,
+    heartbeatInterval: Number.isFinite(heartbeatInterval) ? heartbeatInterval : 0,
     maxUdpRelayPacketSize: Number.isFinite(maxUdpRelayPacketSize)
       ? maxUdpRelayPacketSize
       : 0,
