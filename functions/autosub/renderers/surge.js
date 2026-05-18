@@ -2,7 +2,7 @@
  * 文件路径：functions/autosub/renderers/surge.js
  * 文件作用：
  *   - 将标准 Node[] 渲染为 Surge 可用的代理列表
- *   - 当前仅支持协议：ss / vmess / hysteria2 / trojan
+ *   - 当前支持协议：ss / vmess / hysteria2 / trojan / anytls
  *   - 其它协议暂不转换（只在末尾统计提示）
  */
 
@@ -209,6 +209,50 @@ function renderHy2(node) {
   return parts.join(",");
 }
 
+
+/*
+ * AnyTLS
+ * Surge 官方格式：
+ *   name = anytls, server, port, password=pwd, sni=example.com, skip-cert-verify=true, reuse=true
+ */
+function renderAnyTLS(node) {
+  const pwd = node.password || node.auth;
+  if (!node.server || !node.port || !pwd) return null;
+
+  const name = makeProxyName(node, "AnyTLS");
+
+  const parts = [
+    `${name}=anytls`,
+    node.server,
+    node.port,
+    `password=${pwd}`,
+  ];
+
+  const sni = node.sni || node.peer || node.serverName || node.servername || node.server;
+  if (sni) {
+    parts.push(`sni=${sni}`);
+  }
+
+  const skip =
+    node.skipCertVerify === true ||
+    node["skip-cert-verify"] === true ||
+    String(node.allowInsecure) === "1" ||
+    String(node.insecure) === "1";
+
+  if (skip) {
+    parts.push("skip-cert-verify=true");
+  }
+
+  // AnyTLS v2：Surge 默认启用连接复用；如果节点显式传了 reuse=false，就保留。
+  if (node.reuse === false || String(node.reuse).toLowerCase() === "false") {
+    parts.push("reuse=false");
+  } else if (node.reuse === true || String(node.reuse).toLowerCase() === "true") {
+    parts.push("reuse=true");
+  }
+
+  return parts.join(",");
+}
+
 /*
  * 主渲染函数
  */
@@ -218,7 +262,7 @@ export function renderSurge(nodes = []) {
   let supportedCount = 0;
 
   lines.push("# AUTOSUB · Surge Proxy List");
-  lines.push("# 支持协议：ss / vmess / hysteria2 / trojan");
+  lines.push("# 支持协议：ss / vmess / hysteria2 / trojan / anytls");
   lines.push("# 其它协议暂不转换，仅在末尾统计");
   lines.push("");
   lines.push("[Proxy]");
@@ -237,6 +281,8 @@ export function renderSurge(nodes = []) {
       line = renderVmess(n);
     } else if (type === "hysteria2" || type === "hysteria" || type === "hy2") {
       line = renderHy2(n);
+    } else if (type === "anytls") {
+      line = renderAnyTLS(n);
     } else {
       unsupportedTypes[type] = (unsupportedTypes[type] || 0) + 1;
     }
