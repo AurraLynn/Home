@@ -19,6 +19,7 @@
  *   - vmess       → parseVmess
  *   - vless       → parseVless
  *   - anytls      → parseAnyTLS
+ *   - tuic        → parseTuic
  *
  * 输出：
  *   - 标准化 Node[] 数组，供各客户端渲染器使用
@@ -31,6 +32,7 @@ import { parseHy2 } from "./shared/utils/hy2.js";
 import { parseVmess } from "./shared/utils/vmess.js";
 import { parseVless } from "./shared/utils/vless.js";
 import { parseAnyTLS } from "./shared/utils/anytls.js";
+import { parseTuic } from "./shared/utils/tuic.js";
 
 /**
  * 用于 base64 解包时检测是否已经出现我们关心的协议 scheme
@@ -298,6 +300,60 @@ function nodeFromClashInline(obj, rawLine) {
         };
     }
 
+
+    if (t === "tuic") {
+        const alpnRaw = obj.alpn;
+        const alpn = Array.isArray(alpnRaw)
+            ? alpnRaw
+            : typeof alpnRaw === "string" && alpnRaw.includes(",")
+            ? alpnRaw.split(",").map((v) => v.trim()).filter(Boolean)
+            : alpnRaw
+            ? [alpnRaw]
+            : undefined;
+
+        const cc =
+            obj["congestion-controller"] ||
+            obj.congestionController ||
+            obj.congestion_control ||
+            obj["congestion-control"];
+
+        const udpRelayMode =
+            obj["udp-relay-mode"] ||
+            obj.udpRelayMode ||
+            obj.udp_relay_mode;
+
+        return {
+            ...base,
+            uuid: obj.uuid || obj.id || "",
+            password: obj.password || obj.pwd || "",
+            token: obj.token || "",
+            sni: obj.sni || obj.servername || obj["server-name"],
+            alpn,
+            congestionController: cc,
+            udpRelayMode,
+            udp: typeof obj.udp === "boolean" ? obj.udp : undefined,
+            skipCertVerify:
+                typeof obj["skip-cert-verify"] === "boolean"
+                    ? obj["skip-cert-verify"]
+                    : typeof obj.insecure === "boolean"
+                    ? obj.insecure
+                    : undefined,
+            reduceRtt:
+                typeof obj["reduce-rtt"] === "boolean"
+                    ? obj["reduce-rtt"]
+                    : typeof obj.reduceRtt === "boolean"
+                    ? obj.reduceRtt
+                    : undefined,
+            disableSni:
+                typeof obj["disable-sni"] === "boolean"
+                    ? obj["disable-sni"]
+                    : typeof obj.disableSni === "boolean"
+                    ? obj.disableSni
+                    : undefined,
+            ip: obj.ip,
+        };
+    }
+
     return base;
 }
 
@@ -340,6 +396,17 @@ export function parseAnythingToNodes(rawText) {
                 n
                     ? { ...n, type: "anytls", raw: n.raw || line }
                     : { type: "anytls", raw: line }
+            );
+            continue;
+        }
+
+        // tuic://
+        if (line.toLowerCase().startsWith("tuic://")) {
+            const n = parseTuic(line);
+            nodes.push(
+                n
+                    ? { ...n, type: "tuic", raw: n.raw || line }
+                    : { type: "tuic", raw: line }
             );
             continue;
         }
@@ -406,6 +473,7 @@ export function parseAnythingToNodes(rawText) {
                     t === "vless" ||
                     t === "trojan" ||
                     t === "anytls" ||
+                    t === "tuic" ||
                     t === "hysteria2" ||
                     t === "hysteria" ||
                     t === "hy2"
