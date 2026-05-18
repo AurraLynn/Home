@@ -1,162 +1,108 @@
 /*
- * functions/autosub/shared/utils/anytls.js
+ * 文件路径：functions/autosub/shared/utils/anytls.js
+ * 文件作用：
+ *   - 解析 anytls:// 分享链接
+ *   - 输出标准 Node，供 clash / mihomo 渲染器使用
  *
- * AnyTLS URI 解析器
- *
- * 支持：
- * anytls://password@host:443/?sni=example.com&insecure=1#name
- * anytls://password@host:443/?peer=example.com&allowInsecure=true#name
+ * 支持格式：
+ *   anytls://password@example.com:443/?sni=real.example.com&insecure=1#AnyTLS
+ *   anytls://password@example.com:443/?peer=real.example.com&allowInsecure=true#AnyTLS
  */
 
-function safeDecode(s) {
-  try {
-    return decodeURIComponent(s || "");
-  } catch {
-    return s || "";
-  }
-}
-
-function parseBool(v) {
-  const s = String(v ?? "").trim().toLowerCase();
-  return s === "1" || s === "true" || s === "yes";
-}
-
-function splitHostPort(hostPort) {
-  const s = String(hostPort || "").trim();
-  if (!s) return ["", 0];
-
-  // IPv6: [::1]:443
-  if (s.startsWith("[")) {
-    const end = s.indexOf("]");
-    if (end >= 0) {
-      const host = s.slice(1, end);
-      const rest = s.slice(end + 1);
-      const port = rest.startsWith(":") ? Number(rest.slice(1)) || 0 : 0;
-      return [host, port];
+function safeDecode(value) {
+    try {
+        return decodeURIComponent(String(value || ""));
+    } catch {
+        return String(value || "");
     }
-  }
-
-  const idx = s.lastIndexOf(":");
-  if (idx < 0) return [s, 443];
-
-  const host = s.slice(0, idx).trim();
-  const port = Number(s.slice(idx + 1).trim()) || 443;
-
-  return [host, port];
 }
 
-function parseQuery(query) {
-  const params = {};
-  const q = String(query || "").replace(/^\?/, "");
+function parseBool(value) {
+    const v = String(value ?? "").trim().toLowerCase();
+    return v === "1" || v === "true" || v === "yes" || v === "on";
+}
 
-  if (!q) return params;
-
-  for (const seg of q.split("&")) {
-    if (!seg) continue;
-
-    const eq = seg.indexOf("=");
-    const k = eq >= 0 ? seg.slice(0, eq) : seg;
-    const v = eq >= 0 ? seg.slice(eq + 1) : "";
-
-    const key = safeDecode(k).trim();
-    if (!key) continue;
-
-    params[key] = safeDecode(v);
-  }
-
-  return params;
+function parseAlpn(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    return raw
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean)
+        .join(",");
 }
 
 export function parseAnyTLS(input) {
-  if (!input || typeof input !== "string") return null;
+    if (!input || typeof input !== "string") return null;
 
-  const raw = input.trim();
-  if (!raw.toLowerCase().startsWith("anytls://")) return null;
+    const raw = input.trim();
+    if (!raw.toLowerCase().startsWith("anytls://")) return null;
 
-  let main = raw;
-  let nameFromHash = "";
+    let url;
+    try {
+        url = new URL(raw);
+    } catch {
+        return {
+            type: "anytls",
+            raw,
+            name: raw,
+        };
+    }
 
-  const hashIndex = raw.indexOf("#");
-  if (hashIndex >= 0) {
-    nameFromHash = safeDecode(raw.slice(hashIndex + 1).trim());
-    main = raw.slice(0, hashIndex);
-  }
+    const params = url.searchParams;
 
-  main = main.replace(/^anytls:\/\//i, "");
+    const name =
+        safeDecode((url.hash || "").replace(/^#/, "")) ||
+        url.hostname ||
+        "AnyTLS";
 
-  let basePart = main;
-  let query = "";
+    const password =
+        safeDecode(url.username || "") ||
+        safeDecode(params.get("password") || "") ||
+        safeDecode(params.get("auth") || "");
 
-  const qIndex = main.indexOf("?");
-  if (qIndex >= 0) {
-    basePart = main.slice(0, qIndex);
-    query = main.slice(qIndex + 1);
-  }
+    const server = (url.hostname || "").replace(/^\[|\]$/g, "");
+    const port = Number(url.port || params.get("port") || 443) || 443;
 
-  let password = "";
-  let hostPort = basePart;
+    const sni =
+        params.get("sni") ||
+        params.get("peer") ||
+        params.get("servername") ||
+        params.get("serverName") ||
+        "";
 
-  const atIndex = basePart.lastIndexOf("@");
-  if (atIndex >= 0) {
-    password = safeDecode(basePart.slice(0, atIndex));
-    hostPort = basePart.slice(atIndex + 1);
-  }
+    const insecure =
+        params.get("insecure") ??
+        params.get("allowInsecure") ??
+        params.get("skip-cert-verify") ??
+        "";
 
-  const [server, port] = splitHostPort(hostPort);
-  const params = parseQuery(query);
+    const clientFingerprint =
+        params.get("client-fingerprint") ||
+        params.get("fingerprint") ||
+        params.get("fp") ||
+        "chrome";
 
-  password = password || params.password || params.auth || "";
+    const udpRaw = params.get("udp");
+    const udp =
+        udpRaw === null
+            ? true
+            : !["0", "false", "no", "off"].includes(
+                  String(udpRaw).trim().toLowerCase()
+              );
 
-  const sni = params.sni || params.peer || params.servername || "";
-  const peer = params.peer || "";
-
-  const insecureFlag =
-    params.insecure ||
-    params.allowInsecure ||
-    params["skip-cert-verify"] ||
-    "";
-
-  const alpn = params.alpn || "";
-  const clientFingerprint =
-    params.fp ||
-    params.fingerprint ||
-    params["client-fingerprint"] ||
-    "chrome";
-
-  const udp =
-    params.udp === undefined
-      ? true
-      : !["0", "false", "no"].includes(String(params.udp).toLowerCase());
-
-  if (!server || !port || !password) {
     return {
-      type: "anytls",
-      raw,
-      name: nameFromHash || raw,
-      server,
-      port,
-      password,
-      sni,
-      peer,
-      alpn,
-      clientFingerprint,
-      udp,
-      skipCertVerify: parseBool(insecureFlag),
+        type: "anytls",
+        raw,
+        name,
+        server,
+        port,
+        password,
+        sni,
+        peer: params.get("peer") || "",
+        alpn: parseAlpn(params.get("alpn")),
+        clientFingerprint,
+        udp,
+        skipCertVerify: parseBool(insecure),
     };
-  }
-
-  return {
-    type: "anytls",
-    raw,
-    name: nameFromHash || `${server}:${port}`,
-    server,
-    port,
-    password,
-    sni,
-    peer,
-    alpn,
-    clientFingerprint,
-    udp,
-    skipCertVerify: parseBool(insecureFlag),
-  };
 }
