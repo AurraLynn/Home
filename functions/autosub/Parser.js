@@ -29,12 +29,13 @@ import { parseTrojan } from "./shared/utils/trojan.js";
 import { parseHy2 } from "./shared/utils/hy2.js";
 import { parseVmess } from "./shared/utils/vmess.js";
 import { parseVless } from "./shared/utils/vless.js";
+import { parseAnyTLS } from "./shared/utils/anytls.js";
 
 /**
  * 用于 base64 解包时检测是否已经出现我们关心的协议 scheme
  */
 const SCHEME_RE =
-    /\b(?:ss|ssr|vmess|vless|trojan|hysteria2|hy2|hysteria|tuic|snell|socks5|http|https):\/\//i;
+    /\b(?:ss|ssr|vmess|vless|trojan|hysteria2|hy2|hysteria|anytls|tuic|snell|socks5|http|https):\/\//i;
 
 /**
  * 粗略判断一段文本是否“像 base64”
